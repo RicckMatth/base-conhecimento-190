@@ -40,6 +40,18 @@ Protótipo local em **um único arquivo HTML**, com interface inspirada em ferra
 
 > **Limitações:** esta é uma demonstração executada em um único HTML. Não há autenticação verdadeira, banco de dados compartilhado, sincronização multiusuário ou permissões seguras. Os códigos DEM são fictícios, não códigos oficiais de classificação. Não utilize dados operacionais sigilosos.
 
+## 🆕 Melhorias para consulta e edição (versão atual)
+
+- **Naturezas relacionadas:** sugestões automáticas por categoria e tags em cada ficha.
+- **Histórico de revisões utilizável:** visualizar versões anteriores e, no modo administrador, restaurar uma revisão sem perder a versão atual.
+- **Editor visual ampliado:** títulos e subtítulos, negrito, itálico, sublinhado, texto riscado, alinhamento, listas, recuo, links, tabelas, avisos, destaques, linhas divisórias, checklist e desfazer/refazer.
+- **Contador de palavras e caracteres** durante a edição.
+- **Exportação individual de fichas em HTML**, além da impressão e do backup completo em JSON.
+- **Atalho Ctrl+K** para abrir a pesquisa.
+- **Consulta contextual:** código, resumo, categoria, autor, tags, histórico e itens relacionados em uma mesma tela.
+
+> O editor usa recursos nativos do navegador; alguns comandos podem se comportar de forma diferente em dispositivos móveis. Esta é uma base demonstrativa e ainda requer validação funcional no navegador antes da apresentação.
+
 ## 👤 Acesso para demonstração
 
 1. Digite qualquer nome na tela de login.
