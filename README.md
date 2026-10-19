@@ -2,7 +2,7 @@
 
 # 📚 Base de Conhecimento 190
 
-### Central de documentação, pesquisa e organização de informações
+### Portal de consulta e gestão de naturezas de ocorrências
 
 Protótipo local em **um único arquivo HTML**, com interface inspirada em ferramentas de documentação colaborativa.
 
@@ -26,33 +26,28 @@ Protótipo local em **um único arquivo HTML**, com interface inspirada em ferra
 
 > O download ZIP contém também o README e outros arquivos do repositório. Para executar o sistema, abra somente o `index.html` extraído.
 
-## ✨ Funcionalidades da versão atual
+## ✨ Funcionalidades da versão de apresentação
 
-| Recurso | Disponibilidade |
-| --- | --- |
-| Interface responsiva, inspirada em plataformas wiki | ✅ |
-| Espaços e páginas de conhecimento | ✅ |
-| Pesquisa por palavras e frases entre aspas | ✅ |
-| Editor visual básico de conteúdo | ✅ |
-| Criação, edição e exclusão de páginas | ✅ Perfil admin demonstrativo |
-| Perfis de demonstração militar e civil | ✅ |
-| Autor, tags e data de atualização | ✅ |
-| Comentários com texto e @menções | ✅ Menções sem notificações |
-| Histórico básico de versões | ✅ Registro de versões |
-| Exportação dos dados para JSON | ✅ |
-| Salvamento local no navegador | ✅ |
-| Autenticação real e permissões no servidor | ❌ Ainda não implementadas |
-| Colaboração em tempo real e banco de dados compartilhado | ❌ Ainda não implementados |
+- **Login demonstrativo livre:** informe qualquer nome, escolha Militar ou Civil e selecione Consulta ou Administrador (demonstração).
+- **Painel inicial premium:** pesquisa central, indicadores, categorias e naturezas em destaque.
+- **Pesquisa avançada:** palavras completas, frases entre aspas e códigos; pesquisa em título, resumo, tags e texto completo.
+- **Catálogo de naturezas:** filtros por categoria, ordenação e fichas detalhadas.
+- **Oito registros fictícios:** exemplos de natureza de ocorrência com códigos `DEM-001` a `DEM-008`.
+- **Favoritos e consultas recentes**, comentários, impressão e cópia de referências.
+- **Editor visual e gestão local:** criar, editar, excluir, visualizar e publicar conteúdos no modo administrador.
+- **Histórico básico de alterações** e importação/exportação em JSON.
+- **Tema claro/escuro** e interface adaptável a celular e computador.
 
-## 👤 Perfis para testes
+> **Limitações:** esta é uma demonstração executada em um único HTML. Não há autenticação verdadeira, banco de dados compartilhado, sincronização multiusuário ou permissões seguras. Os códigos DEM são fictícios, não códigos oficiais de classificação. Não utilize dados operacionais sigilosos.
 
-No seletor de usuários do cabeçalho, escolha:
+## 👤 Acesso para demonstração
 
-- **Administrador** — Militar: cria, edita e exclui páginas.
-- **Operador** — Militar: consulta e comenta.
-- **Colaborador** — Civil: consulta e comenta.
+1. Digite qualquer nome na tela de login.
+2. Selecione o vínculo **Militar** ou **Civil**.
+3. Escolha **Consulta** para visualizar ou **Administrador (demonstração)** para editar.
+4. Clique em **Entrar na plataforma**.
 
-Esses perfis são apenas uma simulação de interface: **não constituem um sistema seguro de login ou autorização**.
+Não é exigida senha. O modo administrador pode ser escolhido por qualquer pessoa e **não é uma proteção de segurança**.
 
 ## 🔎 Como pesquisar
 
@@ -64,19 +59,19 @@ Use o campo de pesquisa no topo da página.
 
 A pesquisa não diferencia letras maiúsculas e minúsculas ou acentos. Trata-se de um mecanismo local para a base carregada no navegador.
 
-## 📝 Como publicar uma página
+## 📝 Como publicar uma natureza
 
-1. Selecione o perfil **Administrador**.
-2. Clique em **Nova página**.
-3. Informe o título, o espaço e as tags.
-4. Edite o conteúdo usando os botões de formatação.
-5. Clique em **Publicar**.
+1. Entre no modo **Administrador (demonstração)**.
+2. Abra **Gerenciar conteúdo** e clique em **Nova natureza**.
+3. Informe título, código, categoria, resumo e tags.
+4. Formate a explicação no editor visual.
+5. Clique em **Publicar conteúdo**.
 
-As alterações ficam no armazenamento local do navegador. **Não são sincronizadas entre dispositivos ou usuários.**
+Os dados são gravados apenas no navegador utilizado.
 
-## 💾 Como preservar seus dados
+## 💾 Backup e recuperação
 
-Use **Exportar JSON** para guardar uma cópia dos dados. O protótipo atual não oferece importação do backup pela interface; a exportação é uma forma de preservar o conteúdo para uso em futuras versões. Limpar os dados do navegador pode apagar as alterações locais.
+No modo administrador, abra **Gerenciar conteúdo**. Use **Exportar base JSON** para guardar uma cópia e **Importar base JSON** para restaurar um backup local. A importação substitui o conteúdo atual daquele navegador.
 
 ## 🔐 Privacidade e segurança
 
