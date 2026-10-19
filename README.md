@@ -6,10 +6,10 @@
 
 Protótipo local em **um único arquivo HTML**, com interface inspirada em ferramentas de documentação colaborativa.
 
-[![Baixar sistema](https://img.shields.io/badge/⬇️_BAIXAR_SISTEMA-2563EB?style=for-the-badge)](https://github.com/RicckMatth/base-conhecimento-190/raw/refs/heads/main/index.html)
+[![Baixar sistema](https://img.shields.io/badge/⬇️_BAIXAR_SISTEMA-2563EB?style=for-the-badge)](https://github.com/RicckMatth/base-conhecimento-190/archive/refs/heads/main.zip)
 [![Ver código](https://img.shields.io/badge/VER_CÓDIGO-172B4D?style=for-the-badge)](https://github.com/RicckMatth/base-conhecimento-190/blob/main/index.html)
 
-**[⬇️ CLIQUE AQUI PARA BAIXAR O HTML](https://github.com/RicckMatth/base-conhecimento-190/raw/refs/heads/main/index.html)**
+**[⬇️ CLIQUE AQUI PARA BAIXAR O ZIP](https://github.com/RicckMatth/base-conhecimento-190/archive/refs/heads/main.zip)**
 
 </div>
 
@@ -19,12 +19,12 @@ Protótipo local em **um único arquivo HTML**, com interface inspirada em ferra
 
 **Não é necessário instalar nada.**
 
-1. Clique no botão **BAIXAR SISTEMA** acima.
-2. Salve o arquivo `index.html` no computador.
-3. Abra o arquivo com Chrome, Edge ou Firefox.
+1. Clique no botão **BAIXAR SISTEMA** acima para baixar um arquivo `.zip` com o projeto.
+2. Extraia o arquivo ZIP no celular ou computador.
+3. Abra o arquivo `index.html` extraído no Chrome, Edge ou Firefox.
 4. Selecione um usuário de demonstração no cabeçalho e comece a testar.
 
-> Se o navegador exibir o código em vez de baixar, use a opção **Salvar como** e salve com extensão `.html`.
+> O download ZIP contém também o README e outros arquivos do repositório. Para executar o sistema, abra somente o `index.html` extraído.
 
 ## ✨ Funcionalidades da versão atual
 
@@ -82,7 +82,7 @@ Use **Exportar JSON** para guardar uma cópia dos dados. O protótipo atual não
 
 Este repositório contém somente código e conteúdo fictício de demonstração. Não insira dados operacionais reais, pessoais, sigilosos ou institucionais sensíveis no protótipo. A seleção de perfil não é uma autenticação real.
 
-Se o repositório for **privado**, o link de download acima também exigirá que a pessoa tenha permissão de acesso ao GitHub. Para distribuir o arquivo a alguém sem acesso, envie o HTML separadamente ou disponibilize-o em uma hospedagem autorizada.
+Se o repositório for **privado**, o link do repositório e do arquivo ZIP também exigirá que a pessoa tenha permissão de acesso ao GitHub. Para distribuir o arquivo a alguém sem acesso, envie o HTML separadamente ou disponibilize-o em uma hospedagem autorizada.
 
 ## 🛠️ Tecnologia
 
@@ -105,6 +105,6 @@ Se o repositório for **privado**, o link de download acima também exigirá que
 
 **Base de Conhecimento 190 · Versão experimental para testes locais**
 
-[Repositório](https://github.com/RicckMatth/base-conhecimento-190) · [Baixar HTML](https://github.com/RicckMatth/base-conhecimento-190/raw/refs/heads/main/index.html)
+[Repositório](https://github.com/RicckMatth/base-conhecimento-190) · [Baixar HTML](https://github.com/RicckMatth/base-conhecimento-190/archive/refs/heads/main.zip)
 
 </div>
