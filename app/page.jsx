@@ -398,7 +398,7 @@ export default function Home(){
             <div className="chat-privacy"><b>Segurança da conexão</b><p>A comunicação utiliza HTTPS com TLS e sessão HttpOnly validada no servidor. Não equivale a criptografia ponta a ponta. Você pode revogar a autorização a qualquer momento.</p></div>
             {!extensionOnline&&<a className="chat-download" href="https://github.com/RicckMatth/190-extensao_integrada/archive/refs/heads/main.zip" target="_blank" rel="noopener noreferrer">Baixar extensão de teste ↗</a>}
           </aside>
-        </>}
+        </section>}
         {screen==='brain'&&<><div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Reconhecimento de palavras-chave e contexto, com hipóteses de natureza e perguntas de triagem.</p></div><span className="badge">{totalRules} regras</span></div>
           <form className="card spaced" onSubmit={analyze}><div><label htmlFor="brain-input">Relato de teste (sem dados pessoais)</label><textarea id="brain-input" rows={5} value={relato} onChange={e=>setRelato(e.target.value)} placeholder="Descreva o fato observado ou relatado, sem nomes e endereços…"/></div>
             <div className="btn-row"><Btn type="submit" disabled={busy}>{busy?'Analisando…':'✳ Analisar relato'}</Btn><Btn className="secondary" onClick={()=>{setRelato('');setAnalysis(null);}}>Limpar</Btn></div></form>
