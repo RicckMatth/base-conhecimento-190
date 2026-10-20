@@ -1,77 +1,3368 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Base 190 | Inteligência em conhecimento</title>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Base 190 + Cérebro IA | Inteligência e Conhecimento Operacional COPOM</title>
 <style>
-:root{--bg:#f5f7fc;--panel:#fff;--ink:#14213d;--muted:#73809a;--line:#e7ecf4;--accent:#3b5bdb;--accent2:#5678f0;--soft:#eef2ff;--shadow:0 16px 50px rgba(30,48,91,.055);--nav:#111d37;--good:#10b981}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font:14px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial;color:var(--ink);background:var(--bg)}button,input,textarea,select{font:inherit}button{cursor:pointer}a{color:var(--accent)}.hidden{display:none!important}.app{min-height:100vh;display:grid;grid-template-columns:256px minmax(0,1fr)}.sidebar{background:var(--nav);color:#d7e1fb;display:flex;flex-direction:column;padding:25px 16px;position:sticky;top:0;height:100vh;overflow:auto}.brand{display:flex;align-items:center;gap:12px;padding:0 12px 30px;color:#fff}.brand-icon{width:43px;height:43px;border-radius:14px;background:linear-gradient(145deg,#6b88ff,#304fc5);display:grid;place-items:center;font-size:22px;box-shadow:0 8px 20px #1b2c73}.brand b{font-size:18px;letter-spacing:-.6px}.brand small{display:block;font-size:10px;color:#92a3c7;letter-spacing:1.7px}.side-label{font-size:10px;font-weight:800;letter-spacing:1.5px;color:#7185ae;margin:18px 13px 8px}.nav-btn{display:flex;align-items:center;gap:12px;width:100%;border:0;background:transparent;color:#aebfdf;border-radius:10px;text-align:left;padding:12px 13px;margin:2px 0;transition:.18s}.nav-btn:hover{background:#26385c;color:#fff}.nav-btn.active{background:#3454c7;color:#fff;box-shadow:0 6px 16px #0c174e55}.nav-btn .glyph{font-size:18px;width:23px;text-align:center}.side-bottom{margin-top:auto;padding:16px 10px 0;border-top:1px solid #2a3a58}.side-user{display:flex;gap:10px;align-items:center}.avatar{width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,#d7e0ff,#a3b6ff);display:grid;place-items:center;color:#2443a7;font-weight:800;flex-shrink:0}.side-user b{color:#fff;display:block;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.side-user small{color:#91a5cc}.main{min-width:0}.topbar{height:76px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 35px;gap:20px;position:sticky;top:0;z-index:5}.breadcrumb{color:var(--muted);font-size:13px}.breadcrumb strong{color:var(--ink)}.top-actions{display:flex;gap:10px;align-items:center}.pill{border:1px solid var(--line);background:var(--panel);padding:8px 13px;border-radius:100px;color:var(--muted);font-size:12px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;background:var(--accent);color:#fff;padding:11px 17px;border-radius:10px;font-weight:700;transition:.15s;text-decoration:none}.btn:hover{transform:translateY(-1px);filter:brightness(1.05)}.btn.secondary{background:var(--panel);border-color:var(--line);color:var(--ink)}.btn.ghost{background:var(--soft);color:var(--accent)}.btn.danger{background:#fee2e2;color:#b91c1c}.btn.small{padding:8px 12px;font-size:12px}.container{max-width:1340px;margin:auto;padding:32px 36px 70px}.hero{background:linear-gradient(112deg,#172b64,#3659cb 72%,#5b77e4);border-radius:22px;color:white;padding:38px 42px;position:relative;overflow:hidden;box-shadow:0 18px 40px #3459c02a}.hero:after{content:"✦";font-size:240px;position:absolute;right:30px;top:-110px;opacity:.09;pointer-events:none}.eyebrow{text-transform:uppercase;letter-spacing:2px;font-size:11px;font-weight:800;opacity:.75}.hero h1{font-size:clamp(26px,3.2vw,39px);letter-spacing:-1.4px;line-height:1.17;margin:15px 0 12px}.hero p{color:#dbe4ff;max-width:600px;font-size:14px}.hero-search{margin-top:25px;display:flex;align-items:center;gap:10px;background:white;border-radius:13px;padding:7px 8px 7px 17px;max-width:690px;box-shadow:0 12px 30px #0c1b5a30}.hero-search input{flex:1;min-width:0;border:0;outline:0;padding:10px 0;color:#15264a;background:transparent}.hero-search span{color:#71809d;font-size:20px}.hero-search button{border:0;background:var(--accent);color:white;border-radius:9px;padding:12px 20px;font-weight:700}.hint{font-size:11px;color:#c4d3ff;margin-top:13px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:30px 0 16px}.section-head h2{font-size:19px;letter-spacing:-.5px;margin:0}.section-head p{margin:3px 0 0;color:var(--muted);font-size:12px}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-top:24px}.stat,.card,.panel{background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:16px}.stat{padding:20px}.stat .num{font-size:27px;font-weight:850;letter-spacing:-1px}.stat .stat-label{color:var(--muted);font-size:12px}.stat .stat-icon{float:right;background:var(--soft);border-radius:11px;padding:8px;font-size:18px}.category-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.cat-card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:19px;cursor:pointer;text-align:left;transition:.18s}.cat-card:hover,.article-card:hover{border-color:#b6c7ff;transform:translateY(-3px);box-shadow:0 14px 30px #1b398016}.cat-icon{width:43px;height:43px;border-radius:13px;background:var(--soft);display:grid;place-items:center;font-size:22px;margin-bottom:16px}.cat-card b{display:block;font-size:14px}.cat-card small{color:var(--muted)}.article-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.article-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;cursor:pointer;transition:.18s;min-height:210px;display:flex;flex-direction:column}.article-card h3{font-size:16px;line-height:1.35;margin:14px 0 9px}.article-card p{font-size:12px;color:var(--muted);margin:0 0 18px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.article-card footer{margin-top:auto;display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:11px;gap:8px}.code{font-size:11px;font-weight:800;background:#eaf0ff;color:#3557b4;border-radius:6px;padding:5px 8px;display:inline-block}.badge{background:#ecfdf5;color:#047857;padding:5px 9px;border-radius:100px;font-size:11px;font-weight:700}.panel{padding:26px;margin-bottom:20px}.panel h2{margin-top:0;font-size:20px}.muted{color:var(--muted)}.field{width:100%;padding:12px 13px;border:1px solid #d9e2ef;border-radius:10px;outline:none;background:var(--panel);color:var(--ink)}.field:focus{border-color:#7394ff;box-shadow:0 0 0 3px #5878eb1b}.filters{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.filter{border:1px solid var(--line);background:var(--panel);border-radius:100px;padding:9px 14px;color:var(--muted);font-weight:650;font-size:12px}.filter.active{background:var(--accent);color:#fff;border-color:var(--accent)}.results{display:grid;gap:12px}.result{display:flex;justify-content:space-between;gap:20px;align-items:center;padding:19px 22px;background:var(--panel);border:1px solid var(--line);border-radius:14px;cursor:pointer}.result:hover{border-color:#adc0ff}.result h3{margin:7px 0 5px;font-size:16px}.result p{margin:0;color:var(--muted);font-size:12px}.detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px}.detail-head h1{font-size:30px;letter-spacing:-1px;margin:12px 0}.article-body{line-height:1.85;font-size:15px;overflow-wrap:anywhere}.article-body h2{font-size:19px;margin-top:28px;border-bottom:1px solid var(--line);padding-bottom:9px}.article-body blockquote{border-left:4px solid var(--accent);background:var(--soft);padding:12px 18px;margin:20px 0;border-radius:0 8px 8px 0}.article-body table{border-collapse:collapse;max-width:100%}.article-body td,.article-body th{border:1px solid var(--line);padding:8px}.meta{display:flex;flex-wrap:wrap;gap:10px;color:var(--muted);font-size:12px}.tags{display:flex;gap:6px;flex-wrap:wrap;margin:15px 0}.tag{font-size:11px;color:#4964b0;background:var(--soft);padding:5px 9px;border-radius:7px}.grid2{display:grid;grid-template-columns:2fr 1fr;gap:18px}.comment{background:var(--bg);border-radius:12px;padding:14px;margin:12px 0}.toolbar{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}.toolbar button{border:1px solid var(--line);background:var(--panel);padding:8px 12px;border-radius:7px}.editor{border:1px solid #d9e2ef;min-height:300px;border-radius:11px;padding:18px;outline:none;line-height:1.7}.editor:focus{border-color:#7394ff}.form-grid{display:grid;grid-template-columns:2fr 1fr;gap:14px}.label{display:block;font-size:12px;font-weight:700;margin-bottom:7px}.form-group{margin:14px 0}.login-page{min-height:100vh;display:grid;grid-template-columns:1.05fr .95fr;background:#fff}.login-art{background:radial-gradient(circle at 20% 20%,#5875e8 0,transparent 35%),linear-gradient(140deg,#101d3c,#213e94);color:white;padding:70px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}.login-art:after{content:"190";font-size:330px;font-weight:900;letter-spacing:-30px;position:absolute;bottom:-115px;left:0;opacity:.06}.login-art h1{font-size:clamp(38px,4.4vw,66px);letter-spacing:-3px;line-height:1.06;max-width:640px}.login-art p{color:#c6d3f7;max-width:500px}.login-form{display:flex;align-items:center;justify-content:center;padding:35px}.login-box{width:min(420px,100%)}.login-box h2{font-size:30px;letter-spacing:-1px}.login-box p{color:var(--muted)}.login-box .btn{width:100%;margin-top:12px}.login-note{background:#f2f5ff;padding:15px;border-radius:12px;color:#63718d;font-size:12px;margin-top:24px}.empty{text-align:center;padding:55px 25px;color:var(--muted)}.empty b{display:block;color:var(--ink);font-size:17px}.toast{position:fixed;bottom:25px;right:25px;background:#1c2e54;color:white;padding:14px 19px;border-radius:12px;z-index:50;box-shadow:0 12px 35px #0003}.mobile-menu{display:none}.dark{--bg:#111a2c;--panel:#1b2940;--ink:#edf3ff;--muted:#9aabc6;--line:#30405a;--soft:#273c64;--shadow:0 16px 50px #0001}.dark .hero-search{background:#f6f8ff}.dark .hero-search input{color:#15264a}.dark .sidebar{background:#0a1324}.dark .field{background:var(--panel)}@media(max-width:1150px){.article-grid{grid-template-columns:repeat(2,1fr)}.category-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:800px){.app{grid-template-columns:1fr}.sidebar{position:fixed;z-index:20;transform:translateX(-105%);transition:.2s;width:260px}.sidebar.open{transform:none}.mobile-menu{display:inline-flex}.topbar{padding:0 16px}.container{padding:18px 15px 50px}.hero{padding:29px 22px}.stats{grid-template-columns:repeat(2,1fr)}.grid2,.login-page{grid-template-columns:1fr}.login-art{min-height:260px;padding:30px}.login-art h1{font-size:37px}.login-form{padding:40px 24px}.form-grid{grid-template-columns:1fr}.topbar .pill{display:none}}@media(max-width:520px){.article-grid,.category-grid{grid-template-columns:1fr}.hero-search{flex-wrap:wrap}.hero-search button{width:100%}.detail-head{display:block}.result{align-items:flex-start}.stat{padding:14px}.stat .num{font-size:23px}}@media print{.sidebar,.topbar,.no-print{display:none!important}.app{display:block}.container{max-width:none;padding:0}.panel{box-shadow:none;border:0}}
-.related-link{width:100%;display:flex;align-items:center;gap:8px;text-align:left;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--ink);padding:10px;margin:8px 0}.related-link span:nth-child(2){flex:1;font-size:12px;font-weight:650}.related-link:hover{border-color:var(--accent)}.revision-item{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding:10px 0}.revision-item:last-child{border:0}.revision-item .btn{margin-left:3px}.editor-status{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:11px;margin-top:8px}.editor table{border-collapse:collapse;width:100%}.editor th,.editor td{border:1px solid var(--line);padding:9px}.editor blockquote{background:var(--soft);border-left:4px solid var(--accent);padding:12px 15px;margin:14px 0}.editor hr{border:0;border-top:2px solid var(--line);margin:18px 0}
-</style></head><body><div id="root"></div><div id="toast" class="toast hidden"></div>
+:root {
+  --bg: #f3f6fc;
+  --panel: #ffffff;
+  --panel-alt: #f8faff;
+  --ink: #0f1d3a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --soft: #eff4ff;
+  --shadow: 0 14px 40px rgba(15, 29, 58, 0.055);
+  --nav: #0b1528;
+  --nav-hover: #172645;
+  --good: #10b981;
+  --warn: #f59e0b;
+  --high: #f97316;
+  --crit: #ef4444;
+  --ai-grad: linear-gradient(135deg, #1e1b4b 0%, #1d4ed8 58%, #2563eb 100%);
+  --scroll-track: transparent;
+  --scroll-thumb: rgba(100, 116, 139, 0.28);
+  --scroll-thumb-hover: rgba(37, 99, 235, 0.6);
+}
+
+.dark {
+  --bg: #0b1120;
+  --panel: #131c31;
+  --panel-alt: #18243d;
+  --ink: #f1f5f9;
+  --muted: #94a3b8;
+  --line: #23324d;
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+  --soft: #1e2f52;
+  --shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+  --nav: #070c17;
+  --nav-hover: #13203a;
+  --scroll-thumb: rgba(148, 163, 184, 0.24);
+  --scroll-thumb-hover: rgba(59, 130, 246, 0.65);
+}
+
+/* === ESTILIZAÇÃO MODERNA DE BARRAS DE OVERFLOW (SCROLLBARS) === */
+* {
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+}
+
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scroll-track);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scroll-thumb-hover);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Scrollbars ultrafinas para containers internos */
+.sidebar::-webkit-scrollbar,
+.modal-body::-webkit-scrollbar,
+.cmd-list::-webkit-scrollbar,
+.chat-messages::-webkit-scrollbar,
+.editor::-webkit-scrollbar,
+.dispatch-box textarea::-webkit-scrollbar,
+textarea::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.sidebar {
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font: 14px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  overflow-x: hidden;
+}
+
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.hidden { display: none !important; }
+
+mark {
+  background: rgba(245, 158, 11, 0.28);
+  color: inherit;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+/* === LAYOUT PRINCIPAL === */
+.app {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 274px minmax(0, 1fr);
+}
+
+.sidebar {
+  background: var(--nav);
+  color: #d7e1fb;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 14px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  user-select: none;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 10px 22px;
+  color: #fff;
+}
+
+.brand-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #3b82f6, #1d4ed8);
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  font-weight: 900;
+  box-shadow: 0 8px 20px rgba(29, 78, 216, 0.45);
+  flex-shrink: 0;
+}
+
+.brand b { font-size: 18px; letter-spacing: -0.5px; display: block; }
+.brand small { display: block; font-size: 10px; color: #8ba0c7; letter-spacing: 1.4px; font-weight: 700; }
+
+.side-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  color: #64789e;
+  margin: 16px 12px 6px;
+  text-transform: uppercase;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #a9bbd9;
+  border-radius: 10px;
+  text-align: left;
+  padding: 10px 12px;
+  margin: 2px 0;
+  transition: all 0.16s ease;
+  font-weight: 500;
+}
+
+.nav-btn-left {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
+.nav-btn:hover { background: var(--nav-hover); color: #fff; }
+.nav-btn.active {
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  color: #fff;
+  font-weight: 650;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+.nav-btn.ai-highlight {
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  background: rgba(37, 99, 235, 0.12);
+  color: #e2e8f0;
+}
+.nav-btn.ai-highlight.active {
+  background: var(--ai-grad);
+  border-color: transparent;
+  color: #fff;
+}
+
+.nav-btn .glyph { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; }
+.nav-count {
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  padding: 2px 7px;
+  border-radius: 99px;
+  font-weight: 700;
+}
+.nav-btn.active .nav-count { background: rgba(255, 255, 255, 0.22); color: #fff; }
+
+.side-bottom {
+  margin-top: auto;
+  padding: 14px 8px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.side-user {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 4px 10px;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: linear-gradient(145deg, #dbeafe, #93c5fd);
+  display: grid;
+  place-items: center;
+  color: #1e3a8a;
+  font-weight: 800;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.side-user b {
+  color: #fff;
+  display: block;
+  max-width: 145px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+}
+
+.side-user small { color: #8ba0c7; font-size: 11px; }
+
+/* === TOPBAR === */
+.main { min-width: 0; display: flex; flex-direction: column; }
+.topbar {
+  height: 72px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 15;
+}
+
+.breadcrumb { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.breadcrumb strong { color: var(--ink); font-weight: 700; }
+
+.top-actions { display: flex; gap: 10px; align-items: center; }
+
+.cmd-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  padding: 8px 13px;
+  border-radius: 10px;
+  font-size: 12px;
+  transition: 0.15s;
+}
+.cmd-trigger:hover { border-color: var(--accent); color: var(--ink); }
+.kbd {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.pill {
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  padding: 7px 12px;
+  border-radius: 100px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pill-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--good); display: inline-block; }
+
+/* === BOTÕES === */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid transparent;
+  background: var(--accent);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 650;
+  font-size: 13px;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--accent-hover); transform: translateY(-1px); text-decoration: none; }
+.btn.secondary { background: var(--panel); border-color: var(--line); color: var(--ink); }
+.btn.secondary:hover { border-color: var(--accent); background: var(--panel-alt); }
+.btn.ghost { background: var(--soft); color: var(--accent); }
+.btn.ghost:hover { filter: brightness(0.96); }
+.btn.danger { background: rgba(239, 68, 68, 0.12); color: #ef4444; border-color: rgba(239, 68, 68, 0.25); }
+.btn.danger:hover { background: #ef4444; color: #fff; }
+.btn.small { padding: 7px 11px; font-size: 12px; border-radius: 8px; }
+
+/* === CONTAINER E HERO === */
+.container { max-width: 1360px; width: 100%; margin: 0 auto; padding: 28px 32px 70px; }
+
+.hero {
+  background: linear-gradient(118deg, #0c1938 0%, #1d3b8b 58%, #2563eb 100%);
+  border-radius: 20px;
+  color: white;
+  padding: 36px 40px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 18px 42px rgba(29, 59, 139, 0.22);
+}
+.hero::after {
+  content: "190";
+  font-size: 190px;
+  font-weight: 900;
+  letter-spacing: -10px;
+  position: absolute;
+  right: 25px;
+  bottom: -45px;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.eyebrow { text-transform: uppercase; letter-spacing: 1.8px; font-size: 11px; font-weight: 800; opacity: 0.85; }
+.hero h1 { font-size: clamp(24px, 3vw, 36px); letter-spacing: -1px; line-height: 1.18; margin: 10px 0; }
+.hero p { color: #dbeafe; max-width: 680px; font-size: 14px; margin: 0; }
+
+.hero-search {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border-radius: 13px;
+  padding: 6px 7px 6px 16px;
+  max-width: 820px;
+  box-shadow: 0 12px 30px rgba(7, 15, 40, 0.28);
+}
+.hero-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  padding: 10px 0;
+  color: #0f1d3a;
+  background: transparent;
+  font-size: 14px;
+}
+.hero-search span { color: #64748b; font-size: 18px; }
+.hero-search button {
+  border: 0;
+  background: var(--ai-grad);
+  color: white;
+  border-radius: 9px;
+  padding: 11px 20px;
+  font-weight: 700;
+}
+.hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  margin-top: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.hero-tag {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border-radius: 99px;
+  padding: 4px 11px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.hero-tag:hover { background: rgba(255, 255, 255, 0.25); }
+
+/* === DIAGNÓSTICO DO CÉREBRO 190 (RESPOSTA INSTANTÂNEA) === */
+.brain-diagnosis {
+  margin-top: 20px;
+  background: var(--panel);
+  border: 2px solid var(--accent);
+  border-radius: 18px;
+  padding: 22px 24px;
+  box-shadow: 0 18px 45px rgba(37, 99, 235, 0.14);
+  position: relative;
+}
+.brain-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.brain-badge {
+  background: var(--ai-grad);
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.nature-suggestion-box {
+  background: var(--soft);
+  border-left: 5px solid var(--accent);
+  padding: 16px 18px;
+  border-radius: 0 12px 12px 0;
+  margin: 14px 0;
+}
+.nature-suggestion-box small {
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 4px;
+}
+.nature-suggestion-box h2 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  line-height: 1.3;
+}
+.context-pills { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0; }
+.context-pill {
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+/* === CHATBOT COPOM IA === */
+.chat-shell {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 18px;
+  align-items: start;
+}
+.chat-window {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  height: 75vh;
+  min-height: 550px;
+  overflow: hidden;
+}
+.chat-top {
+  padding: 16px 22px;
+  background: var(--ai-grad);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.chat-messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--bg);
+}
+.msg { max-width: 90%; padding: 14px 18px; border-radius: 16px; line-height: 1.6; font-size: 13.5px; }
+.msg.user {
+  align-self: flex-end;
+  background: var(--accent);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.msg.bot {
+  align-self: flex-start;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+  width: 100%;
+}
+.chat-input-bar {
+  padding: 14px 18px;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+.chat-input-bar textarea {
+  flex: 1;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 11px 14px;
+  background: var(--panel-alt);
+  color: var(--ink);
+  resize: none;
+  outline: none;
+  max-height: 120px;
+}
+.chat-input-bar textarea:focus { border-color: var(--accent); background: var(--panel); }
+
+/* === CARDS E GRIDS === */
+.section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 28px 0 14px;
+  flex-wrap: wrap;
+}
+.section-head h2 { font-size: 18px; letter-spacing: -0.4px; margin: 0; }
+.section-head p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+.stat, .panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  border-radius: 15px;
+}
+.stat { padding: 18px 20px; position: relative; }
+.stat .num { font-size: 26px; font-weight: 850; letter-spacing: -0.8px; }
+.stat .stat-label { color: var(--muted); font-size: 12px; font-weight: 500; }
+.stat .stat-icon {
+  float: right;
+  background: var(--soft);
+  color: var(--accent);
+  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+}
+
+.category-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.cat-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s ease;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.cat-card:hover, .article-card:hover, .result:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.1);
+}
+.cat-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: var(--soft);
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.cat-card b { display: block; font-size: 14px; margin-bottom: 2px; }
+.cat-card small { color: var(--muted); font-size: 12px; }
+
+.article-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; }
+.article-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+}
+.article-card h3 { font-size: 16px; line-height: 1.35; margin: 12px 0 8px; }
+.article-card p {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 0 0 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.article-card footer {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--muted);
+  font-size: 11.5px;
+  gap: 8px;
+}
+
+/* === BADGES & PRIORIDADES OPERACIONAIS === */
+.code {
+  font-size: 11px;
+  font-weight: 800;
+  background: var(--soft);
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 4px 8px;
+  display: inline-block;
+  letter-spacing: 0.3px;
+}
+
+.prio-badge {
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 99px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.prio-Crítica { background: rgba(239, 68, 68, 0.14); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.prio-Alta { background: rgba(249, 115, 22, 0.14); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.3); }
+.prio-Média { background: rgba(245, 158, 11, 0.14); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
+.prio-Baixa { background: rgba(16, 185, 129, 0.14); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+.badge {
+  background: rgba(16, 185, 129, 0.14);
+  color: #059669;
+  padding: 5px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* === PAINÉIS, FILTROS E FORMULÁRIOS === */
+.panel { padding: 24px; margin-bottom: 18px; }
+.panel h2 { margin-top: 0; font-size: 17px; letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
+.muted { color: var(--muted); }
+
+.field {
+  width: 100%;
+  padding: 10px 13px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  outline: none;
+  background: var(--panel-alt);
+  color: var(--ink);
+  transition: 0.15s;
+}
+.field:focus { border-color: var(--accent); background: var(--panel); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0 6px; }
+.filter {
+  border: 1px solid var(--line);
+  background: var(--panel-alt);
+  border-radius: 100px;
+  padding: 7px 13px;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 12px;
+  transition: 0.15s;
+}
+.filter:hover { border-color: var(--accent); color: var(--ink); }
+.filter.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.results { display: grid; gap: 12px; }
+.result {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  padding: 18px 22px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+.result h3 { margin: 8px 0 5px; font-size: 16px; }
+.result p { margin: 0; color: var(--muted); font-size: 12.5px; }
+
+/* === DETALHES DA NATUREZA & FERRAMENTAS COPOM === */
+.detail-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
+.detail-head h1 { font-size: 26px; letter-spacing: -0.7px; margin: 10px 0 8px; line-height: 1.22; }
+
+.op-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+  padding: 14px;
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.op-meta-item small { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); font-weight: 700; }
+.op-meta-item strong { font-size: 13px; color: var(--ink); }
+
+.diff-alert {
+  background: rgba(245, 158, 11, 0.1);
+  border-left: 4px solid var(--warn);
+  border-radius: 0 10px 10px 0;
+  padding: 13px 16px;
+  margin: 16px 0;
+  font-size: 13px;
+}
+.diff-alert b { color: #d97706; display: block; margin-bottom: 3px; }
+.dark .diff-alert b { color: #fbbf24; }
+
+.triage-box {
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin: 20px 0;
+}
+.triage-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.triage-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: 0.15s;
+  user-select: none;
+  border: 1px solid transparent;
+}
+.triage-item:hover { background: var(--soft); }
+.triage-item.checked {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.25);
+  color: var(--muted);
+  text-decoration: line-through;
+}
+.triage-item input { margin-top: 3px; accent-color: var(--good); width: 16px; height: 16px; cursor: pointer; }
+
+.dispatch-box {
+  background: linear-gradient(145deg, var(--panel), var(--panel-alt));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin: 20px 0;
+}
+.dispatch-vars {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.dispatch-vars input {
+  padding: 7px 10px;
+  font-size: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink);
+}
+.dispatch-box textarea {
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  resize: vertical;
+}
+
+.article-body { line-height: 1.8; font-size: 14.5px; overflow-wrap: anywhere; }
+.article-body h2 { font-size: 18px; margin-top: 26px; border-bottom: 1px solid var(--line); padding-bottom: 8px; scroll-margin-top: 90px; }
+.article-body h3 { font-size: 15.5px; margin-top: 20px; scroll-margin-top: 90px; }
+.article-body blockquote {
+  border-left: 4px solid var(--accent);
+  background: var(--soft);
+  padding: 12px 16px;
+  margin: 18px 0;
+  border-radius: 0 10px 10px 0;
+}
+.article-body table { border-collapse: collapse; width: 100%; margin: 14px 0; display: block; overflow-x: auto; }
+.article-body td, .article-body th { border: 1px solid var(--line); padding: 9px 12px; text-align: left; }
+.article-body th { background: var(--panel-alt); font-weight: 700; }
+
+.meta { display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font-size: 12px; }
+.tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0 0; }
+.tag { font-size: 11px; color: var(--accent); background: var(--soft); padding: 4px 9px; border-radius: 7px; font-weight: 600; }
+
+.grid2 { display: grid; grid-template-columns: minmax(0, 2.15fr) minmax(290px, 1fr); gap: 18px; align-items: start; }
+
+/* === COMENTÁRIOS === */
+.comment {
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 13px 15px;
+  margin: 10px 0;
+}
+.comment.pinned { border-color: var(--accent); background: var(--soft); }
+.comment-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+
+/* === EDITOR RICO === */
+.toolbar { display: flex; flex-wrap: wrap; gap: 5px; margin: 10px 0; padding: 8px; background: var(--panel-alt); border: 1px solid var(--line); border-radius: 10px; }
+.toolbar button { border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 6px 10px; border-radius: 7px; font-size: 12px; }
+.toolbar button:hover { border-color: var(--accent); color: var(--accent); }
+.editor {
+  border: 1px solid var(--line);
+  min-height: 280px;
+  max-height: 520px;
+  overflow-y: auto;
+  border-radius: 11px;
+  padding: 16px;
+  outline: none;
+  line-height: 1.7;
+  background: var(--panel-alt);
+}
+.editor:focus { border-color: var(--accent); background: var(--panel); }
+.editor table { border-collapse: collapse; width: 100%; }
+.editor th, .editor td { border: 1px solid var(--line); padding: 9px; }
+.editor blockquote { background: var(--soft); border-left: 4px solid var(--accent); padding: 12px 15px; margin: 14px 0; }
+.editor hr { border: 0; border-top: 2px solid var(--line); margin: 18px 0; }
+.editor-status { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; color: var(--muted); font-size: 11px; margin-top: 8px; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid-3 { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 14px; }
+.label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+.form-group { margin: 12px 0; }
+
+/* === LOGIN === */
+.login-page { min-height: 100vh; display: grid; grid-template-columns: 1.08fr 0.92fr; background: var(--panel); }
+.login-art {
+  background: radial-gradient(circle at 20% 20%, #3b82f6 0, transparent 38%), linear-gradient(140deg, #071024, #17327a);
+  color: white;
+  padding: 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+.login-art::after {
+  content: "190";
+  font-size: 310px;
+  font-weight: 900;
+  letter-spacing: -25px;
+  position: absolute;
+  bottom: -105px;
+  left: -10px;
+  opacity: 0.06;
+  pointer-events: none;
+}
+.login-art h1 { font-size: clamp(34px, 4vw, 58px); letter-spacing: -2px; line-height: 1.08; max-width: 600px; margin: 14px 0; }
+.login-art p { color: #cbd5e1; max-width: 500px; font-size: 15px; }
+.login-form { display: flex; align-items: center; justify-content: center; padding: 35px; background: var(--panel); }
+.login-box { width: min(420px, 100%); }
+.login-box h2 { font-size: 28px; letter-spacing: -0.8px; margin: 6px 0 8px; }
+.login-box .btn { width: 100%; margin-top: 12px; padding: 13px; }
+.login-note { background: var(--soft); padding: 14px; border-radius: 12px; color: var(--muted); font-size: 12px; margin-top: 20px; border: 1px solid var(--line); }
+
+/* === MODAIS & COMMAND PALETTE (CTRL+K) === */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 12, 23, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  width: min(780px, 100%);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+.modal-head {
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.modal-head h3 { margin: 0; font-size: 16px; }
+.modal-body { padding: 20px 22px; overflow-y: auto; }
+.modal-foot { padding: 14px 22px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 10px; background: var(--panel-alt); }
+
+.cmd-box { width: min(680px, 100%); }
+.cmd-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.cmd-input-wrap input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 15px;
+}
+.cmd-list { max-height: 380px; overflow-y: auto; padding: 8px; }
+.cmd-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 11px 13px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  border-radius: 10px;
+  transition: 0.1s;
+}
+.cmd-item:hover, .cmd-item.selected { background: var(--soft); }
+
+/* === LINKS LATERAIS & TOC === */
+.related-link, .toc-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel-alt);
+  color: var(--ink);
+  padding: 9px 11px;
+  margin: 6px 0;
+  font-size: 12px;
+  transition: 0.15s;
+}
+.related-link span:nth-child(2) { flex: 1; font-weight: 650; }
+.related-link:hover, .toc-link:hover { border-color: var(--accent); color: var(--accent); }
+
+.revision-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--line); padding: 10px 0; }
+.revision-item:last-child { border: 0; }
+
+.empty { text-align: center; padding: 50px 25px; color: var(--muted); }
+.empty b { display: block; color: var(--ink); font-size: 16px; margin-top: 8px; }
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #0f1d3a;
+  color: white;
+  padding: 13px 18px;
+  border-radius: 12px;
+  z-index: 90;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+  font-weight: 600;
+  font-size: 13px;
+  border-left: 4px solid var(--accent);
+}
+
+.mobile-menu { display: none; }
+
+@media (max-width: 1150px) {
+  .article-grid, .category-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 920px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { position: fixed; z-index: 40; transform: translateX(-105%); transition: 0.22s ease; width: 274px; }
+  .sidebar.open { transform: none; box-shadow: 15px 0 40px rgba(0,0,0,0.4); }
+  .mobile-menu { display: inline-flex; }
+  .topbar { padding: 0 16px; }
+  .container { padding: 18px 16px 50px; }
+  .hero { padding: 28px 22px; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .chat-shell, .grid2, .login-page, .form-grid, .form-grid-3, .op-meta-grid { grid-template-columns: 1fr; }
+  .login-art { min-height: 240px; padding: 28px; }
+  .topbar .pill { display: none; }
+}
+@media (max-width: 540px) {
+  .article-grid, .category-grid { grid-template-columns: 1fr; }
+  .hero-search { flex-wrap: wrap; }
+  .hero-search button { width: 100%; }
+  .detail-head { flex-direction: column; }
+}
+@media print {
+  .sidebar, .topbar, .no-print, .modal-backdrop, .toast { display: none !important; }
+  .app, .grid2 { display: block; }
+  .container { max-width: none; padding: 0; }
+  .panel { box-shadow: none; border: 1px solid #ccc; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="modalRoot"></div>
+<div id="toast" class="toast hidden"></div>
+
+<!-- Carrega o arquivo externo do Cérebro Programado (cerebro-190.js) -->
+<script src="cerebro-190.js"></script>
+
 <script>
 (function(){
 'use strict';
-const KEY='base190-premium-v2', SESSION='base190-session-v2';
-const categories=[{name:'Todas',icon:'◈'},{name:'Ordem pública',icon:'🔊'},{name:'Trânsito',icon:'🚗'},{name:'Patrimônio',icon:'🏠'},{name:'Pessoas',icon:'👥'},{name:'Proteção',icon:'🛡️'},{name:'Outros',icon:'📋'}];
-const now=()=>new Date().toISOString();
-const seed=[
-{id:'oc01',code:'DEM-001',title:'Perturbação do sossego',category:'Ordem pública',summary:'Entenda o conceito geral e os termos associados a registros de perturbação do sossego.',tags:['barulho','som alto','ruído','vizinhança'],content:'<h2>Visão geral</h2><p>Termo comumente utilizado em relatos de ruído excessivo, som alto e incômodo ao sossego. O enquadramento e a natureza oficial dependem das normas e classificações vigentes na instituição.</p><h2>Exemplos de descrição</h2><ul><li>Relato de música em volume elevado.</li><li>Queixa sobre barulho persistente em imóvel próximo.</li><li>Solicitação de orientação relacionada a ruído.</li></ul><blockquote>Conteúdo ilustrativo. Confirme o código e o procedimento na documentação oficial.</blockquote>',author:'Equipe de demonstração',created:now(),updated:now(),views:0,comments:[],history:[]},
-{id:'oc02',code:'DEM-002',title:'Acidente de trânsito sem vítimas',category:'Trânsito',summary:'Referência ilustrativa para registros de colisões e incidentes viários sem relato inicial de feridos.',tags:['colisão','veículo','trânsito','batida'],content:'<h2>Conceito</h2><p>Ocorrência de trânsito com relato inicial de danos materiais, sem indicação de pessoas feridas no momento do registro.</p><h2>Pontos de compreensão</h2><p>A descrição inicial pode ser atualizada conforme surgem novas informações. A classificação final deve seguir o catálogo institucional.</p>',author:'Equipe de demonstração',created:now(),updated:now(),views:0,comments:[],history:[]},
-{id:'oc03',code:'DEM-003',title:'Ameaça',category:'Pessoas',summary:'Explicação introdutória de relatos envolvendo intimidação ou ameaça dirigida a uma pessoa.',tags:['intimidação','ameaça verbal','conflito'],content:'<h2>Visão geral</h2><p>Registros em que uma pessoa relata ter recebido palavras, mensagens ou gestos interpretados como ameaça.</p><h2>Atenção</h2><p>A natureza definitiva e a avaliação jurídica não podem ser determinadas apenas por palavras-chave. Consulte as orientações oficiais aplicáveis.</p>',author:'Equipe de demonstração',created:now(),updated:now(),views:0,comments:[],history:[]},
-{id:'oc04',code:'DEM-004',title:'Furto',category:'Patrimônio',summary:'Consulta conceitual sobre subtração de bem sem descrição inicial de violência ou grave ameaça.',tags:['objeto','subtração','patrimônio','desaparecimento'],content:'<h2>Definição geral</h2><p>Em linguagem jurídica geral, furto envolve subtração de coisa alheia móvel. A análise de um caso concreto exige informações adicionais.</p><h2>Termos relacionados</h2><p>Objeto subtraído, patrimônio, relato de desaparecimento de bem.</p>',author:'Equipe de demonstração',created:now(),updated:now(),views:0,comments:[],history:[]},
-{id:'oc05',code:'DEM-005',title:'Violência doméstica e familiar',category:'Proteção',summary:'Panorama introdutório de relatos de violência em contexto doméstico ou familiar.',tags:['violência doméstica','proteção','família','agressão'],content:'<h2>Contexto geral</h2><p>Relatos envolvendo violência física, psicológica, sexual, patrimonial ou moral em contexto doméstico ou familiar podem exigir atenção especializada.</p><blockquote>Este conteúdo é exclusivamente demonstrativo e não substitui protocolos de atendimento, proteção e encaminhamento.</blockquote>',author:'Equipe de demonstração',created:now(),updated:now(),views:0,comments:[],history:[]},
-{id:'oc06',code:'DEM-006',title:'Dano ao patrimônio',category:'Patrimônio',summary:'Conceito introdutório de ocorrências envolvendo destruição, deterioração ou inutilização de bens.',tags:['dano','depredação','objeto','imóvel'],content:'<h2>Conceito geral</h2><p>Relato de dano ou deterioração de bem material, cuja avaliação depende das circunstâncias narradas.</p><h2>Exemplo fictício</h2><p>Solicitante informa ter encontrado um portão danificado.</p>',author:'Equipe de demonstração',created:now(),updated:now(),views:0,comments:[],history:[]},
-{id:'oc07',code:'DEM-007',title:'Pessoa desaparecida',category:'Pessoas',summary:'Referência informativa para relatos sobre pessoa cujo paradeiro é desconhecido.',tags:['desaparecimento','pessoa','localização'],content:'<h2>Visão geral</h2><p>Relato em que familiares ou outras pessoas informam desconhecer o paradeiro de alguém.</p><p>Para procedimentos e encaminhamentos, consulte exclusivamente os protocolos oficiais.</p>',author:'Equipe de demonstração',created:now(),updated:now(),views:0,comments:[],history:[]},
-{id:'oc08',code:'DEM-008',title:'Animal em via pública',category:'Outros',summary:'Exemplo de registro de presença de animal em local de circulação.',tags:['animal','via pública','trânsito'],content:'<h2>Contexto</h2><p>Relato de animal em via pública, com possível impacto sobre a circulação ou segurança do local.</p>',author:'Equipe de demonstração',created:now(),updated:now(),views:0,comments:[],history:[]}
-];
-let data;try{data=JSON.parse(localStorage.getItem(KEY))}catch(e){}if(!data||!Array.isArray(data.articles))data={articles:seed,favorites:[],recent:[],settings:{dark:false}};data.favorites=data.favorites||[];data.recent=data.recent||[];data.settings=data.settings||{dark:false};
-let user;try{user=JSON.parse(sessionStorage.getItem(SESSION))}catch(e){}let page='home',query='',category='Todas',current=null,editId=null,sort='relevance';
-const $=id=>document.getElementById(id);
-function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&gt;','"':'&quot;'}[c]||c})}
-function txt(s){let d=document.createElement('div');d.innerHTML=s||'';return d.textContent||''}
-function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR')}
-function safe(s){let d=new DOMParser().parseFromString(s||'','text/html');d.querySelectorAll('script,style,iframe,object,embed,svg,math,form,link,meta').forEach(n=>n.remove());d.querySelectorAll('*').forEach(n=>Array.from(n.attributes).forEach(a=>{if(/^on/i.test(a.name)||a.name==='style'||a.name==='srcdoc'||(['href','src'].includes(a.name)&&!(/^(https?:|mailto:|#)/i.test(a.value))))n.removeAttribute(a.name)}));return d.body.innerHTML}
-function saveData(){localStorage.setItem(KEY,JSON.stringify(data))}
-function toast(s){let t=$('toast');t.textContent=s;t.classList.remove('hidden');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.classList.add('hidden'),2700)}
-function initials(s){return String(s||'U').split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()}
-function date(s){return new Date(s).toLocaleDateString('pt-BR')}
-function catIcon(s){return (categories.find(c=>c.name===s)||categories[6]).icon}
-function articleById(id){return data.articles.find(a=>a.id===id)}
-function relatedArticles(a){let tags=new Set((a.tags||[]).map(norm));return data.articles.filter(x=>x.id!==a.id).map(x=>({article:x,score:(x.category===a.category?3:0)+(x.tags||[]).filter(t=>tags.has(norm(t))).length*2})).filter(x=>x.score>0).sort((x,y)=>y.score-x.score).slice(0,4).map(x=>x.article)}
-function downloadText(filename,content,type){let url=URL.createObjectURL(new Blob([content],{type:type||'text/plain;charset=utf-8'}));let link=document.createElement('a');link.href=url;link.download=filename;link.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}
-function exportArticle(a){let html='<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>'+esc(a.title)+'</title><style>body{font:16px/1.7 system-ui;max-width:850px;margin:50px auto;padding:20px;color:#172b4d}h1{font-size:32px}blockquote{border-left:4px solid #4567d8;padding-left:15px;background:#f4f6ff}table{border-collapse:collapse}td,th{border:1px solid #ccd;padding:8px}</style><h1>'+esc(a.title)+'</h1><p><b>Código:</b> '+esc(a.code)+' · '+esc(a.category)+'</p><p>'+esc(a.summary)+'</p><hr>'+safe(a.content)+'</html>';downloadText((a.code||'natureza').replace(/[^a-z0-9_-]/gi,'_')+'.html',html,'text/html;charset=utf-8')}
-function showRevision(a,index){let v=(a.history||[])[index];if(!v)return;let w=window.open('','_blank');if(!w)return toast('Permita janelas para visualizar a revisão');w.document.write('<!doctype html><meta charset="utf-8"><title>Revisão</title><body style="font:16px/1.7 system-ui;max-width:800px;margin:45px auto"><h1>'+esc(v.title||a.title)+'</h1><p>Versão de '+esc(date(v.date))+' · '+esc(v.author||a.author)+'</p><hr>'+safe(v.content)+'</body>');w.document.close()}
-function restoreRevision(a,index){if(user.role!=='admin')return;let v=(a.history||[])[index];if(!v||!confirm('Restaurar esta revisão? A versão atual será preservada no histórico.'))return;a.history.push({date:a.updated,author:user.name,content:a.content,title:a.title});a.content=safe(v.content);a.title=v.title||a.title;a.updated=now();saveData();detail();toast('Revisão restaurada')}
-function appendEditorHTML(html){let e=$('editBody');if(!e)return;e.focus();document.execCommand('insertHTML',false,html)}
-function richCommand(cmd,value){let e=$('editBody');if(!e)return;e.focus();document.execCommand(cmd,false,value||null)}
 
-function login(){document.body.classList.toggle('dark',!!data.settings.dark);$('root').innerHTML='<div class="login-page"><section class="login-art"><div class="brand"><span class="brand-icon">✦</span><span><b>BASE 190</b><small>KNOWLEDGE HUB</small></span></div><div><div class="eyebrow">INFORMAÇÃO QUE CONECTA</div><h1>Conhecimento certo.<br>Na hora certa.</h1><p>Uma nova experiência para pesquisar, compreender e compartilhar conhecimento sobre naturezas de ocorrências.</p></div><small>● Ambiente demonstrativo • Base local de conhecimento</small></section><section class="login-form"><form class="login-box" id="loginForm"><div class="eyebrow" style="color:#526bd4">BEM-VINDO À PLATAFORMA</div><h2>Acesse sua central</h2><p>Identifique-se para começar a explorar a Base 190.</p><div class="form-group"><label class="label" for="loginName">Nome ou identificação</label><input class="field" id="loginName" required maxlength="60" placeholder="Ex.: João Silva"></div><div class="form-group"><label class="label" for="loginType">Vínculo</label><select class="field" id="loginType"><option>Militar</option><option>Civil</option></select></div><div class="form-group"><label class="label" for="loginRole">Modo de demonstração</label><select class="field" id="loginRole"><option value="reader">Consulta</option><option value="admin">Administrador (demonstração)</option></select></div><button class="btn" type="submit">Entrar na plataforma →</button><div class="login-note">🔒 Acesso demonstrativo: qualquer nome é aceito, sem senha. Não utilize informações sigilosas ou dados reais nesta versão.</div></form></section></div>';$('loginForm').onsubmit=e=>{e.preventDefault();user={name:$('loginName').value.trim(),type:$('loginType').value,role:$('loginRole').value};sessionStorage.setItem(SESSION,JSON.stringify(user));page='home';render()}}
-function sidebar(){const links=[['home','⌂','Visão geral'],['search','⌕','Pesquisa avançada'],['catalog','▦','Catálogo de naturezas'],['favorites','☆','Meus favoritos'],['recent','◷','Consultas recentes']];let out='<aside class="sidebar" id="sidebar"><div class="brand"><span class="brand-icon">✦</span><span><b>BASE 190</b><small>KNOWLEDGE HUB</small></span></div><div class="side-label">NAVEGAÇÃO</div>';links.forEach(x=>out+='<button class="nav-btn '+(page===x[0]?'active':'')+'" data-go="'+x[0]+'"><span class="glyph">'+x[1]+'</span>'+x[2]+'</button>');out+='<div class="side-label">CATEGORIAS</div>';categories.filter(c=>c.name!=='Todas').forEach(c=>out+='<button class="nav-btn" data-cat="'+esc(c.name)+'"><span class="glyph">'+c.icon+'</span>'+esc(c.name)+'</button>');if(user.role==='admin')out+='<div class="side-label">ADMINISTRAÇÃO</div><button class="nav-btn '+(page==='manage'?'active':'')+'" data-go="manage"><span class="glyph">⚙</span>Gerenciar conteúdo</button>';out+='<div class="side-bottom"><div class="side-user"><span class="avatar">'+esc(initials(user.name))+'</span><div><b>'+esc(user.name)+'</b><small>'+esc(user.type)+' · '+(user.role==='admin'?'Admin demo':'Consulta')+'</small></div></div><button class="nav-btn" id="logout"><span class="glyph">↪</span>Sair da conta</button></div></aside>';return out}
-function shell(){document.body.classList.toggle('dark',!!data.settings.dark);$('root').innerHTML='<div class="app">'+sidebar()+'<div class="main"><header class="topbar"><div style="display:flex;align-items:center;gap:12px"><button class="btn secondary small mobile-menu" id="menuBtn">☰</button><div class="breadcrumb">Base 190 <span style="padding:0 8px">/</span> <strong id="crumb">Visão geral</strong></div></div><div class="top-actions"><span class="pill">● Ambiente de demonstração</span><button class="btn secondary small" id="themeBtn" title="Alternar tema">'+(data.settings.dark?'☀':'☾')+'</button><span class="avatar" title="'+esc(user.name)+'">'+esc(initials(user.name))+'</span></div></header><div class="container" id="content"></div></div></div>';document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{category=b.dataset.cat;go('catalog')});$('logout').onclick=()=>{sessionStorage.removeItem(SESSION);user=null;login()};$('themeBtn').onclick=()=>{data.settings.dark=!data.settings.dark;saveData();render()};$('menuBtn').onclick=()=>$('sidebar').classList.toggle('open')}
-function go(p){page=p;current=null;render();window.scrollTo(0,0)}
-function render(){if(!user)return login();shell();const map={home:'Visão geral',search:'Pesquisa avançada',catalog:'Catálogo de naturezas',favorites:'Favoritos',recent:'Consultas recentes',manage:'Gerenciar conteúdo',detail:'Detalhes da natureza',edit:'Editor de conteúdo'};$('crumb').textContent=map[page]||'Base 190';if(page==='home')home();else if(['search','catalog','favorites','recent'].includes(page))listing();else if(page==='detail')detail();else if(page==='manage')manage();else if(page==='edit')editor();else home()}
-function card(a){return '<div class="article-card" data-open="'+esc(a.id)+'"><div><span class="code">'+esc(a.code)+'</span> <span style="float:right;color:#7b8caa">'+catIcon(a.category)+'</span></div><h3>'+esc(a.title)+'</h3><p>'+esc(a.summary)+'</p><footer><span>'+esc(a.category)+'</span><span>Ver detalhes →</span></footer></div>'}
-function bindCards(){document.querySelectorAll('[data-open]').forEach(e=>e.onclick=()=>openArticle(e.dataset.open))}
-function home(){let cats=categories.filter(c=>c.name!=='Todas');let popular=[...data.articles].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,6);if(!popular.some(a=>a.views))popular=data.articles.slice(0,6);$('content').innerHTML='<section class="hero"><div class="eyebrow">CENTRAL DE INTELIGÊNCIA E CONHECIMENTO</div><h1>O que você precisa<br>consultar hoje?</h1><p>Encontre rapidamente definições, referências e informações sobre naturezas de ocorrências em uma experiência intuitiva.</p><form class="hero-search" id="heroForm"><span>⌕</span><input id="heroInput" placeholder="Busque por natureza, palavra-chave ou código..." autocomplete="off" aria-label="Pesquisar naturezas"><button type="submit">Pesquisar →</button></form><div class="hint">Experimente: perturbação, ameaça, furto, trânsito ou DEM-001</div></section><div class="stats"><div class="stat"><span class="stat-icon">📚</span><div class="num">'+data.articles.length+'</div><div class="stat-label">Naturezas cadastradas</div></div><div class="stat"><span class="stat-icon">▦</span><div class="num">'+new Set(data.articles.map(a=>a.category)).size+'</div><div class="stat-label">Categorias disponíveis</div></div><div class="stat"><span class="stat-icon">☆</span><div class="num">'+data.favorites.length+'</div><div class="stat-label">Itens favoritos</div></div><div class="stat"><span class="stat-icon">◷</span><div class="num">'+data.recent.length+'</div><div class="stat-label">Consultas recentes</div></div></div><div class="section-head"><div><h2>Explore por categoria</h2><p>Encontre o assunto certo com poucos cliques</p></div><button class="btn secondary small" data-go="catalog">Ver todas →</button></div><div class="category-grid">'+cats.map(c=>'<button class="cat-card" data-cat="'+esc(c.name)+'"><span class="cat-icon">'+c.icon+'</span><b>'+esc(c.name)+'</b><small>'+data.articles.filter(a=>a.category===c.name).length+' naturezas disponíveis →</small></button>').join('')+'</div><div class="section-head"><div><h2>Naturezas em destaque</h2><p>Referências para iniciar sua consulta</p></div><button class="btn secondary small" data-go="catalog">Explorar catálogo →</button></div><div class="article-grid">'+popular.map(card).join('')+'</div><div class="panel" style="margin-top:24px;background:linear-gradient(100deg,var(--panel),var(--soft))"><b>💡 Dica de pesquisa</b><p class="muted">Use aspas para pesquisar uma frase exata, como "violência doméstica". A pesquisa considera códigos, títulos, palavras-chave e conteúdo completo.</p></div>';$('heroForm').onsubmit=e=>{e.preventDefault();query=$('heroInput').value;category='Todas';go('search')};document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{category=b.dataset.cat;go('catalog')});document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));bindCards()}
-function terms(q){return [...q.matchAll(/"([^"]+)"|(\S+)/g)].map(m=>m[1]||m[2])}
-function contains(h,t){let hay=norm(h),needle=norm(t),i=hay.indexOf(needle);while(i!==-1){let before=hay[i-1]||' ',after=hay[i+needle.length]||' ';if(!/[\p{L}\p{N}_]/u.test(before)&&!/[\p{L}\p{N}_]/u.test(after))return true;i=hay.indexOf(needle,i+1)}return false}
-function matched(a,q){let ts=terms(q.trim());if(!ts.length)return true;let hay=[a.title,a.code,a.category,a.summary,(a.tags||[]).join(' '),txt(a.content)].join(' ');return ts.every(t=>contains(hay,t))}
-function listing(){let isSearch=page==='search',base=page==='favorites'?data.articles.filter(a=>data.favorites.includes(a.id)):page==='recent'?data.recent.map(articleById).filter(Boolean):data.articles;let items=base.filter(a=>(category==='Todas'||page==='favorites'||page==='recent'||a.category===category)&&matched(a,query));if(sort==='alphabetical')items.sort((a,b)=>a.title.localeCompare(b.title,'pt-BR'));if(sort==='recent')items.sort((a,b)=>new Date(b.updated)-new Date(a.updated));let heading={search:'Pesquisa avançada',catalog:'Catálogo de naturezas',favorites:'Meus favoritos',recent:'Consultas recentes'}[page];$('content').innerHTML='<div class="section-head" style="margin-top:0"><div><div class="eyebrow" style="color:var(--accent)">BASE DE CONHECIMENTO</div><h1 style="font-size:30px;letter-spacing:-1px;margin:8px 0">'+heading+'</h1><p>Consulte as informações de forma rápida e organizada</p></div><span class="badge">'+items.length+' resultados</span></div><div class="panel"><div class="form-grid"><div><label class="label">Buscar em toda a base</label><input id="searchInput" class="field" placeholder="Palavra, frase entre aspas ou código..." value="'+esc(query)+'"></div><div><label class="label">Ordenação</label><select id="sortInput" class="field"><option value="relevance">Relevância / padrão</option><option value="alphabetical">Ordem alfabética</option><option value="recent">Atualizações recentes</option></select></div></div><div class="filters">'+categories.map(c=>'<button class="filter '+(category===c.name?'active':'')+'" data-filter="'+esc(c.name)+'">'+c.icon+' '+esc(c.name)+'</button>').join('')+'</div><div class="muted" style="font-size:12px">Correspondência de palavras completas, sem diferenciar maiúsculas e acentos. Use aspas para frases exatas.</div></div><div class="results" id="resultList"></div>';$('sortInput').value=sort;$('sortInput').onchange=e=>{sort=e.target.value;listing()};$('searchInput').oninput=e=>{query=e.target.value;refreshResults()};document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{category=b.dataset.filter;listing()});refreshResults()}
-function refreshResults(){let base=page==='favorites'?data.articles.filter(a=>data.favorites.includes(a.id)):page==='recent'?data.recent.map(articleById).filter(Boolean):data.articles;let items=base.filter(a=>(category==='Todas'||page==='favorites'||page==='recent'||a.category===category)&&matched(a,query));if(sort==='alphabetical')items.sort((a,b)=>a.title.localeCompare(b.title,'pt-BR'));if(sort==='recent')items.sort((a,b)=>new Date(b.updated)-new Date(a.updated));let out=$('resultList');out.innerHTML=items.length?items.map(a=>'<div class="result" data-open="'+esc(a.id)+'"><div><span class="code">'+esc(a.code)+'</span><h3>'+esc(a.title)+'</h3><p>'+esc(a.summary)+'</p><div class="tags">'+(a.tags||[]).slice(0,4).map(t=>'<span class="tag">'+esc(t)+'</span>').join('')+'</div></div><span style="color:var(--accent);font-size:22px">→</span></div>').join(''):'<div class="panel empty"><div style="font-size:35px">⌕</div><b>Nenhum resultado encontrado</b><p>Tente outro termo, remova um filtro ou pesquise pelo código da natureza.</p></div>';bindCards()}
-function openArticle(id){let a=articleById(id);if(!a)return;current=id;a.views=(a.views||0)+1;data.recent=[id,...data.recent.filter(x=>x!==id)].slice(0,20);saveData();page='detail';render();window.scrollTo(0,0)}
-function detail(){let a=articleById(current);if(!a)return go('catalog');let favorite=data.favorites.includes(a.id);$('content').innerHTML='<button class="btn secondary small no-print" id="back">← Voltar ao catálogo</button><div class="grid2" style="margin-top:18px"><div><div class="panel"><div class="detail-head"><div><span class="code">'+esc(a.code)+'</span><h1>'+esc(a.title)+'</h1></div><span class="cat-icon">'+catIcon(a.category)+'</span></div><p class="muted">'+esc(a.summary)+'</p><div class="meta"><span>▦ '+esc(a.category)+'</span><span>✎ '+esc(a.author)+'</span><span>◷ Atualizado em '+date(a.updated)+'</span><span>◉ '+(a.views||0)+' consultas</span></div><div class="tags">'+(a.tags||[]).map(t=>'<span class="tag">'+esc(t)+'</span>').join('')+'</div><hr style="border:0;border-top:1px solid var(--line);margin:25px 0"><div class="article-body">'+safe(a.content)+'</div></div><div class="panel"><h2>Comentários e observações</h2><div id="comments">'+(a.comments||[]).map(c=>'<div class="comment"><b>'+esc(c.author)+'</b> <small class="muted">'+date(c.date)+'</small><div>'+esc(c.text)+'</div></div>').join('')+'</div><label class="label">Adicionar comentário</label><textarea class="field" id="commentText" rows="3" placeholder="Escreva uma observação ou @menção..."></textarea><button class="btn small" id="addComment" style="margin-top:10px">Publicar comentário</button></div></div><div><div class="panel"><h2>Ações rápidas</h2><div style="display:grid;gap:9px"><button class="btn '+(favorite?'ghost':'secondary')+'" id="favoriteBtn">'+(favorite?'★ Remover dos favoritos':'☆ Salvar nos favoritos')+'</button><button class="btn secondary" id="copyBtn">⧉ Copiar referência</button><button class="btn secondary" id="printBtn">▤ Imprimir / PDF</button><button class="btn secondary" id="exportArticleBtn">↓ Exportar ficha HTML</button>'+(user.role==='admin'?'<button class="btn" id="editBtn">✎ Editar conteúdo</button>':'')+'</div></div><div class="panel"><h2>Sobre este conteúdo</h2><p class="muted">Criado em '+date(a.created)+'</p><p class="muted">Última atualização: '+date(a.updated)+'</p><p class="muted">'+(a.history||[]).length+' versões anteriores registradas</p><span class="badge">Demonstração</span></div><div class="panel" id="relatedPanel"><h2>Naturezas relacionadas</h2><div id="relatedList"></div></div><div class="panel" id="revisionPanel"><h2>Histórico de revisões</h2><div id="revisionList"></div></div><div class="panel"><b>⚠ Conteúdo de exemplo</b><p class="muted" style="font-size:12px">Códigos DEM não representam a tabela oficial de naturezas. Valide qualquer classificação em fontes institucionais autorizadas.</p></div></div></div>';$('back').onclick=()=>{query='';category='Todas';go('catalog')};$('favoriteBtn').onclick=()=>{data.favorites=favorite?data.favorites.filter(id=>id!==a.id):[...data.favorites,a.id];saveData();detail();toast('Favoritos atualizados')};$('copyBtn').onclick=()=>{let text=a.code+' — '+a.title+' | '+a.summary;if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(()=>toast('Referência copiada')).catch(()=>toast('Não foi possível copiar'));else toast('Área de transferência indisponível')};$('printBtn').onclick=()=>window.print();$('exportArticleBtn').onclick=()=>exportArticle(a);
-let related=relatedArticles(a);$('relatedList').innerHTML=related.length?related.map(x=>'<button class="related-link" data-related="'+esc(x.id)+'"><span class="code">'+esc(x.code)+'</span><span>'+esc(x.title)+'</span><span>↗</span></button>').join(''):'<p class="muted">Nenhuma relação identificada.</p>';
-document.querySelectorAll('[data-related]').forEach(b=>b.onclick=()=>openArticle(b.dataset.related));
-let versions=a.history||[];$('revisionList').innerHTML=versions.length?versions.map((v,i)=>'<div class="revision-item"><div><b>Versão '+(i+1)+'</b><div class="muted" style="font-size:11px">'+date(v.date)+'</div></div><div><button class="btn secondary small" data-viewrev="'+i+'">Ver</button>'+(user.role==='admin'?'<button class="btn ghost small" data-restorerev="'+i+'">Restaurar</button>':'')+'</div></div>').join(''):'<p class="muted">Sem revisões anteriores.</p>';
-document.querySelectorAll('[data-viewrev]').forEach(b=>b.onclick=()=>showRevision(a,+b.dataset.viewrev));document.querySelectorAll('[data-restorerev]').forEach(b=>b.onclick=()=>restoreRevision(a,+b.dataset.restorerev));if($('editBtn'))$('editBtn').onclick=()=>{editId=a.id;page='edit';render()};$('addComment').onclick=()=>{let t=$('commentText').value.trim();if(!t)return toast('Escreva um comentário');a.comments=a.comments||[];a.comments.push({author:user.name,text:t,date:now()});saveData();detail();toast('Comentário adicionado')}}
-function manage(){if(user.role!=='admin')return go('home');$('content').innerHTML='<div class="section-head" style="margin-top:0"><div><div class="eyebrow" style="color:var(--accent)">ADMINISTRAÇÃO</div><h1 style="margin:8px 0">Gestão do conhecimento</h1><p>Organize e publique informações na base local</p></div><button class="btn" id="newArticle">＋ Nova natureza</button></div><div class="stats" style="margin-bottom:22px"><div class="stat"><div class="num">'+data.articles.length+'</div><div class="stat-label">Conteúdos</div></div><div class="stat"><div class="num">'+data.articles.reduce((s,a)=>s+(a.views||0),0)+'</div><div class="stat-label">Consultas acumuladas</div></div><div class="stat"><div class="num">'+data.articles.reduce((s,a)=>s+(a.comments||[]).length,0)+'</div><div class="stat-label">Comentários</div></div><div class="stat"><div class="num">'+data.articles.reduce((s,a)=>s+(a.history||[]).length,0)+'</div><div class="stat-label">Revisões salvas</div></div></div><div class="panel"><h2>Backup e manutenção</h2><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn secondary" id="exportBtn">↓ Exportar base JSON</button><button class="btn secondary" id="importBtn">↑ Importar base JSON</button><input id="importFile" type="file" accept=".json,application/json" class="hidden"></div><p class="muted" style="font-size:12px">Os dados são salvos apenas neste navegador. A importação substitui a base local atual.</p></div><div class="panel"><h2>Páginas cadastradas</h2>'+data.articles.map(a=>'<div class="result" style="margin:9px 0"><div><span class="code">'+esc(a.code)+'</span><h3>'+esc(a.title)+'</h3><p>'+esc(a.category)+' · '+date(a.updated)+'</p></div><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn secondary small" data-edit="'+esc(a.id)+'">Editar</button><button class="btn danger small" data-delete="'+esc(a.id)+'">Excluir</button></div></div>').join('')+'</div>';$('newArticle').onclick=()=>{editId=null;page='edit';render()};document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{editId=b.dataset.edit;page='edit';render()});document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>{if(!confirm('Excluir esta natureza da base local?'))return;data.articles=data.articles.filter(a=>a.id!==b.dataset.delete);data.favorites=data.favorites.filter(id=>id!==b.dataset.delete);saveData();manage();toast('Conteúdo excluído')});$('exportBtn').onclick=exportData;$('importBtn').onclick=()=>$('importFile').click();$('importFile').onchange=importData}
-function editor(){if(user.role!=='admin')return go('home');let a=editId?articleById(editId):null;$('content').innerHTML='<div class="section-head" style="margin-top:0"><div><h1 style="margin:0">'+(a?'Editar natureza':'Nova natureza')+'</h1><p>Editor visual de conteúdos e referências</p></div><button class="btn secondary" id="cancelEdit">Cancelar</button></div><div class="panel"><div class="form-grid"><div class="form-group"><label class="label">Título da natureza *</label><input id="editTitle" class="field" placeholder="Ex.: Perturbação do sossego" value="'+esc(a?.title||'')+'"></div><div class="form-group"><label class="label">Código *</label><input id="editCode" class="field" placeholder="Ex.: DEM-009" value="'+esc(a?.code||'')+'"></div></div><div class="form-grid"><div class="form-group"><label class="label">Categoria</label><select id="editCategory" class="field">'+categories.filter(c=>c.name!=='Todas').map(c=>'<option>'+esc(c.name)+'</option>').join('')+'</select></div><div class="form-group"><label class="label">Tags (separadas por vírgula)</label><input id="editTags" class="field" placeholder="Ex.: barulho, ruído" value="'+esc((a?.tags||[]).join(', '))+'"></div></div><div class="form-group"><label class="label">Resumo para resultados de pesquisa</label><textarea id="editSummary" class="field" rows="2">'+esc(a?.summary||'')+'</textarea></div><div class="form-group"><label class="label">Conteúdo da página</label><div class="toolbar"><button data-command="bold"><b>B</b></button><button data-command="italic"><i>I</i></button><button data-command="underline"><u>U</u></button><button data-command="formatBlock" data-value="h2">Título</button><button data-command="insertUnorderedList">• Lista</button><button data-command="insertOrderedList">1. Lista</button><button id="linkBtn">🔗 Link</button><button id="tableBtn">▦ Tabela</button><button data-command="formatBlock" data-value="h3">Subtítulo</button><button data-command="strikeThrough">Riscado</button><button data-command="removeFormat">Limpar formato</button><button data-command="justifyLeft">Esquerda</button><button data-command="justifyCenter">Centro</button><button data-command="justifyRight">Direita</button><button data-command="outdent">Recuar −</button><button data-command="indent">Recuar +</button><button id="quoteBtn">❝ Destaque</button><button id="dividerBtn">― Linha</button><button id="calloutBtn">ⓘ Aviso</button><button id="checklistBtn">☑ Checklist</button><button id="undoBtn">↶ Desfazer</button><button id="redoBtn">↷ Refazer</button></div><div class="editor" id="editBody" contenteditable="true" aria-label="Editor de conteúdo" spellcheck="true"></div><div class="editor-status"><span id="wordCount">0 palavras</span><span>Selecione texto para formatar · Ctrl+B para negrito</span></div></div><div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px"><button class="btn secondary" id="previewBtn">Visualizar</button><button class="btn" id="saveBtn">✓ Publicar conteúdo</button></div></div>';$('editCategory').value=a?.category||'Outros';$('editBody').innerHTML=a?safe(a.content):'<h2>Descrição geral</h2><p>Insira aqui uma descrição demonstrativa da natureza.</p>';$('cancelEdit').onclick=()=>go('manage');let countWords=()=>{let text=txt($('editBody').innerHTML).trim();$('wordCount').textContent=(text?text.split(/\s+/).length:0)+' palavras · '+text.length+' caracteres'};$('editBody').addEventListener('input',countWords);countWords();document.querySelectorAll('[data-command]').forEach(b=>b.onclick=()=>{let d=$('editBody');d.focus();document.execCommand(b.dataset.command,false,b.dataset.value||null)});$('linkBtn').onclick=()=>{let url=prompt('URL do link (https://...)');if(url&&/^https:\/\//i.test(url)){ $('editBody').focus();document.execCommand('createLink',false,url)}};$('tableBtn').onclick=()=>appendEditorHTML('<table><thead><tr><th>Campo</th><th>Descrição</th></tr></thead><tbody><tr><td>Exemplo</td><td>Texto</td></tr></tbody></table><p></p>');
-$('quoteBtn').onclick=()=>appendEditorHTML('<blockquote><p>Informação importante</p></blockquote><p></p>');
-$('dividerBtn').onclick=()=>appendEditorHTML('<hr><p></p>');
-$('calloutBtn').onclick=()=>appendEditorHTML('<blockquote><strong>ⓘ Atenção:</strong> Preencha este aviso com informações verificadas.</blockquote><p></p>');
-$('checklistBtn').onclick=()=>appendEditorHTML('<ul><li>☐ Item a verificar</li><li>☐ Outro item</li></ul><p></p>');
-$('undoBtn').onclick=()=>richCommand('undo');$('redoBtn').onclick=()=>richCommand('redo');$('previewBtn').onclick=()=>{let win=window.open('','_blank');if(!win)return toast('Permita a abertura de janelas');win.document.write('<!doctype html><meta charset="utf-8"><title>Prévia</title><body style="font:16px/1.7 Arial;max-width:800px;margin:40px auto"><h1>'+esc($('editTitle').value)+'</h1>'+safe($('editBody').innerHTML)+'</body>');win.document.close()};$('saveBtn').onclick=()=>{let title=$('editTitle').value.trim(),code=$('editCode').value.trim();if(!title||!code)return toast('Informe título e código');if(data.articles.some(x=>x.code.toLowerCase()===code.toLowerCase()&&x.id!==a?.id))return toast('Este código já está cadastrado');let obj={title,code,category:$('editCategory').value,tags:$('editTags').value.split(',').map(x=>x.trim()).filter(Boolean),summary:$('editSummary').value.trim(),content:safe($('editBody').innerHTML),updated:now()};if(a){a.history=a.history||[];a.history.push({date:a.updated,author:user.name,content:a.content,title:a.title});Object.assign(a,obj)}else{a=Object.assign({id:'local-'+Date.now(),author:user.name,created:now(),views:0,comments:[],history:[]},obj);data.articles.unshift(a)}saveData();toast('Conteúdo publicado com sucesso');openArticle(a.id)}}
-function exportData(){downloadText('base190-backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(data,null,2),'application/json')}
-function importData(e){let f=e.target.files[0];if(!f)return;f.text().then(s=>{try{let parsed=JSON.parse(s);if(!parsed||!Array.isArray(parsed.articles)||!parsed.articles.every(a=>a&&typeof a.title==='string'&&typeof a.code==='string'&&typeof a.content==='string'))throw Error('invalid');if(!confirm('Substituir a base local pelo backup selecionado?'))return;data={articles:parsed.articles.map(a=>({...a,content:safe(a.content),comments:Array.isArray(a.comments)?a.comments:[],history:Array.isArray(a.history)?a.history:[],tags:Array.isArray(a.tags)?a.tags:[]})),favorites:Array.isArray(parsed.favorites)?parsed.favorites:[],recent:[],settings:data.settings};saveData();manage();toast('Backup importado')}catch(e){toast('Arquivo JSON inválido')}})}
-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='k'&&user){e.preventDefault();query='';category='Todas';go('search');setTimeout(()=>$('searchInput')?.focus(),0)}if(e.key==='Escape'&&$('sidebar'))$('sidebar').classList.remove('open')});
+// Fallback completo caso cerebro-190.js não esteja na mesma pasta ainda
+if (!window.CEREBRO_190) {
+  window.CEREBRO_190 = {
+    versao: '2.0-Interno',
+    regrasBase: [],
+    faqTeorico: [],
+    analisarEntrada: function() { return null; }
+  };
+}
+
+const KEY = 'base190-complete-v5';
+const BRAIN_KEY = 'base190-custom-brain-v5';
+const SESSION = 'base190-session-v5';
+
+const categories = [
+  {name: 'Todas', icon: '◈'},
+  {name: 'Ordem pública', icon: '🔊'},
+  {name: 'Trânsito', icon: '🚗'},
+  {name: 'Patrimônio', icon: '🏠'},
+  {name: 'Pessoas', icon: '👥'},
+  {name: 'Proteção', icon: '🛡️'},
+  {name: 'Outros', icon: '📋'}
+];
+
+const priorities = ['Todas', 'Crítica', 'Alta', 'Média', 'Baixa'];
+const now = () => new Date().toISOString();
+
+/* === BASE DE NATUREZAS COMPLETA E DETALHADA === */
+const defaultSeed = () => {
+  const baseArticles = [
+    {
+      id: 'nat-vd-lesao',
+      code: 'VD-001 / DEM-005A',
+      title: 'LESÃO CORPORAL CONTRA A MULHER - CONDIÇÃO DO SEXO FEMININO E VIOLÊNCIA DOMÉSTICA E FAMILIAR',
+      category: 'Proteção',
+      priority: 'Crítica',
+      legalBase: 'Art. 129, § 13 do Código Penal c/c Lei nº 11.340/2006 (Lei Maria da Penha)',
+      agency: 'Polícia Militar (Despacho Prioritário) / SAMU 192 se houver ferimentos graves',
+      differentiation: 'Trata-se de ocorrência de prioridade absoluta quando a agressão está em curso ou o agressor permanece no imóvel. Se não houver agressão física, mas promessa de morte/mal grave, classifique como AMEAÇA CONTRA A MULHER (VD-002).',
+      triageChecklist: [
+        'O agressor (marido/companheiro/ex) ainda está dentro da residência ou nas proximidades?',
+        'O agressor porta arma de fogo, faca ou algum objeto contundente?',
+        'Há crianças/filhos presenciando a agressão ou vítimas precisando de ambulância (SAMU/SIATE)?',
+        'A vítima possui Medida Protetiva de Urgência (MPU) vigente contra o autor?'
+      ],
+      dispatchTemplate: 'SOLICITANTE INFORMA QUE VÍTIMA DO SEXO FEMININO ESTÁ SENDO AGREDIDA FISICAMENTE POR SEU [VÍNCULO DO AUTOR: MARIDO/COMPANHEIRO/EX] NO INTERIOR DA RESIDÊNCIA, NA PRESENÇA DE [FILHOS / TESTEMUNHAS]. O AUTOR [PERMANECE NO LOCAL / EVADIU-SE], TRAJANDO [VESTIMENTAS] E [PORTANDO / NÃO PORTANDO] ARMA. VÍTIMA [NECESSITA / NÃO NECESSITA] DE ATENDIMENTO MÉDICO. VIATURA SOLICITADA COM PRIORIDADE MÁXIMA.',
+      summary: 'Protocolo prioritário para agressão física contra mulher em âmbito doméstico, familiar ou relação íntima de afeto.',
+      tags: ['violência doméstica', 'mulher agredida', 'marido', 'esposa', 'filhos', 'lesão corporal', 'maria da penha', 'proteção'],
+      content: '<h2>Diretriz de Atendimento Humanizado e Célere</h2><p>Chamadas relatando mulher sendo agredida pelo marido ou companheiro (especialmente na presença de filhos menores) configuram prioridade crítica de despacho. Extraia o endereço completo logo nos primeiros segundos da chamada.</p><h2>Pontos de Atenção Operacional</h2><ul><li>Verificar imediatamente se o agressor tem acesso a armas no interior da residência.</li><li>Registrar expressamente no relato se a agressão ocorre na presença dos filhos ou se a vítima é gestante ou pessoa com deficiência.</li><li>Caso a ligação caia ou fique muda com ruídos de agressão ao fundo, empenhar viatura imediatamente com os dados já coletados na bina/sistema.</li></ul><blockquote>A presença de filhos menores presenciando a violência doméstica deve constar obrigatoriamente no histórico da ocorrência para conhecimento da guarnição e da autoridade policial.</blockquote>',
+      author: 'Coordenação COPOM',
+      created: now(),
+      updated: now(),
+      views: 32,
+      comments: [
+        {id: 'c-vd1', author: 'Supervisão COPOM', type: 'Orientação de Supervisão', pinned: true, text: 'Sempre que o relato mencionar agressão física contra mulher pelo marido/companheiro, utilizar a classificação específica: LESÃO CORPORAL CONTRA A MULHER - CONDIÇÃO DO SEXO FEMININO E VIOLÊNCIA DOMÉSTICA E FAMILIAR.', date: now()}
+      ],
+      history: []
+    },
+    {
+      id: 'oc01',
+      code: 'ORD-001 / DEM-001',
+      title: 'PERTURBAÇÃO DO TRABALHO OU DO SOSSEGO ALHEIOS',
+      category: 'Ordem pública',
+      priority: 'Baixa',
+      legalBase: 'Art. 42 do Decreto-Lei nº 3.688/41 (Lei das Contravenções Penais)',
+      agency: 'Polícia Militar / Fiscalização Municipal',
+      differentiation: 'Se houver agressão verbal ou física entre vizinhos no momento da ligação, classifique como Desinteligência, Ameaça ou Lesão Corporal.',
+      triageChecklist: [
+        'Qual a origem exata do ruído (residência, veículo estacionado, comércio ou via pública)?',
+        'O barulho persiste neste exato momento?',
+        'Há aglomeração de pessoas, consumo de entorpecentes ou obstrução da via?',
+        'O solicitante deseja se identificar no local para eventual representação ou prefere anonimato?'
+      ],
+      dispatchTemplate: 'SOLICITANTE INFORMA PERTURBAÇÃO DO SOSSEGO PROVENIENTE DE [ORIGEM DO RUÍDO], ONDE HÁ [TIPO DE BARULHO] DESDE AS [HORÁRIO]. RELATA QUE [DESEJA / NÃO DESEJA] CONTATO COM A EQUIPE NO LOCAL. VIATURA SOLICITADA PARA AVERIGUAÇÃO E ORIENTAÇÃO.',
+      summary: 'Diretrizes de triagem e registro para ocorrências de som alto, gritaria, algazarra ou uso abusivo de instrumentos sonoros.',
+      tags: ['barulho', 'som alto', 'ruído', 'vizinhança', 'festa', 'art 42'],
+      content: '<h2>Visão geral operacional</h2><p>Ocorrência caracterizada pela emissão de ruídos excessivos, gritaria, algazarra ou uso de aparelhos sonoros que causem incômodo à coletividade ou ao descanso alheio. O enquadramento definitivo observa os protocolos operacionais da corporação.</p><h2>Procedimento de atendimento 190</h2><ul><li>Confirmar o endereço completo e ponto de referência preciso do foco gerador do ruído.</li><li>Verificar se o solicitante já realizou solicitações anteriores na mesma data (reincidência).</li><li>Esclarecer sobre a necessidade de manifestação de vontade caso haja encaminhamento cartorial.</li></ul><blockquote>Conteúdo demonstrativo de apresentação. Consulte a diretriz operacional padrão vigente na sua unidade.</blockquote>',
+      author: 'Coordenação COPOM',
+      created: now(),
+      updated: now(),
+      views: 14,
+      comments: [],
+      history: []
+    },
+    {
+      id: 'oc02',
+      code: 'TRA-002 / DEM-002',
+      title: 'SINISTRO DE TRÂNSITO SEM VÍTIMAS (EXCLUSIVAMENTE DANOS MATERIAIS)',
+      category: 'Trânsito',
+      priority: 'Baixa',
+      legalBase: 'Código de Trânsito Brasileiro (Lei nº 9.503/97)',
+      agency: 'Polícia Militar / Órgão Municipal de Trânsito / Boletim Online',
+      differentiation: 'Caso qualquer ocupante relate dor, tontura, sangramento ou impossibilidade de sair do veículo, altere imediatamente para SINISTRO DE TRÂNSITO COM VÍTIMA (Prioridade Crítica) e acione o SIATE/SAMU.',
+      triageChecklist: [
+        'Há alguma pessoa ferida, presa às ferragens ou passando mal no local?',
+        'Os veículos estão obstruindo totalmente a via ou oferecem risco de nova colisão?',
+        'Envolve viatura oficial, transporte coletivo, carga perigosa ou patrimônio público?',
+        'Há indícios de embriaguez ao volante ou desentendimento grave entre os condutores?'
+      ],
+      dispatchTemplate: 'SOLICITANTE INFORMA SINISTRO DE TRÂNSITO SEM VÍTIMAS ENVOLVENDO [QUANTIDADE E TIPOS DE VEÍCULOS]. OS VEÍCULOS [ESTÃO / NÃO ESTÃO] OBSTRUINDO A VIA PÚBLICA. NÃO HÁ RELATO DE FERIDOS OU ALTERAÇÃO DE ÂNIMOS ENTRE AS PARTES NO LOCAL.',
+      summary: 'Referência de triagem para colisões e abalroamentos exclusivamente com danos materiais, avaliando fluidez viária e segurança.',
+      tags: ['colisão', 'veículo', 'trânsito', 'batida', 'abalroamento', 'sem vítima'],
+      content: '<h2>Conceito e triagem inicial</h2><p>Sinistro viário com resultado restrito a danos materiais. Durante o atendimento telefônico, a prioridade do operador é descartar a existência de vítimas ocultas e avaliar riscos secundários na via (vazamento de combustível, queda de poste ou bloqueio de faixa).</p><h2>Critérios de empenho de viatura</h2><table><thead><tr><th>Situação Relatada</th><th>Encaminhamento Sugerido</th></tr></thead><tbody><tr><td>Veículos em condições de rodagem, sem bloqueio de via e partes em acordo</td><td>Orientação para registro de Boletim Eletrônico</td></tr><tr><td>Via bloqueada, suspeita de embriaguez, desacordo ríspido ou veículo oficial</td><td>Despacho de viatura para sinalização e registro presencial</td></tr></tbody></table>',
+      author: 'Coordenação COPOM',
+      created: now(),
+      updated: now(),
+      views: 9,
+      comments: [],
+      history: []
+    },
+    {
+      id: 'oc03',
+      code: 'PES-002 / DEM-003',
+      title: 'AMEAÇA (PROMESSA DE CAUSAR MAL INJUSTO E GRAVE)',
+      category: 'Pessoas',
+      priority: 'Média',
+      legalBase: 'Art. 147 do Código Penal (Decreto-Lei nº 2.848/40)',
+      agency: 'Polícia Militar / Polícia Civil',
+      differentiation: 'Se a ameaça envolver uso de arma de fogo/branca para subtrair bens, trata-se de ROUBO. Se ocorrer no âmbito doméstico/familiar contra mulher, classifique como AMEAÇA CONTRA A MULHER - VIOLÊNCIA DOMÉSTICA.',
+      triageChecklist: [
+        'O autor da ameaça encontra-se presente no local neste momento?',
+        'O autor porta arma de fogo, faca ou algum objeto perfurocortante?',
+        'Qual o vínculo entre autor e vítima (desconhecido, vizinho, ex-companheiro)?',
+        'Com quais roupas o autor está trajado e qual a rota de evasão caso tenha saído?'
+      ],
+      dispatchTemplate: 'SOLICITANTE RELATA TER SIDO AMEAÇADO(A) POR [IDENTIFICAÇÃO OU VÍNCULO DO AUTOR], QUE PROFERIU AMEAÇAS DE [CONTEÚDO DA AMEAÇA]. O AUTOR [PERMANECE NO LOCAL / EVADIU-SE SENTIDO...], TRAJANDO [VESTIMENTAS] E [PORTANDO / SEM PORTAR] ARMA. VIATURA SOLICITADA PARA AVERIGUAÇÃO.',
+      summary: 'Atendimento de chamadas envolvendo promessa de causar mal injusto e grave por palavras, escritos, gestos ou meios simbólicos.',
+      tags: ['intimidação', 'ameaça verbal', 'conflito', 'art 147', 'desentendimento'],
+      content: '<h2>Visão geral</h2><p>Configura-se quando alguém ameaça outrem, por palavra, escrito ou gesto, ou qualquer outro meio simbólico, de causar-lhe mal injusto e grave.</p><h2>Atenção na redação técnica</h2><p>Registre fielmente a dinâmica informada pelo solicitante: se o autor ainda está nas imediações, se está armado e se há histórico prévio de conflito entre as partes.</p>',
+      author: 'Coordenação COPOM',
+      created: now(),
+      updated: now(),
+      views: 11,
+      comments: [],
+      history: []
+    },
+    {
+      id: 'oc04',
+      code: 'PAT-003 / DEM-004',
+      title: 'FURTO (EM ANDAMENTO OU CONSUMADO)',
+      category: 'Patrimônio',
+      priority: 'Alta',
+      legalBase: 'Art. 155 do Código Penal (Decreto-Lei nº 2.848/40)',
+      agency: 'Polícia Militar / Polícia Civil',
+      differentiation: 'Furto ocorre SEM violência ou grave ameaça à pessoa. Caso a vítima relate contato direto com emprego de força física, arma ou intimidação, classifique imediatamente como ROUBO (Art. 157 CP).',
+      triageChecklist: [
+        'O furto está em andamento neste exato momento ou já foi consumado há horas?',
+        'Qual bem foi subtraído (veículo, celular, fiação elétrica, objetos de residência)?',
+        'Houve arrombamento de portas, janelas ou rompimento de obstáculo?',
+        'Há características físicas, vestimentas ou direção de fuga dos indivíduos?'
+      ],
+      dispatchTemplate: 'SOLICITANTE INFORMA FURTO [EM ANDAMENTO / CONSUMADO] EM [TIPO DE LOCAL], DE ONDE FOI SUBTRAÍDO [BENS SUBTRAÍDOS]. INDIVÍDUO(S) [CARACTERÍSTICAS E VESTIMENTAS] EVADIRAM-SE HÁ [TEMPO APROXIMADO] EM DIREÇÃO A [ROTA DE FUGA]. VIATURA SOLICITADA PARA PATRULHAMENTO E ATENDIMENTO.',
+      summary: 'Subtração de coisa alheia móvel sem emprego de violência ou grave ameaça. Diferenciação entre flagrante (em andamento) e fato pretérito.',
+      tags: ['objeto', 'subtração', 'patrimônio', 'arrombamento', 'art 155', 'invasão'],
+      content: '<h2>Distinção temporal crítica</h2><p>Na triagem 190, é fundamental distinguir o <strong>Furto em Andamento</strong> (prioridade máxima de despacho devido à possibilidade de prisão em flagrante) do <strong>Furto Consumado/Pretérito</strong> (quando o solicitante apenas constatou o desaparecimento do bem horas depois, sem suspeitos no local).</p><h2>Furto de Veículo</h2><p>Em caso de subtração de veículo automotor, colete obrigatoriamente: <strong>Placa, Marca/Modelo, Cor</strong> e se o veículo possui rastreador ativo para difusão imediata na rede de rádio.</p>',
+      author: 'Coordenação COPOM',
+      created: now(),
+      updated: now(),
+      views: 19,
+      comments: [],
+      history: []
+    },
+    {
+      id: 'nat-roubo-geral',
+      code: 'PAT-001 / ART-157',
+      title: 'ROUBO (SUBTRAÇÃO MEDIANTE GRAVE AMEAÇA OU VIOLÊNCIA À PESSOA)',
+      category: 'Patrimônio',
+      priority: 'Crítica',
+      legalBase: 'Art. 157 do Código Penal',
+      agency: 'Polícia Militar (Cerco e Patrulhamento Imediato)',
+      differentiation: 'No Roubo há contato direto com intimidação, grave ameaça, violência física ou uso de arma de fogo/branca contra a vítima.',
+      triageChecklist: [
+        'Há quanto tempo exato ocorreu o roubo e qual a direção de fuga dos autores?',
+        'Quantos indivíduos eram e como estavam trajados (capacete, blusa, mochila)?',
+        'Utilizaram motocicleta ou veículo (qual cor, modelo e placa)?',
+        'Qual arma foi visualizada e se há alguma vítima ferida precisando de socorro?'
+      ],
+      dispatchTemplate: 'SOLICITANTE INFORMA ROUBO OCORRIDO HÁ [TEMPO], ONDE [QUANTIDADE] INDIVÍDUO(S) MEDIANTE [ARMA DE FOGO / FACA / GRAVE AMEAÇA] SUBTRAÍRAM [BENS LEVADOS]. OS AUTORES TRAJAVAM [VESTIMENTAS] E EVADIRAM-SE EM [MOTO/VEÍCULO/A PÉ] SENTIDO [DIREÇÃO]. VIATURA SOLICITADA PARA PATRULHAMENTO E CERCO.',
+      summary: 'Subtração patrimonial mediante emprego de violência física, arma de fogo, faca ou grave ameaça contra a pessoa.',
+      tags: ['roubo', 'assalto', 'arma de fogo', 'art 157', 'cerco', 'moto'],
+      content: '<h2>Protocolo de Irradiação de Roubo</h2><p>Ocorrências de roubo acabado de ocorrer exigem coleta rápida das características dos autores, meio de transporte utilizado na fuga e direção tomada para irradiação imediata às viaturas de área.</p>',
+      author: 'Coordenação COPOM',
+      created: now(),
+      updated: now(),
+      views: 24,
+      comments: [],
+      history: []
+    },
+    {
+      id: 'oc06',
+      code: 'PAT-004 / DEM-006',
+      title: 'DANO AO PATRIMÔNIO PÚBLICO OU PRIVADO',
+      category: 'Patrimônio',
+      priority: 'Média',
+      legalBase: 'Art. 163 do Código Penal (Decreto-Lei nº 2.848/40)',
+      agency: 'Polícia Militar / Guarda Municipal',
+      differentiation: 'Se a destruição de porta/janela teve como finalidade entrar no imóvel para subtrair objetos, a natureza correta é Tentativa de Furto ou Furto Qualificado, e não apenas Dano.',
+      triageChecklist: [
+        'O ato de depredação ou vandalismo está ocorrendo neste momento?',
+        'O bem atingido é patrimônio público (escola, ônibus, praça) ou particular?',
+        'Quantos indivíduos estão envolvidos e quais suas características e vestimentas?',
+        'Houve utilização de substância inflamável, pedras ou objetos contundentes?'
+      ],
+      dispatchTemplate: 'SOLICITANTE RELATA DANO AO PATRIMÔNIO [PÚBLICO / PRIVADO] NO LOCAL INDICADO, ONDE INDIVÍDUO(S) [CARACTERÍSTICAS E VESTIMENTAS] DANIFICARAM [BEM ATINGIDO]. O AUTOR [PERMANECE NO LOCAL / TOMOU RUMO A...]. VIATURA SOLICITADA PARA AVERIGUAÇÃO.',
+      summary: 'Ocorrências envolvendo destruição, inutilização ou deterioração de coisa alheia ou de bens públicos.',
+      tags: ['dano', 'depredação', 'vandalismo', 'imóvel', 'art 163', 'vidraça'],
+      content: '<h2>Conceito geral</h2><p>Consiste em destruir, inutilizar ou deteriorar coisa alheia com intenção de causar prejuízo (dolo específico de dano). É qualificado quando cometido com violência à pessoa, grave ameaça, uso de substância inflamável ou contra o patrimônio da União, Estado, Município ou concessionárias de serviços públicos.</p>',
+      author: 'Coordenação COPOM',
+      created: now(),
+      updated: now(),
+      views: 6,
+      comments: [],
+      history: []
+    },
+    {
+      id: 'oc07',
+      code: 'PES-003 / DEM-007',
+      title: 'PESSOA DESAPARECIDA / LOCALIZAÇÃO DE PESSOA',
+      category: 'Pessoas',
+      priority: 'Alta',
+      legalBase: 'Lei nº 13.812/2019 (Política Nacional de Busca de Pessoas Desaparecidas)',
+      agency: 'Polícia Militar / Polícia Civil',
+      differentiation: 'Não existe prazo de espera de 24 horas para registro de desaparecimento, especialmente tratando-se de crianças, adolescentes, idosos ou pessoas com deficiência intelectual/mental.',
+      triageChecklist: [
+        'Qual a idade da pessoa desaparecida e se possui condição médica especial (Alzheimer, TEA, depressão)?',
+        'Em qual local e horário foi vista pela última vez?',
+        'Quais vestimentas usava quando saiu e se levou telefone celular ou documentos?',
+        'Há suspeita de arrebatamento, sequestro ou conflito familiar prévio?'
+      ],
+      dispatchTemplate: 'SOLICITANTE INFORMA O DESAPARECIMENTO DE [NOME E IDADE], VISTO(A) PELA ÚLTIMA VEZ EM [LOCAL E HORÁRIO], TRAJANDO [VESTIMENTAS] E APRESENTANDO AS SEGUINTES CARACTERÍSTICAS FÍSICAS: [DESCRIÇÃO FÍSICA]. INFORMA QUE A PESSOA [POSSUI / NÃO POSSUI] CONDIÇÃO DE SAÚDE ESPECÍFICA. VIATURA SOLICITADA PARA ORIENTAÇÃO E BUSCAS.',
+      summary: 'Protocolo imediato para coleta de características físicas, vestimentas e circunstâncias do desaparecimento de pessoas.',
+      tags: ['desaparecimento', 'pessoa', 'localização', 'criança', 'idoso', 'busca'],
+      content: '<h2>Atenção imediata</h2><p>A legislação brasileira determina que a busca e o registro de desaparecimento de crianças e adolescentes têm caráter de urgência imediata. Colete o máximo de detalhes visuais para irradiação às equipes de patrulhamento da área.</p>',
+      author: 'Coordenação COPOM',
+      created: now(),
+      updated: now(),
+      views: 8,
+      comments: [],
+      history: []
+    },
+    {
+      id: 'oc08',
+      code: 'OUT-001 / DEM-008',
+      title: 'ANIMAL SOLTO OU EM SITUAÇÃO DE RISCO EM VIA PÚBLICA',
+      category: 'Outros',
+      priority: 'Média',
+      legalBase: 'Art. 31 da LCP (Omissão de cautela na guarda de animais) / Código de Trânsito',
+      agency: 'Polícia Militar / Defesa Civil / Corpo de Bombeiros / Zoonoses',
+      differentiation: 'Se for animal de grande porte (cavalo/gado) na pista de rolamento de rodovia ou via rápida, a prioridade sobe para Alta devido ao risco iminente de acidente grave.',
+      triageChecklist: [
+        'Qual o porte e a espécie do animal (cão agressivo, equino, bovino, animal silvestre)?',
+        'O animal está na pista de rolamento oferecendo risco de colisão aos motoristas?',
+        'Houve ataque a pedestres ou há pessoas feridas no local?',
+        'O proprietário ou responsável pelo animal foi identificado nas proximidades?'
+      ],
+      dispatchTemplate: 'SOLICITANTE INFORMA A PRESENÇA DE ANIMAL ([ESPÉCIE E PORTE]) SOLTO EM VIA PÚBLICA, GERANDO RISCO À [CIRCULAÇÃO DE VEÍCULOS / INTEGRIDADE DE PEDESTRES]. NÃO HÁ IDENTIFICAÇÃO DO RESPONSÁVEL NO LOCAL ATÉ O MOMENTO. SOLICITADA AVERIGUAÇÃO.',
+      summary: 'Triagem de ocorrências envolvendo animais de grande porte em pista, omissão de cautela na guarda de animais agressivos ou resgate.',
+      tags: ['animal', 'via pública', 'trânsito', 'ataque', 'omissão de cautela'],
+      content: '<h2>Contexto operacional</h2><p>Avalie se a situação envolve risco viário imediato (animal de grande porte solto na pista), omissão de cautela na condução de cão feroz sem guia/focinheira (contravenção penal) ou necessidade de acionamento do Corpo de Bombeiros / Polícia Ambiental para contenção de fauna silvestre.</p>',
+      author: 'Coordenação COPOM',
+      created: now(),
+      updated: now(),
+      views: 5,
+      comments: [],
+      history: []
+    }
+  ];
+
+  // Sincroniza automaticamente quaisquer regras extras que existam no cerebro-190.js
+  const brainRules = window.CEREBRO_190?.regrasBase || [];
+  brainRules.forEach(r => {
+    if (!baseArticles.some(a => a.id === r.id || a.title === r.officialNature)) {
+      baseArticles.push({
+        id: r.id,
+        code: r.code,
+        title: r.officialNature,
+        category: r.category || 'Outros',
+        priority: r.priority || 'Média',
+        legalBase: r.legalBase || '',
+        agency: r.agency || 'Polícia Militar',
+        differentiation: r.explanation || '',
+        triageChecklist: r.triageQuestions || [],
+        dispatchTemplate: r.dispatchMask || '',
+        summary: r.explanation || r.officialNature,
+        tags: [...(r.requiredGroups ? r.requiredGroups.flat().slice(0, 6) : []), ...(r.boostKeywords || []).slice(0, 3)],
+        content: `<h2>Enquadramento Operacional</h2><p>${r.explanation || ''}</p><h2>Base Legal e Procedimento</h2><p>Referência normativa: <strong>${r.legalBase || 'Protocolo PM'}</strong>. Órgão de atuação: ${r.agency || 'Polícia Militar'}.</p>`,
+        author: 'Cérebro COPOM 190',
+        created: now(),
+        updated: now(),
+        views: 4,
+        comments: [],
+        history: []
+      });
+    }
+  });
+
+  return baseArticles;
+};
+
+let data;
+try { data = JSON.parse(localStorage.getItem(KEY)); } catch(e) {}
+if (!data || !Array.isArray(data.articles) || !data.articles.length) {
+  data = { articles: defaultSeed(), favorites: ['nat-vd-lesao', 'nat-roubo-geral'], recent: [], settings: { dark: false } };
+}
+data.favorites = data.favorites || [];
+data.recent = data.recent || [];
+data.settings = data.settings || { dark: false };
+
+let customBrainRules = [];
+try { customBrainRules = JSON.parse(localStorage.getItem(BRAIN_KEY)) || []; } catch(e) { customBrainRules = []; }
+
+let user;
+try { user = JSON.parse(sessionStorage.getItem(SESSION)); } catch(e) {}
+
+let page = 'home';
+let previousPage = 'catalog';
+let query = '';
+let category = 'Todas';
+let priorityFilter = 'Todas';
+let current = null;
+let editId = null;
+let sort = 'relevance';
+let triageState = {};
+let chatHistory = [
+  {
+    role: 'bot',
+    html: `<b>Olá! Sou o Cérebro Operacional 190.</b><br>Cole aqui qualquer <b>relato bruto do solicitante</b> (ex: <i>"uma mulher informando que está sendo agredida pelo seu marido dentro de casa em frente a seus filhos"</i>) ou faça uma <b>pergunta operacional</b> (ex: <i>"qual a diferença entre furto e roubo?"</i>). Eu identifico a natureza oficial, o grau de prioridade, as perguntas de triagem e gero o relato revisado no padrão técnico COPOM.`
+  }
+];
+
+const $ = id => document.getElementById(id);
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[c] || c));
+}
+
+function txt(s) {
+  let d = document.createElement('div');
+  d.innerHTML = s || '';
+  return d.textContent || '';
+}
+
+function norm(s) {
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
+}
+
+function safe(s) {
+  let d = new DOMParser().parseFromString(s || '', 'text/html');
+  d.querySelectorAll('script,style,iframe,object,embed,svg,math,form,link,meta').forEach(n => n.remove());
+  d.querySelectorAll('*').forEach(n => Array.from(n.attributes).forEach(a => {
+    if (/^on/i.test(a.name) || a.name === 'style' || a.name === 'srcdoc' || (['href', 'src'].includes(a.name) && !(/^(https?:|mailto:|#)/i.test(a.value)))) {
+      n.removeAttribute(a.name);
+    }
+  }));
+  return d.body.innerHTML;
+}
+
+function saveData() { localStorage.setItem(KEY, JSON.stringify(data)); }
+function saveBrain() { localStorage.setItem(BRAIN_KEY, JSON.stringify(customBrainRules)); }
+
+function toast(s) {
+  let t = $('toast');
+  t.textContent = s;
+  t.classList.remove('hidden');
+  clearTimeout(window.toastTimer);
+  window.toastTimer = setTimeout(() => t.classList.add('hidden'), 2800);
+}
+
+function initials(s) {
+  return String(s || 'U').split(/\s+/).slice(0, 2).map(x => x[0]).join('').toUpperCase();
+}
+
+function date(s) {
+  try { return new Date(s).toLocaleDateString('pt-BR'); } catch(e) { return ''; }
+}
+
+function catIcon(s) {
+  return (categories.find(c => c.name === s) || categories[6]).icon;
+}
+
+function articleById(id) {
+  return data.articles.find(a => a.id === id);
+}
+
+function prioBadge(p) {
+  let pr = p || 'Média';
+  return '<span class="prio-badge prio-' + esc(pr) + '">● ' + esc(pr) + '</span>';
+}
+
+/* === RENDERIZADOR DO DIAGNÓSTICO DO CÉREBRO 190 === */
+function renderBrainDiagnosisHTML(analise) {
+  if (!analise) return '';
+
+  if (analise.tipo === 'faq') {
+    return `
+      <div class="brain-diagnosis">
+        <div class="brain-head">
+          <span class="brain-badge">🧠 RESPOSTA DO CÉREBRO 190 • DÚVIDA TEÓRICA</span>
+          <span class="muted" style="font-size:12px">Baseado nos protocolos operacionais</span>
+        </div>
+        <h3 style="margin:14px 0 8px;font-size:18px">${esc(analise.titulo)}</h3>
+        <div style="white-space:pre-line;line-height:1.7;font-size:14px">${esc(analise.resposta).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')}</div>
+      </div>
+    `;
+  }
+
+  if (analise.tipo === 'indefinido') {
+    return `
+      <div class="brain-diagnosis" style="border-color:var(--warn)">
+        <div class="brain-head">
+          <span class="brain-badge" style="background:var(--warn)">🧠 ANÁLISE DE RELATO • NATUREZA NÃO CRAVADA</span>
+          <button class="btn secondary small" data-go="brain">＋ Ensinar esta Natureza ao Cérebro</button>
+        </div>
+        <p style="margin:12px 0 6px">${esc(analise.mensagem)}</p>
+        ${analise.contexto?.tagsDetectadas?.length ? `<div class="context-pills">${analise.contexto.tagsDetectadas.map(t => `<span class="context-pill">${esc(t)}</span>`).join('')}</div>` : ''}
+      </div>
+    `;
+  }
+
+  const p = analise.principal;
+  // Tenta localizar a ficha correspondente no catálogo para o botão "Abrir Ficha Completa"
+  const matchedArticle = data.articles.find(a => a.id === p.id || norm(a.title) === norm(p.officialNature)) || data.articles[0];
+
+  return `
+    <div class="brain-diagnosis">
+      <div class="brain-head">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span class="brain-badge">🧠 DIAGNÓSTICO DO CÉREBRO 190 (${analise.confianca}% DE COMPATIBILIDADE)</span>
+          <span class="code">${esc(p.code)}</span>
+          ${prioBadge(p.priority)}
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn secondary small" data-copynature="${esc(p.officialNature)}">⧉ Copiar Natureza</button>
+          ${matchedArticle ? `<button class="btn small" data-open="${esc(matchedArticle.id)}">Abrir Ficha Completa →</button>` : ''}
+        </div>
+      </div>
+
+      <div class="nature-suggestion-box">
+        <small>Natureza Oficial Sugerida para o Despacho:</small>
+        <h2>${esc(p.officialNature)}</h2>
+      </div>
+
+      ${analise.contexto?.tagsDetectadas?.length ? `
+        <div style="margin:12px 0">
+          <small class="muted" style="font-weight:700;text-transform:uppercase;font-size:10.5px">Elementos Extraídos Automaticamente do Relato:</small>
+          <div class="context-pills">
+            ${analise.contexto.tagsDetectadas.map(t => `<span class="context-pill">${esc(t)}</span>`).join('')}
+          </div>
+        </div>
+      ` : ''}
+
+      <p style="margin:10px 0;font-size:13.5px"><b>Enquadramento Técnico:</b> ${esc(p.explanation)} <span class="muted">(${esc(p.legalBase)})</span></p>
+
+      <div class="form-grid" style="margin-top:14px">
+        <div style="background:var(--panel-alt);border:1px solid var(--line);border-radius:12px;padding:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px">
+            <strong style="font-size:13px">📝 Relato Revisado no Padrão Técnico COPOM</strong>
+            <button class="btn ghost small" data-copytext="${esc(analise.relatoRevisado)}">⧉ Copiar Relato</button>
+          </div>
+          <div style="font-family:monospace;font-size:12.5px;background:var(--panel);padding:10px;border-radius:8px;border:1px solid var(--line);line-height:1.55">${esc(analise.relatoRevisado)}</div>
+        </div>
+
+        <div style="background:var(--panel-alt);border:1px solid var(--line);border-radius:12px;padding:14px">
+          <strong style="font-size:13px;display:block;margin-bottom:8px">❓ Perguntas Obrigatórias de Triagem para este Caso</strong>
+          <ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.6">
+            ${(p.triageQuestions || []).map(q => `<li>${esc(q)}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+
+      ${analise.secundarias?.length ? `
+        <div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);font-size:12px" class="muted">
+          <b>Naturezas correlatas / subsidiárias possíveis:</b>
+          ${analise.secundarias.map(s => `<span class="tag" style="margin-left:6px">${esc(s.code)} — ${esc(s.officialNature)}</span>`).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function bindDiagnosisActions(container) {
+  if (!container) return;
+  container.querySelectorAll('[data-copynature]').forEach(b => {
+    b.onclick = () => {
+      navigator.clipboard?.writeText(b.dataset.copynature);
+      toast('Natureza copiada: ' + b.dataset.copynature);
+    };
+  });
+  container.querySelectorAll('[data-copytext]').forEach(b => {
+    b.onclick = () => {
+      navigator.clipboard?.writeText(b.dataset.copytext);
+      toast('Relato técnico copiado para a área de transferência!');
+    };
+  });
+  container.querySelectorAll('[data-open]').forEach(b => {
+    b.onclick = () => openArticle(b.dataset.open);
+  });
+  container.querySelectorAll('[data-go]').forEach(b => {
+    b.onclick = () => go(b.dataset.go);
+  });
+}
+
+/* === SISTEMA DE MODAIS NATIVOS === */
+function closeModal() {
+  $('modalRoot').innerHTML = '';
+}
+
+function showModal(opts) {
+  $('modalRoot').innerHTML = `
+    <div class="modal-backdrop" id="modalBackdrop">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3>${esc(opts.title || 'Informação')}</h3>
+          <button class="btn secondary small" id="modalCloseBtn">✕</button>
+        </div>
+        <div class="modal-body">${opts.bodyHtml || ''}</div>
+        <div class="modal-foot">
+          ${opts.cancelText !== false ? `<button class="btn secondary" id="modalCancelBtn">${esc(opts.cancelText || 'Fechar')}</button>` : ''}
+          ${opts.confirmText ? `<button class="btn ${opts.danger ? 'danger' : ''}" id="modalConfirmBtn">${esc(opts.confirmText)}</button>` : ''}
+        </div>
+      </div>
+    </div>
+  `;
+  $('modalCloseBtn').onclick = closeModal;
+  if ($('modalCancelBtn')) $('modalCancelBtn').onclick = closeModal;
+  $('modalBackdrop').onclick = e => { if (e.target.id === 'modalBackdrop') closeModal(); };
+  if ($('modalConfirmBtn')) {
+    $('modalConfirmBtn').onclick = () => {
+      if (opts.onConfirm) opts.onConfirm();
+    };
+  }
+}
+
+/* === COMMAND PALETTE (CTRL + K) === */
+function openCommandPalette() {
+  if (!user) return;
+  let selectedIdx = 0;
+  $('modalRoot').innerHTML = `
+    <div class="modal-backdrop" id="cmdBackdrop">
+      <div class="modal-card cmd-box">
+        <div class="cmd-input-wrap">
+          <span style="font-size:18px;color:var(--accent)">⌕</span>
+          <input id="cmdInput" placeholder="Busca rápida ou cole um relato curto (código, natureza, artigo penal)..." autocomplete="off">
+          <span class="kbd">ESC</span>
+        </div>
+        <div class="cmd-list" id="cmdResults"></div>
+        <div class="modal-foot" style="justify-content:space-between;font-size:11px;color:var(--muted)">
+          <span>Use <b>↑ ↓</b> para navegar e <b>Enter</b> para abrir</span>
+          <span><b>Ctrl + K</b> Busca Rápida Global</span>
+        </div>
+      </div>
+    </div>
+  `;
+  const input = $('cmdInput');
+  const listEl = $('cmdResults');
+
+  function getFiltered() {
+    let q = input.value.trim();
+    return data.articles
+      .map(a => ({ a, score: scoreArticle(a, q) }))
+      .filter(x => !q || x.score > 0)
+      .sort((x, y) => y.score - x.score)
+      .slice(0, 8)
+      .map(x => x.a);
+  }
+
+  function renderCmdList() {
+    let items = getFiltered();
+    if (selectedIdx >= items.length) selectedIdx = Math.max(0, items.length - 1);
+    if (!items.length) {
+      listEl.innerHTML = '<div class="empty" style="padding:28px"><b>Nenhuma natureza encontrada</b><small>Pressione Enter para analisar com o Cérebro 190 na Pesquisa Avançada</small></div>';
+      return;
+    }
+    listEl.innerHTML = items.map((a, idx) => `
+      <button class="cmd-item ${idx === selectedIdx ? 'selected' : ''}" data-cmdopen="${esc(a.id)}">
+        <div style="min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+            <span class="code">${highlight(a.code, input.value)}</span>
+            <strong style="font-size:13px">${highlight(a.title, input.value)}</strong>
+          </div>
+          <div class="muted" style="font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${highlight(a.summary, input.value)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          ${prioBadge(a.priority)}
+          <span style="color:var(--accent)">↵</span>
+        </div>
+      </button>
+    `).join('');
+    listEl.querySelectorAll('[data-cmdopen]').forEach(b => {
+      b.onclick = () => {
+        closeModal();
+        openArticle(b.dataset.cmdopen);
+      };
+    });
+  }
+
+  input.oninput = () => { selectedIdx = 0; renderCmdList(); };
+  input.onkeydown = e => {
+    let items = getFiltered();
+    if (e.key === 'ArrowDown') { e.preventDefault(); selectedIdx = (selectedIdx + 1) % Math.max(1, items.length); renderCmdList(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); selectedIdx = (selectedIdx - 1 + Math.max(1, items.length)) % Math.max(1, items.length); renderCmdList(); }
+    else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (items[selectedIdx]) { closeModal(); openArticle(items[selectedIdx].id); }
+      else if (input.value.trim()) { query = input.value.trim(); closeModal(); go('search'); }
+    }
+    else if (e.key === 'Escape') { closeModal(); }
+  };
+  $('cmdBackdrop').onclick = e => { if (e.target.id === 'cmdBackdrop') closeModal(); };
+  renderCmdList();
+  setTimeout(() => input.focus(), 20);
+}
+
+/* === MOTOR DE BUSCA POR RELEVÂNCIA E DESTAQUE (<MARK>) === */
+function parseSearchTerms(q) {
+  let out = [];
+  for (const m of String(q || '').matchAll(/"([^"]+)"|(\S+)/g)) {
+    if (m[1]) out.push({ term: norm(m[1]), exact: true, raw: m[1] });
+    else if (m[2]) out.push({ term: norm(m[2]), exact: false, raw: m[2] });
+  }
+  return out;
+}
+
+function containsExactPhrase(hay, needle) {
+  let h = norm(hay);
+  let i = h.indexOf(needle);
+  while (i !== -1) {
+    let before = h[i - 1] || ' ';
+    let after = h[i + needle.length] || ' ';
+    if (!/[\p{L}\p{N}_]/u.test(before) && !/[\p{L}\p{N}_]/u.test(after)) return true;
+    i = h.indexOf(needle, i + 1);
+  }
+  return false;
+}
+
+function scoreArticle(a, q) {
+  let ts = parseSearchTerms(q);
+  if (!ts.length) return 1;
+  let code = norm(a.code);
+  let title = norm(a.title);
+  let tags = norm((a.tags || []).join(' '));
+  let summary = norm(a.summary);
+  let extra = norm([a.category, a.legalBase, a.agency, a.differentiation, (a.triageChecklist || []).join(' '), txt(a.content)].join(' '));
+  let full = [code, title, tags, summary, extra].join(' ');
+
+  // Se for um relato longo colado (mais de 5 palavras), pontua por qualquer palavra-chave relevante encontrada
+  const stopWords = new Set(['uma','que','esta','sendo','pelo','seu','sua','seus','dentro','frente','para','com','por','dos','das','nos','nas','ele','ela','foi','sao','nao','sim','como','qual','entre']);
+  const meaningfulTerms = ts.filter(t => t.term.length >= 3 && !stopWords.has(t.term));
+
+  if (ts.length >= 5 && meaningfulTerms.length) {
+    let relatoScore = 0;
+    meaningfulTerms.forEach(t => {
+      if (title.includes(t.term)) relatoScore += 12;
+      if (tags.includes(t.term)) relatoScore += 10;
+      if (summary.includes(t.term)) relatoScore += 5;
+      if (extra.includes(t.term)) relatoScore += 3;
+    });
+    return relatoScore;
+  }
+
+  let totalScore = 0;
+  for (let t of ts) {
+    if (t.exact) {
+      if (!containsExactPhrase(full, t.term)) return 0;
+      totalScore += 12;
+    } else {
+      if (!full.includes(t.term)) return 0;
+      if (code === t.term) totalScore += 25;
+      else if (code.includes(t.term)) totalScore += 15;
+      if (title.includes(t.term)) totalScore += 10;
+      if (tags.includes(t.term)) totalScore += 6;
+      if (summary.includes(t.term)) totalScore += 4;
+      if (extra.includes(t.term)) totalScore += 2;
+    }
+  }
+  return totalScore;
+}
+
+function highlight(text, q) {
+  let safeText = esc(text || '');
+  const stopWords = new Set(['uma','que','esta','sendo','pelo','seu','sua','seus','dentro','frente','para','com']);
+  let ts = parseSearchTerms(q).map(x => x.raw).filter(x => x.length >= 3 && !stopWords.has(norm(x)));
+  if (!ts.length) return safeText;
+  let pattern = ts.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  try {
+    let regex = new RegExp('(' + pattern + ')', 'gi');
+    return safeText.replace(regex, '<mark>$1</mark>');
+  } catch(e) {
+    return safeText;
+  }
+}
+
+function relatedArticles(a) {
+  let tags = new Set((a.tags || []).map(norm));
+  return data.articles
+    .filter(x => x.id !== a.id)
+    .map(x => ({
+      article: x,
+      score: (x.category === a.category ? 3 : 0) + (x.tags || []).filter(t => tags.has(norm(t))).length * 2
+    }))
+    .filter(x => x.score > 0)
+    .sort((x, y) => y.score - x.score)
+    .slice(0, 4)
+    .map(x => x.article);
+}
+
+function downloadText(filename, content, type) {
+  let url = URL.createObjectURL(new Blob([content], { type: type || 'text/plain;charset=utf-8' }));
+  let link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+function exportArticle(a) {
+  let html = `<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>${esc(a.title)}</title>
+  <style>body{font:15px/1.7 system-ui,sans-serif;max-width:850px;margin:40px auto;padding:24px;color:#0f1d3a}h1{font-size:26px;margin-bottom:6px}blockquote{border-left:4px solid #2563eb;padding:12px 16px;background:#eff4ff}table{border-collapse:collapse;width:100%}td,th{border:1px solid #cbd5e1;padding:8px}.box{background:#f8faff;border:1px solid #e2e8f0;padding:14px;border-radius:10px;margin:16px 0}</style>
+  <h1>${esc(a.code)} — ${esc(a.title)}</h1>
+  <p><b>Categoria:</b> ${esc(a.category)} · <b>Prioridade:</b> ${esc(a.priority || 'Média')} · <b>Base Legal:</b> ${esc(a.legalBase || 'N/A')}</p>
+  <p>${esc(a.summary)}</p>
+  ${a.triageChecklist?.length ? `<div class="box"><b>Perguntas de Triagem 190:</b><ul>${a.triageChecklist.map(q => `<li>${esc(q)}</li>`).join('')}</ul></div>` : ''}
+  ${a.dispatchTemplate ? `<div class="box"><b>Máscara de Despacho COPOM:</b><pre style="white-space:pre-wrap;font-family:monospace">${esc(a.dispatchTemplate)}</pre></div>` : ''}
+  <hr>${safe(a.content)}</html>`;
+  downloadText((a.code || 'natureza').replace(/[^a-z0-9_-]/gi, '_') + '.html', html, 'text/html;charset=utf-8');
+}
+
+function showRevisionModal(a, index) {
+  let v = (a.history || [])[index];
+  if (!v) return;
+  showModal({
+    title: `Comparativo de Revisão — Versão ${index + 1} (${date(v.date)})`,
+    cancelText: 'Fechar visualização',
+    bodyHtml: `
+      <div class="op-meta-grid" style="margin-top:0">
+        <div class="op-meta-item"><small>Autor da versão</small><strong>${esc(v.author || a.author)}</strong></div>
+        <div class="op-meta-item"><small>Data do registro</small><strong>${esc(date(v.date))}</strong></div>
+      </div>
+      <div class="form-grid">
+        <div style="border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--panel-alt)">
+          <span class="code">Versão #${index + 1} (Histórico)</span>
+          <h4 style="margin:8px 0">${esc(v.title || a.title)}</h4>
+          <div class="article-body" style="font-size:13px">${safe(v.content)}</div>
+        </div>
+        <div style="border:1px solid var(--accent);border-radius:12px;padding:14px;background:var(--panel)">
+          <span class="badge">Versão Atual em Vigor</span>
+          <h4 style="margin:8px 0">${esc(a.title)}</h4>
+          <div class="article-body" style="font-size:13px">${safe(a.content)}</div>
+        </div>
+      </div>
+    `
+  });
+}
+
+function restoreRevision(a, index) {
+  if (user.role !== 'admin') return;
+  let v = (a.history || [])[index];
+  if (!v) return;
+  showModal({
+    title: 'Restaurar revisão anterior',
+    bodyHtml: `<p>Deseja restaurar a <b>Versão ${index + 1}</b> de <b>${esc(date(v.date))}</b>? A versão atual será preservada automaticamente no histórico de revisões.</p>`,
+    cancelText: 'Cancelar',
+    confirmText: 'Sim, restaurar versão',
+    onConfirm: () => {
+      a.history.push({ date: a.updated, author: user.name, content: a.content, title: a.title });
+      a.content = safe(v.content);
+      a.title = v.title || a.title;
+      a.updated = now();
+      saveData();
+      closeModal();
+      detail();
+      toast('Revisão restaurada com sucesso');
+    }
+  });
+}
+
+/* === AUTENTICAÇÃO E SHELL === */
+function login() {
+  document.body.classList.toggle('dark', !!data.settings.dark);
+  $('root').innerHTML = `
+    <div class="login-page">
+      <section class="login-art">
+        <div class="brand">
+          <span class="brand-icon">190</span>
+          <span><b>BASE 190 + IA</b><small>COPOM KNOWLEDGE HUB</small></span>
+        </div>
+        <div>
+          <div class="eyebrow">SISTEMA DE SUPORTE À DECISÃO, TRIAGEM E CÉREBRO 190</div>
+          <h1>Cole o relato.<br>Descubra a natureza.</h1>
+          <p>Plataforma inteligente para pesquisar naturezas de ocorrências, colar relatos brutos para classificação automática da natureza, guiar perguntas de triagem e gerar máscaras de despacho policial.</p>
+        </div>
+        <small>● Ambiente de Apresentação Executiva • Cérebro Neural ${esc(window.CEREBRO_190?.versao || 'Ativo')}</small>
+      </section>
+      <section class="login-form">
+        <form class="login-box" id="loginForm">
+          <div class="eyebrow" style="color:var(--accent)">ACESSO AO TERMINAL 190</div>
+          <h2>Identificação Operacional</h2>
+          <p class="muted">Configure seu perfil para acessar a Base de Conhecimento e o Cérebro 190.</p>
+          <div class="form-group">
+            <label class="label" for="loginName">Nome ou Identificação Funcional</label>
+            <input class="field" id="loginName" required maxlength="60" placeholder="Ex.: Atendente Silva / Cb. Oliveira" value="Operador COPOM 190">
+          </div>
+          <div class="form-group">
+            <label class="label" for="loginType">Vínculo Operacional</label>
+            <select class="field" id="loginType">
+              <option>Atendente 190 (Civil / Terceirizado)</option>
+              <option>Policial Militar (Despachador / Supervisor)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="label" for="loginRole">Nível de Permissão (Modo Apresentação)</label>
+            <select class="field" id="loginRole">
+              <option value="admin">Administrador / Treinador do Cérebro (Edição Total)</option>
+              <option value="reader">Operador de Consulta (Leitura, Triagem e Chatbot)</option>
+            </select>
+          </div>
+          <button class="btn" type="submit">Iniciar Sessão Operacional →</button>
+          <div class="login-note">🔒 <b>Modo de Demonstração Ativo:</b> Cole relatos inteiros na barra de pesquisa ou no Chatbot para ver o Cérebro 190 apontar a natureza exata em tempo real.</div>
+        </form>
+      </section>
+    </div>
+  `;
+  $('loginForm').onsubmit = e => {
+    e.preventDefault();
+    user = {
+      name: $('loginName').value.trim() || 'Operador 190',
+      type: $('loginType').value,
+      role: $('loginRole').value
+    };
+    sessionStorage.setItem(SESSION, JSON.stringify(user));
+    page = 'home';
+    render();
+  };
+}
+
+function sidebar() {
+  const allBrainCount = (window.CEREBRO_190?.regrasBase?.length || 0) + customBrainRules.length;
+  const links = [
+    ['home', '⌂', 'Visão geral', null],
+    ['search', '⌕', 'Pesquisa & Relatos', null],
+    ['catalog', '▦', 'Catálogo de naturezas', data.articles.length],
+    ['favorites', '☆', 'Meus favoritos', data.favorites.length],
+    ['recent', '◷', 'Consultas recentes', data.recent.length]
+  ];
+  let out = `
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <span class="brand-icon">190</span>
+        <span><b>BASE 190</b><small>CÉREBRO & CONHECIMENTO</small></span>
+      </div>
+      <div class="side-label">INTELIGÊNCIA ARTIFICIAL 190</div>
+      <button class="nav-btn ai-highlight ${page === 'chatbot' ? 'active' : ''}" data-go="chatbot">
+        <span class="nav-btn-left"><span class="glyph">🤖</span><span>Chatbot & Analisador</span></span>
+        <span class="nav-count">IA</span>
+      </button>
+      <button class="nav-btn ai-highlight ${page === 'brain' ? 'active' : ''}" data-go="brain">
+        <span class="nav-btn-left"><span class="glyph">🧠</span><span>Cérebro 190 (Regras)</span></span>
+        <span class="nav-count">${allBrainCount}</span>
+      </button>
+
+      <div class="side-label">CENTRAL DE CONSULTA</div>
+  `;
+  links.forEach(x => {
+    let isActive = page === x[0] && (x[0] !== 'catalog' || category === 'Todas');
+    out += `
+      <button class="nav-btn ${isActive ? 'active' : ''}" data-go="${x[0]}">
+        <span class="nav-btn-left"><span class="glyph">${x[1]}</span><span>${x[2]}</span></span>
+        ${x[3] != null ? `<span class="nav-count">${x[3]}</span>` : ''}
+      </button>
+    `;
+  });
+  out += `<div class="side-label">CATEGORIAS OPERACIONAIS</div>`;
+  categories.filter(c => c.name !== 'Todas').forEach(c => {
+    let count = data.articles.filter(a => a.category === c.name).length;
+    let isActive = page === 'catalog' && category === c.name;
+    out += `
+      <button class="nav-btn ${isActive ? 'active' : ''}" data-cat="${esc(c.name)}">
+        <span class="nav-btn-left"><span class="glyph">${c.icon}</span><span>${esc(c.name)}</span></span>
+        <span class="nav-count">${count}</span>
+      </button>
+    `;
+  });
+  if (user.role === 'admin') {
+    out += `
+      <div class="side-label">GESTÃO E AUDITORIA</div>
+      <button class="nav-btn ${page === 'manage' || page === 'edit' ? 'active' : ''}" data-go="manage">
+        <span class="nav-btn-left"><span class="glyph">⚙</span><span>Gerenciar conteúdo</span></span>
+      </button>
+    `;
+  }
+  out += `
+      <div class="side-bottom">
+        <div class="side-user">
+          <span class="avatar">${esc(initials(user.name))}</span>
+          <div>
+            <b>${esc(user.name)}</b>
+            <small>${user.role === 'admin' ? 'Supervisor / Admin' : 'Atendimento 190'}</small>
+          </div>
+        </div>
+        <button class="nav-btn" id="switchRoleBtn" title="Alternar rapidamente entre Consulta e Admin para apresentação">
+          <span class="nav-btn-left"><span class="glyph">⇄</span><span>Modo: ${user.role === 'admin' ? 'Admin' : 'Consulta'}</span></span>
+        </button>
+        <button class="nav-btn" id="logout">
+          <span class="nav-btn-left"><span class="glyph">↪</span><span>Encerrar turno</span></span>
+        </button>
+      </div>
+    </aside>
+  `;
+  return out;
+}
+
+function shell() {
+  document.body.classList.toggle('dark', !!data.settings.dark);
+  $('root').innerHTML = `
+    <div class="app">
+      ${sidebar()}
+      <div class="main">
+        <header class="topbar">
+          <div style="display:flex;align-items:center;gap:12px">
+            <button class="btn secondary small mobile-menu" id="menuBtn">☰</button>
+            <div class="breadcrumb">
+              <span>Base 190</span>
+              <span>/</span>
+              <strong id="crumb">Visão geral</strong>
+            </div>
+          </div>
+          <div class="top-actions">
+            <button class="cmd-trigger" id="cmdBtn" title="Pesquisa instantânea em qualquer tela">
+              <span>⌕ Busca rápida COPOM...</span>
+              <span class="kbd">Ctrl K</span>
+            </button>
+            <button class="btn ghost small" data-go="chatbot">🤖 Chatbot IA</button>
+            <span class="pill"><span class="pill-dot"></span>Cérebro Ativo</span>
+            <button class="btn secondary small" id="themeBtn" title="Alternar tema claro/escuro">${data.settings.dark ? '☀ Claro' : '☾ Escuro'}</button>
+          </div>
+        </header>
+        <div class="container" id="content"></div>
+      </div>
+    </div>
+  `;
+  document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => {
+    if (b.dataset.go === 'catalog') category = 'Todas';
+    go(b.dataset.go);
+  });
+  document.querySelectorAll('[data-cat]').forEach(b => b.onclick = () => {
+    category = b.dataset.cat;
+    go('catalog');
+  });
+  $('cmdBtn').onclick = openCommandPalette;
+  $('switchRoleBtn').onclick = () => {
+    user.role = user.role === 'admin' ? 'reader' : 'admin';
+    sessionStorage.setItem(SESSION, JSON.stringify(user));
+    render();
+    toast('Perfil alterado para: ' + (user.role === 'admin' ? 'Administrador' : 'Operador de Consulta'));
+  };
+  $('logout').onclick = () => {
+    sessionStorage.removeItem(SESSION);
+    user = null;
+    login();
+  };
+  $('themeBtn').onclick = () => {
+    data.settings.dark = !data.settings.dark;
+    saveData();
+    render();
+  };
+  $('menuBtn').onclick = () => $('sidebar').classList.toggle('open');
+}
+
+function go(p) {
+  if (page !== 'detail' && page !== 'edit') previousPage = page;
+  page = p;
+  current = null;
+  render();
+  window.scrollTo(0, 0);
+}
+
+function render() {
+  if (!user) return login();
+  shell();
+  const map = {
+    home: 'Visão geral e Classificador Rápido',
+    chatbot: 'Chatbot COPOM IA & Analisador de Relatos',
+    brain: 'Cérebro 190 — Matriz de Regras e Treinamento',
+    search: 'Pesquisa avançada e Diagnóstico de Relatos',
+    catalog: category === 'Todas' ? 'Catálogo de naturezas' : 'Categoria: ' + category,
+    favorites: 'Meus favoritos',
+    recent: 'Consultas recentes',
+    manage: 'Gestão do conhecimento',
+    detail: 'Ficha técnica da natureza',
+    edit: 'Editor de natureza operacional'
+  };
+  $('crumb').textContent = map[page] || 'Base 190';
+  if (page === 'home') home();
+  else if (page === 'chatbot') chatbotPage();
+  else if (page === 'brain') brainManagerPage();
+  else if (['search', 'catalog', 'favorites', 'recent'].includes(page)) listing();
+  else if (page === 'detail') detail();
+  else if (page === 'manage') manage();
+  else if (page === 'edit') editor();
+  else home();
+}
+
+function card(a) {
+  return `
+    <div class="article-card" data-open="${esc(a.id)}">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+        <span class="code">${esc(a.code)}</span>
+        ${prioBadge(a.priority)}
+      </div>
+      <h3>${esc(a.title)}</h3>
+      <p>${esc(a.summary)}</p>
+      <footer>
+        <span>${catIcon(a.category)} ${esc(a.category)}</span>
+        <span style="color:var(--accent);font-weight:700">Triagem & Máscara →</span>
+      </footer>
+    </div>
+  `;
+}
+
+function bindCards() {
+  document.querySelectorAll('[data-open]').forEach(e => e.onclick = () => openArticle(e.dataset.open));
+}
+
+/* === PÁGINA INICIAL COM BARRA INTELIGENTE QUE LÊ RELATOS === */
+function home() {
+  let cats = categories.filter(c => c.name !== 'Todas');
+  let popular = [...data.articles].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 6);
+  const allBrainCount = (window.CEREBRO_190?.regrasBase?.length || 0) + customBrainRules.length;
+
+  $('content').innerHTML = `
+    <section class="hero">
+      <div class="eyebrow">CENTRAL DE INTELIGÊNCIA, CONHECIMENTO E CÉREBRO 190</div>
+      <h1>Cole o relato do solicitante ou<br>pesquise uma natureza</h1>
+      <p>Cole na barra abaixo o relato inteiro da ocorrência ou uma dúvida operacional: o Cérebro 190 analisa o texto na hora, aponta a natureza oficial, gera o relato revisado e lista as perguntas de triagem.</p>
+      <form class="hero-search" id="heroForm">
+        <span>🧠</span>
+        <input id="heroInput" placeholder="Cole o relato aqui (ex: mulher sendo agredida pelo marido em frente aos filhos) ou busque..." autocomplete="off">
+        <button type="submit">Analisar / Buscar →</button>
+      </form>
+      <div class="hero-tags">
+        <span>Clique para testar um relato no Cérebro:</span>
+        <button type="button" class="hero-tag" data-sample="uma mulher informando que está sendo agredida pelo seu marido dentro de casa em frente a seus filhos">🚨 Relato: Mulher agredida pelo marido</button>
+        <button type="button" class="hero-tag" data-sample="dois indivíduos em uma moto apontaram um revólver para a vítima e levaram o celular">🔫 Relato: Roubo com arma</button>
+        <button type="button" class="hero-tag" data-sample="ex-marido está no portão tentando entrar e a vítima possui medida protetiva">🛡️ Relato: Medida Protetiva</button>
+        <button type="button" class="hero-tag" data-sample="qual a diferença entre furto e roubo?">❓ Dúvida: Furto vs Roubo</button>
+      </div>
+    </section>
+
+    <!-- Diagnóstico Instantâneo do Cérebro 190 na própria Home -->
+    <div id="homeBrainOutput"></div>
+
+    <div class="stats">
+      <div class="stat"><span class="stat-icon">🧠</span><div class="num">${allBrainCount}</div><div class="stat-label">Regras no Cérebro 190</div></div>
+      <div class="stat"><span class="stat-icon">📚</span><div class="num">${data.articles.length}</div><div class="stat-label">Naturezas homologadas</div></div>
+      <div class="stat"><span class="stat-icon">☆</span><div class="num">${data.favorites.length}</div><div class="stat-label">Naturezas favoritas</div></div>
+      <div class="stat"><span class="stat-icon">◉</span><div class="num">${data.articles.reduce((s, a) => s + (a.views || 0), 0)}</div><div class="stat-label">Consultas realizadas</div></div>
+    </div>
+
+    <div class="section-head">
+      <div>
+        <h2>Categorias Operacionais</h2>
+        <p>Filtre rapidamente os protocolos por grupo de atendimento</p>
+      </div>
+      <button class="btn secondary small" data-go="catalog">Catálogo completo →</button>
+    </div>
+    <div class="category-grid">
+      ${cats.map(c => `
+        <button class="cat-card" data-cat="${esc(c.name)}">
+          <span class="cat-icon">${c.icon}</span>
+          <div>
+            <b>${esc(c.name)}</b>
+            <small>${data.articles.filter(a => a.category === c.name).length} naturezas cadastradas →</small>
+          </div>
+        </button>
+      `).join('')}
+    </div>
+
+    <div class="section-head">
+      <div>
+        <h2>Naturezas em Destaque no Turno</h2>
+        <p>Fichas completas com roteiro de triagem interativo e gerador de máscara COPOM</p>
+      </div>
+      <button class="btn secondary small" data-go="search">Pesquisa avançada →</button>
+    </div>
+    <div class="article-grid">${popular.map(card).join('')}</div>
+
+    <div class="panel" style="margin-top:24px;background:linear-gradient(100deg,var(--panel),var(--soft))">
+      <b>💡 Dica de Uso Duplo (Busca + Cérebro IA)</b>
+      <p class="muted" style="margin:6px 0 0">Você pode usar a pesquisa tanto para buscar códigos e palavras exatas entre aspas (ex.: <code>"violência doméstica"</code>) quanto para colar o relato bruto narrado pelo solicitante e deixar o Cérebro 190 indicar a natureza correta.</p>
+    </div>
+  `;
+
+  function runHeroAnalysis(text) {
+    let val = text.trim();
+    if (!val || !window.CEREBRO_190?.analisarEntrada) return;
+    let analise = window.CEREBRO_190.analisarEntrada(val, customBrainRules);
+    const out = $('homeBrainOutput');
+    out.innerHTML = renderBrainDiagnosisHTML(analise);
+    bindDiagnosisActions(out);
+  }
+
+  $('heroInput').oninput = e => {
+    if (e.target.value.trim().length >= 10) runHeroAnalysis(e.target.value);
+    else $('homeBrainOutput').innerHTML = '';
+  };
+
+  $('heroForm').onsubmit = e => {
+    e.preventDefault();
+    query = $('heroInput').value;
+    category = 'Todas';
+    priorityFilter = 'Todas';
+    go('search');
+  };
+
+  document.querySelectorAll('[data-sample]').forEach(b => {
+    b.onclick = () => {
+      $('heroInput').value = b.dataset.sample;
+      runHeroAnalysis(b.dataset.sample);
+    };
+  });
+  document.querySelectorAll('[data-cat]').forEach(b => b.onclick = () => {
+    category = b.dataset.cat;
+    go('catalog');
+  });
+  document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
+  bindCards();
+}
+
+/* === LISTAGEM, PESQUISA AVANÇADA E DIAGNÓSTICO DE RELATOS === */
+function listing() {
+  let heading = {
+    search: 'Pesquisa Avançada & Analisador de Relatos',
+    catalog: 'Catálogo Operacional de Naturezas',
+    favorites: 'Meus Favoritos de Acesso Rápido',
+    recent: 'Histórico de Consultas Recentes'
+  }[page];
+
+  $('content').innerHTML = `
+    <div class="section-head" style="margin-top:0">
+      <div>
+        <div class="eyebrow" style="color:var(--accent)">BASE DE CONHECIMENTO + CÉREBRO 190</div>
+        <h1 style="font-size:28px;letter-spacing:-0.8px;margin:6px 0">${heading}</h1>
+        <p>Cole um relato completo para diagnóstico automático da natureza ou filtre o catálogo abaixo</p>
+      </div>
+      <span class="badge" id="resultCountBadge">0 resultados</span>
+    </div>
+    <div class="panel">
+      <div class="form-grid-3">
+        <div>
+          <label class="label">Relato do solicitante, pergunta, código ou palavra-chave</label>
+          <input id="searchInput" class="field" placeholder="Cole o relato ou digite código, título, tag..." value="${esc(query)}">
+        </div>
+        <div>
+          <label class="label">Prioridade operacional</label>
+          <select id="prioInput" class="field">
+            ${priorities.map(p => `<option value="${esc(p)}">${p === 'Todas' ? 'Todas as prioridades' : 'Prioridade ' + p}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="label">Ordenação dos resultados</label>
+          <select id="sortInput" class="field">
+            <option value="relevance">Maior relevância operacional</option>
+            <option value="priority">Maior urgência (Crítica → Baixa)</option>
+            <option value="alphabetical">Ordem alfabética (A → Z)</option>
+            <option value="recent">Atualizações mais recentes</option>
+          </select>
+        </div>
+      </div>
+      <div class="filters">
+        ${categories.map(c => `<button class="filter ${category === c.name ? 'active' : ''}" data-filter="${esc(c.name)}">${c.icon} ${esc(c.name)}</button>`).join('')}
+      </div>
+    </div>
+
+    <!-- Box onde o Cérebro 190 responde sempre que um relato ou pergunta é colado -->
+    <div id="searchBrainBox" style="margin-bottom:18px"></div>
+
+    <div class="results" id="resultList"></div>
+  `;
+
+  $('prioInput').value = priorityFilter;
+  $('sortInput').value = sort;
+  $('prioInput').onchange = e => { priorityFilter = e.target.value; refreshResults(); };
+  $('sortInput').onchange = e => { sort = e.target.value; refreshResults(); };
+  $('searchInput').oninput = e => { query = e.target.value; refreshResults(); };
+  document.querySelectorAll('[data-filter]').forEach(b => b.onclick = () => {
+    category = b.dataset.filter;
+    listing();
+  });
+  refreshResults();
+}
+
+function refreshResults() {
+  // 1. Aciona o Cérebro 190 se houver um relato ou pergunta digitada
+  const brainBox = $('searchBrainBox');
+  if (brainBox) {
+    if (query.trim().length >= 8 && window.CEREBRO_190?.analisarEntrada) {
+      const analise = window.CEREBRO_190.analisarEntrada(query, customBrainRules);
+      brainBox.innerHTML = renderBrainDiagnosisHTML(analise);
+      bindDiagnosisActions(brainBox);
+    } else {
+      brainBox.innerHTML = '';
+    }
+  }
+
+  // 2. Filtra e pontua os artigos do catálogo
+  let base = page === 'favorites'
+    ? data.articles.filter(a => data.favorites.includes(a.id))
+    : page === 'recent'
+    ? data.recent.map(articleById).filter(Boolean)
+    : data.articles;
+
+  const prioWeight = { 'Crítica': 4, 'Alta': 3, 'Média': 2, 'Baixa': 1 };
+
+  let scored = base
+    .filter(a => (category === 'Todas' || a.category === category))
+    .filter(a => (priorityFilter === 'Todas' || (a.priority || 'Média') === priorityFilter))
+    .map(a => ({ a, score: scoreArticle(a, query) }))
+    .filter(x => x.score > 0);
+
+  if (sort === 'relevance') {
+    scored.sort((x, y) => y.score - x.score || ((y.a.views || 0) - (x.a.views || 0)));
+  } else if (sort === 'priority') {
+    scored.sort((x, y) => (prioWeight[y.a.priority] || 2) - (prioWeight[x.a.priority] || 2));
+  } else if (sort === 'alphabetical') {
+    scored.sort((x, y) => x.a.title.localeCompare(y.a.title, 'pt-BR'));
+  } else if (sort === 'recent') {
+    scored.sort((x, y) => new Date(y.a.updated) - new Date(x.a.updated));
+  }
+
+  let items = scored.map(x => x.a);
+  if ($('resultCountBadge')) $('resultCountBadge').textContent = items.length + (items.length === 1 ? ' resultado' : ' resultados');
+
+  let out = $('resultList');
+  out.innerHTML = items.length ? items.map(a => `
+    <div class="result" data-open="${esc(a.id)}">
+      <div style="min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="code">${highlight(a.code, query)}</span>
+          ${prioBadge(a.priority)}
+          <span class="muted" style="font-size:11.5px">${catIcon(a.category)} ${esc(a.category)}</span>
+          ${a.legalBase ? `<span class="muted" style="font-size:11.5px">· ⚖ ${highlight(a.legalBase, query)}</span>` : ''}
+        </div>
+        <h3>${highlight(a.title, query)}</h3>
+        <p>${highlight(a.summary, query)}</p>
+        <div class="tags">${(a.tags || []).slice(0, 6).map(t => `<span class="tag">#${highlight(t, query)}</span>`).join('')}</div>
+      </div>
+      <span style="color:var(--accent);font-size:20px;font-weight:700;flex-shrink:0">→</span>
+    </div>
+  `).join('') : `
+    <div class="panel empty">
+      <div style="font-size:36px">⌕</div>
+      <b>Nenhuma ficha adicional encontrada no filtro abaixo</b>
+      <p>Verifique o Diagnóstico do Cérebro 190 acima ou limpe os filtros para ver todo o catálogo.</p>
+      <button class="btn secondary small" id="resetSearchBtn" style="margin-top:8px">Limpar filtros de busca</button>
+    </div>
+  `;
+
+  if ($('resetSearchBtn')) {
+    $('resetSearchBtn').onclick = () => {
+      query = '';
+      category = 'Todas';
+      priorityFilter = 'Todas';
+      listing();
+    };
+  }
+  bindCards();
+}
+
+/* === PÁGINA DO CHATBOT COPOM IA === */
+function chatbotPage() {
+  $('content').innerHTML = `
+    <div class="section-head" style="margin-top:0">
+      <div>
+        <div class="eyebrow" style="color:var(--accent)">ASSISTENTE NEURAL DE DESPACHO 190</div>
+        <h1 style="font-size:28px;letter-spacing:-0.8px;margin:6px 0">🤖 Chatbot COPOM & Analisador de Relatos</h1>
+        <p>Cole qualquer relato bruto ou tire dúvidas operacionais em formato de conversa interativa</p>
+      </div>
+      <button class="btn secondary small" id="clearChatBtn">↺ Limpar Conversa</button>
+    </div>
+
+    <div class="chat-shell">
+      <div class="chat-window">
+        <div class="chat-top">
+          <div>
+            <strong>Cérebro Operacional 190 (${esc(window.CEREBRO_190?.versao || 'Ativo')})</strong>
+            <div style="font-size:11.5px;opacity:0.85">Classificação de Natureza + Revisão Técnica COPOM em tempo real</div>
+          </div>
+          <span class="badge" style="background:rgba(255,255,255,0.2);color:#fff">● Online</span>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <form class="chat-input-bar" id="chatForm">
+          <textarea id="chatInput" rows="2" placeholder="Cole o relato do solicitante aqui ou digite sua pergunta (Enter para enviar)..."></textarea>
+          <button class="btn" type="submit" style="height:44px">Analisar ↵</button>
+        </form>
+      </div>
+
+      <div>
+        <div class="panel">
+          <h2>⚡ Casos Prontos para Testar</h2>
+          <p class="muted" style="font-size:12px">Clique em qualquer exemplo abaixo para enviá-lo imediatamente ao Chatbot:</p>
+          <div style="display:grid;gap:8px">
+            <button class="related-link" data-chattest="Uma mulher informando que está sendo agredida pelo seu marido dentro de casa em frente a seus filhos.">
+              <span>🚨</span><span>Mulher agredida pelo marido em frente aos filhos</span>
+            </button>
+            <button class="related-link" data-chattest="Solicitante informa que seu ex-companheiro está na frente do portão gritando que vai matá-la e ela tem medida protetiva.">
+              <span>🛡️</span><span>Ex-companheiro violando Medida Protetiva</span>
+            </button>
+            <button class="related-link" data-chattest="Dois indivíduos em uma motocicleta preta apontaram arma de fogo para o pedestre e roubaram seu telefone celular.">
+              <span>🔫</span><span>Assalto à mão armada em via pública</span>
+            </button>
+            <button class="related-link" data-chattest="Solicitante ouviu barulho no telhado e visualizou um indivíduo dentro do quintal tentando forçar a janela.">
+              <span>🏠</span><span>Invasão / Furto em andamento agora</span>
+            </button>
+            <button class="related-link" data-chattest="Colisão entre carro e motocicleta na avenida principal, motociclista está caído no chão sangrando.">
+              <span>🚑</span><span>Acidente de trânsito com motociclista ferido</span>
+            </button>
+            <button class="related-link" data-chattest="Vizinho com som automotivo extremamente alto desde a meia-noite perturbando toda a rua.">
+              <span>🔊</span><span>Perturbação do sossego (Som alto)</span>
+            </button>
+            <button class="related-link" data-chattest="Qual a diferença entre furto e roubo no atendimento 190?">
+              <span>❓</span><span>Pergunta: Diferença entre Furto e Roubo</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  function renderMessages() {
+    const box = $('chatMessages');
+    box.innerHTML = chatHistory.map(m => `
+      <div class="msg ${m.role}">${m.html}</div>
+    `).join('');
+    bindDiagnosisActions(box);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function sendChatMessage(text) {
+    let val = text.trim();
+    if (!val) return;
+    chatHistory.push({ role: 'user', html: esc(val) });
+    const analise = window.CEREBRO_190?.analisarEntrada ? window.CEREBRO_190.analisarEntrada(val, customBrainRules) : null;
+    chatHistory.push({
+      role: 'bot',
+      html: renderBrainDiagnosisHTML(analise) || '<p>Não foi possível processar o relato.</p>'
+    });
+    renderMessages();
+  }
+
+  $('chatForm').onsubmit = e => {
+    e.preventDefault();
+    let val = $('chatInput').value;
+    $('chatInput').value = '';
+    sendChatMessage(val);
+  };
+
+  $('chatInput').onkeydown = e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      $('chatForm').requestSubmit();
+    }
+  };
+
+  $('clearChatBtn').onclick = () => {
+    chatHistory = chatHistory.slice(0, 1);
+    renderMessages();
+  };
+
+  document.querySelectorAll('[data-chattest]').forEach(b => {
+    b.onclick = () => sendChatMessage(b.dataset.chattest);
+  });
+
+  renderMessages();
+}
+
+/* === PÁGINA DE TREINAMENTO DO CÉREBRO 190 (ALIMENTAR NOVAS NATUREZAS) === */
+function brainManagerPage() {
+  const baseRules = window.CEREBRO_190?.regrasBase || [];
+  const allRules = [...customBrainRules, ...baseRules];
+
+  $('content').innerHTML = `
+    <div class="section-head" style="margin-top:0">
+      <div>
+        <div class="eyebrow" style="color:var(--accent)">MATRIZ DE INTELIGÊNCIA EXPANSÍVEL</div>
+        <h1 style="font-size:28px;letter-spacing:-0.8px;margin:6px 0">🧠 Cérebro 190 — Alimentar Novas Naturezas</h1>
+        <p>Cadastre novas naturezas e palavras-gatilho para expandir o reconhecimento automático de relatos</p>
+      </div>
+      <button class="btn" id="downloadBrainJsBtn">↓ Exportar Regras do Cérebro (.JS)</button>
+    </div>
+
+    <div class="panel">
+      <h2>＋ Ensinar Nova Natureza ao Cérebro 190</h2>
+      <div class="form-grid-3">
+        <div>
+          <label class="label">Nome Oficial da Natureza (Padrão COPOM) *</label>
+          <input id="bNature" class="field" placeholder="Ex.: ESTELIONATO / FRAUDE ELETRÔNICA">
+        </div>
+        <div>
+          <label class="label">Código *</label>
+          <input id="bCode" class="field" placeholder="Ex.: PAT-009">
+        </div>
+        <div>
+          <label class="label">Prioridade</label>
+          <select id="bPrio" class="field">
+            <option>Crítica</option><option>Alta</option><option selected>Média</option><option>Baixa</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="label">Grupo 1 de Palavras-Gatilho Obrigatórias (Separadas por vírgula) *</label>
+          <input id="bGroup1" class="field" placeholder="Ex.: golpe, pix, estelionato, falso boleto, clonaram">
+        </div>
+        <div class="form-group">
+          <label class="label">Grupo 2 de Contexto Combinado (Opcional - separadas por vírgula)</label>
+          <input id="bGroup2" class="field" placeholder="Ex.: banco, dinheiro, transferencia, whatsapp">
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="label">Categoria no Catálogo</label>
+          <select id="bCategory" class="field">
+            ${categories.filter(c => c.name !== 'Todas').map(c => `<option>${esc(c.name)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="label">Base Legal / Tipificação</label>
+          <input id="bLegal" class="field" placeholder="Ex.: Art. 171 do Código Penal">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="label">Explicação / Orientação Técnica da Natureza</label>
+        <input id="bExp" class="field" placeholder="Ex.: Obtenção de vantagem ilícita em prejuízo alheio mediante fraude ou ardil.">
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="label">Perguntas de Triagem 190 (Uma por linha)</label>
+          <textarea id="bQuestions" class="field" rows="3" placeholder="Qual foi o meio utilizado no golpe?\nO autor teve contato presencial ou apenas virtual?"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="label">Máscara de Despacho Padrão (Use [COLCHETES] para variáveis)</label>
+          <textarea id="bMask" class="field" rows="3" placeholder="SOLICITANTE INFORMA TER SIDO VÍTIMA DE ESTELIONATO MEDIANTE [MODALIDADE DO GOLPE]. ORIENTADO QUANTO AOS PROCEDIMENTOS LEGAIS."></textarea>
+        </div>
+      </div>
+
+      <button class="btn" id="saveRuleBtn">✓ Salvar Regra no Cérebro e Publicar Ficha no Catálogo</button>
+    </div>
+
+    <div class="panel">
+      <h2>📋 Regras Neurais Ativas no Cérebro (${allRules.length})</h2>
+      <div class="results">
+        ${allRules.map(r => {
+          const isCustom = String(r.id).startsWith('custom-');
+          return `
+            <div class="result" style="cursor:default">
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <span class="code">${esc(r.code)}</span>
+                  ${prioBadge(r.priority)}
+                  ${isCustom ? `<span class="badge">Customizada</span>` : `<span class="tag">Regra Base</span>`}
+                  <span class="muted" style="font-size:12px">${esc(r.legalBase || '')}</span>
+                </div>
+                <h3 style="margin:6px 0">${esc(r.officialNature)}</h3>
+                <p>${esc(r.explanation)}</p>
+                <div class="tags">
+                  ${(r.requiredGroups || []).flat().slice(0, 12).map(k => `<span class="tag">${esc(k)}</span>`).join('')}
+                </div>
+              </div>
+              ${isCustom ? `<button class="btn danger small" data-delrule="${esc(r.id)}">Excluir</button>` : ''}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+
+  $('saveRuleBtn').onclick = () => {
+    const officialNature = $('bNature').value.trim().toUpperCase();
+    const code = $('bCode').value.trim().toUpperCase();
+    const g1 = $('bGroup1').value.split(',').map(x => x.trim()).filter(Boolean);
+    const g2 = $('bGroup2').value.split(',').map(x => x.trim()).filter(Boolean);
+
+    if (!officialNature || !code || !g1.length) {
+      return toast('Preencha o Nome da Natureza, Código e pelo menos o Grupo 1 de palavras-gatilho!');
+    }
+
+    const novaRegra = {
+      id: 'custom-' + Date.now(),
+      code,
+      officialNature,
+      category: $('bCategory').value,
+      priority: $('bPrio').value,
+      legalBase: $('bLegal').value.trim() || 'Legislação Penal Vigente',
+      agency: 'Polícia Militar',
+      requiredGroups: g2.length ? [g1, g2] : [g1],
+      boostKeywords: g1.slice(0, 4),
+      excludeKeywords: [],
+      explanation: $('bExp').value.trim() || officialNature,
+      triageQuestions: $('bQuestions').value.split('\n').map(x => x.trim()).filter(Boolean),
+      dispatchMask: $('bMask').value.trim() || `SOLICITANTE INFORMA OCORRÊNCIA DE ${officialNature}. VIATURA SOLICITADA PARA AVERIGUAÇÃO.`
+    };
+
+    customBrainRules.unshift(novaRegra);
+    saveBrain();
+
+    data.articles.unshift({
+      id: novaRegra.id,
+      code: novaRegra.code,
+      title: novaRegra.officialNature,
+      category: novaRegra.category,
+      priority: novaRegra.priority,
+      legalBase: novaRegra.legalBase,
+      agency: novaRegra.agency,
+      differentiation: novaRegra.explanation,
+      triageChecklist: novaRegra.triageQuestions,
+      dispatchTemplate: novaRegra.dispatchMask,
+      summary: novaRegra.explanation,
+      tags: [...g1, ...g2],
+      content: `<h2>Enquadramento Operacional</h2><p>${esc(novaRegra.explanation)}</p>`,
+      author: user.name,
+      created: now(),
+      updated: now(),
+      views: 1,
+      comments: [],
+      history: []
+    });
+    saveData();
+
+    toast('Nova natureza aprendida pelo Cérebro 190 e adicionada ao catálogo!');
+    brainManagerPage();
+  };
+
+  document.querySelectorAll('[data-delrule]').forEach(b => {
+    b.onclick = () => {
+      customBrainRules = customBrainRules.filter(r => r.id !== b.dataset.delrule);
+      saveBrain();
+      brainManagerPage();
+      toast('Regra customizada removida');
+    };
+  });
+
+  $('downloadBrainJsBtn').onclick = () => {
+    const content = `// Regras Exportadas do Cérebro 190\nwindow.REGRAS_EXPORTADAS_190 = ${JSON.stringify(allRules, null, 2)};`;
+    downloadText('regras-cerebro-190.js', content, 'application/javascript;charset=utf-8');
+    toast('Arquivo JS de regras exportado!');
+  };
+}
+
+/* === PÁGINA DE DETALHES COMPLETA (TRIAGEM + MÁSCARA DINÂMICA + TOC + REVISÕES + COMENTÁRIOS) === */
+function openArticle(id) {
+  let a = articleById(id);
+  if (!a) return;
+  if (page !== 'detail' && page !== 'edit') previousPage = page;
+  current = id;
+  a.views = (a.views || 0) + 1;
+  data.recent = [id, ...data.recent.filter(x => x !== id)].slice(0, 20);
+  saveData();
+  page = 'detail';
+  render();
+  window.scrollTo(0, 0);
+}
+
+function detail() {
+  let a = articleById(current);
+  if (!a) return go('catalog');
+  let favorite = data.favorites.includes(a.id);
+  let checkedMap = triageState[a.id] || {};
+  let checklist = Array.isArray(a.triageChecklist) ? a.triageChecklist : [];
+  let checkedCount = checklist.filter((_, idx) => checkedMap[idx]).length;
+
+  let rawMask = a.dispatchTemplate || '';
+  let placeholders = [...new Set([...rawMask.matchAll(/\[([^\]]+)\]/g)].map(m => m[1]))];
+
+  $('content').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap" class="no-print">
+      <button class="btn secondary small" id="back">← Voltar para ${previousPage === 'search' ? 'Pesquisa' : previousPage === 'favorites' ? 'Favoritos' : previousPage === 'recent' ? 'Recentes' : previousPage === 'chatbot' ? 'Chatbot IA' : previousPage === 'home' ? 'Início' : 'Catálogo'}</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn ${favorite ? 'ghost' : 'secondary'} small" id="favoriteBtn">${favorite ? '★ Favoritado' : '☆ Favoritar'}</button>
+        <button class="btn secondary small" id="copyRefBtn">⧉ Copiar Referência</button>
+        <button class="btn secondary small" id="printBtn">▤ Imprimir / PDF</button>
+        <button class="btn secondary small" id="exportArticleBtn">↓ Exportar HTML</button>
+        ${user.role === 'admin' ? `<button class="btn small" id="editBtn">✎ Editar Natureza</button>` : ''}
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:16px">
+      <div>
+        <div class="panel">
+          <div class="detail-head">
+            <div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span class="code">${esc(a.code)}</span>
+                ${prioBadge(a.priority)}
+                <span class="tag">${catIcon(a.category)} ${esc(a.category)}</span>
+              </div>
+              <h1>${esc(a.title)}</h1>
+            </div>
+          </div>
+          <p class="muted" style="font-size:14px;margin:4px 0 14px">${esc(a.summary)}</p>
+
+          <div class="op-meta-grid">
+            <div class="op-meta-item">
+              <small>⚖ Tipificação / Base Legal de Referência</small>
+              <strong>${esc(a.legalBase || 'Consulte diretriz institucional')}</strong>
+            </div>
+            <div class="op-meta-item">
+              <small>🚓 Competência / Empenho Operacional</small>
+              <strong>${esc(a.agency || 'Polícia Militar (190)')}</strong>
+            </div>
+          </div>
+
+          ${a.differentiation ? `
+            <div class="diff-alert">
+              <b>⚠ Atenção na Triagem (Diferenciação / Enquadramento):</b>
+              <span>${esc(a.differentiation)}</span>
+            </div>
+          ` : ''}
+
+          ${checklist.length ? `
+            <div class="triage-box">
+              <div class="triage-header">
+                <div>
+                  <strong style="font-size:14.5px">📋 Roteiro de Triagem Telefônica 190</strong>
+                  <div class="muted" style="font-size:11.5px">Marque os itens verificados durante a entrevista com o solicitante</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span class="badge" id="triageCounter">${checkedCount}/${checklist.length} verificados</span>
+                  <button class="btn secondary small no-print" id="resetTriageBtn">Limpar</button>
+                </div>
+              </div>
+              <div id="triageList">
+                ${checklist.map((q, idx) => `
+                  <label class="triage-item ${checkedMap[idx] ? 'checked' : ''}" data-tidx="${idx}">
+                    <input type="checkbox" ${checkedMap[idx] ? 'checked' : ''}>
+                    <span><b>${idx + 1}.</b> ${esc(q)}</span>
+                  </label>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          ${rawMask ? `
+            <div class="dispatch-box">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+                <div>
+                  <strong style="font-size:14.5px">⚡ Gerador de Relato Padrão COPOM (Máscara de Despacho)</strong>
+                  <div class="muted" style="font-size:11.5px">Preencha os campos variáveis abaixo ou edite diretamente o texto final antes de copiar</div>
+                </div>
+                <div style="display:flex;gap:6px">
+                  <button class="btn secondary small" id="resetMaskBtn">↺ Resetar</button>
+                  <button class="btn small" id="copyMaskBtn">⧉ Copiar Relato COPOM</button>
+                </div>
+              </div>
+              ${placeholders.length ? `
+                <div class="dispatch-vars">
+                  ${placeholders.map(ph => `
+                    <input type="text" data-ph="${esc(ph)}" placeholder="[${esc(ph)}]" title="Preencher [${esc(ph)}]">
+                  `).join('')}
+                </div>
+              ` : ''}
+              <textarea id="dispatchOutput" rows="4">${esc(rawMask)}</textarea>
+            </div>
+          ` : ''}
+
+          <div class="article-body" id="articleBodyContent">${safe(a.content)}</div>
+
+          <hr style="border:0;border-top:1px solid var(--line);margin:24px 0 14px">
+          <div class="meta">
+            <span>✎ Responsável: <b>${esc(a.author)}</b></span>
+            <span>◷ Atualizado em ${date(a.updated)}</span>
+            <span>◉ ${a.views || 0} consultas registradas</span>
+          </div>
+          <div class="tags">${(a.tags || []).map(t => `<span class="tag">#${esc(t)}</span>`).join('')}</div>
+        </div>
+
+        <div class="panel no-print">
+          <h2>💬 Observações Operacionais e Dúvidas (${(a.comments || []).length})</h2>
+          <div id="comments">
+            ${(a.comments || []).length ? [...a.comments].sort((x, y) => (y.pinned ? 1 : 0) - (x.pinned ? 1 : 0)).map((c, i) => `
+              <div class="comment ${c.pinned ? 'pinned' : ''}">
+                <div class="comment-head">
+                  <div>
+                    <b>${esc(c.author)}</b>
+                    <span class="tag" style="margin-left:6px">${esc(c.type || 'Observação')}</span>
+                    ${c.pinned ? `<span class="badge" style="margin-left:4px">📌 Fixado</span>` : ''}
+                    <small class="muted" style="margin-left:6px">${date(c.date)}</small>
+                  </div>
+                  <div style="display:flex;gap:4px">
+                    ${user.role === 'admin' ? `<button class="btn secondary small" data-pincomment="${esc(c.id || i)}" title="Fixar/Desafixar">📌</button>` : ''}
+                    ${(user.role === 'admin' || c.author === user.name) ? `<button class="btn danger small" data-delcomment="${esc(c.id || i)}" title="Excluir comentário">✕</button>` : ''}
+                  </div>
+                </div>
+                <div>${esc(c.text)}</div>
+              </div>
+            `).join('') : '<p class="muted" style="font-size:12.5px">Nenhuma observação operacional registrada para esta natureza.</p>'}
+          </div>
+          <div class="form-grid" style="margin-top:14px">
+            <div>
+              <label class="label">Tipo de apontamento</label>
+              <select id="commentType" class="field">
+                <option>Dúvida Operacional</option>
+                <option>Orientação de Supervisão</option>
+                <option>Sugestão de Melhoria</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="label">Nova observação para a equipe</label>
+            <textarea class="field" id="commentText" rows="2" placeholder="Registre uma orientação de despacho, particularidade regional ou dúvida..."></textarea>
+          </div>
+          <button class="btn small" id="addComment">Publicar na ficha</button>
+        </div>
+      </div>
+
+      <div class="no-print">
+        <div class="panel" id="tocPanel">
+          <h2>📑 Índice da Ficha</h2>
+          <div id="tocList"></div>
+        </div>
+
+        <div class="panel">
+          <h2>🔗 Naturezas Relacionadas</h2>
+          <div id="relatedList"></div>
+        </div>
+
+        <div class="panel">
+          <h2>🕓 Histórico de Revisões (${(a.history || []).length})</h2>
+          <div id="revisionList"></div>
+        </div>
+
+        <div class="panel">
+          <b>🛡️ Nota Institucional</b>
+          <p class="muted" style="font-size:12px;margin-bottom:0">Ambiente demonstrativo de gestão do conhecimento. Valide sempre os códigos finais e diretrizes operacionais no sistema oficial da corporação.</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  $('back').onclick = () => go(previousPage || 'catalog');
+  $('favoriteBtn').onclick = () => {
+    data.favorites = favorite ? data.favorites.filter(id => id !== a.id) : [...data.favorites, a.id];
+    saveData();
+    detail();
+    toast(favorite ? 'Removido dos favoritos' : 'Adicionado aos favoritos');
+  };
+  $('copyRefBtn').onclick = () => {
+    let text = a.code + ' — ' + a.title + ' | ' + a.summary;
+    navigator.clipboard?.writeText(text).then(() => toast('Referência copiada!')).catch(() => toast('Não foi possível copiar'));
+  };
+  $('printBtn').onclick = () => window.print();
+  $('exportArticleBtn').onclick = () => exportArticle(a);
+  if ($('editBtn')) $('editBtn').onclick = () => { editId = a.id; page = 'edit'; render(); };
+
+  document.querySelectorAll('[data-tidx]').forEach(lbl => {
+    let input = lbl.querySelector('input');
+    input.onchange = () => {
+      let idx = +lbl.dataset.tidx;
+      triageState[a.id] = triageState[a.id] || {};
+      triageState[a.id][idx] = input.checked;
+      lbl.classList.toggle('checked', input.checked);
+      let totalChecked = checklist.filter((_, i) => triageState[a.id][i]).length;
+      $('triageCounter').textContent = `${totalChecked}/${checklist.length} verificados`;
+    };
+  });
+  if ($('resetTriageBtn')) {
+    $('resetTriageBtn').onclick = () => {
+      triageState[a.id] = {};
+      detail();
+      toast('Checklist de triagem reiniciado');
+    };
+  }
+
+  const maskInputs = document.querySelectorAll('[data-ph]');
+  function rebuildMask() {
+    let text = rawMask;
+    maskInputs.forEach(inp => {
+      let val = inp.value.trim();
+      let ph = inp.dataset.ph;
+      if (val) text = text.split('[' + ph + ']').join(val.toUpperCase());
+    });
+    if ($('dispatchOutput')) $('dispatchOutput').value = text;
+  }
+  maskInputs.forEach(inp => inp.oninput = rebuildMask);
+  if ($('resetMaskBtn')) {
+    $('resetMaskBtn').onclick = () => {
+      maskInputs.forEach(inp => inp.value = '');
+      if ($('dispatchOutput')) $('dispatchOutput').value = rawMask;
+      toast('Máscara restaurada ao padrão');
+    };
+  }
+  if ($('copyMaskBtn')) {
+    $('copyMaskBtn').onclick = () => {
+      let text = $('dispatchOutput').value.trim();
+      navigator.clipboard?.writeText(text).then(() => toast('Relato padrão COPOM copiado para a área de transferência!'));
+    };
+  }
+
+  let headings = Array.from($('articleBodyContent').querySelectorAll('h2, h3'));
+  if (headings.length) {
+    $('tocList').innerHTML = headings.map((h, i) => {
+      let hid = 'sec-' + i;
+      h.id = hid;
+      return `<button class="toc-link" data-scrollto="${hid}"><span>▸</span><span>${esc(h.textContent)}</span></button>`;
+    }).join('');
+    document.querySelectorAll('[data-scrollto]').forEach(b => {
+      b.onclick = () => document.getElementById(b.dataset.scrollto)?.scrollIntoView({ behavior: 'smooth' });
+    });
+  } else {
+    $('tocList').innerHTML = '<p class="muted" style="font-size:12px;margin:0">Artigo em seção única.</p>';
+  }
+
+  let related = relatedArticles(a);
+  $('relatedList').innerHTML = related.length ? related.map(x => `
+    <button class="related-link" data-related="${esc(x.id)}">
+      <span class="code">${esc(x.code)}</span>
+      <span>${esc(x.title)}</span>
+      <span>↗</span>
+    </button>
+  `).join('') : '<p class="muted" style="font-size:12px;margin:0">Nenhuma natureza diretamente relacionada.</p>';
+  document.querySelectorAll('[data-related]').forEach(b => b.onclick = () => openArticle(b.dataset.related));
+
+  let versions = a.history || [];
+  $('revisionList').innerHTML = versions.length ? versions.map((v, i) => `
+    <div class="revision-item">
+      <div>
+        <b>Versão ${i + 1}</b>
+        <div class="muted" style="font-size:11px">${date(v.date)} · ${esc(v.author || a.author)}</div>
+      </div>
+      <div style="display:flex;gap:4px">
+        <button class="btn secondary small" data-viewrev="${i}">Comparar</button>
+        ${user.role === 'admin' ? `<button class="btn ghost small" data-restorerev="${i}">Restaurar</button>` : ''}
+      </div>
+    </div>
+  `).join('') : '<p class="muted" style="font-size:12px;margin:0">Nenhuma revisão anterior registrada.</p>';
+  document.querySelectorAll('[data-viewrev]').forEach(b => b.onclick = () => showRevisionModal(a, +b.dataset.viewrev));
+  document.querySelectorAll('[data-restorerev]').forEach(b => b.onclick = () => restoreRevision(a, +b.dataset.restorerev));
+
+  $('addComment').onclick = () => {
+    let t = $('commentText').value.trim();
+    if (!t) return toast('Digite o texto da observação');
+    a.comments = a.comments || [];
+    a.comments.push({
+      id: 'cm-' + Date.now(),
+      author: user.name,
+      type: $('commentType').value,
+      pinned: false,
+      text: t,
+      date: now()
+    });
+    saveData();
+    detail();
+    toast('Observação adicionada à ficha');
+  };
+  document.querySelectorAll('[data-delcomment]').forEach(b => {
+    b.onclick = () => {
+      let cid = b.dataset.delcomment;
+      a.comments = (a.comments || []).filter((c, idx) => String(c.id || idx) !== cid);
+      saveData();
+      detail();
+      toast('Observação removida');
+    };
+  });
+  document.querySelectorAll('[data-pincomment]').forEach(b => {
+    b.onclick = () => {
+      let cid = b.dataset.pincomment;
+      let target = (a.comments || []).find((c, idx) => String(c.id || idx) === cid);
+      if (target) target.pinned = !target.pinned;
+      saveData();
+      detail();
+      toast('Destaque atualizado');
+    };
+  });
+}
+
+/* === PAINEL DE GESTÃO E ADMINISTRAÇÃO === */
+function manage() {
+  if (user.role !== 'admin') return go('home');
+  $('content').innerHTML = `
+    <div class="section-head" style="margin-top:0">
+      <div>
+        <div class="eyebrow" style="color:var(--accent)">ADMINISTRAÇÃO E GOVERNANÇA</div>
+        <h1 style="margin:6px 0">Gestão da Base de Conhecimento 190</h1>
+        <p>Cadastre novas naturezas, configure roteiros de triagem, máscaras de despacho e gerencie backups</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn secondary" data-go="brain">🧠 Gerenciar Regras do Cérebro</button>
+        <button class="btn" id="newArticle">＋ Cadastrar Nova Natureza</button>
+      </div>
+    </div>
+
+    <div class="stats" style="margin-bottom:20px">
+      <div class="stat"><div class="num">${data.articles.length}</div><div class="stat-label">Naturezas ativas</div></div>
+      <div class="stat"><div class="num">${data.articles.reduce((s, a) => s + (a.views || 0), 0)}</div><div class="stat-label">Consultas totais</div></div>
+      <div class="stat"><div class="num">${data.articles.reduce((s, a) => s + (a.comments || []).length, 0)}</div><div class="stat-label">Observações da equipe</div></div>
+      <div class="stat"><div class="num">${data.articles.reduce((s, a) => s + (a.history || []).length, 0)}</div><div class="stat-label">Versões auditadas</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>⚙️ Manutenção, Backup e Apresentação</h2>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn secondary" id="exportBtn">↓ Exportar Base Completa (JSON)</button>
+        <button class="btn secondary" id="importBtn">↑ Importar Base (JSON)</button>
+        <button class="btn danger" id="resetDemoBtn">↺ Restaurar Base Padrão (Reset Demo)</button>
+        <input id="importFile" type="file" accept=".json,application/json" class="hidden">
+      </div>
+      <p class="muted" style="font-size:12px;margin-bottom:0">Use "Restaurar Base Padrão" antes de uma apresentação oficial caso queira limpar testes de edição e voltar às naturezas originais enriquecidas.</p>
+    </div>
+
+    <div class="panel">
+      <h2>📋 Catálogo Gerenciável (${data.articles.length})</h2>
+      <div class="results">
+        ${data.articles.map(a => `
+          <div class="result" style="cursor:default">
+            <div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span class="code">${esc(a.code)}</span>
+                ${prioBadge(a.priority)}
+                <span class="muted" style="font-size:12px">${catIcon(a.category)} ${esc(a.category)} · Atualizado em ${date(a.updated)}</span>
+              </div>
+              <h3 style="margin:6px 0 3px">${esc(a.title)}</h3>
+              <p>${esc(a.summary)}</p>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0">
+              <button class="btn secondary small" data-open="${esc(a.id)}">Abrir</button>
+              <button class="btn ghost small" data-edit="${esc(a.id)}">✎ Editar</button>
+              <button class="btn danger small" data-delete="${esc(a.id)}">Excluir</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  $('newArticle').onclick = () => { editId = null; page = 'edit'; render(); };
+  document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
+  bindCards();
+  document.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { editId = b.dataset.edit; page = 'edit'; render(); });
+  document.querySelectorAll('[data-delete]').forEach(b => b.onclick = () => {
+    let target = articleById(b.dataset.delete);
+    if (!target) return;
+    showModal({
+      title: 'Confirmar exclusão de natureza',
+      bodyHtml: `<p>Tem certeza que deseja excluir permanentemente a natureza <b>${esc(target.code)} — ${esc(target.title)}</b> da base local?</p>`,
+      cancelText: 'Cancelar',
+      confirmText: 'Excluir natureza',
+      danger: true,
+      onConfirm: () => {
+        data.articles = data.articles.filter(a => a.id !== target.id);
+        data.favorites = data.favorites.filter(id => id !== target.id);
+        saveData();
+        closeModal();
+        manage();
+        toast('Natureza excluída com sucesso');
+      }
+    });
+  });
+
+  $('resetDemoBtn').onclick = () => {
+    showModal({
+      title: 'Restaurar Base Padrão de Demonstração',
+      bodyHtml: '<p>Deseja restaurar todas as naturezas para o estado original de fábrica da demonstração? Quaisquer naturezas criadas ou editadas manualmente serão substituídas.</p>',
+      cancelText: 'Cancelar',
+      confirmText: 'Sim, restaurar base padrão',
+      danger: true,
+      onConfirm: () => {
+        data.articles = defaultSeed();
+        data.favorites = ['nat-vd-lesao', 'nat-roubo-geral'];
+        data.recent = [];
+        saveData();
+        closeModal();
+        manage();
+        toast('Base original restaurada com sucesso!');
+      }
+    });
+  };
+
+  $('exportBtn').onclick = exportData;
+  $('importBtn').onclick = () => $('importFile').click();
+  $('importFile').onchange = importData;
+}
+
+/* === EDITOR COMPLETO DE NATUREZAS COM BARRA DE 21 FERRAMENTAS === */
+function appendEditorHTML(html) {
+  let e = $('editBody');
+  if (!e) return;
+  e.focus();
+  document.execCommand('insertHTML', false, html);
+}
+
+function richCommand(cmd, value) {
+  let e = $('editBody');
+  if (!e) return;
+  e.focus();
+  document.execCommand(cmd, false, value || null);
+}
+
+function editor() {
+  if (user.role !== 'admin') return go('home');
+  let a = editId ? articleById(editId) : null;
+
+  $('content').innerHTML = `
+    <div class="section-head" style="margin-top:0">
+      <div>
+        <div class="eyebrow" style="color:var(--accent)">EDITOR OPERACIONAL COMPLETO</div>
+        <h1 style="margin:6px 0">${a ? 'Editar Natureza: ' + esc(a.code) : 'Cadastrar Nova Natureza 190'}</h1>
+      </div>
+      <button class="btn secondary" id="cancelEdit">← Cancelar e voltar</button>
+    </div>
+
+    <div class="panel">
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label class="label">Título da Natureza *</label>
+          <input id="editTitle" class="field" placeholder="Ex.: Perturbação do sossego" value="${esc(a?.title || '')}">
+        </div>
+        <div class="form-group">
+          <label class="label">Código Oficial / Demo *</label>
+          <input id="editCode" class="field" placeholder="Ex.: DEM-009" value="${esc(a?.code || '')}">
+        </div>
+        <div class="form-group">
+          <label class="label">Prioridade de Atendimento</label>
+          <select id="editPriority" class="field">
+            ${priorities.filter(p => p !== 'Todas').map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="label">Categoria</label>
+          <select id="editCategory" class="field">
+            ${categories.filter(c => c.name !== 'Todas').map(c => `<option>${esc(c.name)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="label">Tags de Busca (separadas por vírgula)</label>
+          <input id="editTags" class="field" placeholder="Ex.: barulho, ruído, art 42" value="${esc((a?.tags || []).join(', '))}">
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="label">Base Legal / Tipificação</label>
+          <input id="editLegal" class="field" placeholder="Ex.: Art. 155 do Código Penal" value="${esc(a?.legalBase || '')}">
+        </div>
+        <div class="form-group">
+          <label class="label">Órgão / Competência de Atendimento</label>
+          <input id="editAgency" class="field" placeholder="Ex.: Polícia Militar / SIATE" value="${esc(a?.agency || 'Polícia Militar')}">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="label">Resumo Executivo (Exibido nos cartões e na busca)</label>
+        <textarea id="editSummary" class="field" rows="2" placeholder="Síntese clara da natureza para leitura rápida...">${esc(a?.summary || '')}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="label">Alerta de Diferenciação ("Não confundir com")</label>
+        <input id="editDiff" class="field" placeholder="Ex.: Se houver grave ameaça ou violência à pessoa, classificar como Roubo." value="${esc(a?.differentiation || '')}">
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="label">Roteiro de Triagem 190 (Uma pergunta por linha)</label>
+          <textarea id="editChecklist" class="field" rows="4" placeholder="O autor permanece no local?\nHá vítimas feridas?\nQual a vestimenta do suspeito?">${esc((a?.triageChecklist || []).join('\n'))}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="label">Máscara de Despacho COPOM (Use [COLCHETES] para variáveis)</label>
+          <textarea id="editDispatch" class="field" rows="4" placeholder="SOLICITANTE INFORMA [FATO] NO LOCAL [ENDEREÇO]. AUTOR TRAJANDO [ROUPAS]. VIATURA SOLICITADA PARA AVERIGUAÇÃO.">${esc(a?.dispatchTemplate || '')}</textarea>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="label">Conteúdo Detalhado e Procedimentos Operacionais</label>
+        <div class="toolbar">
+          <button type="button" data-command="bold"><b>B</b></button>
+          <button type="button" data-command="italic"><i>I</i></button>
+          <button type="button" data-command="underline"><u>U</u></button>
+          <button type="button" data-command="formatBlock" data-value="h2">Título H2</button>
+          <button type="button" data-command="formatBlock" data-value="h3">Subtítulo H3</button>
+          <button type="button" data-command="insertUnorderedList">• Lista</button>
+          <button type="button" data-command="insertOrderedList">1. Lista</button>
+          <button type="button" id="linkBtn">🔗 Link</button>
+          <button type="button" id="tableBtn">▦ Tabela</button>
+          <button type="button" data-command="strikeThrough">Riscado</button>
+          <button type="button" data-command="removeFormat">Limpar formato</button>
+          <button type="button" data-command="justifyLeft">Esquerda</button>
+          <button type="button" data-command="justifyCenter">Centro</button>
+          <button type="button" data-command="justifyRight">Direita</button>
+          <button type="button" data-command="outdent">Recuar −</button>
+          <button type="button" data-command="indent">Recuar +</button>
+          <button type="button" id="quoteBtn">❝ Destaque</button>
+          <button type="button" id="dividerBtn">― Linha</button>
+          <button type="button" id="calloutBtn">ⓘ Aviso</button>
+          <button type="button" id="checklistBtn">☑ Checklist</button>
+          <button type="button" id="undoBtn">↶ Desfazer</button>
+          <button type="button" id="redoBtn">↷ Refazer</button>
+        </div>
+        <div class="editor" id="editBody" contenteditable="true" aria-label="Editor de conteúdo" spellcheck="true"></div>
+        <div class="editor-status">
+          <span id="wordCount">0 palavras</span>
+          <span>Selecione texto para formatar · O HTML é automaticamente sanitizado ao salvar</span>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px">
+        <button class="btn secondary" id="previewBtn">👁 Pré-visualizar em Modal</button>
+        <button class="btn" id="saveBtn">✓ Publicar na Base 190</button>
+      </div>
+    </div>
+  `;
+
+  $('editCategory').value = a?.category || 'Ordem pública';
+  $('editPriority').value = a?.priority || 'Média';
+  $('editBody').innerHTML = a ? safe(a.content) : '<h2>Visão geral operacional</h2><p>Descreva aqui as orientações técnicas da natureza.</p>';
+  $('cancelEdit').onclick = () => go('manage');
+
+  let countWords = () => {
+    let text = txt($('editBody').innerHTML).trim();
+    $('wordCount').textContent = (text ? text.split(/\s+/).length : 0) + ' palavras · ' + text.length + ' caracteres';
+  };
+  $('editBody').addEventListener('input', countWords);
+  countWords();
+
+  document.querySelectorAll('[data-command]').forEach(b => b.onclick = () => {
+    $('editBody').focus();
+    document.execCommand(b.dataset.command, false, b.dataset.value || null);
+  });
+  $('linkBtn').onclick = () => {
+    showModal({
+      title: 'Inserir Link Externo',
+      bodyHtml: `<label class="label">URL do Link (https://...)</label><input id="modalLinkUrl" class="field" placeholder="https://...">`,
+      cancelText: 'Cancelar',
+      confirmText: 'Inserir Link',
+      onConfirm: () => {
+        let url = $('modalLinkUrl').value.trim();
+        closeModal();
+        if (url && /^https?:\/\//i.test(url)) {
+          $('editBody').focus();
+          document.execCommand('createLink', false, url);
+        }
+      }
+    });
+  };
+  $('tableBtn').onclick = () => appendEditorHTML('<table><thead><tr><th>Situação</th><th>Conduta COPOM</th></tr></thead><tbody><tr><td>Exemplo</td><td>Procedimento</td></tr></tbody></table><p></p>');
+  $('quoteBtn').onclick = () => appendEditorHTML('<blockquote><p>Informação importante</p></blockquote><p></p>');
+  $('dividerBtn').onclick = () => appendEditorHTML('<hr><p></p>');
+  $('calloutBtn').onclick = () => appendEditorHTML('<blockquote><strong>ⓘ Orientação Importante:</strong> Descreva o ponto de atenção aqui.</blockquote><p></p>');
+  $('checklistBtn').onclick = () => appendEditorHTML('<ul><li>☐ Item a verificar</li><li>☐ Outro item</li></ul><p></p>');
+  $('undoBtn').onclick = () => richCommand('undo');
+  $('redoBtn').onclick = () => richCommand('redo');
+
+  $('previewBtn').onclick = () => {
+    showModal({
+      title: 'Pré-visualização: ' + ($('editTitle').value || 'Sem título'),
+      bodyHtml: `<div class="article-body">${safe($('editBody').innerHTML)}</div>`
+    });
+  };
+
+  $('saveBtn').onclick = () => {
+    let title = $('editTitle').value.trim();
+    let code = $('editCode').value.trim().toUpperCase();
+    if (!title || !code) return toast('Preencha obrigatoriamente o Título e o Código');
+    if (data.articles.some(x => x.code.toLowerCase() === code.toLowerCase() && x.id !== a?.id)) {
+      return toast('Já existe outra natureza cadastrada com este código');
+    }
+
+    let obj = {
+      title,
+      code,
+      priority: $('editPriority').value,
+      category: $('editCategory').value,
+      legalBase: $('editLegal').value.trim(),
+      agency: $('editAgency').value.trim(),
+      differentiation: $('editDiff').value.trim(),
+      triageChecklist: $('editChecklist').value.split('\n').map(x => x.trim()).filter(Boolean),
+      dispatchTemplate: $('editDispatch').value.trim(),
+      tags: $('editTags').value.split(',').map(x => x.trim()).filter(Boolean),
+      summary: $('editSummary').value.trim() || title,
+      content: safe($('editBody').innerHTML),
+      updated: now()
+    };
+
+    if (a) {
+      a.history = a.history || [];
+      a.history.push({ date: a.updated, author: user.name, content: a.content, title: a.title });
+      Object.assign(a, obj);
+    } else {
+      a = Object.assign({
+        id: 'local-' + Date.now(),
+        author: user.name,
+        created: now(),
+        views: 1,
+        comments: [],
+        history: []
+      }, obj);
+      data.articles.unshift(a);
+    }
+    saveData();
+    toast('Natureza publicada com sucesso!');
+    openArticle(a.id);
+  };
+}
+
+function exportData() {
+  downloadText('base190-backup-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(data, null, 2), 'application/json');
+}
+
+function importData(e) {
+  let f = e.target.files[0];
+  if (!f) return;
+  f.text().then(s => {
+    try {
+      let parsed = JSON.parse(s);
+      if (!parsed || !Array.isArray(parsed.articles)) throw Error('invalid');
+      showModal({
+        title: 'Importar Backup JSON',
+        bodyHtml: `<p>O arquivo selecionado contém <b>${parsed.articles.length} naturezas</b>. Deseja substituir a base atual por este backup?</p>`,
+        cancelText: 'Cancelar',
+        confirmText: 'Importar agora',
+        onConfirm: () => {
+          data = {
+            articles: parsed.articles.map(a => ({
+              ...a,
+              content: safe(a.content),
+              comments: Array.isArray(a.comments) ? a.comments : [],
+              history: Array.isArray(a.history) ? a.history : [],
+              tags: Array.isArray(a.tags) ? a.tags : [],
+              triageChecklist: Array.isArray(a.triageChecklist) ? a.triageChecklist : []
+            })),
+            favorites: Array.isArray(parsed.favorites) ? parsed.favorites : [],
+            recent: [],
+            settings: data.settings
+          };
+          saveData();
+          closeModal();
+          manage();
+          toast('Backup importado com sucesso!');
+        }
+      });
+    } catch(err) {
+      toast('Arquivo JSON inválido ou corrompido');
+    }
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && user) {
+    e.preventDefault();
+    openCommandPalette();
+  }
+  if (e.key === 'Escape') {
+    if ($('modalRoot').innerHTML) closeModal();
+    if ($('sidebar')) $('sidebar').classList.remove('open');
+  }
+});
+
 render();
 })();
-</script></body></html>
+</script>
+</body>
+</html>
