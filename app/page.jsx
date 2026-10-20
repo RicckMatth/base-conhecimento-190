@@ -1,5 +1,5 @@
 'use client';
-import { useEffect,useMemo,useState } from 'react';
+import { useEffect,useMemo,useRef,useState } from 'react';
 
 async function call(path,options={}) {
   const response=await fetch('/api'+path,{credentials:'same-origin',cache:'no-store',...options,
@@ -13,6 +13,7 @@ const body=(value)=>JSON.stringify(value);
 const emptyEntry=()=>({code:'',title:'',category:'Proteção',priority:'Média',summary:'',body:'',tags:[],revision:0});
 const toEntries=(value)=>value.split(',').map(x=>x.trim()).filter(Boolean);
 const formatDate=(v)=>v?new Date(v).toLocaleString('pt-BR'):'—';
+const REMOTE_CONSENT_KEY='base190.remoteConsent.v2';
 const Btn=({children,onClick,className='',disabled=false,type='button'})=><button type={type} className={'btn '+className} disabled={disabled} onClick={onClick}>{children}</button>;
 const Tag=({priority})=><span className={'badge '+(priority==='Crítica'?'crit':priority==='Alta'?'high':'')}>{priority||'Média'}</span>;
 
@@ -30,6 +31,11 @@ export default function Home(){
   const [extensionOnline,setExtensionOnline]=useState(false);
   const [extensionAnalysis,setExtensionAnalysis]=useState(null);
   const [extensionReceivedAt,setExtensionReceivedAt]=useState(null);
+  const [remoteEnabled,setRemoteEnabled]=useState(false);
+  const [chatMessages,setChatMessages]=useState([]);
+  const [chatInput,setChatInput]=useState('');
+  const [chatSending,setChatSending]=useState(false);
+  const chatBottomRef=useRef(null);
   const [adminRequests,setAdminRequests]=useState([]),[adminUsers,setAdminUsers]=useState([]),[events,setEvents]=useState([]);
   const [credential,setCredential]=useState(null);
   const [editor,setEditor]=useState(emptyEntry()),[ruleDraft,setRuleDraft]=useState({code:'',officialNature:'',category:'Proteção',priority:'Média',group1:'',group2:'',explanation:''});
@@ -70,6 +76,7 @@ export default function Home(){
   // Os resultados são eventos transitórios no navegador, sem persistência.
   useEffect(()=>{
     if(!user || user.mustChangePassword)return;
+    setRemoteEnabled(sessionStorage.getItem(REMOTE_CONSENT_KEY)===String(user.id));
     const ready=()=>setExtensionOnline(true);
     const receive=e=>{
       const payload=e?.detail;
@@ -77,7 +84,9 @@ export default function Home(){
       if(!['classificacao','faq','indefinido'].includes(payload.result.tipo))return;
       setExtensionOnline(true);
       setExtensionAnalysis(payload.result);
-      setExtensionReceivedAt(Date.now());
+      const now=Date.now();
+      setExtensionReceivedAt(now);
+      setChatMessages(prev=>[...prev.slice(-23),{id:'ext-'+now+'-'+Math.random().toString(36).slice(2),kind:'answer',origin:'Extensão Relato 190',result:payload.result,at:now}]);
       setScreen('extension');
     };
     window.addEventListener('base190:extension-ready',ready);
@@ -91,6 +100,38 @@ export default function Home(){
   function activateExtension(){
     window.dispatchEvent(new CustomEvent('base190:extension-discover'));
     setScreen('extension');
+  }
+  function toggleRemote(){
+    if(!user||user.mustChangePassword)return;
+    if(remoteEnabled){
+      sessionStorage.removeItem(REMOTE_CONSENT_KEY);
+      setRemoteEnabled(false);
+    }else{
+      sessionStorage.setItem(REMOTE_CONSENT_KEY,String(user.id));
+      setRemoteEnabled(true);
+    }
+    window.dispatchEvent(new CustomEvent('base190:remote-authorization-changed'));
+  }
+  useEffect(()=>{
+    if(screen==='extension'&&chatBottomRef.current){
+      chatBottomRef.current.scrollIntoView({behavior:'smooth',block:'end'});
+    }
+  },[chatMessages.length,screen]);
+  async function sendChat(event){
+    event.preventDefault();
+    const text=chatInput.trim();
+    if(chatSending||text.length<3||text.length>8000)return;
+    const stamp=Date.now();setChatInput('');
+    setChatMessages(prev=>[...prev.slice(-23),{id:'user-'+stamp,kind:'user',text,at:stamp}]);
+    setChatSending(true);
+    try{
+      const reply=await call('/analyze',{method:'POST',body:body({text})});
+      const now=Date.now();
+      setChatMessages(prev=>[...prev.slice(-23),{id:'answer-'+now,kind:'answer',origin:'Cérebro 190',result:reply.result,at:now}]);
+      window.dispatchEvent(new CustomEvent('base190:site-analysis',{detail:{result:reply.result,disclaimer:reply.disclaimer}}));
+    }catch(error){
+      setChatMessages(prev=>[...prev.slice(-23),{id:'error-'+Date.now(),kind:'error',text:error.message||'Falha na análise.',at:Date.now()}]);
+    }finally{setChatSending(false);}
   }
   async function submitLogin(event){
     event.preventDefault();clear();setBusy(true);
@@ -108,13 +149,15 @@ export default function Home(){
     setBusy(true);
     try{
       const x=await call('/auth/change-password',{method:'POST',body:body({current:passwordForm.current,next:passwordForm.next})});
+      sessionStorage.removeItem(REMOTE_CONSENT_KEY);setRemoteEnabled(false);
       setUser(null);setPasswordForm({current:'',next:'',confirm:''});ok(x.message);
     }catch(e){err(e);}finally{setBusy(false);}
   }
   async function logout(){
+    sessionStorage.removeItem(REMOTE_CONSENT_KEY);setRemoteEnabled(false);
     setBusy(true);try{await call('/auth/logout',{method:'POST',body:'{}'});}catch(e){err(e);}
     setUser(null);setScreen('home');setEntries([]);setBrainRules({base:[],extras:[],custom:[]});setBusy(false);setCredential(null);
-    setExtensionOnline(false);setExtensionAnalysis(null);setExtensionReceivedAt(null);
+    setExtensionOnline(false);setExtensionAnalysis(null);setExtensionReceivedAt(null);setChatMessages([]);setChatInput('');
   }
   async function go(next){
     clear();setScreen(next);setCredential(null);
@@ -190,6 +233,22 @@ export default function Home(){
     <h3>{a.title}</h3><p>{a.summary}</p>
     <div className="end"><small>{a.category}</small><b style={{color:'var(--blue)'}}>Abrir →</b></div>
   </button>)}</div>}
+  function chatAnswer(result){
+    if(!result)return <p>Sem resposta da Base 190.</p>;
+    if(result.tipo==='faq')return <div className="chat-answer"><b>{result.titulo||'Orientação'}</b><p>{result.resposta}</p></div>;
+    if(result.tipo!=='classificacao')return <div className="chat-answer"><b>Análise não conclusiva</b><p>{result.mensagem||'Verifique o relato e consulte os procedimentos oficiais.'}</p></div>;
+    const main=result.principal||{};
+    return <div className="chat-answer">
+      <div className="chat-answer-title"><span>Natureza sugerida</span><Tag priority={main.priority}/></div>
+      <h3>{main.officialNature||'Não identificada'}</h3>
+      <div className="chat-tags"><span>{main.code||'Código a confirmar'}</span><span>Índice heurístico {result.indiceHeuristico??'—'}/99</span></div>
+      {main.explanation&&<p>{main.explanation}</p>}
+      {!!main.triageQuestions?.length&&<details><summary>Perguntas de triagem ({main.triageQuestions.length})</summary><ul>{main.triageQuestions.map((q,i)=><li key={i}>{q}</li>)}</ul></details>}
+      {result.relatoRevisado&&<details><summary>Reformulação sugerida — conferir fatos</summary><p className="chat-rewrite">{result.relatoRevisado}</p><Btn className="secondary tiny" onClick={()=>navigator.clipboard?.writeText(result.relatoRevisado)}>Copiar texto</Btn></details>}
+      {!!result.secundarias?.length&&<details><summary>Outras hipóteses</summary><p>{result.secundarias.slice(0,4).map(x=>x.officialNature).filter(Boolean).join(' • ')}</p></details>}
+      <small>Orientação assistiva, não homologada; confirme natureza, prioridade e informações.</small>
+    </div>;
+  }
   function resultView(result=analysis){
     if(!result)return <div className="helpnote">O Cérebro utiliza regras de linguagem e palavras-chave. O operador deve confirmar as informações e a natureza conforme o protocolo em vigor.</div>;
     if(result.tipo==='faq')return <div className="card result-result"><span className="eyebrow">Dúvida operacional</span><h2>{result.titulo}</h2><p style={{whiteSpace:'pre-wrap'}}>{result.resposta}</p></div>;
@@ -263,7 +322,7 @@ export default function Home(){
     </aside>
     <div className="main">
       <header className="topbar"><div><b>{screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='extension'?'Extensão integrada':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
-        <div className="btn-row"><button className="btn ghost tiny" onClick={activateExtension} type="button">{extensionOnline?'● Extensão conectada':'Ativar extensão'}</button><span className="badge">{isAdmin?'Administrador':'Usuário de consulta'}</span><Btn className="ghost tiny" onClick={theme}>{dark?'☀ Claro':'☾ Escuro'}</Btn></div>
+        <div className="btn-row"><button className="btn ghost tiny" onClick={activateExtension} type="button">{extensionOnline?'● Extensão conectada':'Abrir chat integrado'}</button><span className="badge">{isAdmin?'Administrador':'Usuário de consulta'}</span><Btn className="ghost tiny" onClick={theme}>{dark?'☀ Claro':'☾ Escuro'}</Btn></div>
       </header>
       <main className="content spaced">
         {notice&&<div className="notice" role="alert">{notice}</div>}{success&&<div className="notice success" role="status">{success}</div>}
@@ -279,7 +338,7 @@ export default function Home(){
                 <h3 style={{marginTop:5}}>Integração automática com o Chrome</h3>
                 <p className="muted">{extensionOnline?'Extensão detectada neste navegador. Resultados serão exibidos nos dois painéis.':'Instale a versão integrada e recarregue esta página para detectar automaticamente.'}</p>
               </div>
-              <Btn className="secondary" onClick={activateExtension}>{extensionOnline?'Abrir integração →':'Ativar extensão →'}</Btn>
+              <Btn className="secondary" onClick={activateExtension}>Abrir chat →</Btn>
             </div>
           </div>
           <div className="grid3"><div className="card stat"><small>Fichas no catálogo</small><strong>{entries.length}</strong><span className="badge">Conhecimento</span></div>
@@ -304,30 +363,49 @@ export default function Home(){
           <small>Revisão {selected.revision} • Atualizado em {formatDate(selected.updated_at)} • Validar legislação, código e procedimento antes do uso.</small>
         </section>}
 
-        {screen==='extension'&&<>
-          <div className="panel-head">
-            <div><span className="eyebrow">SINCRONIZAÇÃO LOCAL • MODELO DE TESTE</span>
-              <h1>Extensão Relato 190 integrada</h1>
-              <p className="muted">Os resultados aparecem aqui automaticamente quando você conclui uma análise na extensão.</p>
+        {screen==='extension'&&<section className="integrated-chat">
+          <div className="chat-main">
+            <header className="chat-head">
+              <div className="chat-ident"><span className="chat-avatar">✳</span><div><b>Chat da Base 190</b><small>Extensão integrada · assistência contextual</small></div></div>
+              <div className="chat-head-actions"><span className={'chat-pill '+(extensionOnline?'connected':'')}>{extensionOnline?'● Extensão detectada':'○ Extensão ausente'}</span>
+                <Btn className="ghost tiny" onClick={()=>setChatMessages([])}>Limpar chat</Btn></div>
+            </header>
+            <div className="chat-stream" role="log" aria-label="Conversa de análises da integração">
+              <div className="chat-bubble-system"><b>Olá! Este é o seu espaço de análise.</b><p>Ao receber um relato da extensão, o chat abrirá automaticamente e mostrará a natureza sugerida, detalhes e perguntas de triagem. Você também pode digitar uma situação fictícia abaixo.</p></div>
+              {chatMessages.map(m=><div className={'chat-message '+(m.kind==='user'?'from-user':'from-system')} key={m.id}>
+                {m.kind!=='user'&&<span className="chat-message-avatar">190</span>}
+                <div className="chat-bubble">
+                  <div className="chat-message-meta"><b>{m.kind==='user'?'Você':m.origin||'Sistema'}</b><span>{new Date(m.at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span></div>
+                  {m.kind==='answer'?chatAnswer(m.result):<p>{m.text}</p>}
+                </div>
+              </div>)}
+              {chatSending&&<div className="chat-typing">✳ Cérebro 190 analisando…</div>}
+              <div ref={chatBottomRef} aria-hidden="true"/>
             </div>
-            <span className="badge">{extensionOnline?'● Detectada':'○ Não detectada'}</span>
+            <div className="chat-compose">
+              <form onSubmit={sendChat}>
+                <label htmlFor="chat-input" className="sr-only">Descreva um relato fictício para análise</label>
+                <textarea id="chat-input" rows={2} maxLength={8000} value={chatInput} onChange={e=>setChatInput(e.target.value)}
+                  placeholder="Descreva uma situação fictícia para análise…" onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();e.currentTarget.form?.requestSubmit();}}}/>
+                <Btn type="submit" disabled={chatSending||chatInput.trim().length<3} className="chat-send">{chatSending?'…':'Enviar ↗'}</Btn>
+              </form>
+              <small>Chat temporário na aba · HTTPS (TLS) · não inserir informações reais ou sigilosas sem autorização</small>
+            </div>
           </div>
-          <div className="card spaced">
-            <div className="toolbar"><h3>Conexão automática</h3><Btn className="secondary tiny" onClick={activateExtension}>Verificar conexão</Btn></div>
-            <p>Domínio configurado: <b>base-conhecimento-190.vercel.app</b></p>
-            <p className="muted">{extensionOnline?'A extensão está presente nesta aba. Não é necessário cadastrar URL nem informar sua senha.':'A extensão integrada não foi detectada. Instale ou atualize a versão de teste no Chrome e recarregue este site.'}</p>
-            {!extensionOnline&&<p><a href="https://github.com/RicckMatth/190-extensao_integrada/archive/refs/heads/main.zip" target="_blank" rel="noopener noreferrer">Baixar a extensão de teste no GitHub</a></p>}
-          </div>
-          {extensionAnalysis?<div className="spaced">
-            <div className="toolbar"><h2>Última análise recebida</h2><small>{extensionReceivedAt?new Date(extensionReceivedAt).toLocaleTimeString('pt-BR'):'Recebida nesta sessão'}</small></div>
-            {resultView(extensionAnalysis)}
-            <div className="helpnote">Resultado temporário, sem gravação pela integração. Não representa classificação oficial; valide antes do uso.</div>
-            <Btn className="secondary" onClick={()=>{setExtensionAnalysis(null);setExtensionReceivedAt(null);}}>Limpar resultado desta aba</Btn>
-          </div>:<div className="card">
-            <h3>Esperando uma análise da extensão</h3>
-            <p className="muted">No simulador SADE, abra 🧠 Base 190, confirme a análise de um exemplo fictício e o resultado surgirá aqui. O resultado também ficará na aba 📋 Resultado da extensão.</p>
-          </div>}
-        </>}
+          <aside className="chat-side">
+            <div className="chat-side-top"><span className="eyebrow">CENTRAL DE INTEGRAÇÃO</span><h2>Conexão remota</h2>
+              <p>A extensão já é reconhecida automaticamente. Controle aqui quando ela poderá enviar relatos para análise.</p></div>
+            <div className={'chat-connection '+(remoteEnabled?'is-on':'')}><span className="chat-connection-dot"/><div><b>{remoteEnabled?'Transmissão autorizada':'Aguardando autorização'}</b><small>{remoteEnabled?'Apenas nesta aba e nesta sessão':'Nenhum envio automático permitido'}</small></div></div>
+            <Btn className={remoteEnabled?'secondary full':'full'} onClick={toggleRemote}>{remoteEnabled?'Revogar autorização':'Autorizar conexão remota'}</Btn>
+            <p className="chat-small">Ao autorizar, o texto principal do relato poderá ser enviado automaticamente ao servidor da Base 190 enquanto esta aba estiver aberta e sua sessão estiver válida. A extensão não enviará os demais campos separadamente.</p>
+            <div className="divider"/>
+            <h3>Como funciona</h3>
+            <div className="chat-steps"><span><b>01</b> Abra o SADE/simulador</span><span><b>02</b> Digite ou edite o relato</span><span><b>03</b> Receba a análise neste chat</span></div>
+            <div className="divider"/>
+            <div className="chat-privacy"><b>Segurança da conexão</b><p>A comunicação utiliza HTTPS com TLS e sessão HttpOnly validada no servidor. Não equivale a criptografia ponta a ponta. Você pode revogar a autorização a qualquer momento.</p></div>
+            {!extensionOnline&&<a className="chat-download" href="https://github.com/RicckMatth/190-extensao_integrada/archive/refs/heads/main.zip" target="_blank" rel="noopener noreferrer">Baixar extensão de teste ↗</a>}
+          </aside>
+        </section>}
         {screen==='brain'&&<><div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Reconhecimento de palavras-chave e contexto, com hipóteses de natureza e perguntas de triagem.</p></div><span className="badge">{totalRules} regras</span></div>
           <form className="card spaced" onSubmit={analyze}><div><label htmlFor="brain-input">Relato de teste (sem dados pessoais)</label><textarea id="brain-input" rows={5} value={relato} onChange={e=>setRelato(e.target.value)} placeholder="Descreva o fato observado ou relatado, sem nomes e endereços…"/></div>
             <div className="btn-row"><Btn type="submit" disabled={busy}>{busy?'Analisando…':'✳ Analisar relato'}</Btn><Btn className="secondary" onClick={()=>{setRelato('');setAnalysis(null);}}>Limpar</Btn></div></form>
