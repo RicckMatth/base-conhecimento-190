@@ -27,6 +27,9 @@ export default function Home(){
   const [entries,setEntries]=useState([]),[brainRules,setBrainRules]=useState({base:[],extras:[],custom:[]});
   const [search,setSearch]=useState(''),[cat,setCat]=useState('Todas'),[selectedId,setSelectedId]=useState(null);
   const [relato,setRelato]=useState(''),[analysis,setAnalysis]=useState(null);
+  const [extensionOnline,setExtensionOnline]=useState(false);
+  const [extensionAnalysis,setExtensionAnalysis]=useState(null);
+  const [extensionReceivedAt,setExtensionReceivedAt]=useState(null);
   const [adminRequests,setAdminRequests]=useState([]),[adminUsers,setAdminUsers]=useState([]),[events,setEvents]=useState([]);
   const [credential,setCredential]=useState(null);
   const [editor,setEditor]=useState(emptyEntry()),[ruleDraft,setRuleDraft]=useState({code:'',officialNature:'',category:'Proteção',priority:'Média',group1:'',group2:'',explanation:''});
@@ -63,6 +66,32 @@ export default function Home(){
     finally{if(live)setLoading(false);}})();
     return()=>{live=false;};
   },[]);
+  // Ponte visual com a extensão: não concede acesso, não solicita credenciais.
+  // Os resultados são eventos transitórios no navegador, sem persistência.
+  useEffect(()=>{
+    if(!user || user.mustChangePassword)return;
+    const ready=()=>setExtensionOnline(true);
+    const receive=e=>{
+      const payload=e?.detail;
+      if(!payload||typeof payload!=='object'||!payload.result||typeof payload.result!=='object')return;
+      if(!['classificacao','faq','indefinido'].includes(payload.result.tipo))return;
+      setExtensionOnline(true);
+      setExtensionAnalysis(payload.result);
+      setExtensionReceivedAt(Date.now());
+      setScreen('extension');
+    };
+    window.addEventListener('base190:extension-ready',ready);
+    window.addEventListener('base190:extension-result',receive);
+    window.dispatchEvent(new CustomEvent('base190:extension-discover'));
+    return()=>{
+      window.removeEventListener('base190:extension-ready',ready);
+      window.removeEventListener('base190:extension-result',receive);
+    };
+  },[user?.id,user?.mustChangePassword]);
+  function activateExtension(){
+    window.dispatchEvent(new CustomEvent('base190:extension-discover'));
+    setScreen('extension');
+  }
   async function submitLogin(event){
     event.preventDefault();clear();setBusy(true);
     try{const data=await call('/auth/login',{method:'POST',body:body(login)});setUser(data.user);setScreen('home');setLogin({username:'',password:''});await refreshCatalog();}
@@ -85,6 +114,7 @@ export default function Home(){
   async function logout(){
     setBusy(true);try{await call('/auth/logout',{method:'POST',body:'{}'});}catch(e){err(e);}
     setUser(null);setScreen('home');setEntries([]);setBrainRules({base:[],extras:[],custom:[]});setBusy(false);setCredential(null);
+    setExtensionOnline(false);setExtensionAnalysis(null);setExtensionReceivedAt(null);
   }
   async function go(next){
     clear();setScreen(next);setCredential(null);
@@ -94,7 +124,11 @@ export default function Home(){
   }
   async function analyze(e){
     e?.preventDefault?.();clear();if(relato.trim().length<3)return err(new Error('Informe o relato para análise.'));
-    setBusy(true);try{const x=await call('/analyze',{method:'POST',body:body({text:relato})});setAnalysis(x.result);setScreen('brain');}
+    setBusy(true);try{const x=await call('/analyze',{method:'POST',body:body({text:relato})});
+      setAnalysis(x.result);setScreen('brain');
+      // Resultado somente para visualização na extensão instalada (sem preenchimento ou envio automático).
+      window.dispatchEvent(new CustomEvent('base190:site-analysis',{detail:{result:x.result,disclaimer:x.disclaimer}}));
+    }
     catch(e){err(e);}finally{setBusy(false);}
   }
   function openEntry(id){setSelectedId(id);go('detail');}
@@ -156,20 +190,20 @@ export default function Home(){
     <h3>{a.title}</h3><p>{a.summary}</p>
     <div className="end"><small>{a.category}</small><b style={{color:'var(--blue)'}}>Abrir →</b></div>
   </button>)}</div>}
-  function resultView(){
-    if(!analysis)return <div className="helpnote">O Cérebro utiliza regras de linguagem e palavras-chave. O operador deve confirmar as informações e a natureza conforme o protocolo em vigor.</div>;
-    if(analysis.tipo==='faq')return <div className="card analysis-result"><span className="eyebrow">Dúvida operacional</span><h2>{analysis.titulo}</h2><p style={{whiteSpace:'pre-wrap'}}>{analysis.resposta}</p></div>;
-    if(analysis.tipo==='indefinido')return <div className="card analysis-result"><span className="badge">Não conclusivo</span><h2>Natureza não identificada com segurança</h2><p>{analysis.mensagem}</p></div>;
-    const a=analysis.principal;
-    return <div className="card analysis-result">
+  function resultView(result=analysis){
+    if(!result)return <div className="helpnote">O Cérebro utiliza regras de linguagem e palavras-chave. O operador deve confirmar as informações e a natureza conforme o protocolo em vigor.</div>;
+    if(result.tipo==='faq')return <div className="card result-result"><span className="eyebrow">Dúvida operacional</span><h2>{result.titulo}</h2><p style={{whiteSpace:'pre-wrap'}}>{result.resposta}</p></div>;
+    if(result.tipo==='indefinido')return <div className="card result-result"><span className="badge">Não conclusivo</span><h2>Natureza não identificada com segurança</h2><p>{result.mensagem}</p></div>;
+    const a=result.principal;
+    return <div className="card result-result">
       <div className="toolbar"><span className="eyebrow">Sugestão de natureza</span><Tag priority={a.priority}/></div>
       <h2>{a.officialNature}</h2>
-      <div className="btn-row"><span className="badge">{a.code}</span><span className="score">Índice heurístico: {analysis.indiceHeuristico}/99 — não é probabilidade de acerto</span></div>
+      <div className="btn-row"><span className="badge">{a.code}</span><span className="score">Índice heurístico: {result.indiceHeuristico}/99 — não é probabilidade de acerto</span></div>
       <p>{a.explanation}</p>
-      <p><b>Termos detectados:</b> {(analysis.termosDetectados||[]).join(', ')||'—'}</p>
+      <p><b>Termos detectados:</b> {(result.termosDetectados||[]).join(', ')||'—'}</p>
       {!!a.triageQuestions?.length&&<><h3>Perguntas de triagem sugeridas</h3><ul>{a.triageQuestions.map((q,i)=><li key={i}>{q}</li>)}</ul></>}
-      {analysis.relatoRevisado&&<><h3>Reformulação automática — revisar antes de utilizar</h3><pre>{analysis.relatoRevisado}</pre><Btn className="secondary" onClick={()=>navigator.clipboard?.writeText(analysis.relatoRevisado)}>Copiar reformulação</Btn></>}
-      {!!analysis.secundarias?.length&&<><h3>Outras hipóteses</h3><p>{analysis.secundarias.map(x=>x.officialNature).join(' • ')}</p></>}
+      {result.relatoRevisado&&<><h3>Reformulação automática — revisar antes de utilizar</h3><pre>{result.relatoRevisado}</pre><Btn className="secondary" onClick={()=>navigator.clipboard?.writeText(result.relatoRevisado)}>Copiar reformulação</Btn></>}
+      {!!result.secundarias?.length&&<><h3>Outras hipóteses</h3><p>{result.secundarias.map(x=>x.officialNature).join(' • ')}</p></>}
       <div className="helpnote">A ferramenta não define tipificação, prioridade de despacho ou medidas policiais. Não inclua nomes, endereços completos ou dados sigilosos em relatos de teste.</div>
     </div>;
   }
@@ -217,7 +251,7 @@ export default function Home(){
     </form>
   </section>;
 
-  const links=[['home','◈ Início'],['catalog','▤ Catálogo'],['brain','✳ Cérebro 190']];
+  const links=[['home','◈ Início'],['catalog','▤ Catálogo'],['brain','✳ Cérebro 190'],['extension','⇄ Integração 190']];
   const adminLinks=[['editor','✎ Editar textos'],['access','♙ Autorizar acessos'],['rules','⚙ Regras do Cérebro'],['audit','◎ Auditoria']];
   return <div className="shell">
     <aside className="sidebar">
@@ -228,8 +262,8 @@ export default function Home(){
       <div className="sidebar-bottom"><p className="who">{user.name}<br/><small>{user.username} • {isAdmin?'Admin':'Consulta'}</small></p><button className="nav-btn" onClick={logout} disabled={busy}>↪ Sair</button></div>
     </aside>
     <div className="main">
-      <header className="topbar"><div><b>{screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
-        <div className="btn-row"><span className="badge">{isAdmin?'Administrador':'Usuário de consulta'}</span><Btn className="ghost tiny" onClick={theme}>{dark?'☀ Claro':'☾ Escuro'}</Btn></div>
+      <header className="topbar"><div><b>{screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='extension'?'Extensão integrada':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
+        <div className="btn-row"><button className="btn ghost tiny" onClick={activateExtension} type="button">{extensionOnline?'● Extensão conectada':'Ativar extensão'}</button><span className="badge">{isAdmin?'Administrador':'Usuário de consulta'}</span><Btn className="ghost tiny" onClick={theme}>{dark?'☀ Claro':'☾ Escuro'}</Btn></div>
       </header>
       <main className="content spaced">
         {notice&&<div className="notice" role="alert">{notice}</div>}{success&&<div className="notice success" role="status">{success}</div>}
@@ -239,6 +273,15 @@ export default function Home(){
             <p>Pesquise uma natureza ou descreva um cenário fictício para obter sugestões de triagem, máscaras e classificações que exigem validação humana.</p>
             <form className="search-row" onSubmit={analyze}><input value={relato} onChange={e=>setRelato(e.target.value)} aria-label="Relato para análise" placeholder="Ex.: dois indivíduos roubaram o celular mediante ameaça"/><Btn type="submit" disabled={busy}>Analisar relato →</Btn></form>
           </section>
+          <div className="card extension-status">
+            <div className="toolbar">
+              <div><span className="eyebrow">EXTENSÃO RELATO 190 • TESTE</span>
+                <h3 style={{marginTop:5}}>Integração automática com o Chrome</h3>
+                <p className="muted">{extensionOnline?'Extensão detectada neste navegador. Resultados serão exibidos nos dois painéis.':'Instale a versão integrada e recarregue esta página para detectar automaticamente.'}</p>
+              </div>
+              <Btn className="secondary" onClick={activateExtension}>{extensionOnline?'Abrir integração →':'Ativar extensão →'}</Btn>
+            </div>
+          </div>
           <div className="grid3"><div className="card stat"><small>Fichas no catálogo</small><strong>{entries.length}</strong><span className="badge">Conhecimento</span></div>
             <div className="card stat"><small>Regras de classificação</small><strong>{totalRules}</strong><span className="badge">Cérebro 190</span></div>
             <div className="card stat"><small>Nível de acesso</small><strong style={{fontSize:21}}>{isAdmin?'Administrador':'Consulta'}</strong><span className="badge">Sessão autenticada</span></div></div>
@@ -261,6 +304,30 @@ export default function Home(){
           <small>Revisão {selected.revision} • Atualizado em {formatDate(selected.updated_at)} • Validar legislação, código e procedimento antes do uso.</small>
         </section>}
 
+        {screen==='extension'&&<>
+          <div className="panel-head">
+            <div><span className="eyebrow">SINCRONIZAÇÃO LOCAL • MODELO DE TESTE</span>
+              <h1>Extensão Relato 190 integrada</h1>
+              <p className="muted">Os resultados aparecem aqui automaticamente quando você conclui uma análise na extensão.</p>
+            </div>
+            <span className="badge">{extensionOnline?'● Detectada':'○ Não detectada'}</span>
+          </div>
+          <div className="card spaced">
+            <div className="toolbar"><h3>Conexão automática</h3><Btn className="secondary tiny" onClick={activateExtension}>Verificar conexão</Btn></div>
+            <p>Domínio configurado: <b>base-conhecimento-190.vercel.app</b></p>
+            <p className="muted">{extensionOnline?'A extensão está presente nesta aba. Não é necessário cadastrar URL nem informar sua senha.':'A extensão integrada não foi detectada. Instale ou atualize a versão de teste no Chrome e recarregue este site.'}</p>
+            {!extensionOnline&&<p><a href="https://github.com/RicckMatth/190-extensao_integrada/archive/refs/heads/main.zip" target="_blank" rel="noopener noreferrer">Baixar a extensão de teste no GitHub</a></p>}
+          </div>
+          {extensionAnalysis?<div className="spaced">
+            <div className="toolbar"><h2>Última análise recebida</h2><small>{extensionReceivedAt?new Date(extensionReceivedAt).toLocaleTimeString('pt-BR'):'Recebida nesta sessão'}</small></div>
+            {resultView(extensionAnalysis)}
+            <div className="helpnote">Resultado temporário, sem gravação pela integração. Não representa classificação oficial; valide antes do uso.</div>
+            <Btn className="secondary" onClick={()=>{setExtensionAnalysis(null);setExtensionReceivedAt(null);}}>Limpar resultado desta aba</Btn>
+          </div>:<div className="card">
+            <h3>Esperando uma análise da extensão</h3>
+            <p className="muted">No simulador SADE, abra 🧠 Base 190, confirme a análise de um exemplo fictício e o resultado surgirá aqui. O resultado também ficará na aba 📋 Resultado da extensão.</p>
+          </div>}
+        </>}
         {screen==='brain'&&<><div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Reconhecimento de palavras-chave e contexto, com hipóteses de natureza e perguntas de triagem.</p></div><span className="badge">{totalRules} regras</span></div>
           <form className="card spaced" onSubmit={analyze}><div><label htmlFor="brain-input">Relato de teste (sem dados pessoais)</label><textarea id="brain-input" rows={5} value={relato} onChange={e=>setRelato(e.target.value)} placeholder="Descreva o fato observado ou relatado, sem nomes e endereços…"/></div>
             <div className="btn-row"><Btn type="submit" disabled={busy}>{busy?'Analisando…':'✳ Analisar relato'}</Btn><Btn className="secondary" onClick={()=>{setRelato('');setAnalysis(null);}}>Limpar</Btn></div></form>
