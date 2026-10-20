@@ -22,6 +22,7 @@ export default function Home(){
   const [notice,setNotice]=useState(''),[success,setSuccess]=useState('');
   const [screen,setScreen]=useState('home'),[requestMode,setRequestMode]=useState(false);
   const [login,setLogin]=useState({username:'',password:''});
+  const [passwordForm,setPasswordForm]=useState({current:'',next:'',confirm:''});
   const [request,setRequest]=useState({username:'',name:'',reason:''});
   const [entries,setEntries]=useState([]),[brainRules,setBrainRules]=useState({base:[],extras:[],custom:[]});
   const [search,setSearch]=useState(''),[cat,setCat]=useState('Todas'),[selectedId,setSelectedId]=useState(null);
@@ -71,6 +72,15 @@ export default function Home(){
     event.preventDefault();clear();setBusy(true);
     try{const data=await call('/access-requests',{method:'POST',body:body(request)});ok(data.message);setRequest({username:'',name:'',reason:''});}
     catch(e){err(e);}finally{setBusy(false);}
+  }
+  async function changePassword(event){
+    event.preventDefault();clear();
+    if(passwordForm.next!==passwordForm.confirm)return err(new Error('A confirmação não corresponde à nova senha.'));
+    setBusy(true);
+    try{
+      const x=await call('/auth/change-password',{method:'POST',body:body({current:passwordForm.current,next:passwordForm.next})});
+      setUser(null);setPasswordForm({current:'',next:'',confirm:''});ok(x.message);
+    }catch(e){err(e);}finally{setBusy(false);}
   }
   async function logout(){
     setBusy(true);try{await call('/auth/logout',{method:'POST',body:'{}'});}catch(e){err(e);}
@@ -192,6 +202,20 @@ export default function Home(){
       <div className="divider"/><p className="hint">Sessões protegidas por cookie HttpOnly. Alterações e autorizações são verificadas no servidor.</p>
     </div></section>
   </div>;
+
+  if(user.mustChangePassword)return <section className="login-form" style={{minHeight:'100vh'}}>
+    <form className="login-card card" onSubmit={changePassword}>
+      <span className="badge">SEGURANÇA DA CONTA</span><h2>Defina uma nova senha</h2>
+      <p className="muted">A credencial inicial é provisória. Para continuar, escolha uma senha exclusiva para esta plataforma.</p>
+      {notice&&<div className="notice" role="alert">{notice}</div>}{success&&<div className="notice success" role="status">{success}</div>}
+      <div><label htmlFor="old-pass">Senha atual</label><input id="old-pass" type="password" autoComplete="current-password" required value={passwordForm.current} onChange={e=>setPasswordForm({...passwordForm,current:e.target.value})}/></div>
+      <div><label htmlFor="new-pass">Nova senha forte</label><input id="new-pass" type="password" autoComplete="new-password" required minLength={12} value={passwordForm.next} onChange={e=>setPasswordForm({...passwordForm,next:e.target.value})}/></div>
+      <div><label htmlFor="confirm-pass">Confirme a nova senha</label><input id="confirm-pass" type="password" autoComplete="new-password" required value={passwordForm.confirm} onChange={e=>setPasswordForm({...passwordForm,confirm:e.target.value})}/></div>
+      <small>Use 12 ou mais caracteres, maiúsculas, minúsculas, números e símbolo.</small>
+      <Btn type="submit" className="full" disabled={busy}>Alterar senha e encerrar sessão</Btn>
+      <Btn className="secondary full" onClick={logout}>Sair sem alterar</Btn>
+    </form>
+  </section>;
 
   const links=[['home','◈ Início'],['catalog','▤ Catálogo'],['brain','✳ Cérebro 190']];
   const adminLinks=[['editor','✎ Editar textos'],['access','♙ Autorizar acessos'],['rules','⚙ Regras do Cérebro'],['audit','◎ Auditoria']];

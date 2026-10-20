@@ -14,12 +14,12 @@ async function identity(){
   const cookieStore=await cookies();
   const raw=cookieStore.get(COOKIE_NAME)?.value;
   if(!raw || raw.length<35) return null;
-  const result=await db().query(`SELECT u.id,u.username,u.display_name,u.role
+  const result=await db().query(`SELECT u.id,u.username,u.display_name,u.role,u.must_change_password
     FROM sessions s JOIN users u ON s.user_id=u.id
     WHERE s.token_hash=$1 AND s.expires_at>now() AND s.revoked_at IS NULL AND u.active=true`,[digest(raw)]);
   return result.rows[0]||null;
 }
-function publicUser(u){return {id:u.id,username:u.username,name:u.display_name,role:u.role};}
+function publicUser(u){return {id:u.id,username:u.username,name:u.display_name,role:u.role,mustChangePassword:Boolean(u.must_change_password)};}
 function requireRole(u,admin=false){if(!u) return failure('Sessão ausente ou expirada.',401);if(admin&&u.role!=='admin')return failure('Acesso restrito ao administrador.',403);return null;}
 const usernameOf=(v)=>string(v,40).toLowerCase();
 function entryPayload(v) {
@@ -66,7 +66,7 @@ async function gate(request,method,ctx){
     const key='login:'+username;
     if(await isRateLimited(key)) return failure('Acesso temporariamente limitado. Tente novamente em 15 minutos.',429);
     if(username===ADMIN_LOGIN) await ensureAdmin();
-    const found=await db().query('SELECT id,username,display_name,role,password_hash,active FROM users WHERE username=$1',[username]);
+    const found=await db().query('SELECT id,username,display_name,role,password_hash,active,must_change_password FROM users WHERE username=$1',[username]);
     const u=found.rows[0];
     // Mesmo em usuário não encontrado executa hash para reduzir diferenças de tempo.
     const valid=await passwordVerify(pass,u?.password_hash||'scrypt:00000000000000000000000000000000:'+('00'.repeat(64)));
@@ -86,6 +86,28 @@ async function gate(request,method,ctx){
   }
   const blocked=requireRole(u);if(blocked) return blocked;
   if(route==='/session'&&method==='GET') return reply({user:publicUser(u)});
+  if(route==='/auth/change-password'&&method==='POST'){
+    const v=await input(request,3000);
+    const current=typeof v.current==='string'?v.current:'',next=typeof v.next==='string'?v.next:'';
+    if(next.length<12||next.length>128||!/[a-z]/.test(next)||!/[A-Z]/.test(next)||!/[0-9]/.test(next)||!/[^a-zA-Z0-9]/.test(next))
+      return failure('Senha nova: use de 12 a 128 caracteres, maiúsculas, minúsculas, números e símbolo.');
+    if(next===current)return failure('Escolha uma senha diferente da atual.');
+    const key='change:'+u.id;
+    if(await isRateLimited(key,5))return failure('Muitas tentativas. Aguarde 15 minutos.',429);
+    const rec=await db().query('SELECT password_hash FROM users WHERE id=$1',[u.id]);
+    if(!await passwordVerify(current,rec.rows[0]?.password_hash||'')){
+      await recordFailure(key);return failure('Senha atual incorreta.',403);
+    }
+    const hash=await passwordHash(next);
+    await db().query('UPDATE users SET password_hash=$2,must_change_password=false WHERE id=$1',[u.id,hash]);
+    await db().query('UPDATE sessions SET revoked_at=now() WHERE user_id=$1',[u.id]);
+    await clearFailure(key);
+    await log(u.id,'password_changed',u.username);
+    const out=reply({message:'Senha alterada. Entre novamente com a nova credencial.'});
+    out.cookies.set(COOKIE_NAME,'',{...cookieSettings,maxAge:0});
+    return out;
+  }
+  if(u.must_change_password)return failure('Troca obrigatória da senha provisória antes de utilizar a plataforma.',403);
   if(route==='/entries'&&method==='GET'){
     const rows=await db().query('SELECT id,code,title,category,priority,summary,body,tags,revision,updated_at FROM knowledge ORDER BY title LIMIT 800');
     return reply({entries:rows.rows});
@@ -133,8 +155,8 @@ async function gate(request,method,ctx){
       if(action==='approve'){
         temporaryPassword=token().slice(0,24);
         const hash=await passwordHash(temporaryPassword);
-        await client.query(`INSERT INTO users(id,username,display_name,password_hash,role,active)
-          VALUES($1,$2,$3,$4,'user',true)`,
+        await client.query(`INSERT INTO users(id,username,display_name,password_hash,role,active,must_change_password)
+          VALUES($1,$2,$3,$4,'user',true,true)`,
           [randomUUID(),result.rows[0].username,result.rows[0].display_name,hash]);
       }
       await client.query('UPDATE access_requests SET status=$2,resolved_at=now() WHERE id=$1',[id,action==='approve'?'approved':'rejected']);
@@ -156,7 +178,7 @@ async function gate(request,method,ctx){
     const v=await input(request,2000),id=string(v.id,50);
     if(!/^[0-9a-f-]{36}$/i.test(id))return failure('Identificação inválida.');
     const tmp=token().slice(0,24),hash=await passwordHash(tmp);
-    const res=await db().query(`UPDATE users SET password_hash=$2 WHERE id=$1 AND role='user' RETURNING username`,[id,hash]);
+    const res=await db().query(`UPDATE users SET password_hash=$2,must_change_password=true WHERE id=$1 AND role='user' RETURNING username`,[id,hash]);
     if(!res.rowCount)return failure('Conta não encontrada ou protegida.',404);
     await db().query('UPDATE sessions SET revoked_at=now() WHERE user_id=$1',[id]);
     await log(u.id,'password_reset',res.rows[0].username);
