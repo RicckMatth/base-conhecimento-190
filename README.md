@@ -4,6 +4,18 @@ Portal de consulta de naturezas e análise de relatos com **Next.js (Node.js)**,
 
 > **Aviso operacional:** as classificações, prioridades, códigos e referências legais são sugestões técnicas NÃO homologadas. Valide-as com a instituição antes do uso. Não processe dados pessoais, sensíveis, sigilosos ou de ocorrências reais sem avaliação jurídica, segurança e autorização institucional.
 
+## Integração Relato 190 v5.12.0 — chat e autorização remota (TESTE)
+
+A Base 190 possui a seção **Integração 190**, agora em formato de chat, conectada automaticamente à extensão [Relato 190 integrada](https://github.com/RicckMatth/190-extensao_integrada). Essa funcionalidade é **experimental e não homologada para uso operacional**.
+
+1. Instale a extensão de teste e faça login normalmente neste site.
+2. Abra **Integração 190** e clique em **Autorizar conexão remota**. Esta ação autoriza o envio automático do **texto principal do relato**, não os demais campos do SADE.
+3. Enquanto a aba autorizada estiver aberta e o login válido, alterações de relato no SADE/simulador são analisadas após aproximadamente 3,5 segundos sem edição, respeitando o tamanho mínimo e limites de requisição.
+4. Cada resultado recebido abre automaticamente o chat e é exibido em uma nova resposta, com natureza sugerida, perguntas e reformulação opcional.
+5. Clique em **Revogar autorização**, faça logout ou feche a aba para bloquear o envio. A extensão verifica autorização e sessão a cada análise; a autorização fica no `sessionStorage` da aba e vinculada ao usuário autenticado.
+
+**Segurança:** HTTPS/TLS protege a comunicação em trânsito, não oferece criptografia ponta a ponta. A extensão não armazena cookies, senhas ou tokens e a API continua protegida por sessão `HttpOnly`. O conteúdo enviado chega ao servidor para processamento. Não use informações reais ou sigilosas sem autorização institucional. A extensão não envia ou encerra ocorrências automaticamente no SADE. Para teste, use o simulador e relatos fictícios.
+
 ## Recursos
 
 - Sessões com token aleatório, apenas hash persistido no PostgreSQL, cookie Secure/HttpOnly/SameSite.
