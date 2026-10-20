@@ -1,117 +1,77 @@
-<div align="center">
+# Base de Conhecimento 190 — Node.js + PostgreSQL
 
-# 📚 Base de Conhecimento 190
+Portal de consulta de naturezas e análise de relatos com **Next.js (Node.js)**, autenticação real, banco PostgreSQL e trilha de auditoria.
 
-### Portal de consulta e gestão de naturezas de ocorrências
+> **Aviso operacional:** as classificações, prioridades, códigos e referências legais são sugestões técnicas NÃO homologadas. Valide-as com a instituição antes do uso. Não processe dados pessoais, sensíveis, sigilosos ou de ocorrências reais sem avaliação jurídica, segurança e autorização institucional.
 
-Protótipo local em **um único arquivo HTML**, com interface inspirada em ferramentas de documentação colaborativa.
+## Recursos
 
-[![Baixar sistema](https://img.shields.io/badge/⬇️_BAIXAR_SISTEMA-2563EB?style=for-the-badge)](https://github.com/RicckMatth/base-conhecimento-190/archive/refs/heads/main.zip)
-[![Ver código](https://img.shields.io/badge/VER_CÓDIGO-172B4D?style=for-the-badge)](https://github.com/RicckMatth/base-conhecimento-190/blob/main/index.html)
+- Sessões com token aleatório, apenas hash persistido no PostgreSQL, cookie Secure/HttpOnly/SameSite.
+- Senhas com scrypt + salt independente, proteção básica contra tentativas repetidas.
+- Sem cadastro público: visitantes podem solicitar acesso; só o administrador aprova.
+- Todo usuário aprovado recebe perfil simples (somente leitura). O administrador exclusivo `pm-civil.bandeira` é inicializado pelo servidor.
+- Editor de fichas restrito ao administrador, histórico de revisões e concorrência otimista.
+- Gestão de usuários, bloqueio, redefinição de senha, regras personalizadas e auditoria básica.
+- Cérebro 190 adaptado do mecanismo existente para execução no Node.js, com regras extras e índice **heurístico** (não probabilidade).
+- Tema claro/escuro funcional e responsividade mobile/desktop.
+- Implantação automática por Git Integration do Vercel.
 
-**[⬇️ CLIQUE AQUI PARA BAIXAR O ZIP](https://github.com/RicckMatth/base-conhecimento-190/archive/refs/heads/main.zip)**
+## Instalação local
 
-</div>
+Node.js 20+ e um PostgreSQL com acesso TLS:
 
----
+```bash
+npm install
+cp .env.example .env.local
+npm run dev
+```
 
-## 🚀 Como instalar e executar
+Edite `.env.local` com `DATABASE_URL` (string de conexão do banco) e `ADMIN_INITIAL_PASSWORD` (senha inicial temporária do administrador). **Não grave senha em `package.json`, README ou Git.** Essa senha precisa ter pelo menos 12 caracteres; remova-a do Vercel após o primeiro login e **troque a senha inicial por uma nova**. Não reaproveite senhas já compartilhadas em conversas.
 
-**Não é necessário instalar nada.**
+O servidor cria as tabelas automaticamente na primeira requisição autenticada e inicializa o catálogo a partir das regras demonstrativas. Não há fallback com contas ou dados locais.
 
-1. Clique no botão **BAIXAR SISTEMA** acima para baixar um arquivo `.zip` com o projeto.
-2. Extraia o arquivo ZIP no celular ou computador.
-3. Abra o arquivo `index.html` extraído no Chrome, Edge ou Firefox.
-4. Selecione um usuário de demonstração no cabeçalho e comece a testar.
+## Deploy Vercel + GitHub
 
-> O download ZIP contém também o README e outros arquivos do repositório. Para executar o sistema, abra somente o `index.html` extraído.
+1. Vercel → **Add New > Project** → importe `RicckMatth/base-conhecimento-190`.
+2. Framework **Next.js**, Root Directory `./`, production branch `main`.
+3. Crie um banco **PostgreSQL gerenciado**, por exemplo Neon, com TLS, de preferência na mesma região das funções. Associe a conexão ao projeto.
+4. Em Vercel → **Settings > Environment Variables**, configure:
+   - `DATABASE_URL`: conexão PostgreSQL (Production e Preview, idealmente **bancos distintos**).
+   - `ADMIN_INITIAL_PASSWORD`: senha inicial forte e temporária do administrador, em variável Sensitive/Encrypted.
+5. Faça **Redeploy** após adicionar as variáveis. Acesse a URL, faça login com usuário `pm-civil.bandeira` e a senha configurada no Vercel. Ao primeiro login, a conta administrativa será criada na base.
+6. Após inicialização, retire `ADMIN_INITIAL_PASSWORD` do ambiente e redeploy. A conta permanece no banco de dados.
+7. Toda atualização na branch `main` será automaticamente implantada na produção. Outras branches geram URLs Preview.
 
-## ✨ Funcionalidades da versão de apresentação
+`DATABASE_URL` não configurada: API responde **503** (falha segura). Banco inacessível: autenticação e escrita não são liberadas.
 
-- **Login demonstrativo livre:** informe qualquer nome, escolha Militar ou Civil e selecione Consulta ou Administrador (demonstração).
-- **Painel inicial premium:** pesquisa central, indicadores, categorias e naturezas em destaque.
-- **Pesquisa avançada:** palavras completas, frases entre aspas e códigos; pesquisa em título, resumo, tags e texto completo.
-- **Catálogo de naturezas:** filtros por categoria, ordenação e fichas detalhadas.
-- **Oito registros fictícios:** exemplos de natureza de ocorrência com códigos `DEM-001` a `DEM-008`.
-- **Favoritos e consultas recentes**, comentários, impressão e cópia de referências.
-- **Editor visual e gestão local:** criar, editar, excluir, visualizar e publicar conteúdos no modo administrador.
-- **Histórico básico de alterações** e importação/exportação em JSON.
-- **Tema claro/escuro** e interface adaptável a celular e computador.
+## API
 
-> **Limitações:** esta é uma demonstração executada em um único HTML. Não há autenticação verdadeira, banco de dados compartilhado, sincronização multiusuário ou permissões seguras. Os códigos DEM são fictícios, não códigos oficiais de classificação. Não utilize dados operacionais sigilosos.
+- `POST /api/access-requests`: solicitação pública de acesso (com proteção de origem e limitação de tentativas).
+- `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/session`.
+- `GET /api/entries`, `GET /api/rules`, `POST /api/analyze`: apenas usuários autenticados.
+- `GET/POST/PATCH /api/admin/...`: exclusivos do administrador; o servidor não confia em permissões do navegador.
 
-## 🆕 Melhorias para consulta e edição (versão atual)
+O cadastro aprovado gera uma senha provisória, exibida **uma única vez** no painel do administrador, para entrega por canal seguro. Para troca de senha, utilize o fluxo de alteração de senha após a primeira implantação.
 
-- **Naturezas relacionadas:** sugestões automáticas por categoria e tags em cada ficha.
-- **Histórico de revisões utilizável:** visualizar versões anteriores e, no modo administrador, restaurar uma revisão sem perder a versão atual.
-- **Editor visual ampliado:** títulos e subtítulos, negrito, itálico, sublinhado, texto riscado, alinhamento, listas, recuo, links, tabelas, avisos, destaques, linhas divisórias, checklist e desfazer/refazer.
-- **Contador de palavras e caracteres** durante a edição.
-- **Exportação individual de fichas em HTML**, além da impressão e do backup completo em JSON.
-- **Atalho Ctrl+K** para abrir a pesquisa.
-- **Consulta contextual:** código, resumo, categoria, autor, tags, histórico e itens relacionados em uma mesma tela.
+## Banco
 
-> O editor usa recursos nativos do navegador; alguns comandos podem se comportar de forma diferente em dispositivos móveis. Esta é uma base demonstrativa e ainda requer validação funcional no navegador antes da apresentação.
+Tabelas: `users`, `sessions`, `access_requests`, `auth_limits`, `knowledge`, `knowledge_revisions`, `custom_rules`, `audit_log`. O schema é criado com `CREATE TABLE IF NOT EXISTS`.
 
-## 👤 Acesso para demonstração
+### Segurança e pendências para ambiente institucional
+- Projeto experimental. Ainda são necessários pentest, política de backup/restore do banco, revisão jurídica de tipificações e aprovação formal da organização.
+- Prefira Vercel Production + PostgreSQL em projetos/bancos isolados. Habilite MFA na conta GitHub, Vercel e no provedor do banco.
+- Proteja a branch `main` e use CI com testes de regressão antes da liberação.
+- Os relatos enviados ao analisador são processados em memória, sem gravação em banco ou envio para serviços de IA externos.
+- Registros de login e alterações administrativas geram audit log básico; configure logs/monitoramento apropriados antes do uso real.
+- O arquivo HTML legado foi substituído por aplicação Node. Seus conteúdos de demonstração antigos continuam recuperáveis no histórico do Git.
 
-1. Digite qualquer nome na tela de login.
-2. Selecione o vínculo **Militar** ou **Civil**.
-3. Escolha **Consulta** para visualizar ou **Administrador (demonstração)** para editar.
-4. Clique em **Entrar na plataforma**.
+## Extensão
+A extensão de navegador **não integra o repositório**. Teste e instalação serão locais, e os caminhos usuais da extensão estão incluídos no `.gitignore`.
 
-Não é exigida senha. O modo administrador pode ser escolhido por qualquer pessoa e **não é uma proteção de segurança**.
+## Testes
+```bash
+npm test
+npm run build
+```
 
-## 🔎 Como pesquisar
-
-Use o campo de pesquisa no topo da página.
-
-- `pesquisa`: encontra a palavra nos textos, títulos e tags.
-- `"base de conhecimento"`: procura a frase completa.
-- `manual pesquisa`: combina termos e exige a presença de ambos.
-
-A pesquisa não diferencia letras maiúsculas e minúsculas ou acentos. Trata-se de um mecanismo local para a base carregada no navegador.
-
-## 📝 Como publicar uma natureza
-
-1. Entre no modo **Administrador (demonstração)**.
-2. Abra **Gerenciar conteúdo** e clique em **Nova natureza**.
-3. Informe título, código, categoria, resumo e tags.
-4. Formate a explicação no editor visual.
-5. Clique em **Publicar conteúdo**.
-
-Os dados são gravados apenas no navegador utilizado.
-
-## 💾 Backup e recuperação
-
-No modo administrador, abra **Gerenciar conteúdo**. Use **Exportar base JSON** para guardar uma cópia e **Importar base JSON** para restaurar um backup local. A importação substitui o conteúdo atual daquele navegador.
-
-## 🔐 Privacidade e segurança
-
-Este repositório contém somente código e conteúdo fictício de demonstração. Não insira dados operacionais reais, pessoais, sigilosos ou institucionais sensíveis no protótipo. A seleção de perfil não é uma autenticação real.
-
-Se o repositório for **privado**, o link do repositório e do arquivo ZIP também exigirá que a pessoa tenha permissão de acesso ao GitHub. Para distribuir o arquivo a alguém sem acesso, envie o HTML separadamente ou disponibilize-o em uma hospedagem autorizada.
-
-## 🛠️ Tecnologia
-
-- HTML5, CSS3 e JavaScript
-- `localStorage` para persistência local
-- Arquivo único: `index.html`
-- Sem instalação de dependências ou servidor
-
-## 🗺️ Próximas melhorias previstas
-
-- Autenticação real e permissões verificadas pelo servidor
-- Árvore de páginas, organização e editor mais avançados
-- Pesquisa indexada e filtros adicionais
-- Menções com notificações e colaboração multiusuário
-- Banco de dados e controle de acesso institucional
-
----
-
-<div align="center">
-
-**Base de Conhecimento 190 · Versão experimental para testes locais**
-
-[Repositório](https://github.com/RicckMatth/base-conhecimento-190) · [Baixar HTML](https://github.com/RicckMatth/base-conhecimento-190/archive/refs/heads/main.zip)
-
-</div>
+Repositório: https://github.com/RicckMatth/base-conhecimento-190
