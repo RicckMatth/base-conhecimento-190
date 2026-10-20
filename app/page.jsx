@@ -1,5 +1,5 @@
 'use client';
-import { useEffect,useMemo,useState } from 'react';
+import { useEffect,useMemo,useRef,useState } from 'react';
 
 async function call(path,options={}) {
   const response=await fetch('/api'+path,{credentials:'same-origin',cache:'no-store',...options,
@@ -35,6 +35,7 @@ export default function Home(){
   const [chatMessages,setChatMessages]=useState([]);
   const [chatInput,setChatInput]=useState('');
   const [chatSending,setChatSending]=useState(false);
+  const chatBottomRef=useRef(null);
   const [adminRequests,setAdminRequests]=useState([]),[adminUsers,setAdminUsers]=useState([]),[events,setEvents]=useState([]);
   const [credential,setCredential]=useState(null);
   const [editor,setEditor]=useState(emptyEntry()),[ruleDraft,setRuleDraft]=useState({code:'',officialNature:'',category:'Proteção',priority:'Média',group1:'',group2:'',explanation:''});
@@ -111,6 +112,11 @@ export default function Home(){
     }
     window.dispatchEvent(new CustomEvent('base190:remote-authorization-changed'));
   }
+  useEffect(()=>{
+    if(screen==='extension'&&chatBottomRef.current){
+      chatBottomRef.current.scrollIntoView({behavior:'smooth',block:'end'});
+    }
+  },[chatMessages.length,screen]);
   async function sendChat(event){
     event.preventDefault();
     const text=chatInput.trim();
@@ -374,6 +380,7 @@ export default function Home(){
                 </div>
               </div>)}
               {chatSending&&<div className="chat-typing">✳ Cérebro 190 analisando…</div>}
+              <div ref={chatBottomRef} aria-hidden="true"/>
             </div>
             <div className="chat-compose">
               <form onSubmit={sendChat}>
