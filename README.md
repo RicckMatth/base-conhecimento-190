@@ -1,4 +1,4 @@
-# Base de Conhecimento 190 — Node.js + PostgreSQL
+# Base de Conhecimento 190 — Node.js + PostgreSQL - https://base-conhecimento-190.vercel.app/
 
 Portal de consulta de naturezas e análise de relatos com **Next.js (Node.js)**, autenticação real, banco PostgreSQL e trilha de auditoria.
 
