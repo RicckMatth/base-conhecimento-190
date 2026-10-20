@@ -13,7 +13,6 @@ const body=(value)=>JSON.stringify(value);
 const emptyEntry=()=>({code:'',title:'',category:'Proteção',priority:'Média',summary:'',body:'',tags:[],revision:0});
 const toEntries=(value)=>value.split(',').map(x=>x.trim()).filter(Boolean);
 const formatDate=(v)=>v?new Date(v).toLocaleString('pt-BR'):'—';
-const REMOTE_CONSENT_KEY='base190.remoteConsent.v2';
 const Btn=({children,onClick,className='',disabled=false,type='button'})=><button type={type} className={'btn '+className} disabled={disabled} onClick={onClick}>{children}</button>;
 const Tag=({priority})=><span className={'badge '+(priority==='Crítica'?'crit':priority==='Alta'?'high':'')}>{priority||'Média'}</span>;
 
@@ -31,7 +30,6 @@ export default function Home(){
   const [extensionOnline,setExtensionOnline]=useState(false);
   const [extensionAnalysis,setExtensionAnalysis]=useState(null);
   const [extensionReceivedAt,setExtensionReceivedAt]=useState(null);
-  const [remoteEnabled,setRemoteEnabled]=useState(false);
   const [chatMessages,setChatMessages]=useState([]);
   const [chatInput,setChatInput]=useState('');
   const [chatSending,setChatSending]=useState(false);
@@ -76,7 +74,6 @@ export default function Home(){
   // Os resultados são eventos transitórios no navegador, sem persistência.
   useEffect(()=>{
     if(!user || user.mustChangePassword)return;
-    setRemoteEnabled(sessionStorage.getItem(REMOTE_CONSENT_KEY)===String(user.id));
     const ready=()=>setExtensionOnline(true);
     const receive=e=>{
       const payload=e?.detail;
@@ -101,16 +98,8 @@ export default function Home(){
     window.dispatchEvent(new CustomEvent('base190:extension-discover'));
     setScreen('extension');
   }
-  function toggleRemote(){
-    if(!user||user.mustChangePassword)return;
-    if(remoteEnabled){
-      sessionStorage.removeItem(REMOTE_CONSENT_KEY);
-      setRemoteEnabled(false);
-    }else{
-      sessionStorage.setItem(REMOTE_CONSENT_KEY,String(user.id));
-      setRemoteEnabled(true);
-    }
-    window.dispatchEvent(new CustomEvent('base190:remote-authorization-changed'));
+  function openExtensionSettings(){
+    window.dispatchEvent(new CustomEvent('base190:open-settings'));
   }
   useEffect(()=>{
     if(screen==='extension'&&chatBottomRef.current){
@@ -149,12 +138,10 @@ export default function Home(){
     setBusy(true);
     try{
       const x=await call('/auth/change-password',{method:'POST',body:body({current:passwordForm.current,next:passwordForm.next})});
-      sessionStorage.removeItem(REMOTE_CONSENT_KEY);setRemoteEnabled(false);
       setUser(null);setPasswordForm({current:'',next:'',confirm:''});ok(x.message);
     }catch(e){err(e);}finally{setBusy(false);}
   }
   async function logout(){
-    sessionStorage.removeItem(REMOTE_CONSENT_KEY);setRemoteEnabled(false);
     setBusy(true);try{await call('/auth/logout',{method:'POST',body:'{}'});}catch(e){err(e);}
     setUser(null);setScreen('home');setEntries([]);setBrainRules({base:[],extras:[],custom:[]});setBusy(false);setCredential(null);
     setExtensionOnline(false);setExtensionAnalysis(null);setExtensionReceivedAt(null);setChatMessages([]);setChatInput('');
@@ -393,17 +380,28 @@ export default function Home(){
             </div>
           </div>
           <aside className="chat-side">
-            <div className="chat-side-top"><span className="eyebrow">CENTRAL DE INTEGRAÇÃO</span><h2>Conexão remota</h2>
-              <p>A extensão já é reconhecida automaticamente. Controle aqui quando ela poderá enviar relatos para análise.</p></div>
-            <div className={'chat-connection '+(remoteEnabled?'is-on':'')}><span className="chat-connection-dot"/><div><b>{remoteEnabled?'Transmissão autorizada':'Aguardando autorização'}</b><small>{remoteEnabled?'Apenas nesta aba e nesta sessão':'Nenhum envio automático permitido'}</small></div></div>
-            <Btn className={remoteEnabled?'secondary full':'full'} onClick={toggleRemote}>{remoteEnabled?'Revogar autorização':'Autorizar conexão remota'}</Btn>
-            <p className="chat-small">Ao autorizar, o texto principal do relato poderá ser enviado automaticamente ao servidor da Base 190 enquanto esta aba estiver aberta e sua sessão estiver válida. A extensão não enviará os demais campos separadamente.</p>
+            <div className="chat-side-top">
+              <span className="eyebrow">CONFIGURAÇÃO SIMPLIFICADA</span>
+              <h2>Extensão Relato 190</h2>
+              <p>A análise automática agora é autorizada nas <strong>configurações da própria extensão</strong>, sem permissões adicionais aqui no site.</p>
+            </div>
+            <div className={'chat-connection '+(extensionOnline?'is-on':'')}>
+              <span className="chat-connection-dot"/>
+              <div><b>{extensionOnline?'Extensão detectada':'Extensão não detectada'}</b>
+                <small>{extensionOnline?'Abra as configurações para ativar/desativar o envio.':'Instale ou atualize a extensão de teste.'}</small>
+              </div>
+            </div>
+            <Btn className="full" onClick={openExtensionSettings} disabled={!extensionOnline}>Abrir configurações da extensão</Btn>
+            <p className="chat-small">Nas configurações, ative <b>Análise automática de relatos</b>. Depois, mantenha seu login nesta Base 190 e preencha o relato no simulador SADE.</p>
             <div className="divider"/>
-            <h3>Como funciona</h3>
-            <div className="chat-steps"><span><b>01</b> Abra o SADE/simulador</span><span><b>02</b> Digite ou edite o relato</span><span><b>03</b> Receba a análise neste chat</span></div>
+            <h3>Etapas de utilização</h3>
+            <div className="chat-steps"><span><b>01</b> Abra as opções da extensão</span>
+              <span><b>02</b> Ative a análise automática</span>
+              <span><b>03</b> Abra o SADE e aguarde a análise no chat</span></div>
             <div className="divider"/>
-            <div className="chat-privacy"><b>Segurança da conexão</b><p>A comunicação utiliza HTTPS com TLS e sessão HttpOnly validada no servidor. Não equivale a criptografia ponta a ponta. Você pode revogar a autorização a qualquer momento.</p></div>
-            {!extensionOnline&&<a className="chat-download" href="https://github.com/RicckMatth/190-extensao_integrada/archive/refs/heads/main.zip" target="_blank" rel="noopener noreferrer">Baixar extensão de teste ↗</a>}
+            <div className="chat-privacy"><b>Segurança da comunicação</b>
+              <p>O Chrome controla a preferência de envio; a Base verifica seu login a cada consulta. HTTPS/TLS protege o tráfego, mas não há criptografia ponta a ponta. Use apenas dados fictícios no teste.</p></div>
+            <a className="chat-download" href="https://github.com/RicckMatth/190-extensao_integrada/archive/refs/heads/main.zip" target="_blank" rel="noopener noreferrer">Baixar extensão atualizada ↗</a>
           </aside>
         </section>}
         {screen==='brain'&&<><div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Reconhecimento de palavras-chave e contexto, com hipóteses de natureza e perguntas de triagem.</p></div><span className="badge">{totalRules} regras</span></div>
