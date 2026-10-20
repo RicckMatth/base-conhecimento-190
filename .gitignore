@@ -1,0 +1,17 @@
+node_modules/
+.next/
+.vercel/
+.env
+.env.*
+!.env.example
+*.log
+coverage/
+.DS_Store
+# Extensão deliberadamente mantida fora do Git
+extension/
+extensao/
+extensão/
+chrome-extension/
+browser-extension/
+*.crx
+*.zip
