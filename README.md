@@ -6,19 +6,18 @@ Portal de consulta de naturezas e análise de relatos com **Next.js (Node.js)**,
 
 > **Aviso operacional:** as classificações, prioridades, códigos e referências legais são sugestões técnicas NÃO homologadas. Valide-as com a instituição antes do uso. Não processe dados pessoais, sensíveis, sigilosos ou de ocorrências reais sem avaliação jurídica, segurança e autorização institucional.
 
-## Integração Relato 190 v5.13.0 — chat integrado (TESTE)
+## Integração Relato 190 v5.14.0 — análise ao vivo no chat (TESTE)
 
-A Base 190 possui a seção **Integração 190**, com chat de resultados e detecção automática da extensão [Relato 190 integrada](https://github.com/RicckMatth/190-extensao_integrada). A função ainda é **experimental**, não homologada para uso operacional.
+A Base 190 é **a única interface de resultados** da extensão [Relato 190 integrada](https://github.com/RicckMatth/190-extensao_integrada). A extensão atua apenas como **ponte silenciosa**, sem exibir natureza, resultado, perguntas ou reformulações.
 
-**A autorização agora é controlada somente pela extensão**, não pelo site. O antigo botão **Autorizar conexão remota** e a autorização em `sessionStorage` foram removidos.
+1. Instale a extensão **v5.14.0** e faça login normalmente nesta Base 190.
+2. No Chrome, abra **Detalhes → Opções da extensão** e ligue **Análise automática de relatos**. Este é o único consentimento de transmissão; o site não precisa autorizar nada.
+3. Abra o SADE/simulador em uma página suportada. A ponte entra em funcionamento **automaticamente**, sem abrir o painel da extensão ou clicar em Analisar.
+4. Digite um relato fictício de pelo menos 20 caracteres. Depois de ~1,15 segundo sem alterações, a Base recebe o texto e analisa-o via API autenticada. O fluxo limita repetição e descarta resultados obsoletos.
+5. O chat **Integração 190** abre automaticamente ao receber a resposta, e atualiza sua última análise ao vivo, sem acumular dezenas de mensagens durante a digitação.
+6. Para parar, desative a preferência nas opções da extensão; nenhum resultado é enviado para o SADE e nenhuma ocorrência é salva/despachada automaticamente.
 
-1. Instale a extensão de teste **v5.13.0** e faça login nesta Base 190.
-2. No Chrome, abra **Detalhes → Opções da extensão** e ative **Análise automática de relatos**; ou use o botão **Abrir configurações da extensão** no chat desta Base.
-3. Abra o SADE simulado, ative a extensão e digite um relato fictício com 20+ caracteres.
-4. O texto é enviado à Base 190 após cerca de 3,5 segundos sem edição e o resultado aparece automaticamente no chat e na extensão.
-5. Desative a opção **nas configurações da extensão** para bloquear novos envios imediatamente. Não é necessário reautorizar cada aba da Base 190.
-
-**Segurança:** a opção de transmissão é armazenada no `chrome.storage.local` do próprio complemento; a Base verifica login válido em cada consulta por sessão `HttpOnly`. O transporte usa HTTPS/TLS, não criptografia ponta a ponta. Não envie ocorrências reais nem dados pessoais sem autorização institucional; a extensão não registra ou despacha ocorrências automaticamente no SADE.
+**Segurança:** o opt-in de transmissão fica no `chrome.storage.local`; autenticação exigida pelo servidor com sessão `HttpOnly`, e HTTPS/TLS para o tráfego. Não há criptografia ponta a ponta. O texto do relato pode conter dados pessoais ou sigilosos: a função continua **experimental e não homologada para uso operacional com dados reais**, dependendo de autorização institucional e avaliação de LGPD.
 
 ## Recursos
 
