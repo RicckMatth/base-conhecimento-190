@@ -1,4 +1,5 @@
 'use client';
+import { Icon, categoryIcon } from './icons.jsx';
 import { useEffect,useMemo,useRef,useState } from 'react';
 
 async function call(path,options={}) {
@@ -26,6 +27,7 @@ export default function Home(){
   const [request,setRequest]=useState({username:'',name:'',reason:''});
   const [entries,setEntries]=useState([]),[brainRules,setBrainRules]=useState({base:[],extras:[],custom:[]});
   const [search,setSearch]=useState(''),[cat,setCat]=useState('Todas'),[selectedId,setSelectedId]=useState(null);
+  const [priorityFilter,setPriorityFilter]=useState('Todas');
   const [relato,setRelato]=useState(''),[analysis,setAnalysis]=useState(null);
   const [extensionOnline,setExtensionOnline]=useState(false);
   const [extensionAnalysis,setExtensionAnalysis]=useState(null);
@@ -167,9 +169,9 @@ export default function Home(){
   function openEntry(id){setSelectedId(id);go('detail');}
   const selected=entries.find(e=>e.id===selectedId);
   const categories=useMemo(()=>['Todas',...new Set(entries.map(e=>e.category))], [entries]);
-  const filtered=useMemo(()=>entries.filter(e=>(cat==='Todas'||e.category===cat)&&
+  const filtered=useMemo(()=>entries.filter(e=>(cat==='Todas'||e.category===cat)&&(priorityFilter==='Todas'||e.priority===priorityFilter)&&
     (!search.trim()||[e.title,e.code,e.category,e.summary,e.body,...(e.tags||[])].join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
-      .includes(search.trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()))),[entries,cat,search]);
+      .includes(search.trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()))),[entries,cat,search,priorityFilter]);
   const totalRules=(brainRules.base?.length||0)+(brainRules.extras?.length||0)+(brainRules.custom?.length||0);
   function editEntry(entry){setEditor(entry?{...entry,tags:entry.tags||[]}:emptyEntry());setRevisionHistory([]);go('editor');}
   async function saveEntry(e){
@@ -220,8 +222,8 @@ export default function Home(){
   }
   function entryGrid(items){return <div className="cards">{items.map(a=><button key={a.id} className="record-card" onClick={()=>openEntry(a.id)}>
     <div className="toolbar"><span className="badge">{a.code}</span><Tag priority={a.priority}/></div>
-    <h3>{a.title}</h3><p>{a.summary}</p>
-    <div className="end"><small>{a.category}</small><b style={{color:'var(--blue)'}}>Abrir →</b></div>
+    <div className="record-symbol"><Icon name={categoryIcon(a.category)} size={23}/><span>{a.category}</span></div><h3>{a.title}</h3><p>{a.summary}</p>
+    <div className="end"><small>{a.category}</small><b style={{color:'var(--blue)'}}>Consultar <Icon name="arrow" size={15}/></b></div>
   </button>)}</div>}
   function chatAnswer(result){
     if(!result)return <p>Sem resposta da Base 190.</p>;
@@ -264,11 +266,11 @@ export default function Home(){
       <span className="mark">190</span><span className="eyebrow" style={{color:'#aecbff'}}>CENTRAL DE INTELIGÊNCIA E CONHECIMENTO</span>
       <h1>Conhecimento para decisões mais informadas.</h1>
       <p>Consulte naturezas, analise relatos com o Cérebro 190 e acesse protocolos orientativos em uma plataforma com permissões controladas.</p>
-      <div className="feature-pills"><span>🔐 Acesso autorizado</span><span>🧠 Triagem de relatos</span><span>📚 Base pesquisável</span><span>🛡️ Gestão administrativa</span></div>
+      <div className="feature-pills"><span><Icon name="lock"/> Acesso autorizado</span><span><Icon name="brain"/> Triagem de relatos</span><span><Icon name="book"/> Base pesquisável</span><span><Icon name="shield"/> Gestão administrativa</span></div>
       <small style={{color:'#aebfe0'}}>Ambiente de apoio. Classificações e orientações devem ser revisadas e homologadas pela instituição.</small>
     </section>
     <section className="login-form"><div className="login-card">
-      <div className="toolbar"><span className="badge">BASE 190 • NODE.JS</span><Btn className="ghost tiny" onClick={theme}>{dark?'☀ Tema claro':'☾ Tema escuro'}</Btn></div>
+      <div className="toolbar"><span className="badge">ACESSO À BASE 190</span><Btn className="ghost tiny" onClick={theme}><Icon name={dark?'sun':'moon'} size={17}/>{dark?'Tema claro':'Tema escuro'}</Btn></div>
       <div><h2>{requestMode?'Solicitar acesso':'Bem-vindo de volta'}</h2><p className="muted">{requestMode?'Preencha o pedido. O administrador avaliará o acesso.':'Entre com sua conta previamente autorizada.'}</p></div>
       {notice&&<div className="notice" role="alert">{notice}</div>}{success&&<div className="notice success" role="status">{success}</div>}
       {requestMode?<form className="stack" onSubmit={submitRequest}>
@@ -282,7 +284,7 @@ export default function Home(){
         <Btn type="submit" disabled={busy} className="full">{busy?'Verificando…':'Entrar na plataforma →'}</Btn>
       </form>}
       <Btn className="secondary full" onClick={()=>{setRequestMode(!requestMode);clear();}}>{requestMode?'Já possuo acesso — entrar':'Solicitar acesso'}</Btn>
-      <div className="divider"/><p className="hint">Sessões protegidas por cookie HttpOnly. Alterações e autorizações são verificadas no servidor.</p>
+      <div className="divider"/><p className="hint">Acesso individual e autorizado. Entre em contato com o administrador para solicitar ajuda.</p>
     </div></section>
   </div>;
 
@@ -300,25 +302,25 @@ export default function Home(){
     </form>
   </section>;
 
-  const links=[['home','◈ Início'],['catalog','▤ Catálogo'],['brain','✳ Cérebro 190'],['extension','⇄ Integração 190']];
-  const adminLinks=[['editor','✎ Editar textos'],['access','♙ Autorizar acessos'],['rules','⚙ Regras do Cérebro'],['audit','◎ Auditoria']];
+  const links=[['home','Visão geral','home'],['catalog','Catálogo','book'],['brain','Cérebro 190','brain'],['extension','Integração 190','link']];
+  const adminLinks=[['editor','Editar textos','edit'],['access','Autorizar acessos','users'],['rules','Regras do Cérebro','settings'],['audit','Auditoria','audit']];
   return <div className="shell">
     <aside className="sidebar">
       <div className="logo"><div className="logoicon">190</div><div><strong>Base 190</strong><small>CONHECIMENTO OPERACIONAL</small></div></div>
       <span className="nav-caption">CENTRAL</span>
-      {links.map(([id,label])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>go(id)}>{label}</button>)}
-      {isAdmin&&<><span className="nav-caption">ADMINISTRAÇÃO</span>{adminLinks.map(([id,label])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>id==='editor'?editEntry(null):go(id)}>{label}</button>)}</>}
-      <div className="sidebar-bottom"><p className="who">{user.name}<br/><small>{user.username} • {isAdmin?'Admin':'Consulta'}</small></p><button className="nav-btn" onClick={logout} disabled={busy}>↪ Sair</button></div>
+      {links.map(([id,label,icon])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>go(id)} aria-current={screen===id?'page':undefined}><Icon name={icon}/>{label}</button>)}
+      {isAdmin&&<><span className="nav-caption">ADMINISTRAÇÃO</span>{adminLinks.map(([id,label,icon])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>id==='editor'?editEntry(null):go(id)} aria-current={screen===id?'page':undefined}><Icon name={icon}/>{label}</button>)}</>}
+      <div className="sidebar-bottom"><p className="who">{user.name}<br/><small>{user.username} • {isAdmin?'Admin':'Consulta'}</small></p><button className="nav-btn" onClick={logout} disabled={busy}><Icon name="logout"/> Sair</button></div>
     </aside>
     <div className="main">
       <header className="topbar"><div><b>{screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='extension'?'Extensão integrada':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
-        <div className="btn-row"><button className="btn ghost tiny" onClick={activateExtension} type="button">{extensionOnline?'● Extensão conectada':'Abrir chat integrado'}</button><span className="badge">{isAdmin?'Administrador':'Usuário de consulta'}</span><Btn className="ghost tiny" onClick={theme}>{dark?'☀ Claro':'☾ Escuro'}</Btn></div>
+        <div className="btn-row"><button className="btn ghost tiny" onClick={activateExtension} type="button">{extensionOnline?'● Extensão conectada':'Abrir chat integrado'}</button><span className="badge">{isAdmin?'Administrador':'Usuário de consulta'}</span><Btn className="ghost tiny" onClick={theme}><Icon name={dark?'sun':'moon'} size={17}/>{dark?'Claro':'Escuro'}</Btn></div>
       </header>
       <main className="content spaced">
         {notice&&<div className="notice" role="alert">{notice}</div>}{success&&<div className="notice success" role="status">{success}</div>}
 
         {screen==='home'&&<>
-          <section className="hero"><span className="eyebrow">CÉREBRO 190 • TRIAGEM ORIENTATIVA</span><h1>O conhecimento certo, no momento de consultar.</h1>
+          <section className="hero"><div className="hero-orbit" aria-hidden="true"><Icon name="shield" size={114}/></div><span className="eyebrow">CÉREBRO 190 • TRIAGEM ORIENTATIVA</span><h1>Clareza para cada atendimento.</h1>
             <p>Pesquise uma natureza ou descreva um cenário fictício para obter sugestões de triagem, máscaras e classificações que exigem validação humana.</p>
             <form className="search-row" onSubmit={analyze}><input value={relato} onChange={e=>setRelato(e.target.value)} aria-label="Relato para análise" placeholder="Ex.: dois indivíduos roubaram o celular mediante ameaça"/><Btn type="submit" disabled={busy}>Analisar relato →</Btn></form>
           </section>
@@ -331,22 +333,23 @@ export default function Home(){
               <Btn className="secondary" onClick={activateExtension}>Abrir chat →</Btn>
             </div>
           </div>
-          <div className="grid3"><div className="card stat"><small>Fichas no catálogo</small><strong>{entries.length}</strong><span className="badge">Conhecimento</span></div>
-            <div className="card stat"><small>Regras de classificação</small><strong>{totalRules}</strong><span className="badge">Cérebro 190</span></div>
-            <div className="card stat"><small>Nível de acesso</small><strong style={{fontSize:21}}>{isAdmin?'Administrador':'Consulta'}</strong><span className="badge">Sessão autenticada</span></div></div>
+          <div className="grid3"><div className="card stat"><small><Icon name="book"/> Fichas no catálogo</small><strong>{entries.length}</strong><span className="badge">Conhecimento</span></div>
+            <div className="card stat"><small><Icon name="brain"/> Regras de classificação</small><strong>{totalRules}</strong><span className="badge">Cérebro 190</span></div>
+            <div className="card stat"><small><Icon name="shield"/> Nível de acesso</small><strong style={{fontSize:21}}>{isAdmin?'Administrador':'Consulta'}</strong><span className="badge">Sessão autenticada</span></div></div>
+          <section className="domain-section"><div className="panel-head"><div><span className="eyebrow">CONSULTA POR ÁREA</span><h2>Encontre o contexto do atendimento</h2></div><span className="badge">{categories.length-1} áreas</span></div><div className="domain-grid">{categories.filter(c=>c!=='Todas').map(c=><button className="domain-card" key={c} onClick={()=>{setCat(c);setSearch('');setPriorityFilter('Todas');go('catalog');}}><Icon name={categoryIcon(c)} size={24}/><b>{c}</b><small>{entries.filter(e=>e.category===c).length} fichas</small><Icon name="arrow" size={16}/></button>)}</div></section>
           <section><div className="panel-head"><div><h2>Naturezas em destaque</h2><p className="muted">Consulte fichas e orientações existentes</p></div><Btn className="secondary" onClick={()=>go('catalog')}>Ver catálogo →</Btn></div>{entryGrid(entries.slice(0,6))}</section>
           <div className="helpnote">Os exemplos da base não constituem códigos ou protocolos oficiais homologados. É proibido utilizar a ferramenta para inserir dados sigilosos sem autorização institucional.</div>
         </>}
 
         {screen==='catalog'&&<>
-          <div className="panel-head"><div><span className="eyebrow">BIBLIOTECA OPERACIONAL</span><h1>Catálogo de naturezas</h1><p className="muted">Busque por título, código, resumo, conteúdo ou palavra-chave.</p></div>{isAdmin&&<Btn onClick={()=>editEntry(null)}>＋ Nova ficha</Btn>}</div>
-          <div className="card grid2"><div><label htmlFor="search">Pesquisa</label><input id="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Código, natureza, palavra-chave…"/></div><div><label htmlFor="category">Categoria</label><select id="category" value={cat} onChange={e=>setCat(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</select></div></div>
-          <div className="toolbar"><p className="muted">{filtered.length} resultado(s)</p><Btn className="ghost tiny" onClick={()=>{setSearch('');setCat('Todas');}}>Limpar filtros</Btn></div>
-          {filtered.length?entryGrid(filtered):<div className="card">Nenhum resultado para os filtros escolhidos.</div>}
+          <div className="panel-head"><div><span className="eyebrow">BIBLIOTECA OPERACIONAL</span><h1>Catálogo de naturezas</h1><p className="muted">Busque por título, código, resumo, conteúdo ou palavra-chave.</p></div>{isAdmin&&<Btn onClick={()=>editEntry(null)}><Icon name="plus" size={18}/> Nova ficha</Btn>}</div>
+          <div className="card catalog-filters"><div><label htmlFor="search">Pesquisa</label><input id="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Código, natureza, palavra-chave…"/></div><div><label htmlFor="category">Categoria</label><select id="category" value={cat} onChange={e=>setCat(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</select></div><div><label htmlFor="priority-filter">Prioridade sugerida</label><select id="priority-filter" value={priorityFilter} onChange={e=>setPriorityFilter(e.target.value)}>{['Todas','Crítica','Alta','Média'].map(v=><option key={v}>{v}</option>)}</select></div></div>
+          <p className="catalog-note"><Icon name="shield" size={16}/> Catálogo orientativo. Códigos CAT e SUG são internos; confirme a classificação institucional.</p><div className="toolbar"><p className="muted">{filtered.length} resultado(s)</p><Btn className="ghost tiny" onClick={()=>{setSearch('');setCat('Todas');setPriorityFilter('Todas');}}>Limpar filtros</Btn></div>
+          {filtered.length?entryGrid(filtered):<div className="card empty-state"><Icon name="search" size={36}/><h2>Nenhuma ficha encontrada</h2><p className="muted">Tente outro termo ou remova os filtros de categoria e prioridade.</p></div>}
         </>}
 
         {screen==='detail'&&selected&&<section className="card spaced">
-          <div className="toolbar"><Btn className="secondary tiny" onClick={()=>go('catalog')}>← Voltar</Btn>{isAdmin&&<Btn onClick={()=>editEntry(selected)}>✎ Editar ficha</Btn>}</div>
+          <div className="toolbar"><Btn className="secondary tiny" onClick={()=>go('catalog')}>← Voltar</Btn>{isAdmin&&<Btn onClick={()=>editEntry(selected)}><Icon name="edit" size={17}/> Editar ficha</Btn>}</div>
           <div><div className="btn-row"><span className="badge">{selected.code}</span><Tag priority={selected.priority}/><span className="muted">{selected.category}</span></div><h1 style={{marginTop:12}}>{selected.title}</h1></div>
           <p className="muted">{selected.summary}</p><div className="divider"/><pre className="record-detail">{selected.body}</pre>
           <div className="btn-row">{(selected.tags||[]).map(t=><span key={t} className="badge">#{t}</span>)}</div>
@@ -356,7 +359,7 @@ export default function Home(){
         {screen==='extension'&&<section className="integrated-chat">
           <div className="chat-main">
             <header className="chat-head">
-              <div className="chat-ident"><span className="chat-avatar">✳</span><div><b>Chat da Base 190</b><small>Extensão integrada · assistência contextual</small></div></div>
+              <div className="chat-ident"><span className="chat-avatar"><Icon name="brain"/></span><div><b>Chat da Base 190</b><small>Extensão integrada · assistência contextual</small></div></div>
               <div className="chat-head-actions"><span className={'chat-pill '+(extensionOnline?'connected':'')}>{extensionOnline?'● Extensão detectada':'○ Extensão ausente'}</span>
                 <Btn className="ghost tiny" onClick={()=>setChatMessages([])}>Limpar chat</Btn></div>
             </header>
@@ -372,7 +375,7 @@ export default function Home(){
                   </>:<p>{m.text}</p>}
                 </div>
               </div>)}
-              {chatSending&&<div className="chat-typing">✳ Cérebro 190 analisando…</div>}
+              {chatSending&&<div className="chat-typing"><Icon name="brain"/> Cérebro 190 analisando…</div>}
               <div ref={chatBottomRef} aria-hidden="true"/>
             </div>
             <div className="chat-compose">
@@ -412,7 +415,7 @@ export default function Home(){
         </section>}
         {screen==='brain'&&<><div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Reconhecimento de palavras-chave e contexto, com hipóteses de natureza e perguntas de triagem.</p></div><span className="badge">{totalRules} regras</span></div>
           <form className="card spaced" onSubmit={analyze}><div><label htmlFor="brain-input">Relato de teste (sem dados pessoais)</label><textarea id="brain-input" rows={5} value={relato} onChange={e=>setRelato(e.target.value)} placeholder="Descreva o fato observado ou relatado, sem nomes e endereços…"/></div>
-            <div className="btn-row"><Btn type="submit" disabled={busy}>{busy?'Analisando…':'✳ Analisar relato'}</Btn><Btn className="secondary" onClick={()=>{setRelato('');setAnalysis(null);}}>Limpar</Btn></div></form>
+            <div className="btn-row"><Btn type="submit" disabled={busy}><Icon name="brain" size={18}/>{busy?'Analisando…':'Analisar relato'}</Btn><Btn className="secondary" onClick={()=>{setRelato('');setAnalysis(null);}}>Limpar</Btn></div></form>
           {resultView()}
           <div className="card"><h3>Exemplos fictícios para teste</h3><div className="btn-row" style={{marginTop:12}}>
             {['Uma mulher está sendo agredida pelo ex-companheiro.','Duas pessoas anunciaram assalto com uma pistola e levaram o celular.','Um indivíduo enviou um falso comprovante de PIX para aplicar um golpe.','Há fumaça e chamas saindo de um apartamento.'].map((t,i)=><Btn className="secondary tiny" key={i} onClick={()=>{setRelato(t);setAnalysis(null);}}>{'Cenário '+(i+1)}</Btn>)}

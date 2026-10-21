@@ -90,3 +90,34 @@ npm run build
 ```
 
 Repositório: https://github.com/RicckMatth/base-conhecimento-190
+
+## Catálogo ampliado e interface operacional (outubro de 2026)
+
+A base distribuída reúne **100 fichas orientativas**: 16 regras originais, 10 regras
+adicionais anteriores e 74 cenários novos em `lib/catalogue.js`. A consulta inclui
+pessoas, proteção, patrimônio, trânsito, meio ambiente, emergências, ordem pública
+e atendimento. Todas as regras distribuídas passam a alimentar também o catálogo
+no PostgreSQL, com `ON CONFLICT(code) DO NOTHING`: fichas editadas pelo administrador
+não são sobrescritas. A alimentação ocorre na inicialização da API após o deploy.
+
+**Limite de cobertura:** não é uma tabela oficial nem uma enumeração exaustiva de
+todas as naturezas possíveis. Os códigos `CAT-*` e `SUG-*` são identificadores
+internos. Os códigos herdados também dependem de conferência institucional.
+Para equivalência integral ao COPOM, importar e revisar a tabela oficial vigente,
+incluindo nomenclatura, códigos, competência, prioridade e protocolos locais.
+As descrições novas são conteúdo editorial, não transcrições de protocolos.
+A prioridade exibida é orientativa; o motor não decide despacho ou tipificação.
+
+Referências públicas de contexto consultadas em 21/10/2026 (não constituem
+homologação das fichas ou regras):
+- PCPR, canais de registro: https://www.policiacivil.pr.gov.br/BO
+- PMPR, registro online: https://www.pmpr.pr.gov.br/Pagina/BO-online
+- Ministério da Justiça, DEVIR: https://www.gov.br/pt-br/servicos/registrar-ocorrencia-policial-online
+
+A interface usa SVGs locais em `app/icons.jsx`, navegação por áreas, busca sem
+acentos, filtros combinados de categoria e prioridade, estados vazios e temas claro
+/ escuro. Os ícones não dependem de fontes, CDNs ou serviços de terceiros.
+
+Validação desta alteração: `npm test` (8 testes), `npm run build` e testes de
+cenários de regressão. Os testes unitários não comprovam integração com banco de
+produção, autenticação real nem homologação operacional.
