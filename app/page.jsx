@@ -83,7 +83,10 @@ export default function Home(){
       setExtensionAnalysis(payload.result);
       const now=Date.now();
       setExtensionReceivedAt(now);
-      setChatMessages(prev=>[...prev.slice(-23),{id:'ext-'+now+'-'+Math.random().toString(36).slice(2),kind:'answer',origin:'Extensão Relato 190',result:payload.result,at:now}]);
+      const incoming={id:'live-sade-relato',kind:'answer',origin:'SADE · análise em tempo real',
+        result:payload.result,sourceText:String(payload.sourceText||'').slice(0,1800),at:now};
+      // Um painel de análise vivo, atualizado no lugar: não acumula uma mensagem por pausa na digitação.
+      setChatMessages(prev=>[...prev.filter(m=>m.id!=='live-sade-relato').slice(-23),incoming]);
       setScreen('extension');
     };
     window.addEventListener('base190:extension-ready',ready);
@@ -358,12 +361,15 @@ export default function Home(){
                 <Btn className="ghost tiny" onClick={()=>setChatMessages([])}>Limpar chat</Btn></div>
             </header>
             <div className="chat-stream" role="log" aria-label="Conversa de análises da integração">
-              <div className="chat-bubble-system"><b>Olá! Este é o seu espaço de análise.</b><p>Ao receber um relato da extensão, o chat abrirá automaticamente e mostrará a natureza sugerida, detalhes e perguntas de triagem. Você também pode digitar uma situação fictícia abaixo.</p></div>
+              <div className="chat-bubble-system"><b>Cérebro 190 conectado ao SADE.</b><p>Com a análise automática ativada nas opções da extensão e login válido, este chat se abre sozinho e atualiza a classificação enquanto o relato é editado. A extensão não exibe respostas nem pede que você clique para analisar.</p></div>
               {chatMessages.map(m=><div className={'chat-message '+(m.kind==='user'?'from-user':'from-system')} key={m.id}>
                 {m.kind!=='user'&&<span className="chat-message-avatar">190</span>}
                 <div className="chat-bubble">
                   <div className="chat-message-meta"><b>{m.kind==='user'?'Você':m.origin||'Sistema'}</b><span>{new Date(m.at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span></div>
-                  {m.kind==='answer'?chatAnswer(m.result):<p>{m.text}</p>}
+                  {m.kind==='answer'?<>
+                    {m.sourceText&&<details className="chat-live-source"><summary>Relato recebido do SADE — conferir texto</summary><p>{m.sourceText}</p></details>}
+                    {chatAnswer(m.result)}
+                  </>:<p>{m.text}</p>}
                 </div>
               </div>)}
               {chatSending&&<div className="chat-typing">✳ Cérebro 190 analisando…</div>}
