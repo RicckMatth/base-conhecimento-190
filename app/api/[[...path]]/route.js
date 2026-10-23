@@ -1,5 +1,5 @@
 import { canTestGemini } from '../../../lib/permissions.js';
-import { askGemini,aiStatus } from '../../../lib/gemini.js';
+import { askGemini,aiStatus,rewriteWithGemini } from '../../../lib/gemini.js';
 import { answerLocally,aiFailure } from '../../../lib/assistant.js';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
@@ -122,6 +122,18 @@ async function gate(request,method,ctx){
     return reply({base:CEREBRO_190.regrasBase,extras:EXTRA_RULES,custom:custom.rows});
   }
   if(route==='/ai/status'&&method==='GET')return reply(aiStatus());
+  if(route==='/rewrite'&&method==='POST'){
+    const v=await input(request,12000),text=string(v.text,8000);
+    if(text.length<3)return failure('Informe o relato para revisão.');
+    if(!aiStatus().configured)return failure('Gemini ainda não configurado. Utilize a revisão local.',503);
+    if(!await consumeAiBudget(u.id,30))return failure('Limite de consultas à IA atingido. A revisão local continua disponível.',429);
+    try{return reply(await rewriteWithGemini(text));}
+    catch(error){
+      if(/^REWRITE_/.test(error?.message||''))return failure('A revisão sugerida alterou informações protegidas e foi descartada. Confira a revisão local.',422);
+      return failure(aiFailure(error).message,503);
+    }
+  }
+
   if((route==='/chat'||route==='/admin/ai/test'||route==='/analyze')&&method==='POST'){
     if(route==='/admin/ai/test'&&!canTestGemini(u))return failure('Teste de conexão restrito ao administrador principal.',403);
     const v=await input(request,32000), relato=route==='/admin/ai/test'?'Responda apenas: conexão Gemini funcionando.':string(v.text,8000);

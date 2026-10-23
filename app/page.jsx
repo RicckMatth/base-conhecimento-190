@@ -1,4 +1,5 @@
 'use client';
+import WritingReview from './writing-review.jsx';
 import StartupScreen from './startup-screen.jsx';
 import { Icon, categoryIcon } from './icons.jsx';
 import { useEffect,useMemo,useRef,useState } from 'react';
@@ -258,7 +259,7 @@ export default function Home(){
       <div className="chat-tags"><span>{main.code||'Código a confirmar'}</span><span>Índice heurístico {result.indiceHeuristico??'—'}/99</span></div>
       {main.explanation&&<p>{main.explanation}</p>}
       {triageView(result)}
-      {result.relatoRevisado&&<details><summary>Reformulação sugerida — conferir fatos</summary><p className="chat-rewrite">{result.relatoRevisado}</p><Btn className="secondary tiny" onClick={()=>navigator.clipboard?.writeText(result.relatoRevisado)}>Copiar texto</Btn></details>}
+      {result.relatoRevisado&&<WritingReview original={result.termoOriginal} suggested={result.relatoRevisado} aiConfigured={Boolean(ai?.configured)}/>}
       {!!result.secundarias?.length&&<details><summary>Outras hipóteses</summary><p>{result.secundarias.slice(0,4).map(x=>x.officialNature).filter(Boolean).join(' • ')}</p></details>}
       <small>Orientação assistiva, não homologada; confirme natureza, prioridade e informações.</small>
     </div>;
@@ -276,7 +277,7 @@ export default function Home(){
       <p>{a.explanation}</p>
       <p><b>Termos detectados:</b> {(result.termosDetectados||[]).join(', ')||'—'}</p>
       {triageView(result)}
-      {result.relatoRevisado&&<><h3>Reformulação automática — revisar antes de utilizar</h3><pre>{result.relatoRevisado}</pre><Btn className="secondary" onClick={()=>navigator.clipboard?.writeText(result.relatoRevisado)}>Copiar reformulação</Btn></>}
+      {result.relatoRevisado&&<WritingReview original={result.termoOriginal} suggested={result.relatoRevisado} aiConfigured={Boolean(ai?.configured)}/>}
       {!!result.secundarias?.length&&<><h3>Outras hipóteses</h3><p>{result.secundarias.map(x=>x.officialNature).join(' • ')}</p></>}
       <div className="helpnote">A ferramenta não define tipificação, prioridade de despacho ou medidas policiais. Não inclua nomes, endereços completos ou dados sigilosos em relatos de teste.</div>
     </div>;

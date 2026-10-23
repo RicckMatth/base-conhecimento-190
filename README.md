@@ -194,3 +194,23 @@ roteiros completos são acrescentados à leitura das fichas distribuídas sem
 sobrescrever textos editados no banco. O Gemini recebe sugestões pendentes no
 contexto e instrução para não repetir informação respondida; o texto livre da IA
 continua sujeito à revisão humana. A avaliação local não exige chamada à IA.
+
+## Revisão de escrita em caixa alta
+
+`lib/writing.js` faz correção local de termos operacionais, acentuação, alguns
+casos inequívocos de concordância e pontuação. A saída usa `toLocaleUpperCase`
+com `pt-BR`, mantendo acentos. A revisão não acrescenta solicitações de viatura,
+prioridade ou providências, nem remove trechos iniciais do relato. Nomes não são
+corrigidos por adivinhação; falas entre aspas não recebem substituição lexical.
+O botão de copiar usa o próprio texto revisado em caixa alta.
+
+Quando a revisão local for insuficiente, o usuário pode solicitar **Revisar com
+IA**. Só esse clique envia o relato ao Gemini por `POST /api/rewrite`, com sessão
+obrigatória e cota compartilhada de consultas. O servidor exige preservação de
+fatos, sujeitos, tempos verbais, nomes e identificadores. Valida números,
+marcadores de negação/incerteza e alguns acréscimos indevidos de providências;
+rejeita a sugestão se essas verificações falharem. Essas verificações não provam
+equivalência semântica: confira sempre o texto. A versão local permanece
+acessível se a IA falhar. Se o relato mudar durante a revisão, o resultado antigo
+não substitui o texto atual. A correção local é limitada às regras implementadas;
+para frases ambíguas, preserve o original e revise com o operador.
