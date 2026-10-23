@@ -1,11 +1,14 @@
+import { askGemini,aiStatus } from '../../../lib/gemini.js';
+import { answerLocally,aiFailure } from '../../../lib/assistant.js';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { randomUUID } from 'node:crypto';
-import { db,prepare,ensureAdmin,log,isRateLimited,recordFailure,clearFailure } from '../../../lib/db.js';
+import { db,prepare,ensureAdmin,log,consumeAiBudget,isRateLimited,recordFailure,clearFailure } from '../../../lib/db.js';
 import { CEREBRO_190 } from '../../../lib/cerebro.js';
 import { EXTRA_RULES } from '../../../lib/extras.js';
 import { ADMIN_LOGIN, COOKIE_NAME,HOURS,cookieSettings,token,digest,passwordHash,passwordVerify,validLogin,string,sameOrigin,input } from '../../../lib/security.js';
 export const runtime='nodejs';
+export const maxDuration=30;
 export const dynamic='force-dynamic';
 
 const reply=(obj,status=200)=>NextResponse.json(obj,{status,headers:{'Cache-Control':'no-store'}});
@@ -116,17 +119,31 @@ async function gate(request,method,ctx){
     const custom=await db().query('SELECT id,definition,created_at FROM custom_rules ORDER BY created_at DESC LIMIT 200');
     return reply({base:CEREBRO_190.regrasBase,extras:EXTRA_RULES,custom:custom.rows});
   }
-  if(route==='/analyze'&&method==='POST'){
-    const v=await input(request,11000), relato=string(v.text,8000);
-    if(relato.length<3) return failure('Insira pelo menos 3 caracteres para analisar.');
-    const custom=await db().query('SELECT definition FROM custom_rules ORDER BY created_at DESC LIMIT 200');
-    const result=CEREBRO_190.analisarEntrada(relato,[...custom.rows.map(x=>x.definition),...EXTRA_RULES]);
-    // A pontuação do motor é heurística, nunca uma probabilidade calibrada.
-    if(result && result.tipo==='classificacao'){
-      result.indiceHeuristico=result.confianca;
-      delete result.confianca;
+  if(route==='/ai/status'&&method==='GET')return reply(aiStatus());
+  if((route==='/chat'||route==='/admin/ai/test'||route==='/analyze')&&method==='POST'){
+    if(route==='/admin/ai/test'&&u.role!=='admin')return failure('Acesso restrito ao administrador.',403);
+    const v=await input(request,32000), relato=route==='/admin/ai/test'?'Responda apenas: conexão Gemini funcionando.':string(v.text,8000);
+    if(relato.length<3)return failure('Insira pelo menos 3 caracteres.');
+    const [custom,knowledge]=await Promise.all([
+      db().query('SELECT definition FROM custom_rules ORDER BY created_at DESC LIMIT 200'),
+      db().query('SELECT code,title,category,summary,body,tags FROM knowledge ORDER BY title LIMIT 800')
+    ]);
+    const rules=[...custom.rows.map(x=>x.definition),...EXTRA_RULES];
+    const local=route==='/admin/ai/test'?null:answerLocally({text:relato,history:v.history,entries:knowledge.rows,
+      classify:text=>CEREBRO_190.analisarEntrada(text,rules)});
+    if(local)return reply({result:local,disclaimer:'Resposta da base local. Confirme fatos e protocolo institucional.'});
+    {
+      if(!aiStatus().configured)return reply({error:'IA ainda não configurada. O administrador deve definir GEMINI_API_KEY na Vercel.',code:'AI_NOT_CONFIGURED'},503);
+      if(!await consumeAiBudget(u.id,30))return failure('Limite de 30 consultas à IA em 15 minutos. Aguarde para continuar.',429);
+      try{
+        const result=await askGemini({text:relato,history:v.history,entries:knowledge.rows});
+        return reply({result,disclaimer:'Resposta gerada por IA; confira fatos, legislação e protocolo institucional.'});
+      }catch(error){
+        const safe=aiFailure(error);
+        return reply({error:safe.message,code:safe.code},error?.statusCode===429?429:503);
+      }
     }
-    return reply({result,disclaimer:'Sugestão automática não homologada; confirme fatos e protocolo institucional. Não insira dados pessoais ou sigilosos.'});
+
   }
 
   const denied=requireRole(u,true);if(denied) return denied;

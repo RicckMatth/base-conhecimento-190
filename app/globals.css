@@ -86,3 +86,5 @@ html,body{font-family:Inter,"Segoe UI",system-ui,sans-serif}h1,h2,h3{text-wrap:b
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 @media(min-width:651px) and (max-width:1000px){.nav-btn{flex-direction:column;gap:6px;overflow-wrap:anywhere;font-size:10px}.sidebar{padding-inline:6px}}
 @media(max-width:650px){.sidebar .nav-btn{white-space:nowrap;flex-shrink:0;width:auto;gap:7px}.sidebar .nav-btn svg{width:17px;height:17px}.cards{grid-template-columns:minmax(0,1fr)}}
+
+.assistant-text{white-space:pre-wrap;overflow-wrap:anywhere}.ai-status{display:grid;gap:12px;margin-bottom:20px}.ai-status p{font-size:13px}.chat-answer>.badge{margin-bottom:10px}

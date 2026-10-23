@@ -1,0 +1,76 @@
+name: Sincronizar Gemini com Vercel
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sync-gemini.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gemini-production-secret
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar secrets necessários
+        id: config
+        shell: bash
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [[ -n "$GEMINI_API_KEY" && -n "$VERCEL_TOKEN" ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Cadastre GEMINI_API_KEY e VERCEL_TOKEN nos Secrets do repositório e execute este workflow novamente."
+            echo "Sincronização não realizada: configure GEMINI_API_KEY e VERCEL_TOKEN nos GitHub Secrets. A configuração atual da Vercel foi preservada." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # No checkout: repository/dependency code never executes with these secrets.
+      - name: Sincronizar segredo de produção e publicar
+        if: steps.config.outputs.ready == 'true'
+        shell: bash
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: prj_mwRinCmszq0n29Qw77UTAIsiF0tu
+          VERCEL_TEAM_ID: team_TiOXgWiaQgy4PfFalin2fjDw
+        run: |
+          node --input-type=module <<'JS'
+          import { appendFileSync } from 'node:fs';
+          const { GEMINI_API_KEY, VERCEL_TOKEN, VERCEL_PROJECT_ID, VERCEL_TEAM_ID, GITHUB_SHA, GITHUB_STEP_SUMMARY } = process.env;
+          async function api(path, body) {
+            const response = await fetch(`https://api.vercel.com${path}`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${VERCEL_TOKEN}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify(body),
+              signal: AbortSignal.timeout(25000)
+            });
+            if (!response.ok) throw new Error(`Vercel recusou a operação (HTTP ${response.status}). Confira escopo e validade do token.`);
+            return response.json();
+          }
+          try {
+            const query = new URLSearchParams({ teamId: VERCEL_TEAM_ID, upsert: 'true' });
+            const sync = await api(`/v10/projects/${VERCEL_PROJECT_ID}/env?${query}`, {
+              key: 'GEMINI_API_KEY', value: GEMINI_API_KEY.trim(), type: 'sensitive', target: ['production']
+            });
+            if (sync.error || sync.failed?.length) throw new Error('A Vercel não confirmou a gravação do segredo.');
+            const deployment = await api(`/v13/deployments?teamId=${VERCEL_TEAM_ID}`, {
+              name: 'base-conhecimento-190', project: VERCEL_PROJECT_ID, target: 'production',
+              gitSource: { type: 'github', repoId: '1426100120', ref: GITHUB_SHA }
+            });
+            if (!deployment.id) throw new Error('Segredo salvo, mas o novo deploy não foi confirmado. Faça um redeploy na Vercel.');
+            appendFileSync(GITHUB_STEP_SUMMARY, `Segredo sincronizado com a Vercel. Deploy solicitado para o commit ${GITHUB_SHA}. Acompanhe o resultado no painel da Vercel.\n`);
+          } catch (error) {
+            // Never dump API response bodies, headers, environment values or credentials.
+            console.error(error.message.startsWith('Vercel') || error.message.startsWith('A Vercel') || error.message.startsWith('Segredo salvo') ? error.message : 'Falha de conexão com a Vercel. Execute novamente e confira o painel.');
+            process.exitCode = 1;
+          }
+          JS
