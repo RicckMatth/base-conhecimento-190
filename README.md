@@ -172,3 +172,25 @@ arquivos com segredos e não roda em pull requests. Se faltarem Secrets, registr
 uma mensagem e preserva a configuração existente. Alterar um Secret não dispara
 workflow: execute manualmente após cada rotação. O nome deve ser exatamente
 `GEMINI_API_KEY`. O workflow nunca consulta nem revela o valor de Secrets já salvos.
+
+## Triagem contextual por natureza
+
+`lib/triage.js` amplia os roteiros das 100 naturezas distribuídas com perguntas
+atômicas por contexto (pessoas, proteção, patrimônio, trânsito, emergência, meio
+ambiente etc.). O catálogo oferece o roteiro completo. Ao analisar um relato,
+o motor devolve somente perguntas pendentes em `principal.triageQuestions` e os
+metadados `triage.pending`, `triage.answered` e `triage.total`. Não há gravação das
+respostas extraídas: a avaliação é transitória e recalculada em cada análise.
+
+O filtro local verifica afirmações explícitas e negativas, como “sem feridos” ou
+“o autor fugiu”. Perguntas sem resposta, incerteza e contradição não eliminam a
+necessidade de confirmar a informação. Detectores são conservadores: variantes
+não reconhecidas podem manter uma pergunta já respondida. Não inferem ausência
+de risco por omissão e não substituem a leitura do operador. Perguntas
+personalizadas sem detector específico permanecem disponíveis.
+
+A interface exibe apenas as perguntas pendentes e a quantidade ocultada. Os
+roteiros completos são acrescentados à leitura das fichas distribuídas sem
+sobrescrever textos editados no banco. O Gemini recebe sugestões pendentes no
+contexto e instrução para não repetir informação respondida; o texto livre da IA
+continua sujeito à revisão humana. A avaliação local não exige chamada à IA.

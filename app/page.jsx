@@ -239,6 +239,14 @@ export default function Home(){
     <div className="record-symbol"><Icon name={categoryIcon(a.category)} size={23}/><span>{a.category}</span></div><h3>{a.title}</h3><p>{a.summary}</p>
     <div className="end"><small>{a.category}</small><b style={{color:'var(--blue)'}}>Consultar <Icon name="arrow" size={15}/></b></div>
   </button>)}</div>}
+  function triageView(result){
+    const pending=result?.triage?.pending||result?.principal?.triageQuestions?.map((question,i)=>({id:String(i),question}))||[];
+    const answered=result?.triage?.answered?.length||0;
+    return <section className="triage-panel" aria-label="Triagem contextual"><div className="triage-heading"><Icon name="audit" size={19}/><h3>Perguntas de triagem</h3><span className="badge">{pending.length} pendente{pending.length===1?'':'s'}</span></div>
+      <p className="triage-caption">{answered>0?`${answered} pergunta(s) já respondida(s) no relato foram ocultadas.`:'Confirme somente as informações que ainda faltam no relato.'}</p>
+      {pending.length?<ul className="triage-questions">{pending.map((q,i)=><li key={q.id}><span className="triage-index">{String(i+1).padStart(2,'0')}</span><div>{q.question}{q.reason==='conflicting'&&<small className="triage-conflict">Há informações divergentes no relato. Confirme.</small>}</div></li>)}</ul>:<p className="triage-complete"><Icon name="shield" size={18}/> As perguntas previstas para esta natureza já estão respondidas no relato. Confira os dados antes de concluir.</p>}
+    </section>;
+  }
   function chatAnswer(result){
     if(!result)return <p>Sem resposta da Base 190.</p>;
     if(result.tipo==='faq'||result.tipo==='ia')return <div className="chat-answer"><span className="badge">{result.source==='gemini'?'Gemini · resposta complementar':'Base local · sem consulta à IA'}</span><h3>{result.titulo||'Orientação'}</h3><p className="assistant-text">{result.resposta}</p>{!!result.references?.length&&<details><summary>Fichas consultadas</summary><ul>{result.references.map(r=><li key={r.code}>{r.code} · {r.title}</li>)}</ul></details>}{result.tipo==='ia'&&<small>Conteúdo gerado por IA. Confira as informações antes de utilizar.</small>}</div>;
@@ -249,7 +257,7 @@ export default function Home(){
       <h3>{main.officialNature||'Não identificada'}</h3>
       <div className="chat-tags"><span>{main.code||'Código a confirmar'}</span><span>Índice heurístico {result.indiceHeuristico??'—'}/99</span></div>
       {main.explanation&&<p>{main.explanation}</p>}
-      {!!main.triageQuestions?.length&&<details><summary>Perguntas de triagem ({main.triageQuestions.length})</summary><ul>{main.triageQuestions.map((q,i)=><li key={i}>{q}</li>)}</ul></details>}
+      {triageView(result)}
       {result.relatoRevisado&&<details><summary>Reformulação sugerida — conferir fatos</summary><p className="chat-rewrite">{result.relatoRevisado}</p><Btn className="secondary tiny" onClick={()=>navigator.clipboard?.writeText(result.relatoRevisado)}>Copiar texto</Btn></details>}
       {!!result.secundarias?.length&&<details><summary>Outras hipóteses</summary><p>{result.secundarias.slice(0,4).map(x=>x.officialNature).filter(Boolean).join(' • ')}</p></details>}
       <small>Orientação assistiva, não homologada; confirme natureza, prioridade e informações.</small>
@@ -267,7 +275,7 @@ export default function Home(){
       <div className="btn-row"><span className="badge">{a.code}</span><span className="score">Índice heurístico: {result.indiceHeuristico}/99 — não é probabilidade de acerto</span></div>
       <p>{a.explanation}</p>
       <p><b>Termos detectados:</b> {(result.termosDetectados||[]).join(', ')||'—'}</p>
-      {!!a.triageQuestions?.length&&<><h3>Perguntas de triagem sugeridas</h3><ul>{a.triageQuestions.map((q,i)=><li key={i}>{q}</li>)}</ul></>}
+      {triageView(result)}
       {result.relatoRevisado&&<><h3>Reformulação automática — revisar antes de utilizar</h3><pre>{result.relatoRevisado}</pre><Btn className="secondary" onClick={()=>navigator.clipboard?.writeText(result.relatoRevisado)}>Copiar reformulação</Btn></>}
       {!!result.secundarias?.length&&<><h3>Outras hipóteses</h3><p>{result.secundarias.map(x=>x.officialNature).join(' • ')}</p></>}
       <div className="helpnote">A ferramenta não define tipificação, prioridade de despacho ou medidas policiais. Não inclua nomes, endereços completos ou dados sigilosos em relatos de teste.</div>
@@ -366,7 +374,7 @@ export default function Home(){
         {screen==='detail'&&selected&&<section className="card spaced">
           <div className="toolbar"><Btn className="secondary tiny" onClick={()=>go('catalog')}>← Voltar</Btn>{isAdmin&&<Btn onClick={()=>editEntry(selected)}><Icon name="edit" size={17}/> Editar ficha</Btn>}</div>
           <div><div className="btn-row"><span className="badge">{selected.code}</span><Tag priority={selected.priority}/><span className="muted">{selected.category}</span></div><h1 style={{marginTop:12}}>{selected.title}</h1></div>
-          <p className="muted">{selected.summary}</p><div className="divider"/><pre className="record-detail">{selected.body}</pre>
+          <p className="muted">{selected.summary}</p>{!!selected.triageQuestions?.length&&<details className="triage-panel"><summary>Roteiro completo de triagem ({selected.triageQuestions.length} perguntas)</summary><ul>{selected.triageQuestions.map(q=><li key={q}>{q}</li>)}</ul><small>Na análise de um relato, as perguntas já respondidas são ocultadas automaticamente.</small></details>}<div className="divider"/><pre className="record-detail">{selected.body}</pre>
           <div className="btn-row">{(selected.tags||[]).map(t=><span key={t} className="badge">#{t}</span>)}</div>
           <small>Revisão {selected.revision} • Atualizado em {formatDate(selected.updated_at)} • Validar legislação, código e procedimento antes do uso.</small>
         </section>}

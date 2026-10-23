@@ -114,7 +114,8 @@ async function gate(request,method,ctx){
   if(u.must_change_password)return failure('Troca obrigatória da senha provisória antes de utilizar a plataforma.',403);
   if(route==='/entries'&&method==='GET'){
     const rows=await db().query('SELECT id,code,title,category,priority,summary,body,tags,revision,updated_at FROM knowledge ORDER BY title LIMIT 800');
-    return reply({entries:rows.rows});
+    const distributed=[...CEREBRO_190.regrasBase,...EXTRA_RULES];
+    return reply({entries:rows.rows.map(entry=>{const rule=distributed.find(r=>r.code===entry.code);return rule?{...entry,triageQuestions:rule.triageQuestions}:entry;})});
   }
   if(route==='/rules'&&method==='GET'){
     const custom=await db().query('SELECT id,definition,created_at FROM custom_rules ORDER BY created_at DESC LIMIT 200');
@@ -130,14 +131,16 @@ async function gate(request,method,ctx){
       db().query('SELECT code,title,category,summary,body,tags FROM knowledge ORDER BY title LIMIT 800')
     ]);
     const rules=[...custom.rows.map(x=>x.definition),...EXTRA_RULES];
-    const local=route==='/admin/ai/test'?null:answerLocally({text:relato,history:v.history,entries:knowledge.rows,
+    const distributed=[...CEREBRO_190.regrasBase,...EXTRA_RULES];
+    const enriched=knowledge.rows.map(entry=>{const rule=distributed.find(r=>r.code===entry.code);return rule?{...entry,triageQuestions:rule.triageQuestions}:entry;});
+    const local=route==='/admin/ai/test'?null:answerLocally({text:relato,history:v.history,entries:enriched,
       classify:text=>CEREBRO_190.analisarEntrada(text,rules)});
     if(local)return reply({result:local,disclaimer:'Resposta da base local. Confirme fatos e protocolo institucional.'});
     {
       if(!aiStatus().configured)return reply({error:'IA ainda não configurada. O administrador deve definir GEMINI_API_KEY na Vercel.',code:'AI_NOT_CONFIGURED'},503);
       if(!await consumeAiBudget(u.id,30))return failure('Limite de 30 consultas à IA em 15 minutos. Aguarde para continuar.',429);
       try{
-        const result=await askGemini({text:relato,history:v.history,entries:knowledge.rows});
+        const result=await askGemini({text:relato,history:v.history,entries:enriched});
         return reply({result,disclaimer:'Resposta gerada por IA; confira fatos, legislação e protocolo institucional.'});
       }catch(error){
         const safe=aiFailure(error);
