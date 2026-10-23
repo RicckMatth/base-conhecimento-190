@@ -214,3 +214,20 @@ equivalência semântica: confira sempre o texto. A versão local permanece
 acessível se a IA falhar. Se o relato mudar durante a revisão, o resultado antigo
 não substitui o texto atual. A correção local é limitada às regras implementadas;
 para frases ambíguas, preserve o original e revise com o operador.
+
+## Referências jurídicas por natureza
+
+`lib/legal-references.js` contém o levantamento editorial das 100 naturezas,
+com diploma correto, artigo, fonte oficial, data de consulta e condições. A
+análise e a ficha mostram **Referência jurídica**, com links para Planalto/STF.
+A referência fica separada do relato factual e tem botão próprio para copiar.
+
+Há quatro grupos: referência principal no Código Penal; legislação específica;
+enquadramento dependente dos fatos; atendimento sem crime definido só pelo
+nome. Lei Maria da Penha, CTB, LCP e outras leis não são rotulados como artigos
+do CP. A classificação automática não comprova elementos de crime. Artigos
+alternativos não são aplicação cumulativa. Não são reproduzidas penas. Esta
+revisão de referências não homologa códigos internos, prioridades ou protocolos.
+As referências distribuídas são acrescentadas na resposta de leitura, sem
+sobrescrever edições feitas nas fichas do banco. Fichas personalizadas sem
+mapeamento não recebem artigo inventado.

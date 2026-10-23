@@ -115,7 +115,7 @@ async function gate(request,method,ctx){
   if(route==='/entries'&&method==='GET'){
     const rows=await db().query('SELECT id,code,title,category,priority,summary,body,tags,revision,updated_at FROM knowledge ORDER BY title LIMIT 800');
     const distributed=[...CEREBRO_190.regrasBase,...EXTRA_RULES];
-    return reply({entries:rows.rows.map(entry=>{const rule=distributed.find(r=>r.code===entry.code);return rule?{...entry,triageQuestions:rule.triageQuestions}:entry;})});
+    return reply({entries:rows.rows.map(entry=>{const rule=distributed.find(r=>r.code===entry.code);return rule?{...entry,triageQuestions:rule.triageQuestions,legalBase:rule.legalBase,legal:rule.legal}:entry;})});
   }
   if(route==='/rules'&&method==='GET'){
     const custom=await db().query('SELECT id,definition,created_at FROM custom_rules ORDER BY created_at DESC LIMIT 200');
@@ -144,7 +144,7 @@ async function gate(request,method,ctx){
     ]);
     const rules=[...custom.rows.map(x=>x.definition),...EXTRA_RULES];
     const distributed=[...CEREBRO_190.regrasBase,...EXTRA_RULES];
-    const enriched=knowledge.rows.map(entry=>{const rule=distributed.find(r=>r.code===entry.code);return rule?{...entry,triageQuestions:rule.triageQuestions}:entry;});
+    const enriched=knowledge.rows.map(entry=>{const rule=distributed.find(r=>r.code===entry.code);return rule?{...entry,triageQuestions:rule.triageQuestions,legalBase:rule.legalBase,legal:rule.legal}:entry;});
     const local=route==='/admin/ai/test'?null:answerLocally({text:relato,history:v.history,entries:enriched,
       classify:text=>CEREBRO_190.analisarEntrada(text,rules)});
     if(local)return reply({result:local,disclaimer:'Resposta da base local. Confirme fatos e protocolo institucional.'});

@@ -1,4 +1,5 @@
 'use client';
+import LegalReference from './legal-reference.jsx';
 import WritingReview from './writing-review.jsx';
 import StartupScreen from './startup-screen.jsx';
 import { Icon, categoryIcon } from './icons.jsx';
@@ -258,6 +259,7 @@ export default function Home(){
       <h3>{main.officialNature||'Não identificada'}</h3>
       <div className="chat-tags"><span>{main.code||'Código a confirmar'}</span><span>Índice heurístico {result.indiceHeuristico??'—'}/99</span></div>
       {main.explanation&&<p>{main.explanation}</p>}
+      <LegalReference legal={main.legal}/>
       {triageView(result)}
       {result.relatoRevisado&&<WritingReview original={result.termoOriginal} suggested={result.relatoRevisado} aiConfigured={Boolean(ai?.configured)}/>}
       {!!result.secundarias?.length&&<details><summary>Outras hipóteses</summary><p>{result.secundarias.slice(0,4).map(x=>x.officialNature).filter(Boolean).join(' • ')}</p></details>}
@@ -275,6 +277,7 @@ export default function Home(){
       <h2>{a.officialNature}</h2>
       <div className="btn-row"><span className="badge">{a.code}</span><span className="score">Índice heurístico: {result.indiceHeuristico}/99 — não é probabilidade de acerto</span></div>
       <p>{a.explanation}</p>
+      <LegalReference legal={a.legal}/>
       <p><b>Termos detectados:</b> {(result.termosDetectados||[]).join(', ')||'—'}</p>
       {triageView(result)}
       {result.relatoRevisado&&<WritingReview original={result.termoOriginal} suggested={result.relatoRevisado} aiConfigured={Boolean(ai?.configured)}/>}
@@ -375,7 +378,7 @@ export default function Home(){
         {screen==='detail'&&selected&&<section className="card spaced">
           <div className="toolbar"><Btn className="secondary tiny" onClick={()=>go('catalog')}>← Voltar</Btn>{isAdmin&&<Btn onClick={()=>editEntry(selected)}><Icon name="edit" size={17}/> Editar ficha</Btn>}</div>
           <div><div className="btn-row"><span className="badge">{selected.code}</span><Tag priority={selected.priority}/><span className="muted">{selected.category}</span></div><h1 style={{marginTop:12}}>{selected.title}</h1></div>
-          <p className="muted">{selected.summary}</p>{!!selected.triageQuestions?.length&&<details className="triage-panel"><summary>Roteiro completo de triagem ({selected.triageQuestions.length} perguntas)</summary><ul>{selected.triageQuestions.map(q=><li key={q}>{q}</li>)}</ul><small>Na análise de um relato, as perguntas já respondidas são ocultadas automaticamente.</small></details>}<div className="divider"/><pre className="record-detail">{selected.body}</pre>
+          <p className="muted">{selected.summary}</p><LegalReference legal={selected.legal}/>{!!selected.triageQuestions?.length&&<details className="triage-panel"><summary>Roteiro completo de triagem ({selected.triageQuestions.length} perguntas)</summary><ul>{selected.triageQuestions.map(q=><li key={q}>{q}</li>)}</ul><small>Na análise de um relato, as perguntas já respondidas são ocultadas automaticamente.</small></details>}<div className="divider"/><pre className="record-detail">{selected.body}</pre>
           <div className="btn-row">{(selected.tags||[]).map(t=><span key={t} className="badge">#{t}</span>)}</div>
           <small>Revisão {selected.revision} • Atualizado em {formatDate(selected.updated_at)} • Validar legislação, código e procedimento antes do uso.</small>
         </section>}
