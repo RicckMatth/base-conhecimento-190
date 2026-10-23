@@ -1,3 +1,4 @@
+import { canTestGemini } from '../../../lib/permissions.js';
 import { askGemini,aiStatus } from '../../../lib/gemini.js';
 import { answerLocally,aiFailure } from '../../../lib/assistant.js';
 import { NextResponse } from 'next/server';
@@ -22,7 +23,7 @@ async function identity(){
     WHERE s.token_hash=$1 AND s.expires_at>now() AND s.revoked_at IS NULL AND u.active=true`,[digest(raw)]);
   return result.rows[0]||null;
 }
-function publicUser(u){return {id:u.id,username:u.username,name:u.display_name,role:u.role,mustChangePassword:Boolean(u.must_change_password)};}
+function publicUser(u){return {id:u.id,username:u.username,name:u.display_name,role:u.role,canTestGemini:canTestGemini(u),mustChangePassword:Boolean(u.must_change_password)};}
 function requireRole(u,admin=false){if(!u) return failure('Sessão ausente ou expirada.',401);if(admin&&u.role!=='admin')return failure('Acesso restrito ao administrador.',403);return null;}
 const usernameOf=(v)=>string(v,40).toLowerCase();
 function entryPayload(v) {
@@ -121,7 +122,7 @@ async function gate(request,method,ctx){
   }
   if(route==='/ai/status'&&method==='GET')return reply(aiStatus());
   if((route==='/chat'||route==='/admin/ai/test'||route==='/analyze')&&method==='POST'){
-    if(route==='/admin/ai/test'&&u.role!=='admin')return failure('Acesso restrito ao administrador.',403);
+    if(route==='/admin/ai/test'&&!canTestGemini(u))return failure('Teste de conexão restrito ao administrador principal.',403);
     const v=await input(request,32000), relato=route==='/admin/ai/test'?'Responda apenas: conexão Gemini funcionando.':string(v.text,8000);
     if(relato.length<3)return failure('Insira pelo menos 3 caracteres.');
     const [custom,knowledge]=await Promise.all([

@@ -1,4 +1,5 @@
 'use client';
+import StartupScreen from './startup-screen.jsx';
 import { Icon, categoryIcon } from './icons.jsx';
 import { useEffect,useMemo,useRef,useState } from 'react';
 
@@ -18,6 +19,7 @@ const Btn=({children,onClick,className='',disabled=false,type='button'})=><butto
 const Tag=({priority})=><span className={'badge '+(priority==='Crítica'?'crit':priority==='Alta'?'high':'')}>{priority||'Média'}</span>;
 
 export default function Home(){
+  const [loadingPhase,setLoadingPhase]=useState('session');
   const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
   const [user,setUser]=useState(null),[dark,setDark]=useState(false);
   const [notice,setNotice]=useState(''),[success,setSuccess]=useState('');
@@ -66,7 +68,7 @@ export default function Home(){
     (async()=>{try{
       const a=await call('/session');
       if(!live)return;
-      setUser(a.user);
+      setUser(a.user);setLoadingPhase('catalog');
       const [catalog,rules]=await Promise.all([call('/entries'),call('/rules')]);
       if(live){setEntries(catalog.entries);setBrainRules(rules);}
     }catch(e){if(live && !/Sessão ausente|Sessão expirada|não autorizado/i.test(e.message))setNotice(e.message);}
@@ -105,6 +107,7 @@ export default function Home(){
     call('/ai/status').then(setAI).catch(()=>setAI(null));
   },[user?.id,user?.mustChangePassword]);
   async function testAI(){
+    if(!user?.canTestGemini)return;
     setAITesting(true);setAITestResult('');
     try{const data=await call('/admin/ai/test',{method:'POST',body:'{}'});setAITestResult(data.result?.resposta||'Conexão verificada.');}
     catch(e){setAITestResult(e.message);}finally{setAITesting(false);}
@@ -271,7 +274,7 @@ export default function Home(){
     </div>;
   }
 
-  if(loading)return <main className="login-form" style={{minHeight:'100vh'}}><div className="card"><h2>Base 190</h2><p>Iniciando conexão segura…</p></div></main>;
+  if(loading)return <StartupScreen phase={loadingPhase}/>;
 
   if(!user)return <div className="login-shell">
     <section className="login-art">
@@ -401,7 +404,7 @@ export default function Home(){
             </div>
           </div>
           <aside className="chat-side">
-            <div className="card ai-status"><span className="eyebrow">ASSISTENTE HÍBRIDO</span><h3>Base local primeiro</h3><p>{ai?.configured?'Gemini configurado para complementar perguntas sem resposta local.':'Gemini ainda não configurado. A consulta local continua disponível.'}</p><small>{ai?.model||'Status da IA indisponível'}</small>{isAdmin&&<><Btn className="secondary full" onClick={testAI} disabled={aiTesting||!ai?.configured}>{aiTesting?'Testando conexão…':'Testar conexão com Gemini'}</Btn><small>O teste faz uma consulta curta à IA.</small>{aiTestResult&&<p role="status" className="assistant-text">{aiTestResult}</p>}</>}</div>
+            <div className="card ai-status"><span className="eyebrow">ASSISTENTE HÍBRIDO</span><h3>Base local primeiro</h3><p>{ai?.configured?'Gemini configurado para complementar perguntas sem resposta local.':'Gemini ainda não configurado. A consulta local continua disponível.'}</p><small>{ai?.model||'Status da IA indisponível'}</small>{user?.canTestGemini&&<><Btn className="secondary full" onClick={testAI} disabled={aiTesting||!ai?.configured}>{aiTesting?'Testando conexão…':'Testar conexão com Gemini'}</Btn><small>O teste faz uma consulta curta à IA.</small>{aiTestResult&&<p role="status" className="assistant-text">{aiTestResult}</p>}</>}</div>
             <div className="chat-side-top">
               <span className="eyebrow">CONFIGURAÇÃO SIMPLIFICADA</span>
               <h2>Extensão Relato 190</h2>
