@@ -1,10 +1,12 @@
+import { newFeedbackTicket,readFeedbackTicket,learnableQuestions } from '../../../lib/question-feedback.js';
+import { withLearnedTriage,questionsFor } from '../../../lib/triage.js';
 import { canTestGemini } from '../../../lib/permissions.js';
 import { askGemini,aiStatus,rewriteWithGemini } from '../../../lib/gemini.js';
 import { answerLocally,aiFailure } from '../../../lib/assistant.js';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { randomUUID } from 'node:crypto';
-import { db,prepare,ensureAdmin,log,consumeAiBudget,isRateLimited,recordFailure,clearFailure } from '../../../lib/db.js';
+import { db,prepare,ensureAdmin,log,loadLearnedQuestions,saveQuestionFeedback,consumeAiBudget,isRateLimited,recordFailure,clearFailure } from '../../../lib/db.js';
 import { CEREBRO_190 } from '../../../lib/cerebro.js';
 import { EXTRA_RULES } from '../../../lib/extras.js';
 import { ADMIN_LOGIN, COOKIE_NAME,HOURS,cookieSettings,token,digest,passwordHash,passwordVerify,validLogin,string,sameOrigin,input } from '../../../lib/security.js';
@@ -114,14 +116,30 @@ async function gate(request,method,ctx){
   if(u.must_change_password)return failure('Troca obrigatória da senha provisória antes de utilizar a plataforma.',403);
   if(route==='/entries'&&method==='GET'){
     const rows=await db().query('SELECT id,code,title,category,priority,summary,body,tags,revision,updated_at FROM knowledge ORDER BY title LIMIT 800');
-    const distributed=[...CEREBRO_190.regrasBase,...EXTRA_RULES];
-    return reply({entries:rows.rows.map(entry=>{const rule=distributed.find(r=>r.code===entry.code);return rule?{...entry,triageQuestions:rule.triageQuestions,legalBase:rule.legalBase,legal:rule.legal}:entry;})});
+    const learned=await loadLearnedQuestions();
+    const distributed=[...CEREBRO_190.regrasBase,...EXTRA_RULES].map(r=>withLearnedTriage(r,learned));
+    return reply({entries:rows.rows.map(entry=>{const rule=distributed.find(r=>r.code===entry.code);return rule?{...entry,triageQuestions:questionsFor(rule).map(q=>q.text),legalBase:rule.legalBase,legal:rule.legal}:entry;})});
   }
   if(route==='/rules'&&method==='GET'){
     const custom=await db().query('SELECT id,definition,created_at FROM custom_rules ORDER BY created_at DESC LIMIT 200');
-    return reply({base:CEREBRO_190.regrasBase,extras:EXTRA_RULES,custom:custom.rows});
+    const learned=await loadLearnedQuestions();
+    return reply({base:CEREBRO_190.regrasBase.map(r=>withLearnedTriage(r,learned)),extras:EXTRA_RULES.map(r=>withLearnedTriage(r,learned)),custom:custom.rows});
   }
   if(route==='/ai/status'&&method==='GET')return reply(aiStatus());
+  if(route==='/analysis-feedback'&&method==='POST'){
+    const v=await input(request,5000);
+    if(!['like','dislike'].includes(v.vote))return failure('Escolha like ou dislike.');
+    if(!await consumeAiBudget('feedback:'+u.id,120))return failure('Muitas avaliações. Aguarde para continuar.',429);
+    let proposal;
+    try{proposal=readFeedbackTicket(v.ticket,u.id);}catch{return failure('Esta avaliação expirou ou não pertence à sua sessão. Faça uma nova análise.',400);}
+    const distributed=[...CEREBRO_190.regrasBase,...EXTRA_RULES];
+    let rule=distributed.find(r=>r.code===proposal.code);
+    if(!rule&&proposal.code){const found=await db().query('SELECT code,title,category FROM knowledge WHERE code=$1',[proposal.code]);const row=found.rows[0];if(row)rule={...row,id:'custom-feedback',officialNature:row.title};}
+    const questions=learnableQuestions(proposal,rule);
+    const result=await saveQuestionFeedback(u.id,proposal,v.vote,questions);
+    return reply({...result,message:v.vote==='dislike'?'Dislike registrado. Nenhuma pergunta desta avaliação alimenta o aprendizado.':questions.length?`${questions.length} pergunta(s) aprovada(s) para esta natureza. Somente as perguntas foram aproveitadas.`:'Like registrado. Não há pergunta nova ou natureza definida para acrescentar; nenhuma resposta foi salva.'});
+  }
+
   if(route==='/rewrite'&&method==='POST'){
     const v=await input(request,12000),text=string(v.text,8000);
     if(text.length<3)return failure('Informe o relato para revisão.');
@@ -138,21 +156,23 @@ async function gate(request,method,ctx){
     if(route==='/admin/ai/test'&&!canTestGemini(u))return failure('Teste de conexão restrito ao administrador principal.',403);
     const v=await input(request,32000), relato=route==='/admin/ai/test'?'Responda apenas: conexão Gemini funcionando.':string(v.text,8000);
     if(relato.length<3)return failure('Insira pelo menos 3 caracteres.');
-    const [custom,knowledge]=await Promise.all([
+    const [custom,knowledge,learned]=await Promise.all([
       db().query('SELECT definition FROM custom_rules ORDER BY created_at DESC LIMIT 200'),
-      db().query('SELECT code,title,category,summary,body,tags FROM knowledge ORDER BY title LIMIT 800')
+      db().query('SELECT code,title,category,summary,body,tags FROM knowledge ORDER BY title LIMIT 800'),
+      loadLearnedQuestions()
     ]);
     const rules=[...custom.rows.map(x=>x.definition),...EXTRA_RULES];
-    const distributed=[...CEREBRO_190.regrasBase,...EXTRA_RULES];
-    const enriched=knowledge.rows.map(entry=>{const rule=distributed.find(r=>r.code===entry.code);return rule?{...entry,triageQuestions:rule.triageQuestions,legalBase:rule.legalBase,legal:rule.legal}:entry;});
+    const distributed=[...CEREBRO_190.regrasBase,...EXTRA_RULES].map(r=>withLearnedTriage(r,learned));
+    const enriched=knowledge.rows.map(entry=>{const rule=distributed.find(r=>r.code===entry.code);return rule?{...entry,triageQuestions:questionsFor(rule).map(q=>q.text),legalBase:rule.legalBase,legal:rule.legal}:entry;});
     const local=route==='/admin/ai/test'?null:answerLocally({text:relato,history:v.history,entries:enriched,
-      classify:text=>CEREBRO_190.analisarEntrada(text,rules)});
+      classify:text=>CEREBRO_190.analisarEntrada(text,rules,learned)});
     if(local)return reply({result:local,disclaimer:'Resposta da base local. Confirme fatos e protocolo institucional.'});
     {
       if(!aiStatus().configured)return reply({error:'IA ainda não configurada. O administrador deve definir GEMINI_API_KEY na Vercel.',code:'AI_NOT_CONFIGURED'},503);
       if(!await consumeAiBudget(u.id,30))return failure('Limite de 30 consultas à IA em 15 minutos. Aguarde para continuar.',429);
       try{
         const result=await askGemini({text:relato,history:v.history,entries:enriched});
+        if(route!=='/admin/ai/test')result.feedbackTicket=newFeedbackTicket(u.id,result.feedbackNature?.code,result.analysisQuestions);
         return reply({result,disclaimer:'Resposta gerada por IA; confira fatos, legislação e protocolo institucional.'});
       }catch(error){
         const safe=aiFailure(error);

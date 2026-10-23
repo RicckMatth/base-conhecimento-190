@@ -1,5 +1,7 @@
 // Local SVG symbols: consistent 24 px grid, no font or external request.
 const paths={
+ thumbUp:'M7 10v11H3V10Zm0 1 5-9a3 3 0 0 1 2 4l-1 4h6a2 2 0 0 1 2 2l-2 7a3 3 0 0 1-3 2H7',
+ thumbDown:'M7 14V3H3v11Zm0-1 5 9a3 3 0 0 0 2-4l-1-4h6a2 2 0 0 0 2-2l-2-7a3 3 0 0 0-3-2H7',
  home:'m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z',
  book:'M12 6c-3-3-7-3-10-2v15c4-1 7 0 10 2m0-15c3-3 7-3 10-2v15c-4-1-7 0-10 2V6',
  brain:'M9 18H7a4 4 0 0 1-3-7 4 4 0 0 1 4-6 4 4 0 0 1 4-3v20a4 4 0 0 1-4-4m7 0h2a4 4 0 0 0 3-7 4 4 0 0 0-4-6 4 4 0 0 0-4-3m-5 8h2m6 0h2M7 14h2m6 0h2',

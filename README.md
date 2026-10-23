@@ -231,3 +231,9 @@ revisão de referências não homologa códigos internos, prioridades ou protoco
 As referências distribuídas são acrescentadas na resposta de leitura, sem
 sobrescrever edições feitas nas fichas do banco. Fichas personalizadas sem
 mapeamento não recebem artigo inventado.
+
+### Aprendizado de perguntas por avaliação
+
+As análises complementares do Gemini separam explicação, natureza sugerida e até seis perguntas de triagem padronizadas. O like aprova somente os tópicos dessas perguntas para reutilização naquela natureza; não armazena relato, resposta da IA ou redação livre contendo dados pessoais e não treina o modelo Gemini. Perguntas já respondidas continuam ocultas pelo motor de triagem. Sem natureza identificada ou pergunta nova, a avaliação é registrada sem acrescentar perguntas.
+
+O dislike não contribui para o banco. Trocar um like por dislike retira somente a contribuição daquela avaliação, preservando aprovações independentes. Reenvios são idempotentes e perguntas repetidas são consolidadas. Tickets assinados vinculam a avaliação ao usuário, à natureza e aos tópicos exibidos, com validade de 24 horas. A rotação de GEMINI_API_KEY invalida tickets antigos. A inicialização cria as tabelas de avaliações, perguntas e contribuições automaticamente no PostgreSQL. Apenas usuários autenticados e ativos podem avaliar; há limite de avaliações por usuário. O fluxo local continua prioritário e só consulta a IA quando não consegue responder.
