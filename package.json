@@ -29,5 +29,8 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "sanitize-html": "^2.18.1"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.11"
   }
 }

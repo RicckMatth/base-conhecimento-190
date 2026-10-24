@@ -30,3 +30,13 @@ A comparação de versões está disponível na revisão administrativa; o workf
 
 ## Publicação
 Branch de desenvolvimento. Não fazer merge, deploy de produção ou executar migração de produção sem autorização explícita. Esta entrega é uma implementação inicial funcional condicionada a banco de desenvolvimento e acervo aprovado, e não o cumprimento integral do escopo solicitado.
+
+
+## Correções e nova verificação — 24/10/2026
+- Extração percorre o DOM inteiro e preserva texto em divs, contêineres aninhados, texto solto e quebras de linha sem duplicar descendentes. Teste de regressão incluído. Isso amplia a cobertura, mas não comprova todas as variantes legislativas.
+- PostgreSQL isolado via PGlite executa o SQL real e as funções reais de importação, revisão e busca. Migração aplicada duas vezes, deduplicação, exclusão de pendentes, aprovação, pesquisa exata/FTS, consulta informal por expansão lexical, novas versões, indisponibilidade e invalidação verificadas com documentos fictícios.
+- Busca expandida usa alternativas OR; antes a inclusão de sinônimos podia tornar todos os termos obrigatórios e reduzir os resultados.
+- Fontes alternativas da Câmara cadastradas explicitamente para CP, CC e Maria da Penha. Captura usa timeout de 9 segundos por fonte e preserva a URL efetivamente utilizada na versão, em vez de atribuir todo documento ao Planalto.
+- Nova captura: Planalto HTTP 503 e Câmara HTTP 403 para as três normas, neste ambiente. Não há contorno de bloqueios nem aprovação automática. Relatório atualizado em source-check.json.
+- 51 testes passaram. Banco de produção não foi utilizado. Não houve migração em produção. Testes PGlite não substituem teste do provedor PostgreSQL hospedado nem do fluxo autenticado no navegador.
+- Permanecem pendentes: acervo integral conferido, embeddings/pgvector, validação autenticada em navegador e demais funcionalidades de interface registradas acima. A publicação continua condicionada à resolução dos bloqueios; nenhuma garantia de 100% é declarada.

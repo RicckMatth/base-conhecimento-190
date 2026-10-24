@@ -2,16 +2,16 @@
   {
     "code": "CP",
     "status": "failed",
-    "error": "Fonte oficial indisponível: HTTP 503"
+    "error": "Captura oficial falhou. https://www.planalto.gov.br/ccivil_03/decreto-lei/del2848compilado.htm: Fonte oficial indisponível: HTTP 503 | https://www2.camara.leg.br/legin/fed/declei/1940-1949/decreto-lei-2848-7-dezembro-1940-412868-normaatualizada-pe.html: Fonte oficial indisponível: HTTP 403"
   },
   {
     "code": "CC",
     "status": "failed",
-    "error": "Fonte oficial indisponível: HTTP 503"
+    "error": "Captura oficial falhou. https://www.planalto.gov.br/ccivil_03/leis/2002/l10406compilada.htm: Fonte oficial indisponível: HTTP 503 | https://www2.camara.leg.br/legin/fed/lei/2002/lei-10406-10-janeiro-2002-432893-normaatualizada-pl.html: Fonte oficial indisponível: HTTP 403"
   },
   {
     "code": "MP",
     "status": "failed",
-    "error": "Fonte oficial indisponível: HTTP 503"
+    "error": "Captura oficial falhou. https://www.planalto.gov.br/ccivil_03/_ato2004-2006/2006/lei/l11340.htm: Fonte oficial indisponível: HTTP 503 | https://www2.camara.leg.br/legin/fed/lei/2006/lei-11340-7-agosto-2006-545133-normaatualizada-pl.html: Fonte oficial indisponível: HTTP 403"
   }
 ]
