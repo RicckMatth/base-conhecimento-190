@@ -1,3 +1,4 @@
+import {cleanDocument} from '../../../lib/documentation.js';
 import { newFeedbackTicket,readFeedbackTicket,learnableQuestions } from '../../../lib/question-feedback.js';
 import { withLearnedTriage,questionsFor } from '../../../lib/triage.js';
 import { canTestGemini } from '../../../lib/permissions.js';
@@ -124,6 +125,31 @@ async function gate(request,method,ctx){
     const custom=await db().query('SELECT id,definition,created_at FROM custom_rules ORDER BY created_at DESC LIMIT 200');
     const learned=await loadLearnedQuestions();
     return reply({base:CEREBRO_190.regrasBase.map(r=>withLearnedTriage(r,learned)),extras:EXTRA_RULES.map(r=>withLearnedTriage(r,learned)),custom:custom.rows});
+  }
+  if(route==='/documentation'&&method==='GET'){
+    const rows=await db().query("SELECT p.*,u.display_name AS author FROM documentation_pages p LEFT JOIN users u ON u.id=p.author_id WHERE ($1 OR p.status='published') ORDER BY p.space,p.title",[u.role==='admin']);
+    return reply({pages:rows.rows});
+  }
+  if(route==='/documentation/history'&&method==='GET'){
+    const denied=requireRole(u,true);if(denied)return denied;
+    const id=new URL(request.url).searchParams.get('id');
+    if(!/^[0-9a-f-]{36}$/.test(id||''))return failure('Página inválida.');
+    return reply({versions:(await db().query('SELECT revision,title,content,created_at FROM documentation_versions WHERE page_id=$1 ORDER BY revision DESC LIMIT 50',[id])).rows});
+  }
+  if(route==='/documentation'&&method==='POST'){
+    const denied=requireRole(u,true);if(denied)return denied;
+    const v=await input(request,250000),title=string(v.title,200),space=string(v.space,80)||'Geral';
+    if(!title||!['draft','published'].includes(v.status))return failure('Informe título e estado válidos.');
+    if(v.id&&!/^[0-9a-f-]{36}$/.test(v.id))return failure('Página inválida.');
+    const content=cleanDocument(v.content),id=v.id||randomUUID(),client=await db().connect();
+    try{
+      await client.query('BEGIN');
+      const saved=v.id?await client.query('UPDATE documentation_pages SET title=$2,space=$3,content=$4,status=$5,revision=revision+1,author_id=$6,updated_at=now() WHERE id=$1 AND revision=$7 RETURNING *',[id,title,space,content,v.status,u.id,v.revision]):await client.query('INSERT INTO documentation_pages(id,title,space,content,status,author_id) VALUES($1,$2,$3,$4,$5,$6) RETURNING *',[id,title,space,content,v.status,u.id]);
+      if(!saved.rowCount){await client.query('ROLLBACK');return failure('Esta página foi alterada por outra pessoa. Copie seu texto e reabra a versão atual.',409);}
+      const page=saved.rows[0];
+      await client.query('INSERT INTO documentation_versions(page_id,revision,title,content,actor_id) VALUES($1,$2,$3,$4,$5)',[id,page.revision,title,content,u.id]);
+      await client.query('COMMIT');return reply({page});
+    }catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}
   }
   if(route==='/ai/status'&&method==='GET')return reply(aiStatus());
   if(route==='/analysis-feedback'&&method==='POST'){

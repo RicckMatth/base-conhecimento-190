@@ -1,4 +1,6 @@
 'use client';
+import dynamic from 'next/dynamic';
+const Documentation=dynamic(()=>import('./documentation.jsx'),{loading:()=> <p role="status">Carregando documentação…</p>,ssr:false});
 import AnalysisFeedback from './analysis-feedback.jsx';
 import LegalReference from './legal-reference.jsx';
 import WritingReview from './writing-review.jsx';
@@ -169,6 +171,7 @@ export default function Home(){
     setExtensionOnline(false);setExtensionAnalysis(null);setExtensionReceivedAt(null);setChatMessages([]);setChatInput('');
   }
   async function go(next){
+    if(!window.dispatchEvent(new Event('base190:before-navigation',{cancelable:true})))return;
     clear();setScreen(next);setCredential(null);
     if(next==='access'){try{await refreshAdmin();}catch(e){err(e);}}
     if(next==='audit'){try{const x=await call('/admin/audit');setEvents(x.events);}catch(e){err(e);}}
@@ -176,7 +179,7 @@ export default function Home(){
   }
   async function analyze(e){
     e?.preventDefault?.();clear();if(relato.trim().length<3)return err(new Error('Informe o relato para análise.'));
-    setBusy(true);try{const x=await call('/analyze',{method:'POST',body:body({text:relato})});
+    setBusy(true);setAnalysis(null);setScreen('brain');try{const x=await call('/analyze',{method:'POST',body:body({text:relato})});
       setAnalysis(x.result);setScreen('brain');
       // Resultado somente para visualização na extensão instalada (sem preenchimento ou envio automático).
       window.dispatchEvent(new CustomEvent('base190:site-analysis',{detail:{result:x.result,disclaimer:x.disclaimer}}));
@@ -330,7 +333,7 @@ export default function Home(){
     </form>
   </section>;
 
-  const links=[['home','Visão geral','home'],['catalog','Catálogo','book'],['brain','Cérebro 190','brain'],['extension','Integração 190','link']];
+  const links=[['home','Visão geral','home'],['docs','Base de conhecimento','book'],['catalog','Catálogo','book'],['brain','Cérebro 190','brain'],['extension','Integração 190','link']];
   const adminLinks=[['editor','Editar textos','edit'],['access','Autorizar acessos','users'],['rules','Regras do Cérebro','settings'],['audit','Auditoria','audit']];
   return <div className="shell">
     <aside className="sidebar">
@@ -341,7 +344,7 @@ export default function Home(){
       <div className="sidebar-bottom"><p className="who">{user.name}<br/><small>{user.username} • {isAdmin?'Admin':'Consulta'}</small></p><button className="nav-btn" onClick={logout} disabled={busy}><Icon name="logout"/> Sair</button></div>
     </aside>
     <div className="main">
-      <header className="topbar"><div><b>{screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='extension'?'Extensão integrada':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
+      <header className="topbar"><div><b>{screen==='docs'?'Base de conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='extension'?'Extensão integrada':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
         <div className="btn-row"><button className="btn ghost tiny" onClick={activateExtension} type="button">{extensionOnline?'● Extensão conectada':'Abrir chat integrado'}</button><span className="badge">{isAdmin?'Administrador':'Usuário de consulta'}</span><Btn className="ghost tiny" onClick={theme}><Icon name={dark?'sun':'moon'} size={17}/>{dark?'Claro':'Escuro'}</Btn></div>
       </header>
       <main className="content spaced">
@@ -369,6 +372,7 @@ export default function Home(){
           <div className="helpnote">Os exemplos da base não constituem códigos ou protocolos oficiais homologados. É proibido utilizar a ferramenta para inserir dados sigilosos sem autorização institucional.</div>
         </>}
 
+        {screen==='docs'&&<Documentation isAdmin={isAdmin}/>}
         {screen==='catalog'&&<>
           <div className="panel-head"><div><span className="eyebrow">BIBLIOTECA OPERACIONAL</span><h1>Catálogo de naturezas</h1><p className="muted">Busque por título, código, resumo, conteúdo ou palavra-chave.</p></div>{isAdmin&&<Btn onClick={()=>editEntry(null)}><Icon name="plus" size={18}/> Nova ficha</Btn>}</div>
           <div className="card catalog-filters"><div><label htmlFor="search">Pesquisa</label><input id="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Código, natureza, palavra-chave…"/></div><div><label htmlFor="category">Categoria</label><select id="category" value={cat} onChange={e=>setCat(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</select></div><div><label htmlFor="priority-filter">Prioridade sugerida</label><select id="priority-filter" value={priorityFilter} onChange={e=>setPriorityFilter(e.target.value)}>{['Todas','Crítica','Alta','Média'].map(v=><option key={v}>{v}</option>)}</select></div></div>
@@ -442,7 +446,7 @@ export default function Home(){
             <a className="chat-download" href="https://github.com/RicckMatth/190-extensao_integrada/archive/refs/heads/main.zip" target="_blank" rel="noopener noreferrer">Baixar extensão atualizada ↗</a>
           </aside>
         </section>}
-        {screen==='brain'&&<><div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Consulta à base local com reconhecimento de frases. O Gemini complementa somente quando a base não encontra resposta adequada.</p></div><span className="badge">{totalRules} regras</span></div>
+        {screen==='brain'&&<>{busy&&<div className="analysis-loading" role="status" aria-live="polite"><span className="analysis-spinner"/><div><strong>Analisando o relato…</strong><p>Consultando a base local. Se necessário, o Gemini complementará a análise. Aguarde o resultado.</p></div></div>}<div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Consulta à base local com reconhecimento de frases. O Gemini complementa somente quando a base não encontra resposta adequada.</p></div><span className="badge">{totalRules} regras</span></div>
           <form className="card spaced" onSubmit={analyze}><div><label htmlFor="brain-input">Relato de teste (sem dados pessoais)</label><textarea id="brain-input" rows={5} value={relato} onChange={e=>setRelato(e.target.value)} placeholder="Descreva o fato observado ou relatado, sem nomes e endereços…"/></div>
             <div className="btn-row"><Btn type="submit" disabled={busy}><Icon name="brain" size={18}/>{busy?'Analisando…':'Analisar relato'}</Btn><Btn className="secondary" onClick={()=>{setRelato('');setAnalysis(null);}}>Limpar</Btn></div></form>
           {resultView()}
