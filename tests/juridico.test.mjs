@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {parseLaw,diffArticles} from '../lib/juridico/ingestion.js';
+import {checkedCitations,exactReference,expandQuery} from '../lib/juridico/service.js';
+const html='<h1>LEI DE TESTE FICTÍCIA</h1><p>CAPÍTULO I</p><p>Art. 1º Texto de teste.</p><p>§ 1º Parágrafo preservado.</p><p>I - Inciso preservado.</p><p>a) Alínea preservada.</p><p>Art. 2º Outro artigo.</p>';
+test('importação preserva artigos, parágrafo, inciso, alínea e texto integral',()=>{const d=parseLaw(html);assert.equal(d.articles.length,2);assert.deepEqual(d.articles[0].blocks.map(b=>b.kind),['text','paragraph','item','subitem']);assert.ok(d.fullText.includes('CAPÍTULO I'));assert.equal(d.hash,parseLaw(html).hash);});
+test('redações históricas e artigos repetidos são preservados e sinalizados',()=>{const d=parseLaw(html+'<p><strike>Art. 2º Texto antigo.</strike></p>');assert.equal(d.articles.length,3);assert.ok(d.articles[2].blocks[0].historical);assert.match(d.warnings.join(' '),/repetida/);});
+test('fonte inválida não vira legislação',()=>{assert.throws(()=>parseLaw('<p>Erro</p><p>Acesso negado</p>'));});
+test('diferenças distinguem inclusão, alteração e exclusão',()=>{assert.deepEqual(diffArticles([{number:'1',text:'a'},{number:'2',text:'b'}],[{number:'1',text:'c'},{number:'3',text:'d'}]).map(d=>d.status),['changed','removed','added']);});
+test('busca exata limita norma e identifica artigo',()=>{assert.deepEqual(exactReference('art. 147 do Código Penal'),{norm:'CP',number:'147'});assert.equal(exactReference('art. 121-A do CP').number,'121-A');assert.match(expandQuery('ele me ameaçou'),/ameaça/);});
+test('referências inventadas são rejeitadas e IDs duplicados consolidados',()=>{assert.throws(()=>checkedCitations(['inventado'],[{id:'real'}]));assert.deepEqual(checkedCitations(['real','real'],[{id:'real'}]),[{id:'real'}]);});

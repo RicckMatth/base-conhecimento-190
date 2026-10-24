@@ -2,7 +2,7 @@ import { Icon } from './icons.jsx';
 
 export default function StartupScreen({phase='session'}){
  const catalog=phase==='catalog';
- return <main className="startup-screen" aria-busy="true" aria-label="Inicialização da Base 190">
+ return <main className="startup-screen" aria-busy="true" aria-label="Inicialização da CIJ 190">
   <div className="startup-grid" aria-hidden="true"/>
   <header className="startup-header"><div className="startup-brand"><span>190</span><div><b>BASE DE CONHECIMENTO</b><small>APOIO AO ATENDIMENTO</small></div></div><span className="startup-secure"><Icon name="lock" size={14}/> Ambiente protegido</span></header>
   <section className="startup-center">

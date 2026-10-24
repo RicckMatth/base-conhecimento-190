@@ -1,5 +1,6 @@
 'use client';
 import dynamic from 'next/dynamic';
+const LegalLibrary=dynamic(()=>import('./legal-library.jsx'),{loading:()=> <p role="status">Carregando biblioteca jurídica…</p>,ssr:false});
 const Documentation=dynamic(()=>import('./documentation.jsx'),{loading:()=> <p role="status">Carregando documentação…</p>,ssr:false});
 import AnalysisFeedback from './analysis-feedback.jsx';
 import LegalReference from './legal-reference.jsx';
@@ -140,7 +141,7 @@ export default function Home(){
       const history=chatMessages.filter(m=>!m.sourceText&&m.id!=='live-sade-relato').flatMap(m=>m.kind==='user'?[{role:'user',content:m.text}]:m.kind==='answer'&&m.result?.resposta?[{role:'assistant',content:m.result.resposta}]:[]).slice(-8);
       const reply=await call('/chat',{method:'POST',body:body({text,history})});
       const now=Date.now();
-      setChatMessages(prev=>[...prev.slice(-23),{id:'answer-'+now,kind:'answer',origin:reply.result?.source==='gemini'?'Gemini · resposta complementar':'Base 190 · resposta local',result:reply.result,at:now}]);
+      setChatMessages(prev=>[...prev.slice(-23),{id:'answer-'+now,kind:'answer',origin:reply.result?.source==='gemini'?'Gemini · resposta complementar':'CIJ 190 · resposta local',result:reply.result,at:now}]);
       window.dispatchEvent(new CustomEvent('base190:site-analysis',{detail:{result:reply.result,disclaimer:reply.disclaimer}}));
     }catch(error){
       setChatMessages(prev=>[...prev.slice(-23),{id:'error-'+Date.now(),kind:'error',text:error.message||'Falha na análise.',at:Date.now()}]);
@@ -254,8 +255,8 @@ export default function Home(){
     </section>;
   }
   function chatAnswer(result){
-    if(!result)return <p>Sem resposta da Base 190.</p>;
-    if(result.tipo==='faq'||result.tipo==='ia')return <div className="chat-answer"><span className="badge">{result.source==='gemini'?'Gemini · resposta complementar':'Base local · sem consulta à IA'}</span><h3>{result.titulo||'Orientação'}</h3><p className="assistant-text">{result.resposta}</p>{!!result.references?.length&&<details><summary>Fichas consultadas</summary><ul>{result.references.map(r=><li key={r.code}>{r.code} · {r.title}</li>)}</ul></details>}{result.tipo==='ia'&&<><small>Conteúdo gerado por IA. Confira as informações antes de utilizar.</small><AnalysisFeedback key={result.feedbackTicket||'legacy'} result={result}/></>}</div>;
+    if(!result)return <p>Sem resposta da CIJ 190.</p>;
+    if(result.tipo==='faq'||result.tipo==='ia')return <div className="chat-answer"><span className="badge">{result.source==='gemini'?'Gemini · resposta complementar':'Base local · sem consulta à IA'}</span><h3>{result.titulo||'Orientação'}</h3><p className="assistant-text">{result.resposta}</p>{!!result.references?.length&&<details><summary>Fichas consultadas</summary><ul>{result.references.map(r=><li key={r.code}>{r.code} · {r.title}</li>)}</ul></details>}{result.tipo==='ia'&&<><small>Conteúdo gerado por IA. Confira as informações antes de utilizar.</small>{!!result.legalCitations?.length&&<details><summary>Fundamentação jurídica recuperada</summary>{result.legalCitations.map(c=><p key={c.id}><a href={c.source_url} target="_blank" rel="noreferrer">{c.title} · Art. {c.number}</a> · Fonte obtida em {new Date(c.retrieved_at).toLocaleDateString('pt-BR')}</p>)}</details>}<AnalysisFeedback key={result.feedbackTicket||'legacy'} result={result}/></>}</div>;
     if(result.tipo!=='classificacao')return <div className="chat-answer"><b>Análise não conclusiva</b><p>{result.mensagem||'Verifique o relato e consulte os procedimentos oficiais.'}</p></div>;
     const main=result.principal||{};
     return <div className="chat-answer">
@@ -333,18 +334,18 @@ export default function Home(){
     </form>
   </section>;
 
-  const links=[['home','Visão geral','home'],['docs','Base de conhecimento','book'],['catalog','Catálogo','book'],['brain','Cérebro 190','brain'],['extension','Integração 190','link']];
+  const links=[['home','Visão geral','home'],['legal','Biblioteca Jurídica','book'],['docs','Documentação','book'],['catalog','Catálogo','book'],['brain','Cérebro 190','brain'],['extension','Integração 190','link']];
   const adminLinks=[['editor','Editar textos','edit'],['access','Autorizar acessos','users'],['rules','Regras do Cérebro','settings'],['audit','Auditoria','audit']];
   return <div className="shell">
     <aside className="sidebar">
-      <div className="logo"><div className="logoicon">190</div><div><strong>Base 190</strong><small>CONHECIMENTO OPERACIONAL</small></div></div>
+      <div className="logo"><div className="logoicon">190</div><div><strong>CIJ 190</strong><small>CONHECIMENTO OPERACIONAL</small></div></div>
       <span className="nav-caption">CENTRAL</span>
       {links.map(([id,label,icon])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>go(id)} aria-current={screen===id?'page':undefined}><Icon name={icon}/>{label}</button>)}
       {isAdmin&&<><span className="nav-caption">ADMINISTRAÇÃO</span>{adminLinks.map(([id,label,icon])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>id==='editor'?editEntry(null):go(id)} aria-current={screen===id?'page':undefined}><Icon name={icon}/>{label}</button>)}</>}
       <div className="sidebar-bottom"><p className="who">{user.name}<br/><small>{user.username} • {isAdmin?'Admin':'Consulta'}</small></p><button className="nav-btn" onClick={logout} disabled={busy}><Icon name="logout"/> Sair</button></div>
     </aside>
     <div className="main">
-      <header className="topbar"><div><b>{screen==='docs'?'Base de conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='extension'?'Extensão integrada':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
+      <header className="topbar"><div><b>{screen==='legal'?'Biblioteca Jurídica':screen==='docs'?'Documentação':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='extension'?'Extensão integrada':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
         <div className="btn-row"><button className="btn ghost tiny" onClick={activateExtension} type="button">{extensionOnline?'● Extensão conectada':'Abrir chat integrado'}</button><span className="badge">{isAdmin?'Administrador':'Usuário de consulta'}</span><Btn className="ghost tiny" onClick={theme}><Icon name={dark?'sun':'moon'} size={17}/>{dark?'Claro':'Escuro'}</Btn></div>
       </header>
       <main className="content spaced">
@@ -372,6 +373,7 @@ export default function Home(){
           <div className="helpnote">Os exemplos da base não constituem códigos ou protocolos oficiais homologados. É proibido utilizar a ferramenta para inserir dados sigilosos sem autorização institucional.</div>
         </>}
 
+        {screen==='legal'&&<LegalLibrary isAdmin={isAdmin}/>}
         {screen==='docs'&&<Documentation isAdmin={isAdmin}/>}
         {screen==='catalog'&&<>
           <div className="panel-head"><div><span className="eyebrow">BIBLIOTECA OPERACIONAL</span><h1>Catálogo de naturezas</h1><p className="muted">Busque por título, código, resumo, conteúdo ou palavra-chave.</p></div>{isAdmin&&<Btn onClick={()=>editEntry(null)}><Icon name="plus" size={18}/> Nova ficha</Btn>}</div>
@@ -391,7 +393,7 @@ export default function Home(){
         {screen==='extension'&&<section className="integrated-chat">
           <div className="chat-main">
             <header className="chat-head">
-              <div className="chat-ident"><span className="chat-avatar"><Icon name="brain"/></span><div><b>Assistente da Base 190</b><small>Base local primeiro · Gemini como complemento</small></div></div>
+              <div className="chat-ident"><span className="chat-avatar"><Icon name="brain"/></span><div><b>Assistente da CIJ 190</b><small>Base local primeiro · Gemini como complemento</small></div></div>
               <div className="chat-head-actions"><span className={'chat-pill '+(extensionOnline?'connected':'')}>{extensionOnline?'● Extensão detectada':'○ Extensão ausente'}</span>
                 <Btn className="ghost tiny" onClick={()=>setChatMessages([])}>Limpar chat</Btn></div>
             </header>
@@ -434,7 +436,7 @@ export default function Home(){
               </div>
             </div>
             <Btn className="full" onClick={openExtensionSettings} disabled={!extensionOnline}>Abrir configurações da extensão</Btn>
-            <p className="chat-small">Nas configurações, ative <b>Análise automática de relatos</b>. Depois, mantenha seu login nesta Base 190 e preencha o relato no simulador SADE.</p>
+            <p className="chat-small">Nas configurações, ative <b>Análise automática de relatos</b>. Depois, mantenha seu login nesta CIJ 190 e preencha o relato no simulador SADE.</p>
             <div className="divider"/>
             <h3>Etapas de utilização</h3>
             <div className="chat-steps"><span><b>01</b> Abra as opções da extensão</span>
@@ -516,7 +518,7 @@ export default function Home(){
           <table><thead><tr><th>Data</th><th>Operador</th><th>Ação</th><th>Alvo</th></tr></thead><tbody>{events.map((a,i)=><tr key={i}><td>{formatDate(a.at)}</td><td>{a.username||'—'}</td><td>{a.action}</td><td>{a.target||'—'}</td></tr>)}</tbody></table>
           {!events.length&&<p className="muted">Nenhum evento registrado.</p>}
         </div></>}
-        <footer className="footer-note">Base de Conhecimento 190 • Uso controlado • Classificação automática assistiva, sujeita à revisão e homologação</footer>
+        <footer className="footer-note">Centro de Inteligência Jurídica 190 • Uso controlado • Classificação automática assistiva, sujeita à revisão e homologação</footer>
       </main>
     </div>
   </div>;

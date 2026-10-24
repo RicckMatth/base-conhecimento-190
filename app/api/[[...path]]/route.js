@@ -1,3 +1,5 @@
+import {legalEnabled,searchLegal,stageImport,reviewVersion,versionDetail} from '../../../lib/juridico/service.js';
+import {SOURCES} from '../../../lib/juridico/sources.js';
 import {cleanDocument} from '../../../lib/documentation.js';
 import { newFeedbackTicket,readFeedbackTicket,learnableQuestions } from '../../../lib/question-feedback.js';
 import { withLearnedTriage,questionsFor } from '../../../lib/triage.js';
@@ -126,6 +128,27 @@ async function gate(request,method,ctx){
     const learned=await loadLearnedQuestions();
     return reply({base:CEREBRO_190.regrasBase.map(r=>withLearnedTriage(r,learned)),extras:EXTRA_RULES.map(r=>withLearnedTriage(r,learned)),custom:custom.rows});
   }
+  if(route.startsWith('/legal')){
+    if(!legalEnabled())return reply({enabled:false,norms:Object.entries(SOURCES).map(([code,s])=>({code,...s})),message:'Biblioteca em preparação. A migração e a conferência do acervo devem ser concluídas no ambiente de desenvolvimento.'});
+    const url=new URL(request.url),v=method==='POST'?await input(request,8500000):{};
+    if(route==='/legal/norms'&&method==='GET')return reply({enabled:true,norms:(await db().query("SELECT n.*,v.status,v.retrieved_at FROM cij_norms n LEFT JOIN LATERAL(SELECT status,retrieved_at FROM cij_versions WHERE norm_code=n.code ORDER BY created_at DESC LIMIT 1)v ON true ORDER BY title")).rows});
+    if(route==='/legal/search'&&method==='GET')return reply({results:await searchLegal(string(url.searchParams.get('q'),500),string(url.searchParams.get('norm'),20)),mode:'Busca textual com expansão de conceitos; sem embeddings'});
+    if(route==='/legal/bookmarks'&&method==='GET')return reply({items:(await db().query('SELECT b.*,a.number,v.norm_code FROM cij_bookmarks b JOIN cij_articles a ON a.id=b.article_id JOIN cij_versions v ON v.id=a.version_id WHERE b.user_id=$1 ORDER BY visited_at DESC LIMIT 50',[u.id])).rows});
+    if(route==='/legal/bookmarks'&&method==='POST'){if(!/^[0-9a-f-]{36}$/.test(v.id||''))return failure('Artigo inválido.');await db().query('INSERT INTO cij_bookmarks(user_id,article_id,favorite) VALUES($1,$2,$3) ON CONFLICT(user_id,article_id) DO UPDATE SET favorite=EXCLUDED.favorite,visited_at=now()',[u.id,v.id,!!v.favorite]);return reply({ok:true});}
+    if(route==='/legal/relations'&&method==='GET')return reply({relations:(await db().query('SELECT * FROM cij_relationships WHERE norm_code=$1 AND article_number=$2',[string(url.searchParams.get('norm'),20),string(url.searchParams.get('article'),30)])).rows});
+    const denied=requireRole(u,true);if(denied)return denied;
+    if(route==='/legal/availability'&&method==='POST'){await db().query('UPDATE cij_norms SET enabled=$2 WHERE code=$1',[string(v.code,20),v.enabled===true]);await log(u.id,'legal-availability',string(v.code,20));return reply({ok:true});}
+    if(route==='/legal/relations'&&method==='POST'){
+      if(!string(v.note,2000)||!string(v.article,30)||!string(v.nature,70))return failure('Informe natureza, artigo e justificativa editorial.');
+      const exists=await db().query('SELECT 1 FROM knowledge WHERE code=$1',[v.nature]);if(!exists.rowCount)return failure('Natureza não encontrada.');
+      await db().query('INSERT INTO cij_relationships(id,norm_code,article_number,nature_code,verified,note,actor_id) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(norm_code,article_number,nature_code) DO UPDATE SET verified=EXCLUDED.verified,note=EXCLUDED.note,actor_id=EXCLUDED.actor_id,updated_at=now()',[randomUUID(),string(v.norm,20),string(v.article,30),string(v.nature,70),v.verified===true,string(v.note,2000),u.id]);await log(u.id,'legal-relation',string(v.nature,70));return reply({ok:true});
+    }
+    if(route==='/legal/versions'&&method==='GET')return reply({versions:(await db().query('SELECT id,norm_code,digest,status,retrieved_at,method,warnings,review_note FROM cij_versions ORDER BY created_at DESC LIMIT 100')).rows});
+    if(route==='/legal/version'&&method==='GET'){const id=url.searchParams.get('id');if(!/^[0-9a-f-]{36}$/.test(id||''))return failure('Versão inválida.');return reply(await versionDetail(id));}
+    if(route==='/legal/import'&&method==='POST')return reply(await stageImport(string(v.code,20),u.id,typeof v.html==='string'?v.html:undefined));
+    if(route==='/legal/review'&&method==='POST'){if(!/^[0-9a-f-]{36}$/.test(v.id||''))return failure('Versão inválida.');await reviewVersion(v.id,v.status,v.note,u.id);return reply({ok:true});}
+    return failure('Operação jurídica não encontrada.',404);
+  }
   if(route==='/documentation'&&method==='GET'){
     const rows=await db().query("SELECT p.*,u.display_name AS author FROM documentation_pages p LEFT JOIN users u ON u.id=p.author_id WHERE ($1 OR p.status='published') ORDER BY p.space,p.title",[u.role==='admin']);
     return reply({pages:rows.rows});
@@ -197,7 +220,8 @@ async function gate(request,method,ctx){
       if(!aiStatus().configured)return reply({error:'IA ainda não configurada. O administrador deve definir GEMINI_API_KEY na Vercel.',code:'AI_NOT_CONFIGURED'},503);
       if(!await consumeAiBudget(u.id,30))return failure('Limite de 30 consultas à IA em 15 minutos. Aguarde para continuar.',429);
       try{
-        const result=await askGemini({text:relato,history:v.history,entries:enriched});
+        const legalContext=legalEnabled()?(await searchLegal(relato,'',10)).filter(a=>!a.blocks.some(b=>b.historical)).slice(0,5):[];
+        const result=await askGemini({text:relato,history:v.history,entries:enriched,legalContext});
         if(route!=='/admin/ai/test')result.feedbackTicket=newFeedbackTicket(u.id,result.feedbackNature?.code,result.analysisQuestions);
         return reply({result,disclaimer:'Resposta gerada por IA; confira fatos, legislação e protocolo institucional.'});
       }catch(error){

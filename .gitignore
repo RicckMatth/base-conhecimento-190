@@ -15,3 +15,5 @@ chrome-extension/
 browser-extension/
 *.crx
 *.zip
+
+legal-source-check/
