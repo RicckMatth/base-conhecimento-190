@@ -1,0 +1,17 @@
+[
+  {
+    "code": "CP",
+    "status": "failed",
+    "error": "Fonte oficial indisponível: HTTP 503"
+  },
+  {
+    "code": "CC",
+    "status": "failed",
+    "error": "Fonte oficial indisponível: HTTP 503"
+  },
+  {
+    "code": "MP",
+    "status": "failed",
+    "error": "Fonte oficial indisponível: HTTP 503"
+  }
+]
