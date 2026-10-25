@@ -1,7 +1,8 @@
+import {qualityList,qualityDetail,reviewQuality,assertQualityAdmin,purgeQualityFeedback} from '../../../lib/quality.js';
 import {cleanDocument} from '../../../lib/documentation.js';
-import { newFeedbackTicket,readFeedbackTicket,learnableQuestions } from '../../../lib/question-feedback.js';
+import { newFeedbackTicket,readFeedbackTicket,learnableQuestions,feedbackConfigured } from '../../../lib/question-feedback.js';
 import { withLearnedTriage,questionsFor } from '../../../lib/triage.js';
-import { canTestGemini } from '../../../lib/permissions.js';
+import { canTestGemini,canReviewQuality } from '../../../lib/permissions.js';
 import { askGemini,aiStatus,rewriteWithGemini } from '../../../lib/gemini.js';
 import { answerLocally,aiFailure } from '../../../lib/assistant.js';
 import { NextResponse } from 'next/server';
@@ -26,7 +27,7 @@ async function identity(){
     WHERE s.token_hash=$1 AND s.expires_at>now() AND s.revoked_at IS NULL AND u.active=true`,[digest(raw)]);
   return result.rows[0]||null;
 }
-function publicUser(u){return {id:u.id,username:u.username,name:u.display_name,role:u.role,canTestGemini:canTestGemini(u),mustChangePassword:Boolean(u.must_change_password)};}
+function publicUser(u){return {id:u.id,username:u.username,name:u.display_name,role:u.role,canTestGemini:canTestGemini(u),canReviewQuality:canReviewQuality(u),mustChangePassword:Boolean(u.must_change_password)};}
 function requireRole(u,admin=false){if(!u) return failure('Sessão ausente ou expirada.',401);if(admin&&u.role!=='admin')return failure('Acesso restrito ao administrador.',403);return null;}
 const usernameOf=(v)=>string(v,40).toLowerCase();
 function entryPayload(v) {
@@ -152,6 +153,15 @@ async function gate(request,method,ctx){
     }catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}
   }
   if(route==='/ai/status'&&method==='GET')return reply(aiStatus());
+  if(route.startsWith('/admin/quality')){
+    try{assertQualityAdmin(u);}catch(e){return failure(e.message,403);}
+    const url=new URL(request.url);
+    if(route==='/admin/quality/retention'&&method==='POST'){const result=await purgeQualityFeedback(db(),u);await log(u.id,'quality-retention',String(result.removed));return reply(result);}
+    if(route==='/admin/quality'&&method==='GET')return reply(await qualityList(db(),u,Object.fromEntries(url.searchParams)));
+    if(route==='/admin/quality/detail'&&method==='GET'){const id=url.searchParams.get('id');if(!/^[0-9a-f-]{36}$/.test(id||''))return failure('Proposta inválida.');const detail=await qualityDetail(db(),u,id);const rule=[...CEREBRO_190.regrasBase,...EXTRA_RULES].find(r=>r.code===detail.proposal.nature_code);return reply({...detail,nature:rule?.officialNature||detail.proposal.nature_code,references:rule?.legal||null});}
+    if(route==='/admin/quality/review'&&method==='POST'){const v=await input(request,15000);if(!/^[0-9a-f-]{36}$/.test(v.id||'')||!Number.isInteger(v.revision))return failure('Proposta ou versão inválida.');try{return reply({proposal:await reviewQuality(db(),u,v)});}catch(e){return failure(e.message,e.status||400);}}
+    return failure('Operação não encontrada.',404);
+  }
   if(route==='/analysis-feedback'&&method==='POST'){
     const v=await input(request,5000);
     if(!['like','dislike'].includes(v.vote))return failure('Escolha like ou dislike.');
@@ -163,7 +173,7 @@ async function gate(request,method,ctx){
     if(!rule&&proposal.code){const found=await db().query('SELECT code,title,category FROM knowledge WHERE code=$1',[proposal.code]);const row=found.rows[0];if(row)rule={...row,id:'custom-feedback',officialNature:row.title};}
     const questions=learnableQuestions(proposal,rule);
     const result=await saveQuestionFeedback(u.id,proposal,v.vote,questions);
-    return reply({...result,message:v.vote==='dislike'?'Dislike registrado. Nenhuma pergunta desta avaliação alimenta o aprendizado.':questions.length?`${questions.length} pergunta(s) aprovada(s) para esta natureza. Somente as perguntas foram aproveitadas.`:'Like registrado. Não há pergunta nova ou natureza definida para acrescentar; nenhuma resposta foi salva.'});
+    return reply({...result,message:v.vote==='dislike'?'Feedback negativo registrado. Nenhum conhecimento novo foi publicado.':result.submitted?'Sua avaliação foi registrada e a sugestão foi enviada para revisão de qualidade.':'Like registrado. Não há perguntas novas elegíveis para revisão.'});
   }
 
   if(route==='/rewrite'&&method==='POST'){
@@ -198,7 +208,7 @@ async function gate(request,method,ctx){
       if(!await consumeAiBudget(u.id,30))return failure('Limite de 30 consultas à IA em 15 minutos. Aguarde para continuar.',429);
       try{
         const result=await askGemini({text:relato,history:v.history,entries:enriched});
-        if(route!=='/admin/ai/test')result.feedbackTicket=newFeedbackTicket(u.id,result.feedbackNature?.code,result.analysisQuestions);
+        if(route!=='/admin/ai/test'){if(feedbackConfigured())result.feedbackTicket=newFeedbackTicket(u.id,result.feedbackNature?.code,result.analysisQuestions);else result.feedbackUnavailable='Avaliações indisponíveis: o administrador precisa configurar o segredo de assinatura de feedback.';}
         return reply({result,disclaimer:'Resposta gerada por IA; confira fatos, legislação e protocolo institucional.'});
       }catch(error){
         const safe=aiFailure(error);
@@ -339,3 +349,4 @@ export const GET=(req,ctx)=>run(req,'GET',ctx);
 export const POST=(req,ctx)=>run(req,'POST',ctx);
 export const PATCH=(req,ctx)=>run(req,'PATCH',ctx);
 export const DELETE=(req,ctx)=>run(req,'DELETE',ctx);
+

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {newFeedbackTicket,readFeedbackTicket,learnableQuestions} from '../lib/question-feedback.js';
 import {questionOptions,questionsFor,withLearnedTriage,pendingSuggestedQuestions,evaluateTriage} from '../lib/triage.js';
 import {askGemini} from '../lib/gemini.js';
+process.env.FEEDBACK_SIGNING_KEY='test-signing-key-independent-32-characters';
 process.env.GEMINI_API_KEY='unit-test-only-not-a-real-key';
 const rule={id:'feedback-test',code:'TEST',title:'Ocorrência de teste',category:'Atendimento'};
 const missing=questionOptions().find(q=>!questionsFor(rule).some(x=>x.id===q.id));
@@ -44,3 +45,4 @@ test('Gemini separa explicação e perguntas; sem natureza reconhecida não apre
  const uncertain=await askGemini({text,entries,generate:async()=>({output:{resposta:'Faltam dados.',natureCode:null,questionTopics:['injured']}})});
  assert.equal(uncertain.feedbackNature,null);assert.deepEqual(uncertain.analysisQuestions,[]);
 });
+

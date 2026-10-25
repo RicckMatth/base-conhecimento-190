@@ -1,5 +1,6 @@
 'use client';
 import dynamic from 'next/dynamic';
+const QualityControl=dynamic(()=>import('./quality-control.jsx'),{loading:()=> <p role="status">Carregando controle de qualidade…</p>,ssr:false});
 const Documentation=dynamic(()=>import('./documentation.jsx'),{loading:()=> <p role="status">Carregando documentação…</p>,ssr:false});
 import AnalysisFeedback from './analysis-feedback.jsx';
 import LegalReference from './legal-reference.jsx';
@@ -334,7 +335,7 @@ export default function Home(){
   </section>;
 
   const links=[['home','Visão geral','home'],['docs','Base de conhecimento','book'],['catalog','Catálogo','book'],['brain','Cérebro 190','brain'],['extension','Integração 190','link']];
-  const adminLinks=[['editor','Editar textos','edit'],['access','Autorizar acessos','users'],['rules','Regras do Cérebro','settings'],['audit','Auditoria','audit']];
+  const adminLinks=[...(user?.canReviewQuality?[['quality','Controle de Qualidade','shield']]:[]),['editor','Editar textos','edit'],['access','Autorizar acessos','users'],['rules','Regras do Cérebro','settings'],['audit','Auditoria','audit']];
   return <div className="shell">
     <aside className="sidebar">
       <div className="logo"><div className="logoicon">190</div><div><strong>Base 190</strong><small>CONHECIMENTO OPERACIONAL</small></div></div>
@@ -344,7 +345,7 @@ export default function Home(){
       <div className="sidebar-bottom"><p className="who">{user.name}<br/><small>{user.username} • {isAdmin?'Admin':'Consulta'}</small></p><button className="nav-btn" onClick={logout} disabled={busy}><Icon name="logout"/> Sair</button></div>
     </aside>
     <div className="main">
-      <header className="topbar"><div><b>{screen==='docs'?'Base de conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='extension'?'Extensão integrada':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
+      <header className="topbar"><div><b>{screen==='quality'?'Controle de Qualidade':screen==='docs'?'Base de conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='extension'?'Extensão integrada':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
         <div className="btn-row"><button className="btn ghost tiny" onClick={activateExtension} type="button">{extensionOnline?'● Extensão conectada':'Abrir chat integrado'}</button><span className="badge">{isAdmin?'Administrador':'Usuário de consulta'}</span><Btn className="ghost tiny" onClick={theme}><Icon name={dark?'sun':'moon'} size={17}/>{dark?'Claro':'Escuro'}</Btn></div>
       </header>
       <main className="content spaced">
@@ -372,6 +373,7 @@ export default function Home(){
           <div className="helpnote">Os exemplos da base não constituem códigos ou protocolos oficiais homologados. É proibido utilizar a ferramenta para inserir dados sigilosos sem autorização institucional.</div>
         </>}
 
+        {user?.canReviewQuality&&screen==='quality'&&<QualityControl/>}
         {screen==='docs'&&<Documentation isAdmin={isAdmin}/>}
         {screen==='catalog'&&<>
           <div className="panel-head"><div><span className="eyebrow">BIBLIOTECA OPERACIONAL</span><h1>Catálogo de naturezas</h1><p className="muted">Busque por título, código, resumo, conteúdo ou palavra-chave.</p></div>{isAdmin&&<Btn onClick={()=>editEntry(null)}><Icon name="plus" size={18}/> Nova ficha</Btn>}</div>
@@ -521,3 +523,4 @@ export default function Home(){
     </div>
   </div>;
 }
+
