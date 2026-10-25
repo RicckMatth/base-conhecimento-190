@@ -73,9 +73,9 @@ export default function Home(){
     (async()=>{try{
       const a=await call('/session');
       if(!live)return;
-      setUser(a.user);setLoadingPhase('catalog');
+      setUser(a.user);setLoadingPhase('catalog');setLoading(false);
       const [catalog,rules]=await Promise.all([call('/entries'),call('/rules')]);
-      if(live){setEntries(catalog.entries);setBrainRules(rules);}
+      if(live){setEntries(catalog.entries);setBrainRules(rules);setLoadingPhase('ready');}
     }catch(e){if(live && !/Sessão ausente|Sessão expirada|não autorizado/i.test(e.message))setNotice(e.message);}
     finally{if(live)setLoading(false);}})();
     return()=>{live=false;};
@@ -303,7 +303,8 @@ export default function Home(){
     <section className="login-form"><div className="login-card">
       <div className="toolbar"><span className="badge">ACESSO À BASE 190</span><Btn className="ghost tiny" onClick={theme}><Icon name={dark?'sun':'moon'} size={17}/>{dark?'Tema claro':'Tema escuro'}</Btn></div>
       <div><h2>{requestMode?'Solicitar acesso':'Bem-vindo de volta'}</h2><p className="muted">{requestMode?'Preencha o pedido. O administrador avaliará o acesso.':'Entre com sua conta previamente autorizada.'}</p></div>
-      {notice&&<div className="notice" role="alert">{notice}</div>}{success&&<div className="notice success" role="status">{success}</div>}
+      {loadingPhase==='catalog'&&<p role="status" className="muted">Carregando catálogo e regras em segundo plano…</p>}
+        {notice&&<div className="notice" role="alert">{notice}</div>}{success&&<div className="notice success" role="status">{success}</div>}
       {requestMode?<form className="stack" onSubmit={submitRequest}>
         <div><label htmlFor="reqName">Nome de identificação</label><input id="reqName" autoComplete="name" required value={request.name} onChange={e=>setRequest({...request,name:e.target.value})} placeholder="Seu nome"/></div>
         <div><label htmlFor="reqUser">Usuário desejado</label><input id="reqUser" required minLength={4} pattern="[a-zA-Z0-9._-]+" value={request.username} onChange={e=>setRequest({...request,username:e.target.value})} placeholder="nome.sobrenome"/></div>
@@ -521,3 +522,4 @@ export default function Home(){
     </div>
   </div>;
 }
+

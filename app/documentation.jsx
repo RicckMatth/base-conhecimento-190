@@ -1,5 +1,5 @@
 'use client';
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {useEditor,EditorContent} from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import {Table,TableRow,TableCell,TableHeader} from '@tiptap/extension-table';
@@ -12,17 +12,19 @@ const empty=()=>({title:'',space:'Geral',content:'',status:'draft'});
 async function api(path='',options={}){const r=await fetch('/api/documentation'+path,{...options,headers:{'Content-Type':'application/json'},cache:'no-store'});const d=await r.json();if(!r.ok)throw Error(d.error||'Não foi possível carregar a documentação.');return d;}
 export default function Documentation({isAdmin}){
  const [pages,setPages]=useState([]),[page,setPage]=useState(null),[query,setQuery]=useState(''),[editing,setEditing]=useState(false),[dirty,setDirty]=useState(false),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[versions,setVersions]=useState([]);
+ const [hasMore,setHasMore]=useState(false),[listPage,setListPage]=useState(0);const listToken=useRef(0),detailToken=useRef(0);
  const editor=useEditor({extensions:[StarterKit,Table.configure({resizable:true}),TableRow,TableCell,TableHeader,TaskList,TaskItem.configure({nested:true}),Highlight,Image,TextAlign.configure({types:['heading','paragraph']})],immediatelyRender:false,editable:editing,onUpdate:()=>setDirty(true)});
- async function refresh(){try{const d=await api();setPages(d.pages);}catch(e){setNotice(e.message);}}
- useEffect(()=>{refresh();},[]);
+ async function refresh(pageNumber=0,signal){const token=++listToken.current;try{const d=await api('?'+new URLSearchParams({view:'summary',q:query,page:pageNumber}),{signal});if(token!==listToken.current)return;setPages(prev=>pageNumber?[...prev,...d.pages]:d.pages);setHasMore(d.hasMore);setListPage(pageNumber);}catch(e){if(e.name!=='AbortError'&&token===listToken.current)setNotice(e.message);}}
+ useEffect(()=>{const c=new AbortController();const timer=setTimeout(()=>refresh(0,c.signal),250);return()=>{clearTimeout(timer);listToken.current++;c.abort();};},[query]);
+ useEffect(()=>()=>{detailToken.current++;},[]);
  useEffect(()=>{const guard=e=>{if(dirty&&!confirm('Descartar alterações não salvas?'))e.preventDefault();};window.addEventListener('base190:before-navigation',guard);return()=>window.removeEventListener('base190:before-navigation',guard);},[dirty]);
  useEffect(()=>{editor?.setEditable(editing);},[editor,editing]);
  useEffect(()=>{if(!dirty)return;const warn=e=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty]);
- function open(p,edit=false){if(dirty&&!confirm('Descartar alterações não salvas?'))return;setPage(p);setEditing(edit);setDirty(false);setVersions([]);setNotice('');editor?.commands.setContent(p.content||'',{emitUpdate:false});}
+ async function open(p,edit=false){if(dirty&&!confirm('Descartar alterações não salvas?'))return;const token=++detailToken.current;if(p.id&&p.content===undefined){try{p=(await api('/detail?id='+p.id)).page;}catch(e){if(token===detailToken.current)setNotice(e.message);return;}}if(token!==detailToken.current)return;setPage(p);setEditing(edit);setDirty(false);setVersions([]);setNotice('');editor?.commands.setContent(p.content||'',{emitUpdate:false});}
  async function save(status){setBusy(true);setNotice('');try{const d=await api('',{method:'POST',body:JSON.stringify({...page,content:editor.getHTML(),status})});setPage(d.page);setDirty(false);setEditing(false);setNotice(status==='published'?'Página publicada.':'Rascunho salvo.');await refresh();}catch(e){setNotice(e.message);}finally{setBusy(false);}}
  function command(name,arg){editor?.chain().focus()[name](arg).run();}
  const actions=[['↶','Desfazer','undo'],['↷','Refazer','redo'],['B','Negrito','toggleBold'],['I','Itálico','toggleItalic'],['U','Sublinhado','toggleUnderline'],['S','Tachado','toggleStrike'],['Marca','Destacar','toggleHighlight'],['• Lista','Lista com marcadores','toggleBulletList'],['1. Lista','Lista numerada','toggleOrderedList'],['☑','Checklist','toggleTaskList'],['❝','Citação','toggleBlockquote'],['</>','Código','toggleCodeBlock'],['—','Divisor','setHorizontalRule']];
- const filtered=pages.filter(p=>(p.title+' '+p.space+' '+p.content.replace(/<[^>]*>/g,' ')).toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR')));
+ const filtered=pages;
  return <section className="docs-workspace">
 <aside className="docs-sidebar">
 <span className="eyebrow">BIBLIOTECA 190</span>
@@ -30,7 +32,7 @@ export default function Documentation({isAdmin}){
 <input aria-label="Pesquisar documentação" placeholder="Pesquisar páginas e conteúdo…" value={query} onChange={e=>setQuery(e.target.value)}/>{isAdmin&&<button className="btn" onClick={()=>open(empty(),true)}>+ Criar página</button>}{[...new Set(filtered.map(p=>p.space))].map(space=>
 <div key={space}>
 <h4>{space}</h4>{filtered.filter(p=>p.space===space).map(p=>
-<button className={'docs-page-link '+(page?.id===p.id?'selected':'')} key={p.id} onClick={()=>open(p)}>▤ {p.title}{p.status==='draft'&&<small>Rascunho</small>}</button>)}</div>)}{!filtered.length&&<p className="muted">Nenhuma página encontrada.</p>}</aside>
+<button className={'docs-page-link '+(page?.id===p.id?'selected':'')} key={p.id} onClick={()=>open(p)}>▤ {p.title}{p.status==='draft'&&<small>Rascunho</small>}</button>)}</div>)}{hasMore&&<button className="btn secondary" onClick={()=>refresh(listPage+1)}>Carregar mais páginas</button>}{!filtered.length&&<p className="muted">Nenhuma página encontrada.</p>}</aside>
 <main className="docs-main">{notice&&<p role="status" className="docs-notice">{notice}</p>}{!page?<div className="docs-empty">
 <span className="eyebrow">DOCUMENTAÇÃO COMPARTILHADA</span>
 <h1>Conhecimento ao alcance de todos.</h1>
@@ -74,3 +76,4 @@ export default function Documentation({isAdmin}){
 </details>)}</section>}</>}</main>
 </section>;
 }
+

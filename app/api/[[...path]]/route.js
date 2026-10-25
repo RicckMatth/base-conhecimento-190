@@ -1,3 +1,5 @@
+import {createCatalogLoader} from '../../../lib/performance-data.js';
+import {performanceMetrics,performanceSummary} from '../../../lib/performance-metrics.js';
 import {cleanDocument} from '../../../lib/documentation.js';
 import { newFeedbackTicket,readFeedbackTicket,learnableQuestions } from '../../../lib/question-feedback.js';
 import { withLearnedTriage,questionsFor } from '../../../lib/triage.js';
@@ -12,9 +14,13 @@ import { CEREBRO_190 } from '../../../lib/cerebro.js';
 import { EXTRA_RULES } from '../../../lib/extras.js';
 import { ADMIN_LOGIN, COOKIE_NAME,HOURS,cookieSettings,token,digest,passwordHash,passwordVerify,validLogin,string,sameOrigin,input } from '../../../lib/security.js';
 export const runtime='nodejs';
-export const maxDuration=30;
+export const maxDuration=45;
 export const dynamic='force-dynamic';
 
+const distributedMap=new Map([...CEREBRO_190.regrasBase,...EXTRA_RULES].map(r=>[r.code,r]));
+let dataLoader,lastSnapshot,lastView;
+function loader(){return dataLoader||(dataLoader=createCatalogLoader(db()));}
+async function analysisView(){const snapshot=await loader().load();if(snapshot===lastSnapshot)return lastView;const learned=new Map();for(const q of snapshot.learned){if(!learned.has(q.nature_code))learned.set(q.nature_code,[]);learned.get(q.nature_code).push(q);}const enriched=snapshot.catalog.map(entry=>{const r=distributedMap.get(entry.code);if(!r)return entry;const rule=withLearnedTriage(r,learned);return {...entry,triageQuestions:questionsFor(rule).map(q=>q.text),legalBase:rule.legalBase,legal:rule.legal};});lastSnapshot=snapshot;lastView={snapshot,enriched:Object.freeze(enriched),learned,rules:[...snapshot.custom.map(x=>x.definition),...EXTRA_RULES]};return lastView;}
 const reply=(obj,status=200)=>NextResponse.json(obj,{status,headers:{'Cache-Control':'no-store'}});
 const failure=(msg,status=400)=>reply({error:msg},status);
 async function identity(){
@@ -116,20 +122,26 @@ async function gate(request,method,ctx){
   }
   if(u.must_change_password)return failure('Troca obrigatória da senha provisória antes de utilizar a plataforma.',403);
   if(route==='/entries'&&method==='GET'){
+    if(new URL(request.url).searchParams.get('view')==='summary'){const view=await analysisView();return reply({entries:view.enriched});}
     const rows=await db().query('SELECT id,code,title,category,priority,summary,body,tags,revision,updated_at FROM knowledge ORDER BY title LIMIT 800');
     const learned=await loadLearnedQuestions();
     const distributed=[...CEREBRO_190.regrasBase,...EXTRA_RULES].map(r=>withLearnedTriage(r,learned));
     return reply({entries:rows.rows.map(entry=>{const rule=distributed.find(r=>r.code===entry.code);return rule?{...entry,triageQuestions:questionsFor(rule).map(q=>q.text),legalBase:rule.legalBase,legal:rule.legal}:entry;})});
   }
+  if(route==='/entries/detail'&&method==='GET'){const id=new URL(request.url).searchParams.get('id');if(!/^[0-9a-f-]{36}$/.test(id||''))return failure('Ficha inválida.');const row=(await db().query('SELECT id,code,title,category,priority,summary,body,tags,revision,updated_at FROM knowledge WHERE id=$1',[id])).rows[0];return row?reply({entry:row}):failure('Ficha não encontrada.',404);}
   if(route==='/rules'&&method==='GET'){
-    const custom=await db().query('SELECT id,definition,created_at FROM custom_rules ORDER BY created_at DESC LIMIT 200');
-    const learned=await loadLearnedQuestions();
-    return reply({base:CEREBRO_190.regrasBase.map(r=>withLearnedTriage(r,learned)),extras:EXTRA_RULES.map(r=>withLearnedTriage(r,learned)),custom:custom.rows});
+    const view=await analysisView();return reply({base:CEREBRO_190.regrasBase.map(r=>withLearnedTriage(r,view.learned)),extras:EXTRA_RULES.map(r=>withLearnedTriage(r,view.learned)),custom:view.snapshot.custom});
   }
-  if(route==='/documentation'&&method==='GET'){
+  if(route==='/documentation'&&method==='GET'){    const url=new URL(request.url);
+    if(url.searchParams.get('view')==='summary'){
+      const q=string(url.searchParams.get('q'),200),page=Math.max(0,Math.min(100000,Number(url.searchParams.get('page'))||0));
+      const rows=await db().query("SELECT p.id,p.title,p.space,p.status,p.revision,p.updated_at FROM documentation_pages p WHERE ($1 OR p.status='published') AND ($2='' OR concat_ws(' ',p.title,p.space,regexp_replace(p.content,'<[^>]*>',' ','g')) ILIKE '%'||$2||'%') ORDER BY p.space,p.title,p.id LIMIT 51 OFFSET $3",[u.role==='admin',q,Math.floor(page)*50]);return reply({pages:rows.rows.slice(0,50),hasMore:rows.rows.length>50});
+    }
+
     const rows=await db().query("SELECT p.*,u.display_name AS author FROM documentation_pages p LEFT JOIN users u ON u.id=p.author_id WHERE ($1 OR p.status='published') ORDER BY p.space,p.title",[u.role==='admin']);
     return reply({pages:rows.rows});
   }
+  if(route==='/documentation/detail'&&method==='GET'){const id=new URL(request.url).searchParams.get('id');if(!/^[0-9a-f-]{36}$/.test(id||''))return failure('Página inválida.');const page=(await db().query("SELECT p.*,u.display_name AS author FROM documentation_pages p LEFT JOIN users u ON u.id=p.author_id WHERE p.id=$1 AND ($2 OR p.status='published')",[id,u.role==='admin'])).rows[0];return page?reply({page}):failure('Página indisponível.',404);}
   if(route==='/documentation/history'&&method==='GET'){
     const denied=requireRole(u,true);if(denied)return denied;
     const id=new URL(request.url).searchParams.get('id');
@@ -182,24 +194,22 @@ async function gate(request,method,ctx){
     if(route==='/admin/ai/test'&&!canTestGemini(u))return failure('Teste de conexão restrito ao administrador principal.',403);
     const v=await input(request,32000), relato=route==='/admin/ai/test'?'Responda apenas: conexão Gemini funcionando.':string(v.text,8000);
     if(relato.length<3)return failure('Insira pelo menos 3 caracteres.');
-    const [custom,knowledge,learned]=await Promise.all([
-      db().query('SELECT definition FROM custom_rules ORDER BY created_at DESC LIMIT 200'),
-      db().query('SELECT code,title,category,summary,body,tags FROM knowledge ORDER BY title LIMIT 800'),
-      loadLearnedQuestions()
-    ]);
-    const rules=[...custom.rows.map(x=>x.definition),...EXTRA_RULES];
-    const distributed=[...CEREBRO_190.regrasBase,...EXTRA_RULES].map(r=>withLearnedTriage(r,learned));
-    const enriched=knowledge.rows.map(entry=>{const rule=distributed.find(r=>r.code===entry.code);return rule?{...entry,triageQuestions:questionsFor(rule).map(q=>q.text),legalBase:rule.legalBase,legal:rule.legal}:entry;});
-    const local=route==='/admin/ai/test'?null:answerLocally({text:relato,history:v.history,entries:enriched,
-      classify:text=>CEREBRO_190.analisarEntrada(text,rules,learned)});
-    if(local)return reply({result:local,disclaimer:'Resposta da base local. Confirme fatos e protocolo institucional.'});
+    const metrics=performanceMetrics(),replyAnalysis=(obj,status=200)=>NextResponse.json(obj,{status,headers:{'Cache-Control':'no-store',...metrics.headers()}});
+    const quick=route==='/admin/ai/test'?null:answerLocally({text:relato});
+    if(quick)return replyAnalysis({result:quick,disclaimer:'Resposta da base local. Confirme fatos e protocolo institucional.'});
+    const view=await metrics.measure('db',analysisView);
+    let local=route==='/admin/ai/test'?null:await metrics.measure('classify',()=>answerLocally({text:relato,history:v.history,entries:view.enriched,classify:text=>CEREBRO_190.analisarEntrada(text,view.rules,view.learned)}));
+    if(local)return replyAnalysis({result:local,disclaimer:'Resposta da base local. Confirme fatos e protocolo institucional.'});
+    const enriched=await metrics.measure('retrieve',()=>loader().candidates(relato,v.history,view.enriched));
+    local=route==='/admin/ai/test'?null:answerLocally({text:relato,history:v.history,entries:enriched,classify:()=>null});
+    if(local)return replyAnalysis({result:local,disclaimer:'Resposta da base local. Confirme fatos e protocolo institucional.'});
     {
       if(!aiStatus().configured)return reply({error:'IA ainda não configurada. O administrador deve definir GEMINI_API_KEY na Vercel.',code:'AI_NOT_CONFIGURED'},503);
       if(!await consumeAiBudget(u.id,30))return failure('Limite de 30 consultas à IA em 15 minutos. Aguarde para continuar.',429);
       try{
-        const result=await askGemini({text:relato,history:v.history,entries:enriched});
+        const result=await metrics.measure('gemini',()=>askGemini({text:relato,history:v.history,entries:enriched,onTiming:(name,ms)=>metrics.record(name,ms)}));
         if(route!=='/admin/ai/test')result.feedbackTicket=newFeedbackTicket(u.id,result.feedbackNature?.code,result.analysisQuestions);
-        return reply({result,disclaimer:'Resposta gerada por IA; confira fatos, legislação e protocolo institucional.'});
+        return replyAnalysis({result,disclaimer:'Resposta gerada por IA; confira fatos, legislação e protocolo institucional.'});
       }catch(error){
         const safe=aiFailure(error);
         return reply({error:safe.message,code:safe.code},error?.statusCode===429?429:503);
@@ -209,6 +219,7 @@ async function gate(request,method,ctx){
   }
 
   const denied=requireRole(u,true);if(denied) return denied;
+  if(route==='/admin/performance'&&method==='GET')return reply({...performanceSummary(),catalogCache:loader().stats()});
   if(route==='/admin/requests'&&method==='GET'){
     const v=await db().query('SELECT id,username,display_name,reason,status,created_at,resolved_at FROM access_requests ORDER BY created_at DESC LIMIT 250');
     return reply({requests:v.rows});
@@ -339,3 +350,4 @@ export const GET=(req,ctx)=>run(req,'GET',ctx);
 export const POST=(req,ctx)=>run(req,'POST',ctx);
 export const PATCH=(req,ctx)=>run(req,'PATCH',ctx);
 export const DELETE=(req,ctx)=>run(req,'DELETE',ctx);
+
