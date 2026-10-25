@@ -1,3 +1,6 @@
+import {put,get,del} from '@vercel/blob';
+import {normalizeImage,readLimited,storeAsset,readableAsset,deleteAsset,requireEditor,importExternalImage} from '../../../lib/documentation-assets.js';
+import {saveDocument,saveDraft,uuid} from '../../../lib/documentation-store.js';
 import {cleanDocument} from '../../../lib/documentation.js';
 import { newFeedbackTicket,readFeedbackTicket,learnableQuestions } from '../../../lib/question-feedback.js';
 import { withLearnedTriage,questionsFor } from '../../../lib/triage.js';
@@ -126,6 +129,24 @@ async function gate(request,method,ctx){
     const learned=await loadLearnedQuestions();
     return reply({base:CEREBRO_190.regrasBase.map(r=>withLearnedTriage(r,learned)),extras:EXTRA_RULES.map(r=>withLearnedTriage(r,learned)),custom:custom.rows});
   }
+  if(route.startsWith('/documentation/assets')){
+    const assetId=route.slice('/documentation/assets/'.length);
+    if(method==='GET'&&uuid(assetId)){const asset=await readableAsset(db(),u,assetId);if(!asset)return failure('Anexo indisponível.',404);const file=await get(asset.pathname,{access:'private',abortSignal:AbortSignal.timeout(15000)});if(!file||file.statusCode!==200)return failure('Anexo não encontrado.',404);return new Response(file.stream,{headers:{'Content-Type':asset.mime,'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Content-Disposition':'inline; filename="image.webp"','Content-Security-Policy':"default-src 'none'; sandbox"}});}
+    try{requireEditor(u);}catch(e){return failure(e.message,403);}
+    if(method==='GET'&&route==='/documentation/assets'){const rows=(await db().query("SELECT id,page_id,created_at FROM documentation_assets WHERE creator_id=$1 AND state='ready' ORDER BY created_at DESC LIMIT 100",[u.id])).rows;return reply({assets:rows.map(a=>({...a,src:'/api/documentation/assets/'+a.id})),configured:Boolean(process.env.BLOB_STORE_ID||process.env.BLOB_READ_WRITE_TOKEN)});}
+    if(method==='POST'&&!process.env.BLOB_STORE_ID&&!process.env.BLOB_READ_WRITE_TOKEN)return failure('Armazenamento privado não configurado. Conecte um Vercel Blob PRIVATE no ambiente.',503);
+    if(method==='DELETE'&&uuid(assetId)){try{return reply(await deleteAsset(db(),u,assetId,{del}));}catch(e){return failure(e.message,e.status||400);}}
+    if(method==='POST'&&route==='/documentation/assets'){if(Number(request.headers.get('content-length'))>3145728)return failure('Limite de 3 MB.',413);try{const image=await normalizeImage(await readLimited(request.body),(request.headers.get('content-type')||'').split(';')[0]);return reply(await storeAsset(db(),u,image,{put,del}),201);}catch(e){return failure(e.message,400);}}
+    if(method==='POST'&&route==='/documentation/assets/import'){try{const v=await input(request,3000),image=await importExternalImage(v.url);return reply(await storeAsset(db(),u,image,{put,del}),201);}catch(e){return failure(e.message,400);}}
+    return failure('Operação não encontrada.',404);
+  }
+  if(route==='/documentation/draft'){
+    try{requireEditor(u);}catch(e){return failure(e.message,403);}
+    const key=new URL(request.url).searchParams.get('key');
+    if(method==='GET'){if(key!=='new'&&!uuid(key))return failure('Rascunho inválido.');const draft=(await db().query('SELECT * FROM documentation_drafts WHERE user_id=$1 AND page_key=$2',[u.id,key])).rows[0]||null;return reply({draft});}
+    if(method==='POST'){try{return reply(await saveDraft(db(),u,await input(request,250000)));}catch(e){return failure(e.message,e.status||400);}}
+    if(method==='DELETE'){if(key!=='new'&&!uuid(key))return failure('Rascunho inválido.');await db().query('DELETE FROM documentation_drafts WHERE user_id=$1 AND page_key=$2',[u.id,key]);return reply({ok:true});}
+  }
   if(route==='/documentation'&&method==='GET'){
     const rows=await db().query("SELECT p.*,u.display_name AS author FROM documentation_pages p LEFT JOIN users u ON u.id=p.author_id WHERE ($1 OR p.status='published') ORDER BY p.space,p.title",[u.role==='admin']);
     return reply({pages:rows.rows});
@@ -134,23 +155,12 @@ async function gate(request,method,ctx){
     const denied=requireRole(u,true);if(denied)return denied;
     const id=new URL(request.url).searchParams.get('id');
     if(!/^[0-9a-f-]{36}$/.test(id||''))return failure('Página inválida.');
-    return reply({versions:(await db().query('SELECT revision,title,content,created_at FROM documentation_versions WHERE page_id=$1 ORDER BY revision DESC LIMIT 50',[id])).rows});
+    return reply({versions:(await db().query('SELECT revision,title,content,created_at,metadata,actor_id FROM documentation_versions WHERE page_id=$1 ORDER BY revision DESC LIMIT 50',[id])).rows});
   }
   if(route==='/documentation'&&method==='POST'){
-    const denied=requireRole(u,true);if(denied)return denied;
-    const v=await input(request,250000),title=string(v.title,200),space=string(v.space,80)||'Geral';
-    if(!title||!['draft','published'].includes(v.status))return failure('Informe título e estado válidos.');
-    if(v.id&&!/^[0-9a-f-]{36}$/.test(v.id))return failure('Página inválida.');
-    const content=cleanDocument(v.content),id=v.id||randomUUID(),client=await db().connect();
-    try{
-      await client.query('BEGIN');
-      const saved=v.id?await client.query('UPDATE documentation_pages SET title=$2,space=$3,content=$4,status=$5,revision=revision+1,author_id=$6,updated_at=now() WHERE id=$1 AND revision=$7 RETURNING *',[id,title,space,content,v.status,u.id,v.revision]):await client.query('INSERT INTO documentation_pages(id,title,space,content,status,author_id) VALUES($1,$2,$3,$4,$5,$6) RETURNING *',[id,title,space,content,v.status,u.id]);
-      if(!saved.rowCount){await client.query('ROLLBACK');return failure('Esta página foi alterada por outra pessoa. Copie seu texto e reabra a versão atual.',409);}
-      const page=saved.rows[0];
-      await client.query('INSERT INTO documentation_versions(page_id,revision,title,content,actor_id) VALUES($1,$2,$3,$4,$5)',[id,page.revision,title,content,u.id]);
-      await client.query('COMMIT');return reply({page});
-    }catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}
+    try{return reply(await saveDocument(db(),u,await input(request,250000)));}catch(e){return failure(e.message,e.status||400);}
   }
+
   if(route==='/ai/status'&&method==='GET')return reply(aiStatus());
   if(route==='/analysis-feedback'&&method==='POST'){
     const v=await input(request,5000);
@@ -339,3 +349,4 @@ export const GET=(req,ctx)=>run(req,'GET',ctx);
 export const POST=(req,ctx)=>run(req,'POST',ctx);
 export const PATCH=(req,ctx)=>run(req,'PATCH',ctx);
 export const DELETE=(req,ctx)=>run(req,'DELETE',ctx);
+

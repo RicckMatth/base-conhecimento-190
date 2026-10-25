@@ -28,6 +28,7 @@ export default function Home(){
   const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
   const [user,setUser]=useState(null),[dark,setDark]=useState(false);
   const [notice,setNotice]=useState(''),[success,setSuccess]=useState('');
+  const [docsOpened,setDocsOpened]=useState(false);
   const [screen,setScreen]=useState('home'),[requestMode,setRequestMode]=useState(false);
   const [login,setLogin]=useState({username:'',password:''});
   const [passwordForm,setPasswordForm]=useState({current:'',next:'',confirm:''});
@@ -166,12 +167,14 @@ export default function Home(){
     }catch(e){err(e);}finally{setBusy(false);}
   }
   async function logout(){
+    const waits=[];window.dispatchEvent(new CustomEvent('base190:flush-editors',{detail:{waits}}));const drafts=await Promise.all(waits);if(drafts.some(result=>result!==true)&&!confirm('Não foi possível salvar a recuperação. Sair mesmo assim pode perder alterações. Continuar?'))return;
     setBusy(true);try{await call('/auth/logout',{method:'POST',body:'{}'});}catch(e){err(e);}
-    setUser(null);setScreen('home');setEntries([]);setBrainRules({base:[],extras:[],custom:[]});setBusy(false);setCredential(null);
+    setDocsOpened(false);setUser(null);setScreen('home');setEntries([]);setBrainRules({base:[],extras:[],custom:[]});setBusy(false);setCredential(null);
     setExtensionOnline(false);setExtensionAnalysis(null);setExtensionReceivedAt(null);setChatMessages([]);setChatInput('');
   }
   async function go(next){
     if(!window.dispatchEvent(new Event('base190:before-navigation',{cancelable:true})))return;
+    if(next==='docs')setDocsOpened(true);
     clear();setScreen(next);setCredential(null);
     if(next==='access'){try{await refreshAdmin();}catch(e){err(e);}}
     if(next==='audit'){try{const x=await call('/admin/audit');setEvents(x.events);}catch(e){err(e);}}
@@ -372,7 +375,7 @@ export default function Home(){
           <div className="helpnote">Os exemplos da base não constituem códigos ou protocolos oficiais homologados. É proibido utilizar a ferramenta para inserir dados sigilosos sem autorização institucional.</div>
         </>}
 
-        {screen==='docs'&&<Documentation isAdmin={isAdmin}/>}
+        {docsOpened&&<div hidden={screen!=='docs'}><Documentation isAdmin={isAdmin}/></div>}
         {screen==='catalog'&&<>
           <div className="panel-head"><div><span className="eyebrow">BIBLIOTECA OPERACIONAL</span><h1>Catálogo de naturezas</h1><p className="muted">Busque por título, código, resumo, conteúdo ou palavra-chave.</p></div>{isAdmin&&<Btn onClick={()=>editEntry(null)}><Icon name="plus" size={18}/> Nova ficha</Btn>}</div>
           <div className="card catalog-filters"><div><label htmlFor="search">Pesquisa</label><input id="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Código, natureza, palavra-chave…"/></div><div><label htmlFor="category">Categoria</label><select id="category" value={cat} onChange={e=>setCat(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</select></div><div><label htmlFor="priority-filter">Prioridade sugerida</label><select id="priority-filter" value={priorityFilter} onChange={e=>setPriorityFilter(e.target.value)}>{['Todas','Crítica','Alta','Média'].map(v=><option key={v}>{v}</option>)}</select></div></div>
@@ -521,3 +524,4 @@ export default function Home(){
     </div>
   </div>;
 }
+
