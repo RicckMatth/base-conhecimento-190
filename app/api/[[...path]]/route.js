@@ -1,3 +1,4 @@
+import {protocol} from '../../../lib/analysis-protocol.js';
 import {cleanDocument} from '../../../lib/documentation.js';
 import { newFeedbackTicket,readFeedbackTicket,learnableQuestions } from '../../../lib/question-feedback.js';
 import { withLearnedTriage,questionsFor } from '../../../lib/triage.js';
@@ -12,7 +13,7 @@ import { CEREBRO_190 } from '../../../lib/cerebro.js';
 import { EXTRA_RULES } from '../../../lib/extras.js';
 import { ADMIN_LOGIN, COOKIE_NAME,HOURS,cookieSettings,token,digest,passwordHash,passwordVerify,validLogin,string,sameOrigin,input } from '../../../lib/security.js';
 export const runtime='nodejs';
-export const maxDuration=30;
+export const maxDuration=45;
 export const dynamic='force-dynamic';
 
 const reply=(obj,status=200)=>NextResponse.json(obj,{status,headers:{'Cache-Control':'no-store'}});
@@ -45,6 +46,7 @@ async function createLoginSession(u) {
   return response;
 }
 async function gate(request,method,ctx){
+  const startedAt=Date.now();
   const params=await ctx.params;const seg=params.path||[];
   const route='/'+seg.join('/');
   if(method!=='GET'&&!sameOrigin(request)) return failure('Requisição de origem não autorizada.',403);
@@ -182,30 +184,40 @@ async function gate(request,method,ctx){
     if(route==='/admin/ai/test'&&!canTestGemini(u))return failure('Teste de conexão restrito ao administrador principal.',403);
     const v=await input(request,32000), relato=route==='/admin/ai/test'?'Responda apenas: conexão Gemini funcionando.':string(v.text,8000);
     if(relato.length<3)return failure('Insira pelo menos 3 caracteres.');
-    const [custom,knowledge,learned]=await Promise.all([
-      db().query('SELECT definition FROM custom_rules ORDER BY created_at DESC LIMIT 200'),
-      db().query('SELECT code,title,category,summary,body,tags FROM knowledge ORDER BY title LIMIT 800'),
-      loadLearnedQuestions()
-    ]);
-    const rules=[...custom.rows.map(x=>x.definition),...EXTRA_RULES];
-    const distributed=[...CEREBRO_190.regrasBase,...EXTRA_RULES].map(r=>withLearnedTriage(r,learned));
-    const enriched=knowledge.rows.map(entry=>{const rule=distributed.find(r=>r.code===entry.code);return rule?{...entry,triageQuestions:questionsFor(rule).map(q=>q.text),legalBase:rule.legalBase,legal:rule.legal}:entry;});
-    const local=route==='/admin/ai/test'?null:answerLocally({text:relato,history:v.history,entries:enriched,
-      classify:text=>CEREBRO_190.analisarEntrada(text,rules,learned)});
-    if(local)return reply({result:local,disclaimer:'Resposta da base local. Confirme fatos e protocolo institucional.'});
-    {
-      if(!aiStatus().configured)return reply({error:'IA ainda não configurada. O administrador deve definir GEMINI_API_KEY na Vercel.',code:'AI_NOT_CONFIGURED'},503);
-      if(!await consumeAiBudget(u.id,30))return failure('Limite de 30 consultas à IA em 15 minutos. Aguarde para continuar.',429);
-      try{
-        const result=await askGemini({text:relato,history:v.history,entries:enriched});
-        if(route!=='/admin/ai/test')result.feedbackTicket=newFeedbackTicket(u.id,result.feedbackNature?.code,result.analysisQuestions);
-        return reply({result,disclaimer:'Resposta gerada por IA; confira fatos, legislação e protocolo institucional.'});
-      }catch(error){
-        const safe=aiFailure(error);
-        return reply({error:safe.message,code:safe.code},error?.statusCode===429?429:503);
-      }
+    if(v.requestId!==undefined&&!protocol.id(v.requestId))return failure('Identificador inválido.');
+    const streamAbort=new AbortController();
+    const requestId=v.requestId||randomUUID(),signal=AbortSignal.any([request.signal,streamAbort.signal,AbortSignal.timeout(Math.max(1,40000-(Date.now()-startedAt)))]);
+    async function perform(emit=()=>{}){
+      signal.throwIfAborted();emit('received');emit('local');
+      const [custom,knowledge,learned]=await Promise.all([
+        db().query('SELECT definition FROM custom_rules ORDER BY created_at DESC LIMIT 200'),
+        db().query('SELECT code,title,category,summary,body,tags FROM knowledge ORDER BY title LIMIT 800'),loadLearnedQuestions()]);
+      signal.throwIfAborted();
+      const rules=[...custom.rows.map(x=>x.definition),...EXTRA_RULES];
+      const distributed=[...CEREBRO_190.regrasBase,...EXTRA_RULES].map(r=>withLearnedTriage(r,learned));
+      const enriched=knowledge.rows.map(entry=>{const rule=distributed.find(r=>r.code===entry.code);return rule?{...entry,triageQuestions:questionsFor(rule).map(q=>q.text),legalBase:rule.legalBase,legal:rule.legal}:entry;});
+      const local=route==='/admin/ai/test'?null:answerLocally({text:relato,history:v.history,entries:enriched,classify:text=>CEREBRO_190.analisarEntrada(text,rules,learned)});
+      if(local)return {requestId,result:protocol.validateResult(local),disclaimer:'Resposta da base local. Confirme fatos e protocolo institucional.'};
+      if(!aiStatus().configured)throw Object.assign(Error('IA ainda não configurada.'),{publicMessage:'IA ainda não configurada.',status:503});
+      if(!await consumeAiBudget(u.id,30))throw Object.assign(Error('Limite de consultas atingido.'),{publicMessage:'Limite de consultas à IA atingido. Aguarde para continuar.',status:429});
+      signal.throwIfAborted();emit('gemini');
+      const result=await askGemini({text:relato,history:v.history,entries:enriched,signal});
+      signal.throwIfAborted();
+      if(route!=='/admin/ai/test')result.feedbackTicket=newFeedbackTicket(u.id,result.feedbackNature?.code,result.analysisQuestions);
+      return {requestId,result:protocol.validateResult(result),disclaimer:'Resposta gerada por IA; confira fatos, legislação e protocolo institucional.'};
     }
-
+    const safeError=e=>({requestId,error:e.publicMessage||aiFailure(e).message,status:e.status|| (e?.statusCode===429?429:503)});
+    if(v.progress===true){
+      const encoder=new TextEncoder();let closed=false;
+      const stream=new ReadableStream({async start(controller){
+        const send=value=>{if(!closed&&!request.signal.aborted)controller.enqueue(encoder.encode(JSON.stringify(value)+'\n'));};
+        try{const data=await perform(phase=>send({type:'status',requestId,phase}));send({type:'result',...data});}
+        catch(e){send({type:'error',...safeError(e)});}
+        finally{if(!closed){closed=true;controller.close();}}
+      },cancel(){closed=true;streamAbort.abort();}});
+      return new Response(stream,{headers:{'Content-Type':'application/x-ndjson; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
+    }
+    try{return reply(await perform());}catch(e){const safe=safeError(e);return reply(safe,safe.status);}
   }
 
   const denied=requireRole(u,true);if(denied) return denied;
@@ -339,3 +351,4 @@ export const GET=(req,ctx)=>run(req,'GET',ctx);
 export const POST=(req,ctx)=>run(req,'POST',ctx);
 export const PATCH=(req,ctx)=>run(req,'PATCH',ctx);
 export const DELETE=(req,ctx)=>run(req,'DELETE',ctx);
+

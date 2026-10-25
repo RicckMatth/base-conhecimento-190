@@ -1,4 +1,5 @@
 'use client';
+import {protocol} from '../lib/analysis-protocol.js';
 import dynamic from 'next/dynamic';
 const Documentation=dynamic(()=>import('./documentation.jsx'),{loading:()=> <p role="status">Carregando documentação…</p>,ssr:false});
 import AnalysisFeedback from './analysis-feedback.jsx';
@@ -41,7 +42,12 @@ export default function Home(){
   const [extensionReceivedAt,setExtensionReceivedAt]=useState(null);
   const [chatMessages,setChatMessages]=useState([]);
   const [chatInput,setChatInput]=useState('');
-  const [chatSending,setChatSending]=useState(false);
+  const [analysisPhase,setAnalysisPhase]=useState(''),[chatPhase,setChatPhase]=useState(''),[livePhase,setLivePhase]=useState('');
+  const chatSending=['received','local','gemini'].includes(chatPhase);
+  const manualRunner=useRef(null),chatRunner=useRef(null),liveRequests=useRef(new Map());
+  if(!manualRunner.current)manualRunner.current=protocol.createLatestRunner();
+  if(!chatRunner.current)chatRunner.current=protocol.createLatestRunner();
+  useEffect(()=>{setChatPhase('');setAnalysisPhase('');return()=>{manualRunner.current.cancel('cancelled',false);chatRunner.current.cancel('cancelled',false);liveRequests.current.clear();};},[user?.id]);
   const [ai,setAI]=useState(null),[aiTesting,setAITesting]=useState(false),[aiTestResult,setAITestResult]=useState('');
   const chatBottomRef=useRef(null);
   const [adminRequests,setAdminRequests]=useState([]),[adminUsers,setAdminUsers]=useState([]),[events,setEvents]=useState([]);
@@ -87,8 +93,10 @@ export default function Home(){
     const ready=()=>setExtensionOnline(true);
     const receive=e=>{
       const payload=e?.detail;
-      if(!payload||typeof payload!=='object'||!payload.result||typeof payload.result!=='object')return;
-      if(!['classificacao','faq','indefinido','ia'].includes(payload.result.tipo))return;
+      if(!payload||typeof payload!=='object')return;
+      try{protocol.validateResult(payload.result);}catch{return;}
+      if(payload.requestId){const active=liveRequests.current.get(payload.sourceKey);if(!active||active!==payload.requestId)return;}
+      setLivePhase('completed');
       setExtensionOnline(true);
       setExtensionAnalysis(payload.result);
       const now=Date.now();
@@ -99,10 +107,15 @@ export default function Home(){
       setChatMessages(prev=>[...prev.filter(m=>m.id!=='live-sade-relato').slice(-23),incoming]);
       setScreen('extension');
     };
+    const status=e=>{const p=e?.detail;if(!p||!protocol.id(p.requestId)||typeof p.sourceKey!=='string'||p.sourceKey.length>100||!protocol.PHASES.includes(p.phase))return;
+      if(p.phase==='received')liveRequests.current.set(p.sourceKey,p.requestId);
+      if(liveRequests.current.get(p.sourceKey)!==p.requestId)return;setLivePhase(p.phase);};
+    window.addEventListener('base190:extension-status',status);
     window.addEventListener('base190:extension-ready',ready);
     window.addEventListener('base190:extension-result',receive);
     window.dispatchEvent(new CustomEvent('base190:extension-discover'));
     return()=>{
+      window.removeEventListener('base190:extension-status',status);
       window.removeEventListener('base190:extension-ready',ready);
       window.removeEventListener('base190:extension-result',receive);
     };
@@ -135,16 +148,16 @@ export default function Home(){
     if(chatSending||text.length<3||text.length>8000)return;
     const stamp=Date.now();setChatInput('');
     setChatMessages(prev=>[...prev.slice(-23),{id:'user-'+stamp,kind:'user',text,at:stamp}]);
-    setChatSending(true);
     try{
       const history=chatMessages.filter(m=>!m.sourceText&&m.id!=='live-sade-relato').flatMap(m=>m.kind==='user'?[{role:'user',content:m.text}]:m.kind==='answer'&&m.result?.resposta?[{role:'assistant',content:m.result.resposta}]:[]).slice(-8);
-      const reply=await call('/chat',{method:'POST',body:body({text,history})});
+      const reply=await chatRunner.current.run('/api/chat',{text,history},setChatPhase);
       const now=Date.now();
       setChatMessages(prev=>[...prev.slice(-23),{id:'answer-'+now,kind:'answer',origin:reply.result?.source==='gemini'?'Gemini · resposta complementar':'Base 190 · resposta local',result:reply.result,at:now}]);
       window.dispatchEvent(new CustomEvent('base190:site-analysis',{detail:{result:reply.result,disclaimer:reply.disclaimer}}));
     }catch(error){
+      if(error.cancelled)return;
       setChatMessages(prev=>[...prev.slice(-23),{id:'error-'+Date.now(),kind:'error',text:error.message||'Falha na análise.',at:Date.now()}]);
-    }finally{setChatSending(false);}
+    }
   }
   async function submitLogin(event){
     event.preventDefault();clear();setBusy(true);
@@ -179,13 +192,13 @@ export default function Home(){
   }
   async function analyze(e){
     e?.preventDefault?.();clear();if(relato.trim().length<3)return err(new Error('Informe o relato para análise.'));
-    setBusy(true);setAnalysis(null);setScreen('brain');try{const x=await call('/analyze',{method:'POST',body:body({text:relato})});
-      setAnalysis(x.result);setScreen('brain');
-      // Resultado somente para visualização na extensão instalada (sem preenchimento ou envio automático).
-      window.dispatchEvent(new CustomEvent('base190:site-analysis',{detail:{result:x.result,disclaimer:x.disclaimer}}));
-    }
-    catch(e){err(e);}finally{setBusy(false);}
+    setAnalysis(null);setScreen('brain');
+    try{const x=await manualRunner.current.run('/api/analyze',{text:relato},setAnalysisPhase);
+      setAnalysis(x.result);
+      window.dispatchEvent(new CustomEvent('base190:site-analysis',{detail:{result:x.result,requestId:x.requestId,disclaimer:x.disclaimer}}));
+    }catch(e){if(!e.cancelled)err(e);}
   }
+  function changeRelato(text){manualRunner.current.cancel('superseded');setRelato(text);setAnalysis(null);}
   function openEntry(id){setSelectedId(id);go('detail');}
   const selected=entries.find(e=>e.id===selectedId);
   const categories=useMemo(()=>['Todas',...new Set(entries.map(e=>e.category))], [entries]);
@@ -348,12 +361,13 @@ export default function Home(){
         <div className="btn-row"><button className="btn ghost tiny" onClick={activateExtension} type="button">{extensionOnline?'● Extensão conectada':'Abrir chat integrado'}</button><span className="badge">{isAdmin?'Administrador':'Usuário de consulta'}</span><Btn className="ghost tiny" onClick={theme}><Icon name={dark?'sun':'moon'} size={17}/>{dark?'Claro':'Escuro'}</Btn></div>
       </header>
       <main className="content spaced">
+        {livePhase&&screen!=='extension'&&<p role="status" aria-live="polite" className="integration-phase">Extensão · {protocol.labels[livePhase]}</p>}
         {notice&&<div className="notice" role="alert">{notice}</div>}{success&&<div className="notice success" role="status">{success}</div>}
 
         {screen==='home'&&<>
           <section className="hero"><div className="hero-orbit" aria-hidden="true"><Icon name="shield" size={114}/></div><span className="eyebrow">CÉREBRO 190 • TRIAGEM ORIENTATIVA</span><h1>Clareza para cada atendimento.</h1>
             <p>Pesquise uma natureza ou descreva um cenário fictício para obter sugestões de triagem, máscaras e classificações que exigem validação humana.</p>
-            <form className="search-row" onSubmit={analyze}><input value={relato} onChange={e=>setRelato(e.target.value)} aria-label="Relato para análise" placeholder="Ex.: dois indivíduos roubaram o celular mediante ameaça"/><Btn type="submit" disabled={busy}>Analisar relato →</Btn></form>
+            <form className="search-row" onSubmit={analyze}><input value={relato} onChange={e=>changeRelato(e.target.value)} aria-label="Relato para análise" placeholder="Ex.: dois indivíduos roubaram o celular mediante ameaça"/><Btn type="submit" disabled={busy}>Analisar relato →</Btn></form>
           </section>
           <div className="card extension-status">
             <div className="toolbar">
@@ -388,7 +402,7 @@ export default function Home(){
           <small>Revisão {selected.revision} • Atualizado em {formatDate(selected.updated_at)} • Validar legislação, código e procedimento antes do uso.</small>
         </section>}
 
-        {screen==='extension'&&<section className="integrated-chat">
+        {screen==='extension'&&<section className="integrated-chat">{livePhase&&<p role="status" aria-live="polite" className="integration-phase">{protocol.labels[livePhase]}</p>}
           <div className="chat-main">
             <header className="chat-head">
               <div className="chat-ident"><span className="chat-avatar"><Icon name="brain"/></span><div><b>Assistente da Base 190</b><small>Base local primeiro · Gemini como complemento</small></div></div>
@@ -407,7 +421,7 @@ export default function Home(){
                   </>:<p>{m.text}</p>}
                 </div>
               </div>)}
-              {chatSending&&<div className="chat-typing"><Icon name="brain"/> Cérebro 190 analisando…</div>}
+              {chatSending&&<div className="chat-typing"><Icon name="brain"/> {protocol.labels[chatPhase]||'Relato recebido'}</div>}
               <div ref={chatBottomRef} aria-hidden="true"/>
             </div>
             <div className="chat-compose">
@@ -446,12 +460,12 @@ export default function Home(){
             <a className="chat-download" href="https://github.com/RicckMatth/190-extensao_integrada/archive/refs/heads/main.zip" target="_blank" rel="noopener noreferrer">Baixar extensão atualizada ↗</a>
           </aside>
         </section>}
-        {screen==='brain'&&<>{busy&&<div className="analysis-loading" role="status" aria-live="polite"><span className="analysis-spinner"/><div><strong>Analisando o relato…</strong><p>Consultando a base local. Se necessário, o Gemini complementará a análise. Aguarde o resultado.</p></div></div>}<div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Consulta à base local com reconhecimento de frases. O Gemini complementa somente quando a base não encontra resposta adequada.</p></div><span className="badge">{totalRules} regras</span></div>
-          <form className="card spaced" onSubmit={analyze}><div><label htmlFor="brain-input">Relato de teste (sem dados pessoais)</label><textarea id="brain-input" rows={5} value={relato} onChange={e=>setRelato(e.target.value)} placeholder="Descreva o fato observado ou relatado, sem nomes e endereços…"/></div>
-            <div className="btn-row"><Btn type="submit" disabled={busy}><Icon name="brain" size={18}/>{busy?'Analisando…':'Analisar relato'}</Btn><Btn className="secondary" onClick={()=>{setRelato('');setAnalysis(null);}}>Limpar</Btn></div></form>
+        {screen==='brain'&&<>{analysisPhase&&<div className="analysis-loading" role="status" aria-live="polite">{['received','local','gemini'].includes(analysisPhase)&&<span className="analysis-spinner"/>}<div><strong>{protocol.labels[analysisPhase]}</strong><p>A análise usa a base local primeiro e consulta o Gemini quando necessário.</p>{['received','local','gemini'].includes(analysisPhase)&&<Btn className="secondary" onClick={()=>manualRunner.current.cancel()}>Cancelar</Btn>}</div></div>}<div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Consulta à base local com reconhecimento de frases. O Gemini complementa somente quando a base não encontra resposta adequada.</p></div><span className="badge">{totalRules} regras</span></div>
+          <form className="card spaced" onSubmit={analyze}><div><label htmlFor="brain-input">Relato de teste (sem dados pessoais)</label><textarea id="brain-input" rows={5} value={relato} onChange={e=>changeRelato(e.target.value)} placeholder="Descreva o fato observado ou relatado, sem nomes e endereços…"/></div>
+            <div className="btn-row"><Btn type="submit"><Icon name="brain" size={18}/>{['received','local','gemini'].includes(analysisPhase)?'Substituir análise':'Analisar relato'}</Btn><Btn className="secondary" onClick={()=>{changeRelato('');}}>Limpar</Btn></div></form>
           {resultView()}
           <div className="card"><h3>Exemplos fictícios para teste</h3><div className="btn-row" style={{marginTop:12}}>
-            {['Uma mulher está sendo agredida pelo ex-companheiro.','Duas pessoas anunciaram assalto com uma pistola e levaram o celular.','Um indivíduo enviou um falso comprovante de PIX para aplicar um golpe.','Há fumaça e chamas saindo de um apartamento.'].map((t,i)=><Btn className="secondary tiny" key={i} onClick={()=>{setRelato(t);setAnalysis(null);}}>{'Cenário '+(i+1)}</Btn>)}
+            {['Uma mulher está sendo agredida pelo ex-companheiro.','Duas pessoas anunciaram assalto com uma pistola e levaram o celular.','Um indivíduo enviou um falso comprovante de PIX para aplicar um golpe.','Há fumaça e chamas saindo de um apartamento.'].map((t,i)=><Btn className="secondary tiny" key={i} onClick={()=>{changeRelato(t);}}>{'Cenário '+(i+1)}</Btn>)}
           </div></div>
         </>}
 
@@ -521,3 +535,4 @@ export default function Home(){
     </div>
   </div>;
 }
+
