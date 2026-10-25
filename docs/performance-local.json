@@ -1,0 +1,12 @@
+{
+  "scope": "Motor local, 120 relatos fictícios; não é latência HTTP",
+  "rows": 6000,
+  "before": {
+    "medianMs": 0.6198640000000069,
+    "p95Ms": 2.2830450000000013
+  },
+  "after": {
+    "medianMs": 0.5673659999999927,
+    "p95Ms": 1.9578279999999921
+  }
+}

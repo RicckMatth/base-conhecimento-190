@@ -1,0 +1,17 @@
+{
+  "scope": "Consulta em PostgreSQL isolado; 10000 documentos sintéticos; não é HTTP",
+  "stats": [
+    {
+      "name": "before",
+      "medianMs": 258.47661100000005,
+      "p95Ms": 351.3087450000003,
+      "bytes": 35397789
+    },
+    {
+      "name": "after",
+      "medianMs": 6.458713999999418,
+      "p95Ms": 26.0909359999996,
+      "bytes": 6460
+    }
+  ]
+}
