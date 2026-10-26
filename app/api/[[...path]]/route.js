@@ -1,3 +1,4 @@
+import {isNarrativeRequest,reviewNarrative} from '../../../lib/narrative-review.js';
 import {put,get,del} from '@vercel/blob';
 import {normalizeImage,readLimited,storeAsset,readableAsset,deleteAsset,requireEditor,importExternalImage} from '../../../lib/documentation-assets.js';
 import {saveDocument,saveDraft,uuid} from '../../../lib/documentation-store.js';
@@ -202,18 +203,21 @@ async function gate(request,method,ctx){
     const enriched=knowledge.rows.map(entry=>{const rule=distributed.find(r=>r.code===entry.code);return rule?{...entry,triageQuestions:questionsFor(rule).map(q=>q.text),legalBase:rule.legalBase,legal:rule.legal}:entry;});
     const local=route==='/admin/ai/test'?null:answerLocally({text:relato,history:v.history,entries:enriched,
       classify:text=>CEREBRO_190.analisarEntrada(text,rules,learned)});
-    if(local)return reply({result:local,disclaimer:'Resposta da base local. Confirme fatos e protocolo institucional.'});
-    {
-      if(!aiStatus().configured)return reply({error:'IA ainda não configurada. O administrador deve definir GEMINI_API_KEY na Vercel.',code:'AI_NOT_CONFIGURED'},503);
-      if(!await consumeAiBudget(u.id,30))return failure('Limite de 30 consultas à IA em 15 minutos. Aguarde para continuar.',429);
-      try{
-        const result=await askGemini({text:relato,history:v.history,entries:enriched});
-        if(route!=='/admin/ai/test')result.feedbackTicket=newFeedbackTicket(u.id,result.feedbackNature?.code,result.analysisQuestions);
-        return reply({result,disclaimer:'Resposta gerada por IA; confira fatos, legislação e protocolo institucional.'});
-      }catch(error){
-        const safe=aiFailure(error);
-        return reply({error:safe.message,code:safe.code},error?.statusCode===429?429:503);
-      }
+    const narrative=isNarrativeRequest(relato,local,route);
+    const runAI=async()=>{
+      if(!aiStatus().configured)throw Object.assign(new Error('AI_NOT_CONFIGURED'),{code:'AI_NOT_CONFIGURED'});
+      if(!await consumeAiBudget(u.id,30))throw Object.assign(new Error('AI_QUOTA'),{status:429});
+      const result=await askGemini({text:relato,history:v.history,entries:enriched,narrative});
+      if(route!=='/admin/ai/test')result.feedbackTicket=newFeedbackTicket(u.id,result.feedbackNature?.code,result.analysisQuestions);
+      return result;
+    };
+    try{
+      const result=narrative?await reviewNarrative({text:relato,local,runAI}):local||await runAI();
+      return reply({result,disclaimer:'Análise assistiva. Ausência de elementos não comprova ausência de crime; confirme fatos e protocolo institucional.'});
+    }catch(error){
+      if(error?.code==='AI_NOT_CONFIGURED')return reply({error:'IA ainda não configurada. O administrador deve definir GEMINI_API_KEY na Vercel.',code:'AI_NOT_CONFIGURED'},503);
+      const safe=aiFailure(error);
+      return reply({error:safe.message,code:safe.code},error?.status===429||error?.statusCode===429?429:503);
     }
 
   }

@@ -1,6 +1,7 @@
 'use client';
 import dynamic from 'next/dynamic';
 const Documentation=dynamic(()=>import('./documentation.jsx'),{loading:()=> <p role="status">Carregando documentação…</p>,ssr:false});
+import NarrativeAssessment from './narrative-assessment.jsx';
 import AnalysisFeedback from './analysis-feedback.jsx';
 import LegalReference from './legal-reference.jsx';
 import WritingReview from './writing-review.jsx';
@@ -37,6 +38,10 @@ export default function Home(){
   const [search,setSearch]=useState(''),[cat,setCat]=useState('Todas'),[selectedId,setSelectedId]=useState(null);
   const [priorityFilter,setPriorityFilter]=useState('Todas');
   const [relato,setRelato]=useState(''),[analysis,setAnalysis]=useState(null);
+  const analysisRequestRef=useRef(null);
+  const [analysisBusy,setAnalysisBusy]=useState(false);
+  useEffect(()=>()=>{analysisRequestRef.current?.abort();analysisRequestRef.current=null;},[user?.id]);
+  function updateRelato(value){analysisRequestRef.current?.abort();analysisRequestRef.current=null;setAnalysisBusy(false);setAnalysis(null);setRelato(value);}
   const [extensionOnline,setExtensionOnline]=useState(false);
   const [extensionAnalysis,setExtensionAnalysis]=useState(null);
   const [extensionReceivedAt,setExtensionReceivedAt]=useState(null);
@@ -182,13 +187,19 @@ export default function Home(){
   }
   async function analyze(e){
     e?.preventDefault?.();clear();if(relato.trim().length<3)return err(new Error('Informe o relato para análise.'));
-    setBusy(true);setAnalysis(null);setScreen('brain');try{const x=await call('/analyze',{method:'POST',body:body({text:relato})});
-      setAnalysis(x.result);setScreen('brain');
-      // Resultado somente para visualização na extensão instalada (sem preenchimento ou envio automático).
+    analysisRequestRef.current?.abort();
+    const controller=new AbortController();analysisRequestRef.current=controller;
+    const deadline=setTimeout(()=>controller.abort(),40000);
+    setAnalysisBusy(true);setAnalysis(null);setScreen('brain');
+    try{
+      const x=await call('/analyze',{method:'POST',body:body({text:relato}),signal:controller.signal});
+      if(analysisRequestRef.current!==controller||controller.signal.aborted)return;
+      setAnalysis(x.result);
       window.dispatchEvent(new CustomEvent('base190:site-analysis',{detail:{result:x.result,disclaimer:x.disclaimer}}));
-    }
-    catch(e){err(e);}finally{setBusy(false);}
+    }catch(e){if(analysisRequestRef.current===controller)err(new Error(e.name==='AbortError'?'A análise excedeu o prazo. Tente novamente.':e.message));}
+    finally{clearTimeout(deadline);if(analysisRequestRef.current===controller){analysisRequestRef.current=null;setAnalysisBusy(false);}}
   }
+
   function openEntry(id){setSelectedId(id);go('detail');}
   const selected=entries.find(e=>e.id===selectedId);
   const categories=useMemo(()=>['Todas',...new Set(entries.map(e=>e.category))], [entries]);
@@ -258,10 +269,10 @@ export default function Home(){
   }
   function chatAnswer(result){
     if(!result)return <p>Sem resposta da Base 190.</p>;
-    if(result.tipo==='faq'||result.tipo==='ia')return <div className="chat-answer"><span className="badge">{result.source==='gemini'?'Gemini · resposta complementar':'Base local · sem consulta à IA'}</span><h3>{result.titulo||'Orientação'}</h3><p className="assistant-text">{result.resposta}</p>{!!result.references?.length&&<details><summary>Fichas consultadas</summary><ul>{result.references.map(r=><li key={r.code}>{r.code} · {r.title}</li>)}</ul></details>}{result.tipo==='ia'&&<><small>Conteúdo gerado por IA. Confira as informações antes de utilizar.</small><AnalysisFeedback key={result.feedbackTicket||'legacy'} result={result}/></>}</div>;
-    if(result.tipo!=='classificacao')return <div className="chat-answer"><b>Análise não conclusiva</b><p>{result.mensagem||'Verifique o relato e consulte os procedimentos oficiais.'}</p></div>;
+    if(result.tipo==='faq'||result.tipo==='ia')return <div className="chat-answer"><NarrativeAssessment result={result}/><span className="badge">{result.source==='gemini'?'Gemini · resposta complementar':'Base local · sem consulta à IA'}</span><h3>{result.titulo||'Orientação'}</h3><p className="assistant-text">{result.resposta}</p>{!!result.references?.length&&<details><summary>Fichas consultadas</summary><ul>{result.references.map(r=><li key={r.code}>{r.code} · {r.title}</li>)}</ul></details>}{result.tipo==='ia'&&<><small>Conteúdo gerado por IA. Confira as informações antes de utilizar.</small><AnalysisFeedback key={result.feedbackTicket||'legacy'} result={result}/></>}</div>;
+    if(result.tipo!=='classificacao')return <div className="chat-answer"><NarrativeAssessment result={result}/><b>Análise não conclusiva</b><p>{result.mensagem||'Verifique o relato e consulte os procedimentos oficiais.'}</p></div>;
     const main=result.principal||{};
-    return <div className="chat-answer">
+    return <div className="chat-answer"><NarrativeAssessment result={result}/>
       <div className="chat-answer-title"><span>Natureza sugerida</span><Tag priority={main.priority}/></div>
       <h3>{main.officialNature||'Não identificada'}</h3>
       <div className="chat-tags"><span>{main.code||'Código a confirmar'}</span><span>Índice heurístico {result.indiceHeuristico??'—'}/99</span></div>
@@ -277,9 +288,9 @@ export default function Home(){
     if(!result)return <div className="helpnote">O Cérebro utiliza regras de linguagem e palavras-chave. O operador deve confirmar as informações e a natureza conforme o protocolo em vigor.</div>;
     if(result.tipo==='ia')return <div className="card result-result">{chatAnswer(result)}</div>;
     if(result.tipo==='faq')return <div className="card result-result"><span className="eyebrow">Dúvida operacional</span><h2>{result.titulo}</h2><p style={{whiteSpace:'pre-wrap'}}>{result.resposta}</p></div>;
-    if(result.tipo==='indefinido')return <div className="card result-result"><span className="badge">Não conclusivo</span><h2>Natureza não identificada com segurança</h2><p>{result.mensagem}</p></div>;
+    if(result.tipo==='indefinido')return <div className="card result-result"><NarrativeAssessment result={result}/><span className="badge">Não conclusivo</span><h2>Natureza não identificada com segurança</h2><p>{result.mensagem}</p></div>;
     const a=result.principal;
-    return <div className="card result-result">
+    return <div className="card result-result"><NarrativeAssessment result={result}/>
       <div className="toolbar"><span className="eyebrow">Sugestão de natureza</span><Tag priority={a.priority}/></div>
       <h2>{a.officialNature}</h2>
       <div className="btn-row"><span className="badge">{a.code}</span><span className="score">Índice heurístico: {result.indiceHeuristico}/99 — não é probabilidade de acerto</span></div>
@@ -356,7 +367,7 @@ export default function Home(){
         {screen==='home'&&<>
           <section className="hero"><div className="hero-orbit" aria-hidden="true"><Icon name="shield" size={114}/></div><span className="eyebrow">CÉREBRO 190 • TRIAGEM ORIENTATIVA</span><h1>Clareza para cada atendimento.</h1>
             <p>Pesquise uma natureza ou descreva um cenário fictício para obter sugestões de triagem, máscaras e classificações que exigem validação humana.</p>
-            <form className="search-row" onSubmit={analyze}><input value={relato} onChange={e=>setRelato(e.target.value)} aria-label="Relato para análise" placeholder="Ex.: dois indivíduos roubaram o celular mediante ameaça"/><Btn type="submit" disabled={busy}>Analisar relato →</Btn></form>
+            <form className="search-row" onSubmit={analyze}><input value={relato} onChange={e=>updateRelato(e.target.value)} aria-label="Relato para análise" placeholder="Ex.: dois indivíduos roubaram o celular mediante ameaça"/><Btn type="submit" disabled={analysisBusy}>Analisar relato →</Btn></form>
           </section>
           <div className="card extension-status">
             <div className="toolbar">
@@ -449,12 +460,12 @@ export default function Home(){
             <a className="chat-download" href="https://github.com/RicckMatth/190-extensao_integrada/archive/refs/heads/main.zip" target="_blank" rel="noopener noreferrer">Baixar extensão atualizada ↗</a>
           </aside>
         </section>}
-        {screen==='brain'&&<>{busy&&<div className="analysis-loading" role="status" aria-live="polite"><span className="analysis-spinner"/><div><strong>Analisando o relato…</strong><p>Consultando a base local. Se necessário, o Gemini complementará a análise. Aguarde o resultado.</p></div></div>}<div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Consulta à base local com reconhecimento de frases. O Gemini complementa somente quando a base não encontra resposta adequada.</p></div><span className="badge">{totalRules} regras</span></div>
-          <form className="card spaced" onSubmit={analyze}><div><label htmlFor="brain-input">Relato de teste (sem dados pessoais)</label><textarea id="brain-input" rows={5} value={relato} onChange={e=>setRelato(e.target.value)} placeholder="Descreva o fato observado ou relatado, sem nomes e endereços…"/></div>
-            <div className="btn-row"><Btn type="submit" disabled={busy}><Icon name="brain" size={18}/>{busy?'Analisando…':'Analisar relato'}</Btn><Btn className="secondary" onClick={()=>{setRelato('');setAnalysis(null);}}>Limpar</Btn></div></form>
+        {screen==='brain'&&<>{analysisBusy&&<div className="analysis-loading" role="status" aria-live="polite"><span className="analysis-spinner"/><div><strong>Analisando o relato…</strong><p>Relato recebido. Consultando a base local e, quando necessário, o Gemini para esclarecer elementos e perguntas pendentes. Você pode continuar usando a interface; editar o relato cancela esta análise.</p></div></div>}<div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Consulta à base local com reconhecimento de frases. O Gemini complementa quando faltam elementos para uma resposta local adequada, inclusive em relatos ambíguos. A natureza sugerida não confirma crime.</p></div><span className="badge">{totalRules} regras</span></div>
+          <form className="card spaced" onSubmit={analyze}><div><label htmlFor="brain-input">Relato de teste (sem dados pessoais)</label><textarea id="brain-input" rows={5} value={relato} onChange={e=>updateRelato(e.target.value)} placeholder="Descreva o fato observado ou relatado, sem nomes e endereços…"/></div>
+            <div className="btn-row"><Btn type="submit" disabled={analysisBusy}><Icon name="brain" size={18}/>{analysisBusy?'Analisando…':'Analisar relato'}</Btn><Btn className="secondary" onClick={()=>updateRelato('')}>Limpar</Btn></div></form>
           {resultView()}
           <div className="card"><h3>Exemplos fictícios para teste</h3><div className="btn-row" style={{marginTop:12}}>
-            {['Uma mulher está sendo agredida pelo ex-companheiro.','Duas pessoas anunciaram assalto com uma pistola e levaram o celular.','Um indivíduo enviou um falso comprovante de PIX para aplicar um golpe.','Há fumaça e chamas saindo de um apartamento.'].map((t,i)=><Btn className="secondary tiny" key={i} onClick={()=>{setRelato(t);setAnalysis(null);}}>{'Cenário '+(i+1)}</Btn>)}
+            {['Uma mulher está sendo agredida pelo ex-companheiro.','Duas pessoas anunciaram assalto com uma pistola e levaram o celular.','Um indivíduo enviou um falso comprovante de PIX para aplicar um golpe.','Há fumaça e chamas saindo de um apartamento.'].map((t,i)=><Btn className="secondary tiny" key={i} onClick={()=>updateRelato(t)}>{'Cenário '+(i+1)}</Btn>)}
           </div></div>
         </>}
 
