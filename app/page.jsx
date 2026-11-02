@@ -45,6 +45,7 @@ export default function Home(){
   const [chatSending,setChatSending]=useState(false);
   const [ai,setAI]=useState(null),[aiTesting,setAITesting]=useState(false),[aiTestResult,setAITestResult]=useState('');
   const chatBottomRef=useRef(null);
+  const extensionVersionsRef=useRef(new Map());
   const [adminRequests,setAdminRequests]=useState([]),[adminUsers,setAdminUsers]=useState([]),[events,setEvents]=useState([]);
   const [credential,setCredential]=useState(null);
   const [editor,setEditor]=useState(emptyEntry()),[ruleDraft,setRuleDraft]=useState({code:'',officialNature:'',category:'Proteção',priority:'Média',group1:'',group2:'',explanation:''});
@@ -90,22 +91,40 @@ export default function Home(){
       const payload=e?.detail;
       if(!payload||typeof payload!=='object'||!payload.result||typeof payload.result!=='object')return;
       if(!['classificacao','faq','indefinido','ia'].includes(payload.result.tipo))return;
+      const sourceId=String(payload.sourceId||'legacy').slice(0,100),version=Number(payload.version)||0;
+      const knownVersion=extensionVersionsRef.current.get(sourceId)||0;
+      if(version<knownVersion)return;
+      extensionVersionsRef.current.set(sourceId,version);
       setExtensionOnline(true);
       setExtensionAnalysis(payload.result);
       const now=Date.now();
       setExtensionReceivedAt(now);
-      const incoming={id:'live-sade-relato',kind:'answer',origin:'SADE · análise em tempo real',
+      const incoming={id:'live-sade-relato:'+sourceId,sourceId,kind:'answer',origin:'SADE · análise em tempo real',
         result:payload.result,sourceText:String(payload.sourceText||'').slice(0,1800),at:now};
       // Um painel de análise vivo, atualizado no lugar: não acumula uma mensagem por pausa na digitação.
-      setChatMessages(prev=>[...prev.filter(m=>m.id!=='live-sade-relato').slice(-23),incoming]);
+      setChatMessages(prev=>[...prev.filter(m=>m.sourceId!==sourceId||!['answer','pending'].includes(m.kind)).slice(-23),incoming]);
+      setScreen('extension');
+    };
+    const pending=e=>{
+      const detail=e?.detail||{},sourceId=String(detail.sourceId||'legacy').slice(0,100),version=Number(detail.version)||0;
+      const knownVersion=extensionVersionsRef.current.get(sourceId)||0;
+      if(version<knownVersion)return;
+      extensionVersionsRef.current.set(sourceId,version);
+      setExtensionAnalysis(null);
+      setExtensionReceivedAt(null);
+      const waiting={id:'live-sade-pending:'+sourceId,sourceId,kind:'pending',origin:'SADE · aguardando atualização',
+        text:'O relato mudou. Aguardando a análise da versão atual…',at:Date.now()};
+      setChatMessages(prev=>[...prev.filter(m=>m.sourceId!==sourceId||!['answer','pending'].includes(m.kind)).slice(-23),waiting]);
       setScreen('extension');
     };
     window.addEventListener('base190:extension-ready',ready);
     window.addEventListener('base190:extension-result',receive);
+    window.addEventListener('base190:extension-pending',pending);
     window.dispatchEvent(new CustomEvent('base190:extension-discover'));
     return()=>{
       window.removeEventListener('base190:extension-ready',ready);
       window.removeEventListener('base190:extension-result',receive);
+      window.removeEventListener('base190:extension-pending',pending);
     };
   },[user?.id,user?.mustChangePassword]);
   useEffect(()=>{
@@ -399,7 +418,7 @@ export default function Home(){
                 <Btn className="ghost tiny" onClick={()=>setChatMessages([])}>Limpar chat</Btn></div>
             </header>
             <div className="chat-stream" role="log" aria-label="Conversa de análises da integração">
-              <div className="chat-bubble-system"><b>Cérebro 190 conectado ao SADE.</b><p>Com a análise automática ativada nas opções da extensão e login válido, este chat se abre sozinho e atualiza a classificação enquanto o relato é editado. A extensão não exibe respostas nem pede que você clique para analisar.</p></div>
+              <div className="chat-bubble-system"><b>Cérebro 190 conectado ao SADE.</b><p>Com a análise automática ativada por padrão (ou ligada nas opções) e login válido, este chat acompanha o relato. Ao editar o texto, a resposta anterior é limpa até chegar a análise atualizada. A extensão não exibe respostas nem pede que você clique para analisar.</p></div>
               {chatMessages.map(m=><div className={'chat-message '+(m.kind==='user'?'from-user':'from-system')} key={m.id}>
                 {m.kind!=='user'&&<span className="chat-message-avatar">190</span>}
                 <div className="chat-bubble">
