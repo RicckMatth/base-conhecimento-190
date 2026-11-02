@@ -447,21 +447,21 @@ export default function Home(){
             <div className="chat-side-top">
               <span className="eyebrow">CONFIGURAÇÃO SIMPLIFICADA</span>
               <h2>Extensão Relato 190</h2>
-              <p>A análise automática agora é autorizada nas <strong>configurações da própria extensão</strong>, sem permissões adicionais aqui no site.</p>
+              <p>O compartilhamento do relato começa ativado. Abra as <strong>configurações da extensão</strong> para desligá-lo quando quiser.</p>
             </div>
             <div className={'chat-connection '+(extensionOnline?'is-on':'')}>
               <span className="chat-connection-dot"/>
               <div><b>{extensionOnline?'Extensão detectada':'Extensão não detectada'}</b>
-                <small>{extensionOnline?'Abra as configurações para ativar/desativar o envio.':'Instale ou atualize a extensão de teste.'}</small>
+                <small>{extensionOnline?'Abra as configurações para desativar ou reativar o envio.':'Instale ou atualize a extensão de teste.'}</small>
               </div>
             </div>
             <Btn className="full" onClick={openExtensionSettings} disabled={!extensionOnline}>Abrir configurações da extensão</Btn>
-            <p className="chat-small">Nas configurações, ative <b>Análise automática de relatos</b>. Depois, mantenha seu login nesta Base 190 e preencha o relato no simulador SADE.</p>
+            <p className="chat-small">Mantenha seu login nesta Base 190. O envio é automático por padrão e pode ser desligado nas opções da extensão.</p>
             <div className="divider"/>
             <h3>Etapas de utilização</h3>
-            <div className="chat-steps"><span><b>01</b> Abra as opções da extensão</span>
-              <span><b>02</b> Ative a análise automática</span>
-              <span><b>03</b> Abra o SADE e aguarde a análise no chat</span></div>
+            <div className="chat-steps"><span><b>01</b> Entre nesta Base no mesmo perfil do Chrome</span>
+              <span><b>02</b> Abra o SADE ou simulador compatível</span>
+              <span><b>03</b> Aguarde a análise atualizada no chat</span></div>
             <div className="divider"/>
             <div className="chat-privacy"><b>Segurança da comunicação</b>
               <p>O Chrome controla a preferência de envio; a Base verifica seu login a cada consulta. HTTPS/TLS protege o tráfego, mas não há criptografia ponta a ponta. Use apenas dados fictícios no teste.</p></div>
