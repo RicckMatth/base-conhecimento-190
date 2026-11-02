@@ -3,7 +3,7 @@
     "code": "GUIA-101",
     "title": "SAÍDA COM FILHO APÓS DISCUSSÃO",
     "category": "Família e proteção",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Sair com o filho após uma discussão é uma descrição incompleta. Registre o que ocorreu na saída e em que informação se baseia a preocupação com a criança.",
     "body": "Sair com o filho após uma discussão é uma descrição incompleta. Registre o que ocorreu na saída e em que informação se baseia a preocupação com a criança.\n\nPerguntas de triagem:\nA criança foi vista entrando no veículo?\nHouve ameaça, agressão ou impedimento físico?\nO destino foi comunicado?",
     "tags": [
@@ -17,7 +17,7 @@
     "code": "GUIA-102",
     "title": "AMEAÇA POR MENSAGEM",
     "category": "Família e proteção",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Registre as palavras atribuídas ao remetente e o horário da mensagem. Diferencie uma ameaça recebida agora da proximidade física de quem a enviou.",
     "body": "Registre as palavras atribuídas ao remetente e o horário da mensagem. Diferencie uma ameaça recebida agora da proximidade física de quem a enviou.\n\nPerguntas de triagem:\nO que dizia a mensagem?\nA pessoa informou onde está ou apareceu no local?\nQuem viu a conversa original?",
     "tags": [
@@ -30,7 +30,7 @@
     "code": "GUIA-103",
     "title": "APROXIMAÇÃO DE EX-COMPANHEIRO",
     "category": "Família e proteção",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Descreva onde ocorreu a aproximação e as condutas observadas. A existência e o alcance de eventual ordem judicial precisam de confirmação.",
     "body": "Descreva onde ocorreu a aproximação e as condutas observadas. A existência e o alcance de eventual ordem judicial precisam de confirmação.\n\nPerguntas de triagem:\nA pessoa permanece aí?\nTentou contato ou entrada?\nFoi mencionada alguma restrição específica?",
     "tags": [
@@ -43,7 +43,7 @@
     "code": "GUIA-104",
     "title": "CRIANÇA SOZINHA EM VEÍCULO",
     "category": "Família e proteção",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Identifique o veículo e o ponto de acesso. Registre sinais observados da criança e se há um responsável visível.",
     "body": "Identifique o veículo e o ponto de acesso. Registre sinais observados da criança e se há um responsável visível.\n\nPerguntas de triagem:\nEm qual andar ou setor do estacionamento?\nA criança responde?\nQuem está vendo o veículo agora?",
     "tags": [
@@ -56,7 +56,7 @@
     "code": "GUIA-105",
     "title": "PESSOA IDOSA SEM CONTATO",
     "category": "Família e proteção",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Diferencie ausência de resposta por telefone, ausência no endereço e desaparecimento presenciado. Identifique a última confirmação de presença.",
     "body": "Diferencie ausência de resposta por telefone, ausência no endereço e desaparecimento presenciado. Identifique a última confirmação de presença.\n\nPerguntas de triagem:\nQuando alguém falou diretamente com a pessoa?\nQuem está no endereço?\nHá circunstância conhecida que aumente o risco?",
     "tags": [
@@ -69,7 +69,7 @@
     "code": "GUIA-106",
     "title": "PEDIDO DE AJUDA INTERROMPIDO",
     "category": "Família e proteção",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Registre as últimas palavras compreensíveis e a localização efetivamente informada. A queda da chamada não esclarece a situação no local.",
     "body": "Registre as últimas palavras compreensíveis e a localização efetivamente informada. A queda da chamada não esclarece a situação no local.\n\nPerguntas de triagem:\nA localização era da vítima ou de quem ligou?\nO que foi ouvido antes da interrupção?\nHá forma segura de retomar contato?",
     "tags": [
@@ -82,7 +82,7 @@
     "code": "GUIA-201",
     "title": "ACESSO EM ÁREA RURAL",
     "category": "Localização e trânsito",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Município e nome da propriedade podem não bastar. Registre por qual estrada se chega e qual entrada foi descrita.",
     "body": "Município e nome da propriedade podem não bastar. Registre por qual estrada se chega e qual entrada foi descrita.\n\nPerguntas de triagem:\nQual é a última referência antes da entrada?\nExiste porteira ou ponte?\nQual estrada liga o local à sede do município?",
     "tags": [
@@ -95,7 +95,7 @@
     "code": "GUIA-202",
     "title": "LOCALIZAÇÃO EM RODOVIA",
     "category": "Localização e trânsito",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "O mesmo quilômetro pode corresponder a pistas separadas. Vincule rodovia, quilômetro e sentido ao ponto do fato.",
     "body": "O mesmo quilômetro pode corresponder a pistas separadas. Vincule rodovia, quilômetro e sentido ao ponto do fato.\n\nPerguntas de triagem:\nEm direção a qual cidade?\nEstá na pista, acostamento ou marginal?\nQual placa ou acesso está próximo?",
     "tags": [
@@ -109,7 +109,7 @@
     "code": "GUIA-203",
     "title": "ACIDENTE COM VEÍCULO EVADIDO",
     "category": "Localização e trânsito",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Separe a descrição da colisão das informações sobre o veículo que saiu. Registre apenas os caracteres de placa que foram efetivamente lidos.",
     "body": "Separe a descrição da colisão das informações sobre o veículo que saiu. Registre apenas os caracteres de placa que foram efetivamente lidos.\n\nPerguntas de triagem:\nAlguém ficou ferido?\nQuem viu a saída?\nQual o último sentido confirmado e qual parte da placa foi vista?",
     "tags": [
@@ -122,7 +122,7 @@
     "code": "GUIA-204",
     "title": "COLISÃO COM VÁRIOS VEÍCULOS",
     "category": "Localização e trânsito",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Organize as informações por veículo e por posição na via. Quantidade de veículos não indica quantidade de feridos.",
     "body": "Organize as informações por veículo e por posição na via. Quantidade de veículos não indica quantidade de feridos.\n\nPerguntas de triagem:\nQuantos veículos são visíveis?\nEm qual deles há pessoa pedindo ajuda?\nQual faixa continua obstruída?",
     "tags": [
@@ -134,7 +134,7 @@
     "code": "GUIA-205",
     "title": "OCORRÊNCIA EM ÔNIBUS EM MOVIMENTO",
     "category": "Localização e trânsito",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "A posição muda durante a ligação. Associe cada referência ao horário e ao sentido do deslocamento.",
     "body": "A posição muda durante a ligação. Associe cada referência ao horário e ao sentido do deslocamento.\n\nPerguntas de triagem:\nQual a linha ou prefixo?\nQual foi o último ponto ultrapassado?\nA pessoa envolvida continua a bordo?",
     "tags": [
@@ -147,7 +147,7 @@
     "code": "GUIA-206",
     "title": "ENDEREÇO EM CONDOMÍNIO",
     "category": "Localização e trânsito",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Distinga a portaria usada para acesso do bloco ou unidade em que o fato ocorre.",
     "body": "Distinga a portaria usada para acesso do bloco ou unidade em que o fato ocorre.\n\nPerguntas de triagem:\nQual a entrada acessível?\nEm qual bloco, andar ou área comum?\nO solicitante está vendo o fato ou recebeu aviso da portaria?",
     "tags": [
@@ -160,7 +160,7 @@
     "code": "GUIA-301",
     "title": "FALSA CENTRAL BANCÁRIA",
     "category": "Patrimônio e fraude",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Identifique o pedido feito pelo suposto atendente e se houve transferência ou instalação de aplicativo. Oriente contato com o banco por canal oficial.",
     "body": "Identifique o pedido feito pelo suposto atendente e se houve transferência ou instalação de aplicativo. Oriente contato com o banco por canal oficial.\n\nPerguntas de triagem:\nAinda há contato com o suposto atendente?\nFoi feito Pix?\nA pessoa instalou aplicativo de acesso remoto?\n\nFonte: Polícia Civil do Paraná — https://www.policiacivil.pr.gov.br/Noticia/PCPR-alerta-recebeu-uma-ligacao-do-banco-pedindo-Pix-Pode-ser-golpe",
     "tags": [
@@ -173,7 +173,7 @@
     "code": "GUIA-302",
     "title": "FALSO COMPROVANTE PIX",
     "category": "Patrimônio e fraude",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Uma imagem apresentada pelo comprador e o crédito efetivamente identificado pelo vendedor são informações distintas. Registre se houve entrega do bem.",
     "body": "Uma imagem apresentada pelo comprador e o crédito efetivamente identificado pelo vendedor são informações distintas. Registre se houve entrega do bem.\n\nPerguntas de triagem:\nQuem mostrou o comprovante?\nA entrada foi conferida no extrato?\nA mercadoria foi entregue e a pessoa ainda está no local?",
     "tags": [
@@ -186,7 +186,7 @@
     "code": "GUIA-303",
     "title": "GOLPE DO FALSO PARENTE",
     "category": "Patrimônio e fraude",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Documente como o contato se apresentou e qual pedido fez. Diferencie identidade alegada de identidade confirmada.",
     "body": "Documente como o contato se apresentou e qual pedido fez. Diferencie identidade alegada de identidade confirmada.\n\nPerguntas de triagem:\nEra um número novo?\nFoi pedido dinheiro ou código?\nHouve contato independente com o familiar?",
     "tags": [
@@ -199,7 +199,7 @@
     "code": "GUIA-304",
     "title": "CELULAR SUBTRAÍDO OU PERDIDO",
     "category": "Patrimônio e fraude",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Reconstrua o último momento em que o aparelho estava com a pessoa. Uma localização exibida por aplicativo, sozinha, não identifica quem está com ele.",
     "body": "Reconstrua o último momento em que o aparelho estava com a pessoa. Uma localização exibida por aplicativo, sozinha, não identifica quem está com ele.\n\nPerguntas de triagem:\nAlguém viu a retirada?\nHouve contato físico ou ameaça?\nQuando a posição do aparelho foi atualizada?",
     "tags": [
@@ -213,7 +213,7 @@
     "code": "GUIA-305",
     "title": "VEÍCULO AUSENTE DO ESTACIONAMENTO",
     "category": "Patrimônio e fraude",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Registre onde e quando o veículo foi visto por último. Preserve a diferença entre constatar a ausência e ter visto a retirada.",
     "body": "Registre onde e quando o veículo foi visto por último. Preserve a diferença entre constatar a ausência e ter visto a retirada.\n\nPerguntas de triagem:\nQuem estacionou?\nAlguém presenciou o deslocamento?\nHá informação sobre remoção ou uso por outra pessoa?",
     "tags": [
@@ -226,7 +226,7 @@
     "code": "GUIA-306",
     "title": "ENTRADA FORÇADA EM IMÓVEL",
     "category": "Patrimônio e fraude",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Separe os vestígios percebidos de uma possível presença atual. Porta danificada não informa por si só quando o dano ocorreu.",
     "body": "Separe os vestígios percebidos de uma possível presença atual. Porta danificada não informa por si só quando o dano ocorreu.\n\nPerguntas de triagem:\nO que está danificado?\nAlguém foi visto dentro ou saindo?\nHá moradores no interior?",
     "tags": [
@@ -239,7 +239,7 @@
     "code": "GUIA-401",
     "title": "FUMAÇA EM EDIFÍCIO",
     "category": "Riscos no local",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Descreva o ponto de onde a fumaça é vista e a posição do observador. Não atribua origem ou causa sem informação.",
     "body": "Descreva o ponto de onde a fumaça é vista e a posição do observador. Não atribua origem ou causa sem informação.\n\nPerguntas de triagem:\nDe qual andar ou abertura sai fumaça?\nHá chama visível?\nHá pessoas nas janelas ou informação sobre alguém no interior?",
     "tags": [
@@ -252,7 +252,7 @@
     "code": "GUIA-402",
     "title": "CHEIRO DE GÁS",
     "category": "Riscos no local",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Registre odor, ruído ou vazamento visto como informações distintas. Não peça que a pessoa procure a origem para confirmar.",
     "body": "Registre odor, ruído ou vazamento visto como informações distintas. Não peça que a pessoa procure a origem para confirmar.\n\nPerguntas de triagem:\nDe onde a pessoa percebe o cheiro?\nÉ área interna ou externa?\nHá pessoas passando mal ou chama visível?",
     "tags": [
@@ -265,7 +265,7 @@
     "code": "GUIA-403",
     "title": "CABO CAÍDO NA VIA",
     "category": "Riscos no local",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Trate a identificação do cabo como desconhecida quando o solicitante não puder confirmá-la. Colete referências sem solicitar aproximação.",
     "body": "Trate a identificação do cabo como desconhecida quando o solicitante não puder confirmá-la. Colete referências sem solicitar aproximação.\n\nPerguntas de triagem:\nO cabo atravessa a pista?\nHá faíscas ou contato visível com veículo?\nHá pessoas próximas ou feridas?",
     "tags": [
@@ -278,7 +278,7 @@
     "code": "GUIA-404",
     "title": "ENXURRADA COM PESSOAS ISOLADAS",
     "category": "Riscos no local",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Registre a última posição conhecida das pessoas e como essa informação foi obtida. A condição da água pode mudar durante a chamada.",
     "body": "Registre a última posição conhecida das pessoas e como essa informação foi obtida. A condição da água pode mudar durante a chamada.\n\nPerguntas de triagem:\nOnde foram vistas pela última vez?\nEm veículo, casa ou área aberta?\nA água está subindo segundo quem está no local?",
     "tags": [
@@ -291,7 +291,7 @@
     "code": "GUIA-405",
     "title": "RISCO DE DESABAMENTO",
     "category": "Riscos no local",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Diferencie avaria visível, queda parcial e relato de pessoas no interior. Registre o lado da estrutura voltado para a rua.",
     "body": "Diferencie avaria visível, queda parcial e relato de pessoas no interior. Registre o lado da estrutura voltado para a rua.\n\nPerguntas de triagem:\nQue parte cedeu?\nHá informação direta sobre ocupantes?\nA via ou imóvel vizinho foi atingido?",
     "tags": [
@@ -304,7 +304,7 @@
     "code": "GUIA-406",
     "title": "OBJETO ABANDONADO EM LOCAL PÚBLICO",
     "category": "Riscos no local",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Registre a descrição disponível à distância e o motivo concreto da preocupação. Evite presumir o conteúdo do objeto.",
     "body": "Registre a descrição disponível à distância e o motivo concreto da preocupação. Evite presumir o conteúdo do objeto.\n\nPerguntas de triagem:\nOnde exatamente está?\nQuem viu quando foi deixado?\nHá circulação de pessoas ao redor?",
     "tags": [
@@ -317,7 +317,7 @@
     "code": "GUIA-501",
     "title": "TESTEMUNHA DIRETA E INFORMAÇÃO DE TERCEIROS",
     "category": "Qualidade do relato",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Atribua cada informação à pessoa que a percebeu. Exemplo de registro: solicitante ouviu um estampido e informa que um vizinho disse ter visto uma arma.",
     "body": "Atribua cada informação à pessoa que a percebeu. Exemplo de registro: solicitante ouviu um estampido e informa que um vizinho disse ter visto uma arma.\n\nPerguntas de triagem:\nO que você viu pessoalmente?\nO que ouviu?\nQual parte foi informada por outra pessoa?",
     "tags": [
@@ -330,7 +330,7 @@
     "code": "GUIA-502",
     "title": "HORÁRIO DO FATO E HORÁRIO DA LIGAÇÃO",
     "category": "Qualidade do relato",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Registre separadamente início, última observação e momento do contato. Mantenha como aproximadas estimativas do solicitante.",
     "body": "Registre separadamente início, última observação e momento do contato. Mantenha como aproximadas estimativas do solicitante.\n\nPerguntas de triagem:\nQuando aconteceu?\nQuando foi visto pela última vez?\nO fato ainda ocorre ou essa foi a última notícia?",
     "tags": [
@@ -343,7 +343,7 @@
     "code": "GUIA-503",
     "title": "INFORMAÇÕES DIVERGENTES",
     "category": "Qualidade do relato",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Preserve as versões com suas respectivas fontes e horários. Uma atualização pode explicar a diferença sem invalidar a observação anterior.",
     "body": "Preserve as versões com suas respectivas fontes e horários. Uma atualização pode explicar a diferença sem invalidar a observação anterior.\n\nPerguntas de triagem:\nQuem informou cada versão?\nAs duas pessoas observavam o mesmo local e momento?\nQual informação foi confirmada depois?",
     "tags": [
@@ -356,7 +356,7 @@
     "code": "GUIA-504",
     "title": "ARMA VISTA OU APENAS MENCIONADA",
     "category": "Qualidade do relato",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Diferencie objeto efetivamente visto, ameaça verbal e suposição baseada em gesto. Mantenha a descrição nas palavras disponíveis.",
     "body": "Diferencie objeto efetivamente visto, ameaça verbal e suposição baseada em gesto. Mantenha a descrição nas palavras disponíveis.\n\nPerguntas de triagem:\nAlguém viu o objeto?\nO que foi dito ou feito?\nQuem descreveu e de onde observava?",
     "tags": [
@@ -369,7 +369,7 @@
     "code": "GUIA-505",
     "title": "INFORMAÇÃO NEGADA OU DESCONHECIDA",
     "category": "Qualidade do relato",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Sem informação sobre feridos tem significado diferente de o solicitante afirmar que ninguém se feriu. Registre a resposta e seu alcance.",
     "body": "Sem informação sobre feridos tem significado diferente de o solicitante afirmar que ninguém se feriu. Registre a resposta e seu alcance.\n\nPerguntas de triagem:\nA pessoa consegue observar todos os envolvidos?\nEla nega o fato ou apenas não sabe dizer?",
     "tags": [
@@ -382,7 +382,7 @@
     "code": "GUIA-506",
     "title": "DESLOCAMENTO E ÚLTIMO AVISTAMENTO",
     "category": "Qualidade do relato",
-    "priority": "Média",
+    "priority": "Consulta",
     "summary": "Registre o último ponto confirmado, horário e sentido. Um destino sugerido pelo solicitante continua sendo hipótese.",
     "body": "Registre o último ponto confirmado, horário e sentido. Um destino sugerido pelo solicitante continua sendo hipótese.\n\nPerguntas de triagem:\nQual foi a última esquina em que foi visto?\nSeguia a pé ou em veículo?\nO destino foi observado ou presumido?",
     "tags": [
