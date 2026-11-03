@@ -139,3 +139,38 @@ html,body{font-family:Inter,"Segoe UI",system-ui,sans-serif}h1,h2,h3{text-wrap:b
 .library-wide .docs-sidebar .area-summary{gap:6px;padding:10px 8px;font-size:.88rem}.docs-sidebar .area-icon{width:26px;height:26px}.library-wide .library-grid button{padding:12px 15px}.library-grid button:hover,.library-wide .docs-page-link.selected{background:var(--soft)}
 .library-wide .docs-paper{background:var(--panel);border-top:4px solid #27998f}.library-wide .docs-paper .tiptap blockquote{border-left:4px solid #27998f;background:var(--soft);padding:12px 20px}
 .library-wide summary:focus-visible,.library-wide button:focus-visible{outline:3px solid var(--blue);outline-offset:-3px}
+
+/* Scroll independently through the library index and the document. */
+.library-wide {
+  --library-scroll-track: #e4f0f1;
+  --library-scroll-thumb: #427c80;
+  --library-scroll-hover: #226568;
+}
+:root[data-theme="dark"] .library-wide {
+  --library-scroll-track: #142c37;
+  --library-scroll-thumb: #56999b;
+  --library-scroll-hover: #80bfc0;
+}
+.library-wide :is(.docs-sidebar, .docs-main) {
+  scrollbar-gutter: stable;
+  scrollbar-color: var(--library-scroll-thumb) var(--library-scroll-track);
+}
+@supports selector(::-webkit-scrollbar) {
+  .library-wide :is(.docs-sidebar, .docs-main) { scrollbar-color: auto; }
+  .library-wide :is(.docs-sidebar, .docs-main)::-webkit-scrollbar { width: 12px; height: 12px; }
+  .library-wide :is(.docs-sidebar, .docs-main)::-webkit-scrollbar-track {
+    background: var(--library-scroll-track);
+  }
+  .library-wide :is(.docs-sidebar, .docs-main)::-webkit-scrollbar-thumb {
+    background: var(--library-scroll-thumb);
+    border: 2px solid var(--library-scroll-track);
+    border-radius: 999px;
+    min-height: 36px;
+  }
+  .library-wide :is(.docs-sidebar, .docs-main)::-webkit-scrollbar-thumb:hover {
+    background: var(--library-scroll-hover);
+  }
+}
+@media (forced-colors: active) {
+  .library-wide :is(.docs-sidebar, .docs-main) { scrollbar-color: auto; }
+}
