@@ -442,5 +442,367 @@
       "outra cidade",
       "localização"
     ]
+  },
+  {
+    "code": "GUIA-700",
+    "title": "BRIGA NA SAÍDA DA ESCOLA",
+    "category": "Escolas e espaços coletivos",
+    "priority": "Consulta",
+    "summary": "Diferencie o local da briga do último ponto onde cada envolvido foi visto.",
+    "body": "Relato fictício: “Na saída, vi dois alunos se empurrando. Agora um entrou no ônibus.”\n\nOrientação para o registro: Diferencie o local da briga do último ponto onde cada envolvido foi visto.\n\nPerguntas de triagem:\nOnde cada pessoa está agora?\nQuem viu o início?\nHá alguém ferido?",
+    "tags": [
+      "briga",
+      "na",
+      "saída",
+      "da",
+      "escola"
+    ]
+  },
+  {
+    "code": "GUIA-701",
+    "title": "AMEAÇA COMPARTILHADA EM GRUPO ESCOLAR",
+    "category": "Escolas e espaços coletivos",
+    "priority": "Consulta",
+    "summary": "Atribua o texto à mensagem recebida. Identifique quais informações vieram apenas de quem encaminhou a imagem.",
+    "body": "Relato fictício: “Recebi um print dizendo que amanhã vai acontecer algo na escola.”\n\nOrientação para o registro: Atribua o texto à mensagem recebida. Identifique quais informações vieram apenas de quem encaminhou a imagem.\n\nPerguntas de triagem:\nQuem recebeu a mensagem original?\nEla identifica escola, data ou ação?\nHá algo acontecendo no local agora?",
+    "tags": [
+      "ameaça",
+      "compartilhada",
+      "em",
+      "grupo",
+      "escolar"
+    ]
+  },
+  {
+    "code": "GUIA-702",
+    "title": "CRIANÇA SEPARADA DO RESPONSÁVEL EM FEIRA",
+    "category": "Escolas e espaços coletivos",
+    "priority": "Consulta",
+    "summary": "Use a barraca como referência do último avistamento. Registre separadamente a posição atual do responsável.",
+    "body": "Relato fictício: “Minha filha estava comigo perto da barraca de frutas e não a vejo mais.”\n\nOrientação para o registro: Use a barraca como referência do último avistamento. Registre separadamente a posição atual do responsável.\n\nPerguntas de triagem:\nEm qual entrada ou setor?\nQuando foi vista pela última vez?\nQuem está com o responsável neste momento?",
+    "tags": [
+      "criança",
+      "separada",
+      "do",
+      "responsável",
+      "em",
+      "feira"
+    ]
+  },
+  {
+    "code": "GUIA-703",
+    "title": "SAÍDA BLOQUEADA EM EVENTO",
+    "category": "Escolas e espaços coletivos",
+    "priority": "Consulta",
+    "summary": "Descreva o fluxo de pessoas e a barreira observada. Identifique o acesso pelo nome ou referência externa.",
+    "body": "Relato fictício: “O pessoal tenta sair pelo portão lateral e ninguém consegue passar.”\n\nOrientação para o registro: Descreva o fluxo de pessoas e a barreira observada. Identifique o acesso pelo nome ou referência externa.\n\nPerguntas de triagem:\nQual portão?\nO que impede a passagem?\nHá pessoas caídas ou prensadas?",
+    "tags": [
+      "saída",
+      "bloqueada",
+      "em",
+      "evento"
+    ]
+  },
+  {
+    "code": "GUIA-704",
+    "title": "LOCAL INFORMADO POR PESSOA COM DIFICULDADE DE FALA",
+    "category": "Acessibilidade e comunicação",
+    "priority": "Consulta",
+    "summary": "Faça uma pergunta por vez. Repita a informação compreendida e indique no registro o trecho que ficou incerto.",
+    "body": "Relato fictício: “A pessoa repete o nome de uma rua, mas não consigo entender o número.”\n\nOrientação para o registro: Faça uma pergunta por vez. Repita a informação compreendida e indique no registro o trecho que ficou incerto.\n\nPerguntas de triagem:\nQual parte foi compreendida?\nA pessoa consegue confirmar uma referência com resposta curta?\nHá outra forma disponível de comunicação?",
+    "tags": [
+      "local",
+      "informado",
+      "por",
+      "pessoa",
+      "com",
+      "dificuldade"
+    ]
+  },
+  {
+    "code": "GUIA-705",
+    "title": "RELATO TRADUZIDO POR ACOMPANHANTE",
+    "category": "Acessibilidade e comunicação",
+    "priority": "Consulta",
+    "summary": "Identifique a fala traduzida e as observações próprias do acompanhante em frases separadas.",
+    "body": "Relato fictício: “Estou traduzindo para um visitante que diz ter sido ameaçado na praça.”\n\nOrientação para o registro: Identifique a fala traduzida e as observações próprias do acompanhante em frases separadas.\n\nPerguntas de triagem:\nO acompanhante presenciou o fato ou está traduzindo?\nOnde está a pessoa atendida?\nQual informação ainda não foi compreendida?",
+    "tags": [
+      "relato",
+      "traduzido",
+      "por",
+      "acompanhante"
+    ]
+  },
+  {
+    "code": "GUIA-706",
+    "title": "SOLICITANTE SEM PRIVACIDADE PARA FALAR",
+    "category": "Acessibilidade e comunicação",
+    "priority": "Consulta",
+    "summary": "Registre a pergunta junto da resposta. Um “sim” isolado pode ganhar outro sentido fora de contexto.",
+    "body": "Relato fictício: “Ela só respondeu “sim” quando perguntei se havia alguém ao lado.”\n\nOrientação para o registro: Registre a pergunta junto da resposta. Um “sim” isolado pode ganhar outro sentido fora de contexto.\n\nPerguntas de triagem:\nÉ possível continuar falando?\nQual local já foi confirmado?\nA pessoa consegue responder a uma pergunta curta por vez?",
+    "tags": [
+      "solicitante",
+      "sem",
+      "privacidade",
+      "para",
+      "falar"
+    ]
+  },
+  {
+    "code": "GUIA-707",
+    "title": "REFERÊNCIA VISUAL SEM ENDEREÇO CONHECIDO",
+    "category": "Acessibilidade e comunicação",
+    "priority": "Consulta",
+    "summary": "Combine duas referências independentes e marque a localização como aproximada até confirmação.",
+    "body": "Relato fictício: “Vejo uma passarela azul e um posto, mas não conheço o bairro.”\n\nOrientação para o registro: Combine duas referências independentes e marque a localização como aproximada até confirmação.\n\nPerguntas de triagem:\nQual nome aparece no posto?\nDe qual lado da via está a passarela?\nQual foi o último local conhecido?",
+    "tags": [
+      "referência",
+      "visual",
+      "sem",
+      "endereço",
+      "conhecido"
+    ]
+  },
+  {
+    "code": "GUIA-708",
+    "title": "ATROPELAMENTO EM CRUZAMENTO",
+    "category": "Trânsito e mobilidade",
+    "priority": "Consulta",
+    "summary": "Separe a observação da pessoa caída da informação de terceiros sobre a colisão.",
+    "body": "Relato fictício: “Vi uma bicicleta caída e uma pessoa no chão. Disseram que um carro a atingiu.”\n\nOrientação para o registro: Separe a observação da pessoa caída da informação de terceiros sobre a colisão.\n\nPerguntas de triagem:\nQuem viu o impacto?\nEm qual braço do cruzamento estão?\nO veículo permaneceu no local?",
+    "tags": [
+      "atropelamento",
+      "em",
+      "cruzamento"
+    ]
+  },
+  {
+    "code": "GUIA-709",
+    "title": "OBSTÁCULO EM PISTA COM POUCA VISIBILIDADE",
+    "category": "Trânsito e mobilidade",
+    "priority": "Consulta",
+    "summary": "Vincule o horário ao avistamento. Evite afirmar que o objeto continua na pista sem atualização.",
+    "body": "Relato fictício: “Passei por um sofá na curva logo depois do viaduto.”\n\nOrientação para o registro: Vincule o horário ao avistamento. Evite afirmar que o objeto continua na pista sem atualização.\n\nPerguntas de triagem:\nQual pista e sentido?\nQual parte da faixa estava ocupada?\nQuando o solicitante passou pelo ponto?",
+    "tags": [
+      "obstáculo",
+      "em",
+      "pista",
+      "com",
+      "pouca",
+      "visibilidade"
+    ]
+  },
+  {
+    "code": "GUIA-710",
+    "title": "PESSOA CAMINHANDO NA RODOVIA",
+    "category": "Trânsito e mobilidade",
+    "priority": "Consulta",
+    "summary": "Descreva posição e movimento observados. Evite atribuir intenção ao pedestre.",
+    "body": "Relato fictício: “Um homem seguia a pé junto à faixa da direita, sentido Curitiba.”\n\nOrientação para o registro: Descreva posição e movimento observados. Evite atribuir intenção ao pedestre.\n\nPerguntas de triagem:\nNa pista ou no acostamento?\nQual o último marco quilométrico?\nHá alguém mantendo contato visual?",
+    "tags": [
+      "pessoa",
+      "caminhando",
+      "na",
+      "rodovia"
+    ]
+  },
+  {
+    "code": "GUIA-711",
+    "title": "COLISÃO EM PASSAGEM DE NÍVEL",
+    "category": "Trânsito e mobilidade",
+    "priority": "Consulta",
+    "summary": "Distinga a posição confirmada do veículo da percepção sobre a aproximação da composição.",
+    "body": "Relato fictício: “O carro ficou atravessado perto dos trilhos e eu ouvi uma buzina.”\n\nOrientação para o registro: Distinga a posição confirmada do veículo da percepção sobre a aproximação da composição.\n\nPerguntas de triagem:\nO veículo ocupa os trilhos?\nHá pessoas no interior?\nDe onde foi visto ou ouvido o trem?",
+    "tags": [
+      "colisão",
+      "em",
+      "passagem",
+      "de",
+      "nível"
+    ]
+  },
+  {
+    "code": "GUIA-712",
+    "title": "ENTREGA DE CARTÃO A FALSO MENSAGEIRO",
+    "category": "Patrimônio e fraude",
+    "priority": "Consulta",
+    "summary": "Organize ligação, chegada e entrega em ordem. Não registre senha nem código de autenticação.",
+    "body": "Relato fictício: “Uma pessoa veio buscar meu cartão dizendo que era do banco.”\n\nOrientação para o registro: Organize ligação, chegada e entrega em ordem. Não registre senha nem código de autenticação.\n\nPerguntas de triagem:\nO cartão foi entregue?\nHouve ameaça ou contato apenas por telefone?\nO mensageiro ainda está no local?",
+    "tags": [
+      "entrega",
+      "de",
+      "cartão",
+      "a",
+      "falso",
+      "mensageiro"
+    ]
+  },
+  {
+    "code": "GUIA-713",
+    "title": "ANÚNCIO FALSO DE ALUGUEL",
+    "category": "Patrimônio e fraude",
+    "priority": "Consulta",
+    "summary": "Diferencie o endereço anunciado do local de quem recebeu o valor. Não atribua participação ao morador apenas pelo endereço.",
+    "body": "Relato fictício: “Paguei o sinal e, ao chegar, o morador disse que nunca anunciou a casa.”\n\nOrientação para o registro: Diferencie o endereço anunciado do local de quem recebeu o valor. Não atribua participação ao morador apenas pelo endereço.\n\nPerguntas de triagem:\nQual foi o canal da negociação?\nHouve pagamento?\nExiste conflito ou ameaça no endereço agora?",
+    "tags": [
+      "anúncio",
+      "falso",
+      "de",
+      "aluguel"
+    ]
+  },
+  {
+    "code": "GUIA-714",
+    "title": "MERCADORIA RETIRADA POR TERCEIRO",
+    "category": "Patrimônio e fraude",
+    "priority": "Consulta",
+    "summary": "Registre a divergência entre comprovante e relato sem concluir autoria.",
+    "body": "Relato fictício: “O entregador diz que a encomenda foi recebida, mas eu não reconheço a assinatura.”\n\nOrientação para o registro: Registre a divergência entre comprovante e relato sem concluir autoria.\n\nPerguntas de triagem:\nQuem presenciou a entrega?\nHá registro de data e local?\nEm que se baseia a identificação do recebedor?",
+    "tags": [
+      "mercadoria",
+      "retirada",
+      "por",
+      "terceiro"
+    ]
+  },
+  {
+    "code": "GUIA-715",
+    "title": "COBRANÇA COM INTIMIDAÇÃO PRESENCIAL",
+    "category": "Patrimônio e fraude",
+    "priority": "Consulta",
+    "summary": "Registre separadamente a alegação de dívida, a fala atribuída e a presença atual.",
+    "body": "Relato fictício: “Vieram cobrar uma dívida na porta e um deles disse que voltaria armado.”\n\nOrientação para o registro: Registre separadamente a alegação de dívida, a fala atribuída e a presença atual.\n\nPerguntas de triagem:\nQuais palavras foram ouvidas?\nFoi visto algum objeto?\nAs pessoas continuam na porta?",
+    "tags": [
+      "cobrança",
+      "com",
+      "intimidação",
+      "presencial"
+    ]
+  },
+  {
+    "code": "GUIA-716",
+    "title": "DISCUSSÃO ENTRE VIZINHOS POR SOM",
+    "category": "Convivência e proteção",
+    "priority": "Consulta",
+    "summary": "Registre o motivo inicial da ligação e a mudança posterior. Especifique o que o solicitante consegue perceber de dentro da unidade.",
+    "body": "Relato fictício: “O som está alto desde cedo e agora ouvi gritos no corredor.”\n\nOrientação para o registro: Registre o motivo inicial da ligação e a mudança posterior. Especifique o que o solicitante consegue perceber de dentro da unidade.\n\nPerguntas de triagem:\nQuem ouviu os gritos?\nQuais palavras foram compreendidas?\nHá contato físico ou pedido de ajuda percebido?",
+    "tags": [
+      "discussão",
+      "entre",
+      "vizinhos",
+      "por",
+      "som"
+    ]
+  },
+  {
+    "code": "GUIA-717",
+    "title": "BLOQUEIO DE SAÍDA DURANTE DISCUSSÃO",
+    "category": "Convivência e proteção",
+    "priority": "Consulta",
+    "summary": "Descreva a conduta concreta e as palavras da pessoa. Distinga porta trancada, obstáculo e impedimento por outra pessoa.",
+    "body": "Relato fictício: “Ela diz que quer sair, mas o companheiro está parado diante da porta.”\n\nOrientação para o registro: Descreva a conduta concreta e as palavras da pessoa. Distinga porta trancada, obstáculo e impedimento por outra pessoa.\n\nPerguntas de triagem:\nComo a saída está sendo impedida?\nQuem está no ambiente?\nHá relato de contato físico ou ameaça?",
+    "tags": [
+      "bloqueio",
+      "de",
+      "saída",
+      "durante",
+      "discussão"
+    ]
+  },
+  {
+    "code": "GUIA-718",
+    "title": "ANIMAL SOLTO EM ÁREA DE CIRCULAÇÃO",
+    "category": "Convivência e proteção",
+    "priority": "Consulta",
+    "summary": "Diferencie presença do animal, aproximação e contato. Registre apenas o comportamento observado.",
+    "body": "Relato fictício: “Há um cachorro correndo entre os carros na entrada da praça.”\n\nOrientação para o registro: Diferencie presença do animal, aproximação e contato. Registre apenas o comportamento observado.\n\nPerguntas de triagem:\nOnde foi visto por último?\nHouve ataque ou alguém se feriu?\nHá pessoa acompanhando o animal?",
+    "tags": [
+      "animal",
+      "solto",
+      "em",
+      "área",
+      "de",
+      "circulação"
+    ]
+  },
+  {
+    "code": "GUIA-719",
+    "title": "PEDIDO DE AJUDA OUVIDO EM IMÓVEL VIZINHO",
+    "category": "Convivência e proteção",
+    "priority": "Consulta",
+    "summary": "Indique o ponto de escuta e o grau de certeza sobre a origem. Evite vincular o chamado a uma unidade específica sem confirmação.",
+    "body": "Relato fictício: “Ouvi alguém gritar por ajuda no andar de cima, mas não sei o apartamento.”\n\nOrientação para o registro: Indique o ponto de escuta e o grau de certeza sobre a origem. Evite vincular o chamado a uma unidade específica sem confirmação.\n\nPerguntas de triagem:\nDe qual direção veio o som?\nQuando foi ouvido?\nA voz ou outros ruídos continuam?",
+    "tags": [
+      "pedido",
+      "de",
+      "ajuda",
+      "ouvido",
+      "em",
+      "imóvel"
+    ]
+  },
+  {
+    "code": "GUIA-720",
+    "title": "DUAS LIGAÇÕES SOBRE O MESMO LOCAL",
+    "category": "Continuidade do atendimento",
+    "priority": "Consulta",
+    "summary": "Conserve a origem de cada versão. A proximidade geográfica sozinha não confirma que se trata do mesmo fato.",
+    "body": "Relato fictício: “Um solicitante fala em briga na praça e outro relata correria perto da igreja.”\n\nOrientação para o registro: Conserve a origem de cada versão. A proximidade geográfica sozinha não confirma que se trata do mesmo fato.\n\nPerguntas de triagem:\nQual horário e referência cada um informou?\nHá algum envolvido ou fato em comum?\nA praça e a igreja são próximas?",
+    "tags": [
+      "duas",
+      "ligações",
+      "sobre",
+      "o",
+      "mesmo",
+      "local"
+    ]
+  },
+  {
+    "code": "GUIA-721",
+    "title": "CORREÇÃO DE ENDEREÇO APÓS A LIGAÇÃO",
+    "category": "Continuidade do atendimento",
+    "priority": "Consulta",
+    "summary": "Destaque o endereço corrigido e o horário da atualização para evitar uso da primeira referência.",
+    "body": "Relato fictício: “Eu disse Rua das Flores, mas é Travessa das Flores, atrás do mercado.”\n\nOrientação para o registro: Destaque o endereço corrigido e o horário da atualização para evitar uso da primeira referência.\n\nPerguntas de triagem:\nQual dado foi corrigido?\nMunicípio e número continuam os mesmos?\nQual referência confirma o novo ponto?",
+    "tags": [
+      "correção",
+      "de",
+      "endereço",
+      "após",
+      "a",
+      "ligação"
+    ]
+  },
+  {
+    "code": "GUIA-722",
+    "title": "MUDANÇA DE RISCO DURANTE O RELATO",
+    "category": "Continuidade do atendimento",
+    "priority": "Consulta",
+    "summary": "Registre a sequência e o motivo concreto da mudança de risco. Não transforme posse do objeto em agressão consumada.",
+    "body": "Relato fictício: “Quando liguei era só discussão. Agora vi uma pessoa pegar uma barra de ferro.”\n\nOrientação para o registro: Registre a sequência e o motivo concreto da mudança de risco. Não transforme posse do objeto em agressão consumada.\n\nPerguntas de triagem:\nQuem viu o objeto?\nO que a pessoa fez com ele?\nOnde estão os envolvidos agora?",
+    "tags": [
+      "mudança",
+      "de",
+      "risco",
+      "durante",
+      "o",
+      "relato"
+    ]
+  },
+  {
+    "code": "GUIA-723",
+    "title": "RETORNO APÓS PERDA DE CONTATO VISUAL",
+    "category": "Continuidade do atendimento",
+    "priority": "Consulta",
+    "summary": "Encerre a descrição do deslocamento no último ponto visto e identifique qualquer destino posterior como hipótese.",
+    "body": "Relato fictício: “O carro virou a esquina e não consigo mais vê-lo.”\n\nOrientação para o registro: Encerre a descrição do deslocamento no último ponto visto e identifique qualquer destino posterior como hipótese.\n\nPerguntas de triagem:\nQual foi o último ponto confirmado?\nEm que horário?\nO sentido informado foi observado ou deduzido?",
+    "tags": [
+      "retorno",
+      "após",
+      "perda",
+      "de",
+      "contato",
+      "visual"
+    ]
   }
 ]

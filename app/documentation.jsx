@@ -46,14 +46,14 @@ export default function Documentation({isAdmin,active,onExit}){
 <span className="eyebrow">BIBLIOTECA 190</span>
 <h2>Base de conhecimento</h2>
 <input aria-label="Pesquisar documentação" placeholder="Pesquisar páginas e conteúdo…" value={query} onChange={e=>setQuery(e.target.value)}/>{isAdmin&&<button className="btn" onClick={()=>open(empty(),true)}>+ Criar página</button>}{[...new Set(filtered.map(p=>p.space))].map(space=>
-<div key={space}>
-<h4>{space}</h4>{filtered.filter(p=>p.space===space).map(p=>
-<button className={'docs-page-link '+(page?.id===p.id?'selected':'')} key={p.id} style={{paddingLeft:12+12*depth(p)}} onClick={()=>open(p)}>▤ {p.title}{p.parent_id&&<small>↳ {pages.find(parent=>parent.id===p.parent_id)?.title||'Página relacionada'}</small>}{p.status==='draft'&&<small>Rascunho</small>}</button>)}</div>)}{!filtered.length&&<p className="muted">Nenhuma página encontrada.</p>}</aside>
+<details className="library-category" key={space+Boolean(query.trim())} open={Boolean(query.trim())||page?.space===space}>
+<summary>{space} <small>{filtered.filter(p=>p.space===space).length}</small></summary>{filtered.filter(p=>p.space===space).map(p=>
+<button className={'docs-page-link '+(page?.id===p.id?'selected':'')} key={p.id} style={{paddingLeft:12+12*depth(p)}} onClick={()=>open(p)}>▤ {p.title}{p.parent_id&&<small>↳ {pages.find(parent=>parent.id===p.parent_id)?.title||'Página relacionada'}</small>}{p.status==='draft'&&<small>Rascunho</small>}</button>)}</details>)}{!filtered.length&&<p className="muted">Nenhuma página encontrada.</p>}</aside>
 <main className="docs-main">{notice&&<p role="status" className="docs-notice">{notice}</p>}{!page?<div className="docs-empty">
 <span className="eyebrow">DOCUMENTAÇÃO COMPARTILHADA</span>
 <h1>Biblioteca de atendimento</h1>
 <p>Organize orientações, guias e informações úteis em páginas pesquisáveis. Selecione uma página para ler{isAdmin?' ou crie a primeira documentação':''}.</p><div className="library-count">{pages.length} páginas · {new Set(pages.map(p=>p.space)).size} áreas</div>
-<div className="library-grid">{[...new Set(filtered.map(p=>p.space))].map(space=><section key={space}><h3>{space}</h3>{filtered.filter(p=>p.space===space).map(p=><button key={p.id} onClick={()=>open(p)}>{p.title} <span aria-hidden="true">↗</span></button>)}</section>)}</div>
+<div className="library-grid">{[...new Set(filtered.map(p=>p.space))].map(space=><details className="library-category" key={space+Boolean(query.trim())} open={Boolean(query.trim())}><summary>{space} <small>{filtered.filter(p=>p.space===space).length}</small></summary>{filtered.filter(p=>p.space===space).map(p=><button key={p.id} onClick={()=>open(p)}>{p.title} <span aria-hidden="true">↗</span></button>)}</details>)}</div>
 </div>:<>
 <header className="docs-header">
 <span>{page.space} / {page.title||'Nova página'}</span>
