@@ -1,6 +1,19 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import {useEditor,EditorContent} from '@tiptap/react';
+import {Icon} from './icons.jsx';
+const areaStyles = {
+ 'Família e proteção':['users',335], 'Convivência e proteção':['shield',155],
+ 'Localização e trânsito':['car',211], 'Trânsito e mobilidade':['car',230],
+ 'Patrimônio e fraude':['lock',275], 'Riscos no local':['pulse',28],
+ 'Qualidade do relato':['audit',180], 'Registro do atendimento':['edit',210],
+ 'Escolas e espaços coletivos':['building',255], 'Acessibilidade e comunicação':['phone',165],
+ 'Continuidade do atendimento':['link',315]
+};
+function AreaSummary({space,count}){
+ const [icon,hue]=areaStyles[space]||['book',192];
+ return <summary className="area-summary" style={{'--area-hue':hue}}><span className="area-icon"><Icon name={icon}/></span><span>{space}</span><small>{count}</small><span className="area-chevron" aria-hidden="true">⌄</span></summary>;
+}
 import StarterKit from '@tiptap/starter-kit';
 import {Table,TableRow,TableCell,TableHeader} from '@tiptap/extension-table';
 import TaskList from '@tiptap/extension-task-list';
@@ -47,13 +60,13 @@ export default function Documentation({isAdmin,active,onExit}){
 <h2>Base de conhecimento</h2>
 <input aria-label="Pesquisar documentação" placeholder="Pesquisar páginas e conteúdo…" value={query} onChange={e=>setQuery(e.target.value)}/>{isAdmin&&<button className="btn" onClick={()=>open(empty(),true)}>+ Criar página</button>}{[...new Set(filtered.map(p=>p.space))].map(space=>
 <details className="library-category" key={space+Boolean(query.trim())} open={Boolean(query.trim())||page?.space===space}>
-<summary>{space} <small>{filtered.filter(p=>p.space===space).length}</small></summary>{filtered.filter(p=>p.space===space).map(p=>
+<AreaSummary space={space} count={filtered.filter(p=>p.space===space).length}/>{filtered.filter(p=>p.space===space).map(p=>
 <button className={'docs-page-link '+(page?.id===p.id?'selected':'')} key={p.id} style={{paddingLeft:12+12*depth(p)}} onClick={()=>open(p)}>▤ {p.title}{p.parent_id&&<small>↳ {pages.find(parent=>parent.id===p.parent_id)?.title||'Página relacionada'}</small>}{p.status==='draft'&&<small>Rascunho</small>}</button>)}</details>)}{!filtered.length&&<p className="muted">Nenhuma página encontrada.</p>}</aside>
 <main className="docs-main">{notice&&<p role="status" className="docs-notice">{notice}</p>}{!page?<div className="docs-empty">
-<span className="eyebrow">DOCUMENTAÇÃO COMPARTILHADA</span>
+<header className="library-cover"><span className="eyebrow"><Icon name="book" size={17}/> BASE DE CONHECIMENTO</span>
 <h1>Biblioteca de atendimento</h1>
-<p>Organize orientações, guias e informações úteis em páginas pesquisáveis. Selecione uma página para ler{isAdmin?' ou crie a primeira documentação':''}.</p><div className="library-count">{pages.length} páginas · {new Set(pages.map(p=>p.space)).size} áreas</div>
-<div className="library-grid">{[...new Set(filtered.map(p=>p.space))].map(space=><details className="library-category" key={space+Boolean(query.trim())} open={Boolean(query.trim())}><summary>{space} <small>{filtered.filter(p=>p.space===space).length}</small></summary>{filtered.filter(p=>p.space===space).map(p=><button key={p.id} onClick={()=>open(p)}>{p.title} <span aria-hidden="true">↗</span></button>)}</details>)}</div>
+<p>Abra uma categoria para consultar relatos, perguntas de triagem e orientações de registro.</p><div className="library-count">{pages.length} páginas · {new Set(pages.map(p=>p.space)).size} áreas</div></header><h2 className="area-heading">Explorar por categoria</h2>
+<div className="library-grid">{[...new Set(filtered.map(p=>p.space))].map(space=><details className="library-category" key={space+Boolean(query.trim())} open={Boolean(query.trim())}><AreaSummary space={space} count={filtered.filter(p=>p.space===space).length}/>{filtered.filter(p=>p.space===space).map(p=><button key={p.id} onClick={()=>open(p)}>{p.title} <span aria-hidden="true">↗</span></button>)}</details>)}</div>
 </div>:<>
 <header className="docs-header">
 <span>{page.space} / {page.title||'Nova página'}</span>
