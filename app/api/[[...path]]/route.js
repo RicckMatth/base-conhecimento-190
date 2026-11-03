@@ -36,7 +36,7 @@ function entryPayload(v) {
   const code=string(v.code,70).toUpperCase(),title=string(v.title,200),category=string(v.category,80),
     summary=string(v.summary,1000),body=string(v.body,16000),priority=string(v.priority,20);
   const tags=Array.isArray(v.tags)?v.tags.slice(0,30).map(x=>string(x,50)).filter(Boolean):[];
-  if(!code||!title||!category||!summary||!body||!['Crítica','Alta','Média','Baixa'].includes(priority)) throw Error('Preencha código, título, categoria, prioridade, resumo e conteúdo.');
+  if(!code||!title||!category||!summary||!body||!['Crítica','Alta','Média','Baixa','Consulta'].includes(priority)) throw Error('Preencha código, título, categoria, prioridade, resumo e conteúdo.');
   return {code,title,category,summary,body,priority,tags};
 }
 async function createLoginSession(u) {
