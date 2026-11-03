@@ -53,6 +53,7 @@ export default function Documentation({isAdmin,active,onExit}){
  const actions=[['↶','Desfazer','undo'],['↷','Refazer','redo'],['B','Negrito','toggleBold'],['I','Itálico','toggleItalic'],['U','Sublinhado','toggleUnderline'],['S','Tachado','toggleStrike'],['Marca','Destacar','toggleHighlight'],['• Lista','Lista com marcadores','toggleBulletList'],['1. Lista','Lista numerada','toggleOrderedList'],['☑','Checklist','toggleTaskList'],['❝','Citação','toggleBlockquote'],['</>','Código','toggleCodeBlock'],['—','Divisor','setHorizontalRule']];
  const depth=p=>{let n=0,current=p;const seen=new Set();while(current?.parent_id&&!seen.has(current.id)&&n<10){seen.add(current.id);n++;current=pages.find(x=>x.id===current.parent_id);}return n;};
  const filtered=pages.filter(p=>(p.title+' '+p.space+' '+p.content.replace(/<[^>]*>/g,' ')).toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR')));
+ const highlights=['SAÍDA COM FILHO APÓS DISCUSSÃO','FALSA CENTRAL BANCÁRIA','INFORMAÇÕES DIVERGENTES'].map(title=>pages.find(item=>item.title===title&&item.status==='published')).filter(Boolean);
  return <section className={'docs-workspace library-wide'+(indexOpen?' index-open':'')}>
 <header className="library-bar"><button className="btn secondary" onClick={onExit}>← Voltar ao painel</button><b>Biblioteca 190</b><button className="btn secondary" onClick={async e=>{const workspace=e.currentTarget.closest('section');try{if(document.fullscreenElement)await document.exitFullscreen();else await workspace.requestFullscreen();}catch{setNotice('Este navegador permite apenas o modo de tela ampliada.');}}}>Tela cheia</button><button className="btn secondary library-index" onClick={()=>setIndexOpen(!indexOpen)} aria-expanded={indexOpen}>Índice</button></header>
 <aside className="docs-sidebar">
@@ -65,7 +66,11 @@ export default function Documentation({isAdmin,active,onExit}){
 <main className="docs-main">{notice&&<p role="status" className="docs-notice">{notice}</p>}{!page?<div className="docs-empty">
 <header className="library-cover"><span className="eyebrow"><Icon name="book" size={17}/> BASE DE CONHECIMENTO</span>
 <h1>Biblioteca de atendimento</h1>
-<p>Abra uma categoria para consultar relatos, perguntas de triagem e orientações de registro.</p><div className="library-count">{pages.length} páginas · {new Set(pages.map(p=>p.space)).size} áreas</div></header><h2 className="area-heading">Explorar por categoria</h2>
+<p>Encontre perguntas de triagem e exemplos de registro para a situação que você está atendendo.</p>
+<label className="library-search"><Icon name="search"/><input type="search" aria-label="Buscar em toda a biblioteca" placeholder="Que situação você quer consultar?" value={query} onChange={e=>setQuery(e.target.value)}/></label>
+<div className="cover-emblem" aria-hidden="true"><span>190</span><i>Biblioteca</i></div><div className="library-count">{pages.length} páginas · {new Set(pages.map(p=>p.space)).size} áreas</div></header>
+{!query.trim()&&highlights.length>0&&<section className="guide-shelf"><h2 className="area-heading">Guias em destaque</h2><div>{highlights.map((item,i)=><button key={item.id} onClick={()=>open(item)}><span className="guide-label"><Icon name={['users','lock','audit'][i]}/>{item.space}</span><strong>{item.title.toLocaleLowerCase('pt-BR')}</strong><span className="guide-action">Ler guia <Icon name="arrow" size={16}/></span></button>)}</div></section>}
+<h2 className="area-heading">{query.trim()?'Resultados da busca':'Explorar por categoria'}</h2>{query.trim()&&!filtered.length&&<p role="status">Nenhum guia encontrado. Tente outra palavra ou <button className="btn secondary" onClick={()=>setQuery('')}>limpe a busca</button>.</p>}
 <div className="library-grid">{[...new Set(filtered.map(p=>p.space))].map(space=><details className="library-category" key={space+Boolean(query.trim())} open={Boolean(query.trim())}><AreaSummary space={space} count={filtered.filter(p=>p.space===space).length}/>{filtered.filter(p=>p.space===space).map(p=><button key={p.id} onClick={()=>open(p)}>{p.title} <span aria-hidden="true">↗</span></button>)}</details>)}</div>
 </div>:<>
 <header className="docs-header">
