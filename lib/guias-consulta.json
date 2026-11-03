@@ -390,5 +390,57 @@
       "rumo",
       "paradeiro"
     ]
+  },
+  {
+    "code": "GUIA-601",
+    "title": "REFERÊNCIA EM LOCAL SEM NUMERAÇÃO",
+    "category": "Registro do atendimento",
+    "priority": "Consulta",
+    "summary": "Diferencie o local da ocorrência do ponto onde alguém pode indicar a entrada. Registre referências que sejam visíveis no sentido de chegada.",
+    "body": "Diferencie o local da ocorrência do ponto onde alguém pode indicar a entrada. Registre referências que sejam visíveis no sentido de chegada.\n\nPerguntas de triagem:\nQual é a esquina mais próxima?\nEm qual lado está o acesso?\nO ponto informado é o do fato ou o de encontro?",
+    "tags": [
+      "sem número",
+      "esquina",
+      "entrada"
+    ]
+  },
+  {
+    "code": "GUIA-602",
+    "title": "ATUALIZAÇÃO DURANTE O ATENDIMENTO",
+    "category": "Registro do atendimento",
+    "priority": "Consulta",
+    "summary": "Acrescente o horário da nova observação e identifique o que mudou desde o primeiro contato. Preserve o registro original para reconstruir a sequência.",
+    "body": "Acrescente o horário da nova observação e identifique o que mudou desde o primeiro contato. Preserve o registro original para reconstruir a sequência.\n\nPerguntas de triagem:\nQuem observou a mudança?\nA que horas?\nQual informação anterior precisa ser atualizada?",
+    "tags": [
+      "retorno",
+      "atualização",
+      "cronologia"
+    ]
+  },
+  {
+    "code": "GUIA-603",
+    "title": "DESCRIÇÃO DE VEÍCULOS SEM PLACA COMPLETA",
+    "category": "Registro do atendimento",
+    "priority": "Consulta",
+    "summary": "Separe características observadas de estimativas. Registre a parte legível da placa e indique quais caracteres ficaram incertos.",
+    "body": "Separe características observadas de estimativas. Registre a parte legível da placa e indique quais caracteres ficaram incertos.\n\nPerguntas de triagem:\nQuais caracteres foram lidos com segurança?\nQual a cor percebida?\nHá marca distintiva visível?",
+    "tags": [
+      "placa incompleta",
+      "veículo",
+      "descrição"
+    ]
+  },
+  {
+    "code": "GUIA-604",
+    "title": "SOLICITANTE DISTANTE DO LOCAL",
+    "category": "Registro do atendimento",
+    "priority": "Consulta",
+    "summary": "Uma pessoa pode ligar de outro bairro ou município. Identifique o endereço do fato e a origem da informação antes de atribuir atualidade ao relato.",
+    "body": "Uma pessoa pode ligar de outro bairro ou município. Identifique o endereço do fato e a origem da informação antes de atribuir atualidade ao relato.\n\nPerguntas de triagem:\nOnde ocorreu o fato?\nQuem está no local?\nQuando houve o último contato direto?",
+    "tags": [
+      "terceiros",
+      "outra cidade",
+      "localização"
+    ]
   }
 ]
