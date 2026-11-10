@@ -1,6 +1,7 @@
 import {put,get,del} from '@vercel/blob';
 import {normalizeImage,readLimited,storeAsset,readableAsset,deleteAsset,requireEditor,importExternalImage} from '../../../lib/documentation-assets.js';
 import {saveDocument,saveDraft,uuid} from '../../../lib/documentation-store.js';
+import {listDocumentationSpaces,createDocumentationSpace,updateDocumentationSpace} from '../../../lib/documentation-spaces.js';
 import {cleanDocument} from '../../../lib/documentation.js';
 import { newFeedbackTicket,readFeedbackTicket,learnableQuestions } from '../../../lib/question-feedback.js';
 import { withLearnedTriage,questionsFor } from '../../../lib/triage.js';
@@ -148,8 +149,17 @@ async function gate(request,method,ctx){
     if(method==='DELETE'){if(key!=='new'&&!uuid(key))return failure('Rascunho inválido.');await db().query('DELETE FROM documentation_drafts WHERE user_id=$1 AND page_key=$2',[u.id,key]);return reply({ok:true});}
   }
   if(route==='/documentation'&&method==='GET'){
-    const rows=await db().query("SELECT p.*,u.display_name AS author FROM documentation_pages p LEFT JOIN users u ON u.id=p.author_id WHERE ($1 OR p.status='published') ORDER BY p.space,p.title",[u.role==='admin']);
-    return reply({pages:rows.rows});
+    const [rows,spaces]=await Promise.all([
+      db().query("SELECT p.*,u.display_name AS author FROM documentation_pages p LEFT JOIN users u ON u.id=p.author_id WHERE ($1 OR p.status='published') ORDER BY p.space,p.title",[u.role==='admin']),
+      listDocumentationSpaces(db())
+    ]);
+    return reply({pages:rows.rows,spaces});
+  }
+  if(route==='/documentation/spaces'&&method==='POST'){
+    try{return reply(await createDocumentationSpace(db(),u,await input(request,2500)),201);}catch(e){return failure(e.message,e.status||400);}
+  }
+  if(route==='/documentation/spaces'&&method==='PATCH'){
+    try{return reply(await updateDocumentationSpace(db(),u,await input(request,2500)));}catch(e){return failure(e.message,e.status||400);}
   }
   if(route==='/documentation/history'&&method==='GET'){
     const denied=requireRole(u,true);if(denied)return denied;
