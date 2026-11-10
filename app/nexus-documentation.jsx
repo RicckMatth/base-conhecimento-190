@@ -139,7 +139,7 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
  const [blockPalette,setBlockPalette]=useState(null),[emojiPicker,setEmojiPicker]=useState(false),[exportMenu,setExportMenu]=useState(false),[sideOpen,setSideOpen]=useState(true),[newSpace,setNewSpace]=useState(false),[spaceValue,setSpaceValue]=useState(''),[history,setHistory]=useState([]);
  const [dark,setDark]=useState(true);
  const [spacesExtra,setSpacesExtra]=useState([]);
- const pageRef=useRef(null),timer=useRef(null),draftRevision=useRef(0),baseline=useRef(''),savedRef=useRef('');
+ const pageRef=useRef(null),imageInput=useRef(null),timer=useRef(null),draftRevision=useRef(0),baseline=useRef(''),savedRef=useRef('');
  pageRef.current=page;
  const isEditing=mode==='edit'&&isAdmin;
  const currentMeta=page?.nexus_meta||{};
@@ -195,7 +195,22 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
  function changeBlock(index,block){updateBlocks((currentMeta.blocks||[]).map((b,i)=>i===index?block:b));}
  function blockMove(index,direction){const items=[...(currentMeta.blocks||[])],n=index+direction;if(n<0||n>=items.length)return;[items[index],items[n]]=[items[n],items[index]];updateBlocks(items);}
  function addBlock(type,index){const items=[...(currentMeta.blocks||[])];items.splice(index??items.length,0,newBlock(type));updateBlocks(items);setShowPalette(false);setBlockPalette(null);}
- async function toggleFav(){if(!isAdmin||!page||busy)return;if(isEditing){patchMeta({favorite:!currentMeta.favorite});return;}setBusy(true);try{const res=await api('',{method:'POST',body:JSON.stringify({...page,nexus_meta:{...currentMeta,favorite:!currentMeta.favorite}})});const next={...res.page,nexus_meta:metaFor(res.page)};setPage(next);baseline.current=JSON.stringify(next);savedRef.current=JSON.stringify(next);await reload();setSaveState('Favorito salvo no servidor');}catch(e){setNotice(e.message);}finally{setBusy(false);}}
+ async async function uploadImage(file){
+   if(!isEditing||!file)return;
+   if(file.size>3145728){setNotice('A imagem deve ter até 3 MB.');return;}
+   setBusy(true);setSaveState('Enviando imagem…');
+   try{
+     const r=await fetch('/api/documentation/assets',{method:'POST',credentials:'same-origin',headers:{'Content-Type':file.type},body:file});
+     const d=await r.json();if(!r.ok)throw Error(d.error||'Falha ao enviar imagem.');
+     const src=String(d.src||'');
+     if(!/^\/api\/documentation\/assets\/[0-9a-f-]{36}$/.test(src))throw Error('Endereço de imagem inválido.');
+     const alt=file.name.replace(/[<>"']/g,'').slice(0,100);
+     const block={...newBlock('rich'),content:'<figure data-type="doc-image"><img src="'+src+'" width="720" alt="'+alt+'"></figure>'};
+     updateBlocks([...(pageRef.current?.nexus_meta?.blocks||[]),block]);
+     setSaveState('Imagem anexada, aguardando publicação');
+   }catch(e){setNotice(e.message);}finally{setBusy(false);}
+ }
+ function toggleFav(){if(!isAdmin||!page||busy)return;if(isEditing){patchMeta({favorite:!currentMeta.favorite});return;}setBusy(true);try{const res=await api('',{method:'POST',body:JSON.stringify({...page,nexus_meta:{...currentMeta,favorite:!currentMeta.favorite}})});const next={...res.page,nexus_meta:metaFor(res.page)};setPage(next);baseline.current=JSON.stringify(next);savedRef.current=JSON.stringify(next);await reload();setSaveState('Favorito salvo no servidor');}catch(e){setNotice(e.message);}finally{setBusy(false);}}
  async function viewHistory(){if(!page?.id)return;try{const d=await api('/history?id='+page.id);setHistory(d.versions||[]);}catch(e){setNotice(e.message);}}
  function download(content,name,mime){const url=URL.createObjectURL(new Blob([content],{type:mime}));const a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);}
  function exportDocument(kind){
@@ -243,7 +258,7 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
        <button className="nx-icon-button" title="Alternar tema" onClick={()=>{const next=!dark;setDark(next);localStorage.setItem('nx_docs_theme',next?'dark':'light');}}>{dark?'☼':'☾'}</button></div>
       </header>
       <div className="nx-insert-bar">
-        <span className="nx-insert-label">✧ &nbsp; Inserir:</span>{TYPES.map(([type,label,symbol])=><button key={type} disabled={!isEditing||!page} onClick={()=>addBlock(type)} title={label} className={['tabs','table'].includes(type)?'nx-featured '+type:''}>{symbol} <span>{label}</span></button>)}
+        <span className="nx-insert-label">✧ &nbsp; Inserir:</span>{TYPES.map(([type,label,symbol])=><button key={type} disabled={!isEditing||!page} onClick={()=>addBlock(type)} title={label} className={['tabs','table'].includes(type)?'nx-featured '+type:''}>{symbol} <span>{label}</span></button>)}{isAdmin&&<><button disabled={!isEditing||busy} title="Inserir imagem" onClick={()=>imageInput.current?.click()}>▧ <span>Imagem</span></button><input ref={imageInput} type="file" hidden accept="image/png,image/jpeg,image/webp" onChange={e=>{const f=e.target.files?.[0];e.target.value='';void uploadImage(f);}}/></>}
       </div>
       <main className="nx-scroll" aria-label="Editor e biblioteca de conhecimento">
        {notice&&<div className="nx-toast" role="status"><span>{notice}</span><button onClick={()=>setNotice('')}>×</button></div>}
@@ -258,7 +273,7 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
           <div className="nx-document-header"><input className="nx-doc-title" aria-label="Título do documento" value={page.title||''} readOnly={!isEditing} onChange={e=>patch({title:e.target.value})} placeholder="Título do documento…"/>
           <input className="nx-doc-subtitle" aria-label="Descrição da página" value={currentMeta.subtitle||''} readOnly={!isEditing} onChange={e=>patchMeta({subtitle:e.target.value})} placeholder="Adicione uma breve descrição ou contexto da página…"/></div>
           <div className="nx-edit-controls">{isAdmin&&<>{!isEditing?<button className="nx-primary-small" onClick={()=>{baseline.current=JSON.stringify(page);setMode('edit');}}>✎ Editar página</button>:<>
-            <select aria-label="Espaço do documento" value={page.space} onChange={e=>patch({space:e.target.value})}>{[...new Set([page.space,...spaces])].map(x=><option key={x}>{x}</option>)}</select>
+            <select aria-label="Espaço do documento" value={page.space} onChange={e=>patch({space:e.target.value})}>{[...new Set([page.space,...spaces])].map(x=><option key={x}>{x}</option>)}</select><select aria-label="Página superior" value={page.parent_id||""} onChange={e=>patch({parent_id:e.target.value||null})}><option value="">Sem página superior</option>{pages.filter(p=>p.id!==page.id).map(p=><option key={p.id} value={p.id}>{p.title}</option>)}</select>
             <button className="nx-muted-button" disabled={busy} onClick={()=>persistDraft()}>Salvar recuperação</button><button className="nx-muted-button" disabled={busy} onClick={()=>save('draft')}>Salvar rascunho</button><button className="nx-primary-small" disabled={busy} onClick={()=>save('published')}>{busy?'Salvando…':'Publicar'}</button>
           </>}{page.id&&<button className="nx-muted-button" onClick={viewHistory}>Histórico</button>}</>}</div>
           <div className="nx-blocks">{blockList.map((block,index)=><Block key={block.id} block={block} index={index} total={blockList.length} editable={isEditing}
