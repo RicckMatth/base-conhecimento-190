@@ -151,7 +151,7 @@ async function gate(request,method,ctx){
   if(route==='/documentation'&&method==='GET'){
     const [rows,spaces]=await Promise.all([
       db().query("SELECT p.*,u.display_name AS author FROM documentation_pages p LEFT JOIN users u ON u.id=p.author_id WHERE ($1 OR p.status='published') ORDER BY p.space,p.title",[u.role==='admin']),
-      listDocumentationSpaces(db())
+      listDocumentationSpaces(db(),u.role==='admin')
     ]);
     return reply({pages:rows.rows,spaces});
   }
