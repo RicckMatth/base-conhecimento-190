@@ -63,10 +63,11 @@ function InlineToolbar({enabled}){
  },[enabled]);
  if(!enabled||!coords)return null;
  const format=(cmd,value)=>{document.execCommand(cmd,false,value);setCoords(null);};
+ const highlight=kind=>{const sel=window.getSelection();if(!sel?.rangeCount||sel.isCollapsed)return;const range=sel.getRangeAt(0);const wrap=document.createElement('span');wrap.className=kind;wrap.appendChild(range.extractContents());range.insertNode(wrap);const editable=wrap.closest('.nx-rich[contenteditable="true"]');editable?.dispatchEvent(new InputEvent('input',{bubbles:true}));sel.removeAllRanges();setCoords(null);};
  return <div className="nx-floating-toolbar" style={{left:coords.left,top:coords.top}} role="toolbar" aria-label="Formatação de texto selecionado">
   {[['B','bold'],['I','italic'],['U','underline'],['S','strikeThrough']].map(([label,cmd])=><button key={cmd} onMouseDown={e=>e.preventDefault()} onClick={()=>format(cmd)} title={cmd}>{label}</button>)}
   <span/>
-  {['#fef08a','#bbf7d0','#bfdbfe','#fbcfe8'].map(color=><button key={color} className="nx-color" style={{background:color}} onMouseDown={e=>e.preventDefault()} onClick={()=>format('hiliteColor',color)} aria-label={'Destacar '+color}/>)}
+  {[['#fef08a','hl-yellow'],['#bbf7d0','hl-green'],['#bfdbfe','hl-blue'],['#fbcfe8','hl-pink']].map(([color,kind])=><button key={color} className="nx-color" style={{background:color}} onMouseDown={e=>e.preventDefault()} onClick={()=>highlight(kind)} aria-label={'Destacar '+color}/>)}
  </div>;
 }
 function Block({block,index,total,editable,onChange,onMove,onDuplicate,onDelete,onInsert,openPalette}) {
