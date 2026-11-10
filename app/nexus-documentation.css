@@ -232,3 +232,12 @@
 .nx-floating-toolbar span{width:1px;height:16px;background:#475569;margin:0 3px}
 .nx-floating-toolbar .nx-color{min-width:16px;width:16px;height:16px;border-radius:50%!important;border:1px solid #ffffff40!important;margin:0 1px}
 .nx-floating-toolbar .nx-color:hover{transform:scale(1.17)}
+
+
+/* Ao abrir a documentação, o workspace assume a janela inteira. A navegação Base 190 volta pelo rodapé Nexus. */
+.shell:has(.nexus-docs){display:block}
+.shell:has(.nexus-docs)>.sidebar{display:none}
+.shell:has(.nexus-docs)>.main{min-width:0;width:100%;height:100vh}
+.main:has(.nexus-docs) .content{height:100vh}
+.main:has(.nexus-docs) .content>div:has(.nexus-docs){height:100vh}
+@media(max-width:760px){.shell:has(.nexus-docs)>.main{min-height:100dvh}.nexus-docs{height:100dvh}}
