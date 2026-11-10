@@ -34,7 +34,7 @@ async function api(path='',options={}){
 }
 function Rich({html='',onChange,editable=false,placeholder='Digite aqui…',className=''}) {
  const ref=useRef(null);
- useEffect(()=>{if(ref.current)ref.current.innerHTML=html||'';},[ref,editable]);
+ useEffect(()=>{if(ref.current&&document.activeElement!==ref.current&&ref.current.innerHTML!==(html||''))ref.current.innerHTML=html||'';},[html,editable]);
  function paste(e){
    e.preventDefault();
    const text=e.clipboardData.getData('text/plain');
@@ -45,6 +45,29 @@ function Rich({html='',onChange,editable=false,placeholder='Digite aqui…',clas
  }
  return <div ref={ref} className={'nx-rich '+className} contentEditable={editable} suppressContentEditableWarning data-placeholder={placeholder} role={editable?'textbox':undefined} aria-multiline={editable?true:undefined}
    onInput={e=>onChange?.(e.currentTarget.innerHTML)} onPaste={paste}/>;
+}
+function InlineToolbar({enabled}){
+ const [coords,setCoords]=useState(null);
+ useEffect(()=>{
+  if(!enabled){setCoords(null);return;}
+  const update=()=>{
+    const selection=window.getSelection();
+    if(!selection||selection.isCollapsed||!selection.toString().trim()){setCoords(null);return;}
+    const node=selection.anchorNode?.parentElement;
+    if(!node?.closest?.('.nexus-docs .nx-rich[contenteditable="true"]')){setCoords(null);return;}
+    const rect=selection.getRangeAt(0).getBoundingClientRect();
+    if(rect.width===0&&rect.height===0){setCoords(null);return;}
+    setCoords({left:Math.max(10,Math.min(window.innerWidth-260,rect.left+rect.width/2-125)),top:Math.max(9,rect.top-48)});
+  };
+  document.addEventListener('selectionchange',update);return()=>document.removeEventListener('selectionchange',update);
+ },[enabled]);
+ if(!enabled||!coords)return null;
+ const format=(cmd,value)=>{document.execCommand(cmd,false,value);setCoords(null);};
+ return <div className="nx-floating-toolbar" style={{left:coords.left,top:coords.top}} role="toolbar" aria-label="Formatação de texto selecionado">
+  {[['B','bold'],['I','italic'],['U','underline'],['S','strikeThrough']].map(([label,cmd])=><button key={cmd} onMouseDown={e=>e.preventDefault()} onClick={()=>format(cmd)} title={cmd}>{label}</button>)}
+  <span/>
+  {['#fef08a','#bbf7d0','#bfdbfe','#fbcfe8'].map(color=><button key={color} className="nx-color" style={{background:color}} onMouseDown={e=>e.preventDefault()} onClick={()=>format('hiliteColor',color)} aria-label={'Destacar '+color}/>)}
+ </div>;
 }
 function Block({block,index,total,editable,onChange,onMove,onDuplicate,onDelete,onInsert,openPalette}) {
  const set=patch=>onChange({...block,...patch});
@@ -121,19 +144,20 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
  const isEditing=mode==='edit'&&isAdmin;
  const currentMeta=page?.nexus_meta||{};
  const dirty=Boolean(page&&isEditing&&JSON.stringify(page)!==baseline.current);
+ const notRecovered=Boolean(page&&JSON.stringify(page)!==savedRef.current);
  const patch=useCallback(change=>setPage(p=>p?{...p,...change}:p),[]);
  const patchMeta=useCallback(change=>setPage(p=>p?{...p,nexus_meta:{...p.nexus_meta,...change}}:p),[]);
  const updateBlocks=useCallback(blocks=>patchMeta({blocks}),[patchMeta]);
  async function reload(){try{const d=await api();setPages(d.pages||[]);return d.pages||[];}catch(e){setNotice(e.message);return []}}
  useEffect(()=>{reload();const theme=localStorage.getItem('nx_docs_theme');setDark(theme!=='light');},[]);
- useEffect(()=>{const nav=e=>{if(active&&dirty&&saveState!=='Recuperação salva'){e.preventDefault();setNotice('Existem alterações ainda não recuperadas. Salve seu rascunho antes de sair.');}};window.addEventListener('base190:before-navigation',nav);return()=>window.removeEventListener('base190:before-navigation',nav);},[active,dirty,saveState]);
+ useEffect(()=>{const nav=e=>{if(active&&dirty&&notRecovered){e.preventDefault();setNotice('Existem alterações ainda não recuperadas. Salve seu rascunho antes de sair.');}};window.addEventListener('base190:before-navigation',nav);return()=>window.removeEventListener('base190:before-navigation',nav);},[active,dirty,notRecovered]);
  useEffect(()=>{const keydown=e=>{if(!active)return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();setCommand(v=>!v);}if(e.key==='Escape'){setCommand(false);setShowPalette(false);setEmojiPicker(false);setExportMenu(false);}};window.addEventListener('keydown',keydown);return()=>window.removeEventListener('keydown',keydown);},[active]);
  useEffect(()=>{if(!dirty)return;const warn=e=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty]);
  const filtered=useMemo(()=>pages.filter(p=>((p.title||'')+' '+(p.space||'')+' '+(p.nexus_meta?.subtitle||'')+' '+(p.content||'').replace(/<[^>]+>/g,' ')).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(query.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase())),[pages,query]);
  const spaces=useMemo(()=>[...new Set([...pages.map(p=>p.space),...spacesExtra])], [pages,spacesExtra]);
  async function open(p,edit=false){
    if(busy)return;
-   if(dirty&&saveState!=='Recuperação salva'){setNotice('Salve a recuperação desta página antes de navegar.');return;}
+   if(dirty&&notRecovered){setNotice('Salve a recuperação desta página antes de navegar.');return;}
    draftRevision.current=0;setNotice('');setHistory([]);setMode(edit?'edit':'view');
    const next={...p,nexus_meta:metaFor(p)};
    try{
@@ -171,7 +195,7 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
  function changeBlock(index,block){updateBlocks((currentMeta.blocks||[]).map((b,i)=>i===index?block:b));}
  function blockMove(index,direction){const items=[...(currentMeta.blocks||[])],n=index+direction;if(n<0||n>=items.length)return;[items[index],items[n]]=[items[n],items[index]];updateBlocks(items);}
  function addBlock(type,index){const items=[...(currentMeta.blocks||[])];items.splice(index??items.length,0,newBlock(type));updateBlocks(items);setShowPalette(false);setBlockPalette(null);}
- function toggleFav(){if(!isAdmin)return;patchMeta({favorite:!currentMeta.favorite});}
+ async function toggleFav(){if(!isAdmin||!page||busy)return;if(isEditing){patchMeta({favorite:!currentMeta.favorite});return;}setBusy(true);try{const res=await api('',{method:'POST',body:JSON.stringify({...page,nexus_meta:{...currentMeta,favorite:!currentMeta.favorite}})});const next={...res.page,nexus_meta:metaFor(res.page)};setPage(next);baseline.current=JSON.stringify(next);savedRef.current=JSON.stringify(next);await reload();setSaveState('Favorito salvo no servidor');}catch(e){setNotice(e.message);}finally{setBusy(false);}}
  async function viewHistory(){if(!page?.id)return;try{const d=await api('/history?id='+page.id);setHistory(d.versions||[]);}catch(e){setNotice(e.message);}}
  function download(content,name,mime){const url=URL.createObjectURL(new Blob([content],{type:mime}));const a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);}
  function exportDocument(kind){
@@ -194,6 +218,7 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
  const status=page?.status==='published'?'Oficial / Publicado':'Rascunho';
  const blockList=currentMeta.blocks||[];
  return <section className={'nexus-docs '+(dark?'nx-dark':'nx-light')+(sideOpen?'':' nx-collapsed')}>
+    <InlineToolbar enabled={isEditing}/>
     <aside className="nx-sidebar">
       <div className="nx-workspace-head"><div className="nx-logo">N</div><div className="nx-workspace-title"><strong>Base 190 <span>PRO</span></strong><small>Centro de Inteligência Jurídica</small></div>
       <button className="nx-icon-button" title="Recolher sidebar" onClick={()=>setSideOpen(false)}>◧</button></div>
