@@ -218,6 +218,54 @@ async function gate(request,method,ctx){
 
   }
 
+  // Gestão de piso — autenticação existente; leitura e tratamento restritos à administração.
+  if(route==='/floor/events'&&method==='GET'){
+    if(u.role!=='admin')return reply({events:[],summary:null,canView:false});
+    const [rows,counts]=await Promise.all([
+      db().query('SELECT id,protocol,kind,desk,category,urgency,description,asset,status,created_at,updated_at FROM floor_events ORDER BY created_at DESC LIMIT 250'),
+      db().query("SELECT kind,count(*)::int AS total FROM floor_events WHERE status<>'Resolvido' GROUP BY kind")
+    ]);
+    const summary={celular:0,computador:0,open:0};
+    for(const row of counts.rows){summary[row.kind]=row.total;summary.open+=row.total;}
+    return reply({events:rows.rows,summary,canView:true});
+  }
+  if(route==='/floor/events'&&method==='POST'){
+    if(await isRateLimited('floor-events:'+u.id,12))return failure('Limite de 12 registros em 15 minutos. Aguarde antes de enviar novamente.',429);
+    const v=await input(request,2500);
+    const desk=Number(v.desk),kind=string(v.kind,20),category=string(v.category,120),
+      description=string(v.description,600),asset=string(v.asset,100);
+    if(!Number.isSafeInteger(desk)||desk<1||desk>999)return failure('Informe um número de PA entre 1 e 999.');
+    const cellOptions=[
+      'Uso de celular na bancada de atendimento','Uso de celular durante atendimento ativo',
+      'Possível captura de informações da operação'
+    ];
+    const techOptions=['Hardware & Periféricos','Sistema & Lentidão','Rede & VoIP','Energia & Elétrica'];
+    if(kind==='celular'&&!cellOptions.includes(category) || kind==='computador'&&!techOptions.includes(category) ||
+      !['celular','computador'].includes(kind))return failure('Categoria de reporte inválida.');
+    const urgency=kind==='computador'?string(v.urgency,40):'A verificar';
+    if(kind==='computador'&&(!['Baixo','Moderado','Crítico (PA Parada)'].includes(urgency)||description.length<5))
+      return failure('Informe o impacto operacional e descreva o problema com pelo menos 5 caracteres.');
+    // Não guarda autor do reporte; logs do provedor, contudo, podem existir.
+    const id=randomUUID(),protocol=(kind==='celular'?'COMP-':'INC-')+id.replace(/-/g,'').slice(0,12).toUpperCase();
+    await db().query(`INSERT INTO floor_events
+      (id,protocol,kind,desk,category,urgency,description,asset)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [id,protocol,kind,desk,category,urgency,description,kind==='computador'?asset:'']);
+    await recordFailure('floor-events:'+u.id);
+    return reply({protocol,message:'Registro criado e disponível à gestão.'},201);
+  }
+  if(route==='/floor/events'&&method==='PATCH'){
+    const denied=requireRole(u,true);if(denied)return denied;
+    const v=await input(request,2000),id=string(v.id,50),status=string(v.status,30);
+    if(!/^[0-9a-f-]{36}$/i.test(id)||!['Em atendimento','Resolvido'].includes(status))
+      return failure('Identificador ou estado inválido.');
+    const result=await db().query(`UPDATE floor_events SET status=$2,updated_at=now()
+       WHERE id=$1 AND status<>'Resolvido' RETURNING protocol`,[id,status]);
+    if(!result.rowCount)return failure('Registro inexistente ou já concluído.',404);
+    await log(u.id,'floor_event_status',result.rows[0].protocol+': '+status);
+    return reply({message:'Estado do evento atualizado.'});
+  }
+
   const denied=requireRole(u,true);if(denied) return denied;
   if(route==='/admin/requests'&&method==='GET'){
     const v=await db().query('SELECT id,username,display_name,reason,status,created_at,resolved_at FROM access_requests ORDER BY created_at DESC LIMIT 250');
