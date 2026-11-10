@@ -5,6 +5,7 @@ import AnalysisFeedback from './analysis-feedback.jsx';
 import LegalReference from './legal-reference.jsx';
 import WritingReview from './writing-review.jsx';
 import StartupScreen from './startup-screen.jsx';
+import FloorControl from './floor-control.jsx';
 import { Icon, categoryIcon } from './icons.jsx';
 import { useEffect,useMemo,useRef,useState } from 'react';
 
@@ -355,7 +356,7 @@ export default function Home(){
     </form>
   </section>;
 
-  const links=[['home','Visão geral','home'],['docs','Base de conhecimento','book'],['catalog','Catálogo','book'],['brain','Cérebro 190','brain'],['extension','Integração 190','link']];
+  const links=[['home','Visão geral','home'],['docs','Base de conhecimento','book'],['catalog','Catálogo','book'],['brain','Cérebro 190','brain'],['extension','Integração 190','link'],['floor','Gestão de piso','shield']];
   const adminLinks=[['editor','Editar textos','edit'],['access','Autorizar acessos','users'],['rules','Regras do Cérebro','settings'],['audit','Auditoria','audit']];
   return <div className="shell">
     <aside className="sidebar">
@@ -366,7 +367,7 @@ export default function Home(){
       <div className="sidebar-bottom"><p className="who">{user.name}<br/><small>{user.username} • {isAdmin?'Admin':'Consulta'}</small></p><button className="nav-btn" onClick={logout} disabled={busy}><Icon name="logout"/> Sair</button></div>
     </aside>
     <div className="main">
-      <header className="topbar"><div><b>{screen==='docs'?'Base de conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='extension'?'Extensão integrada':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
+      <header className="topbar"><div><b>{screen==='docs'?'Base de conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='extension'?'Extensão integrada':screen==='floor'?'Gestão de piso':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
         <div className="btn-row"><button className="btn ghost tiny" onClick={activateExtension} type="button">{extensionOnline?'● Extensão conectada':'Abrir chat integrado'}</button><span className="badge">{isAdmin?'Administrador':'Usuário de consulta'}</span><Btn className="ghost tiny" onClick={theme}><Icon name={dark?'sun':'moon'} size={17}/>{dark?'Claro':'Escuro'}</Btn></div>
       </header>
       <main className="content spaced">
@@ -395,6 +396,7 @@ export default function Home(){
         </>}
 
         {docsOpened&&<div hidden={screen!=='docs'}><Documentation onExit={()=>go('home')} isAdmin={isAdmin} active={screen==='docs'}/></div>}
+        {screen==='floor'&&<FloorControl isAdmin={isAdmin}/>}
         {screen==='catalog'&&<>
           <div className="panel-head"><div><span className="eyebrow">BIBLIOTECA OPERACIONAL</span><h1>Catálogo de naturezas</h1><p className="muted">Busque por título, código, resumo, conteúdo ou palavra-chave.</p></div>{isAdmin&&<Btn onClick={()=>editEntry(null)}><Icon name="plus" size={18}/> Nova ficha</Btn>}</div>
           <div className="card catalog-filters"><div><label htmlFor="search">Pesquisa</label><input id="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Código, natureza, palavra-chave…"/></div><div><label htmlFor="category">Categoria</label><select id="category" value={cat} onChange={e=>setCat(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</select></div><div><label htmlFor="priority-filter">Prioridade sugerida</label><select id="priority-filter" value={priorityFilter} onChange={e=>setPriorityFilter(e.target.value)}>{['Todas','Crítica','Alta','Média','Consulta'].map(v=><option key={v}>{v}</option>)}</select></div></div>
