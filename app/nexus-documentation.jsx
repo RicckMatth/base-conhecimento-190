@@ -3,6 +3,11 @@ import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 
 const ICONS=['🚀','📘','⚡','🛠️','🎯','📊','🧩','🛡️','💡','🗂️','🏛️','🧪','🌐','🔥','✨','📌','🧠','💻','📚','⚖️','🚓'];
 const COVERS=['indigo','emerald','amber','blue','fuchsia','slate'];
+const SPACE_ICONS=['📁','📚','⚖️','🛡️','🚓','📘','🧠','🗂️','🏛️','📝','🎯','🔍','💡','📊','🧩','🚨','🧭','🚦','👥','🔐','⚡','✅','📌','🗺️','📂','🗃️','⭐','🌐','🏢','🔎','🛠️'];
+const DEFAULT_COVER={mode:'preset',imageId:null,from:'#4f46e5',to:'#9333ea',color:'#4f46e5',angle:115,overlay:18,position:50,caption:''};
+const UUID_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function coverStyle(meta){const c={...DEFAULT_COVER,...(meta?.cover||{})};if(c.mode==='solid')return {background:c.color};if(c.mode==='gradient')return {background:'linear-gradient('+c.angle+'deg,'+c.from+','+c.to+')'};if(c.mode==='image'&&UUID_RE.test(String(c.imageId||'')))return {backgroundImage:'linear-gradient(rgba(4,6,20,'+(c.overlay/100)+'),rgba(4,6,20,'+(c.overlay/100)+')),url(/api/documentation/assets/'+c.imageId+')',backgroundSize:'cover',backgroundPosition:'center '+c.position+'%'};return undefined;}
+
 const TYPES=[['h1','Título grande','H1'],['h2','Subtítulo','H2'],['h3','Título pequeno','H3'],['paragraph','Parágrafo','¶'],['tabs','Bloco de abas','▣'],['table','Tabela dinâmica','▦'],['callout','Painel de aviso','ⓘ'],['checklist','Checklist','☑'],['kanban','Quadro Kanban','☷'],['code','Código','</>'],['toggle','Expansível','▸'],['divider','Divisor','—']];
 const uid=()=>globalThis.crypto?.randomUUID?.()||'b-'+Math.random().toString(36).slice(2);
 const now=()=>new Date().toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
@@ -22,10 +27,10 @@ function newBlock(type='paragraph'){
 }
 const metaFor=page=>{
  const meta=page?.nexus_meta&&typeof page.nexus_meta==='object'?page.nexus_meta:{};
- return {icon:meta.icon||'📘',subtitle:meta.subtitle||'',coverIndex:Number.isInteger(meta.coverIndex)?meta.coverIndex:0,favorite:!!meta.favorite,
+ return {icon:meta.icon||'📘',subtitle:meta.subtitle||'',coverIndex:Number.isInteger(meta.coverIndex)?meta.coverIndex:0,cover:{...DEFAULT_COVER,...(meta.cover||{})},favorite:!!meta.favorite,
   blocks:Array.isArray(meta.blocks)&&meta.blocks.length?structuredClone(meta.blocks):[ {...newBlock('rich'),content:page?.content||'<p></p>'}]};
 };
-const empty=(space='Geral')=>({title:'Sem título',space,content:'',status:'draft',parent_id:null,nexus_meta:{icon:'📘',subtitle:'',coverIndex:0,favorite:false,blocks:[newBlock('paragraph')]}});
+const empty=(space='Geral')=>({title:'Sem título',space,content:'',status:'draft',parent_id:null,nexus_meta:{icon:'📘',subtitle:'',coverIndex:0,cover:{...DEFAULT_COVER},favorite:false,blocks:[newBlock('paragraph')]}});
 async function api(path='',options={}){
  const r=await fetch('/api/documentation'+path,{credentials:'same-origin',cache:'no-store',...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...options.headers}});
  let data={};try{data=await r.json();}catch{}
@@ -137,10 +142,10 @@ function Block({block,index,total,editable,onChange,onMove,onDuplicate,onDelete,
 export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
  const [pages,setPages]=useState([]),[page,setPage]=useState(null),[query,setQuery]=useState(''),[mode,setMode]=useState('view');
  const [busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[saveState,setSaveState]=useState(''),[showPalette,setShowPalette]=useState(false),[command,setCommand]=useState(false);
- const [blockPalette,setBlockPalette]=useState(null),[emojiPicker,setEmojiPicker]=useState(false),[exportMenu,setExportMenu]=useState(false),[sideOpen,setSideOpen]=useState(true),[newSpace,setNewSpace]=useState(false),[spaceValue,setSpaceValue]=useState(''),[history,setHistory]=useState([]);
+ const [blockPalette,setBlockPalette]=useState(null),[emojiPicker,setEmojiPicker]=useState(false),[exportMenu,setExportMenu]=useState(false),[sideOpen,setSideOpen]=useState(true),[spaceDialog,setSpaceDialog]=useState(null),[savingSpace,setSavingSpace]=useState(false),[history,setHistory]=useState([]);
  const [dark,setDark]=useState(true);
- const [spacesExtra,setSpacesExtra]=useState([]);
- const pageRef=useRef(null),imageInput=useRef(null),timer=useRef(null),draftRevision=useRef(0),baseline=useRef(''),savedRef=useRef('');
+ const [folderList,setFolderList]=useState([]),[coverEditor,setCoverEditor]=useState(null),[coverUploading,setCoverUploading]=useState(false);
+ const pageRef=useRef(null),imageInput=useRef(null),coverInput=useRef(null),timer=useRef(null),draftRevision=useRef(0),baseline=useRef(''),savedRef=useRef('');
  pageRef.current=page;
  const isEditing=mode==='edit'&&isAdmin;
  const currentMeta=page?.nexus_meta||{};
@@ -149,13 +154,14 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
  const patch=useCallback(change=>setPage(p=>p?{...p,...change}:p),[]);
  const patchMeta=useCallback(change=>setPage(p=>p?{...p,nexus_meta:{...p.nexus_meta,...change}}:p),[]);
  const updateBlocks=useCallback(blocks=>patchMeta({blocks}),[patchMeta]);
- async function reload(){try{const d=await api();setPages(d.pages||[]);return d.pages||[];}catch(e){setNotice(e.message);return []}}
+ async function reload(){try{const d=await api();setPages(d.pages||[]);setFolderList(d.spaces||[]);return d.pages||[];}catch(e){setNotice(e.message);return []}}
  useEffect(()=>{reload();const theme=localStorage.getItem('nx_docs_theme');setDark(theme!=='light');if(window.innerWidth<=760)setSideOpen(false);},[]);
  useEffect(()=>{const nav=e=>{if(active&&dirty&&notRecovered){e.preventDefault();setNotice('Existem alterações ainda não recuperadas. Salve seu rascunho antes de sair.');}};window.addEventListener('base190:before-navigation',nav);return()=>window.removeEventListener('base190:before-navigation',nav);},[active,dirty,notRecovered]);
- useEffect(()=>{const keydown=e=>{if(!active)return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();setCommand(v=>!v);}if(e.key==='Escape'){setCommand(false);setShowPalette(false);setEmojiPicker(false);setExportMenu(false);}};window.addEventListener('keydown',keydown);return()=>window.removeEventListener('keydown',keydown);},[active]);
+ useEffect(()=>{const keydown=e=>{if(!active)return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();setCommand(v=>!v);}if(e.key==='Escape'){setCommand(false);setShowPalette(false);setEmojiPicker(false);setExportMenu(false);setCoverEditor(null);setSpaceDialog(null);}};window.addEventListener('keydown',keydown);return()=>window.removeEventListener('keydown',keydown);},[active]);
  useEffect(()=>{if(!dirty||!notRecovered)return;const warn=e=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty,notRecovered]);
  const filtered=useMemo(()=>pages.filter(p=>((p.title||'')+' '+(p.space||'')+' '+(p.nexus_meta?.subtitle||'')+' '+(p.content||'').replace(/<[^>]+>/g,' ')).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(query.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase())),[pages,query]);
- const spaces=useMemo(()=>[...new Set([...pages.map(p=>p.space),...spacesExtra])], [pages,spacesExtra]);
+ const spaces=useMemo(()=>[...new Set([...folderList.map(f=>f.name),...pages.map(p=>p.space)])],[pages,folderList]);
+ const folderByName=useMemo(()=>Object.fromEntries(folderList.map(f=>[f.name,f])),[folderList]);
  async function open(p,edit=false){
    if(busy)return;
    if(dirty&&notRecovered){setNotice('Salve a recuperação desta página antes de navegar.');return;}
@@ -192,6 +198,64 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
   }catch(e){setNotice(e.message);setSaveState('Falha ao salvar');}
   finally{setBusy(false);}
  }
+
+ function openSpaceDialog(space=null){
+   if(!isAdmin)return;
+   if(dirty){setNotice('Publique ou salve o documento antes de editar as pastas.');return;}
+   setSpaceDialog(space?{kind:'edit',oldName:space.name,name:space.name,icon:space.icon||'📁',description:space.description||''}:{kind:'create',oldName:null,name:'',icon:'📁',description:''});
+ }
+ async function saveSpace(e){
+   e.preventDefault();
+   if(!spaceDialog||savingSpace||!isAdmin)return;
+   if(dirty){setNotice('Salve o documento antes de alterar pastas.');return;}
+   setSavingSpace(true);
+   try{
+     const old=spaceDialog.oldName;
+     const data=await api('/spaces',{method:spaceDialog.kind==='edit'?'PATCH':'POST',body:JSON.stringify(spaceDialog)});
+     const fresh=await reload();
+     if(pageRef.current?.id){
+       const current=fresh.find(p=>p.id===pageRef.current.id);
+       if(current){const next={...current,nexus_meta:metaFor(current)};setPage(next);baseline.current=JSON.stringify(next);savedRef.current=JSON.stringify(next);}
+     }
+     setSpaceDialog(null);
+     setNotice(spaceDialog.kind==='edit'?'Pasta atualizada. '+(data.moved||0)+' documento(s) preservado(s).':'Pasta criada e salva no servidor.');
+   }catch(err){setNotice(err.message);}
+   finally{setSavingSpace(false);}
+ }
+ function openCoverEditor(){
+   if(!isAdmin||!page)return;
+   setCoverEditor({index:currentMeta.coverIndex||0,cover:{...DEFAULT_COVER,...(currentMeta.cover||{})}});
+ }
+ function coverPatch(patch){setCoverEditor(d=>d?{...d,cover:{...d.cover,...patch}}:d);}
+ async function uploadCover(file){
+   if(!file||!isAdmin||coverUploading)return;
+   if(file.size>3145728){setNotice('A imagem da capa deve ter até 3 MB.');return;}
+   setCoverUploading(true);
+   try{
+     const response=await fetch('/api/documentation/assets',{method:'POST',credentials:'same-origin',headers:{'Content-Type':file.type},body:file});
+     const data=await response.json();
+     if(!response.ok)throw Error(data.error||'Falha ao enviar imagem da capa.');
+     if(!UUID_RE.test(String(data.id||'')))throw Error('Identificador de imagem inválido.');
+     coverPatch({mode:'image',imageId:data.id,position:50,overlay:18});
+     setNotice('Imagem carregada com segurança. Clique em Aplicar capa para salvar.');
+   }catch(err){setNotice(err.message);}
+   finally{setCoverUploading(false);}
+ }
+ async function applyCover(){
+   if(!isAdmin||!page||!coverEditor||busy||coverUploading)return;
+   const patch={coverIndex:coverEditor.index,cover:coverEditor.cover};
+   if(isEditing){patchMeta(patch);setCoverEditor(null);setNotice('Nova capa aplicada ao editor. Publique ou salve o rascunho para persistir.');return;}
+   setBusy(true);
+   try{
+     const result=await api('',{method:'POST',body:JSON.stringify({...page,nexus_meta:{...currentMeta,...patch}})});
+     const next={...result.page,nexus_meta:metaFor(result.page)};
+     setPage(next);baseline.current=JSON.stringify(next);savedRef.current=JSON.stringify(next);
+     await reload();setCoverEditor(null);setSaveState('Capa sincronizada');
+     setNotice('Capa personalizada e salva no servidor.');
+   }catch(err){setNotice(err.message);}
+   finally{setBusy(false);}
+ }
+
  async function createPage(space){const p=empty(space||page?.space||'Geral');await open(p,true);}
  function changeBlock(index,block){updateBlocks((currentMeta.blocks||[]).map((b,i)=>i===index?block:b));}
  function blockMove(index,direction){const items=[...(currentMeta.blocks||[])],n=index+direction;if(n<0||n>=items.length)return;[items[index],items[n]]=[items[n],items[index]];updateBlocks(items);}
@@ -244,17 +308,17 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
       </div>
       <nav className="nx-tree">
        {!!favoritePages.length&&<section><div className="nx-tree-heading">☆ &nbsp; Favoritos</div>{favoritePages.map(p=><button key={p.id} className={'nx-page-item '+(page?.id===p.id?'active':'')} onClick={()=>open(p)}><span>{p.nexus_meta?.icon||'📘'}</span><span>{p.title}</span></button>)}</section>}
-       <section><div className="nx-tree-heading"><span>Espaços &amp; Páginas</span>{isAdmin&&<button aria-label="Criar espaço" title="Criar espaço" onClick={()=>{setNewSpace(true);setSpaceValue('');}}>⊞</button>}</div>
-       {spaces.map(space=><details key={space} className="nx-space" open><summary><span>📁</span><b>{space}</b>{isAdmin&&<button title="Nova página neste espaço" onClick={e=>{e.preventDefault();createPage(space)}}>＋</button>}</summary><div className="nx-space-pages">
+       <section><div className="nx-tree-heading"><span>Espaços &amp; Páginas</span>{isAdmin&&<button aria-label="Criar pasta" title="Criar pasta" onClick={()=>openSpaceDialog()}>⊞</button>}</div>
+       {spaces.map(space=><details key={space} className="nx-space" open><summary><span className="nx-folder-icon">{folderByName[space]?.icon||'📁'}</span><b>{space}</b><div className="nx-space-actions">{isAdmin&&<><button title={'Editar pasta '+space} aria-label={'Editar nome e ícone de '+space} onClick={e=>{e.preventDefault();e.stopPropagation();openSpaceDialog(folderByName[space]||{name:space,icon:'📁'});}}>✎</button><button title={'Nova página em '+space} aria-label={'Nova página em '+space} onClick={e=>{e.preventDefault();e.stopPropagation();createPage(space);}}>＋</button></>}</div></summary><div className="nx-space-pages">
          {filtered.filter(p=>p.space===space).map(p=><button key={p.id} className={'nx-page-item '+(page?.id===p.id?'active':'')} onClick={()=>open(p)} style={{paddingLeft:10+(p.parent_id?13:0)}}><span>{p.nexus_meta?.icon||'📘'}</span><span>{p.title}</span></button>)}
        </div></details>)}
        {pages.length===0&&<div className="nx-sidebar-empty">A biblioteca ainda não possui páginas.</div>}
        </section></nav>
-      <div className="nx-sidebar-footer"><button onClick={onExit}>← Voltar à Base 190</button><span><i/> PostgreSQL</span></div>
+      <div className="nx-sidebar-footer"><button onClick={onExit}>⌂ Voltar à página inicial</button><span><i/> PostgreSQL</span></div>
     </aside>
     <div className="nx-main">
       <header className="nx-top-navbar">
-       <div className="nx-breadcrumb"><button className="nx-icon-button nx-expand" onClick={()=>setSideOpen(v=>!v)} title="Alternar sidebar">☷</button><span>📁 {page?.space||'Biblioteca 190'}</span><b className="nx-slash">›</b><strong>{currentMeta.icon||'📘'} {page?.title||'Selecione uma página'}</strong></div>
+       <div className="nx-breadcrumb"><button className="nx-icon-button nx-expand" onClick={()=>setSideOpen(v=>!v)} title="Alternar sidebar">☷</button><button className="nx-home-button" onClick={onExit} title="Voltar para a página inicial do Centro 190"><span className="nx-home-symbol">⌂</span><span className="nx-home-label">Início do sistema</span></button><span>{folderByName[page?.space]?.icon||'📁'} {page?.space||'Biblioteca 190'}</span><b className="nx-slash">›</b><strong>{currentMeta.icon||'📘'} {page?.title||'Selecione uma página'}</strong></div>
        <div className="nx-navbar-actions"><span className="nx-save-state">{dirty&&notRecovered?'Alterações pendentes':saveState||'Sincronizado'}</span>{page&&<><button className={'nx-icon-button '+(currentMeta.favorite?'nx-starred':'')} title="Favoritar página" disabled={!isAdmin} onClick={toggleFav}>☆</button><div className="nx-dropdown-anchor"><button className="nx-pill-button" onClick={()=>setExportMenu(v=>!v)}>⇩ <span>Exportar</span></button>{exportMenu&&<div className="nx-export-menu"><button onClick={()=>exportDocument('md')}>Documento Markdown (.md)</button><button onClick={()=>exportDocument('json')}>Backup de blocos (.json)</button><button onClick={()=>{window.print();setExportMenu(false);}}>Imprimir / PDF</button></div>}</div></>}
        <button className="nx-icon-button" title="Alternar tema" onClick={()=>{const next=!dark;setDark(next);localStorage.setItem('nx_docs_theme',next?'dark':'light');}}>{dark?'☼':'☾'}</button></div>
       </header>
@@ -265,9 +329,9 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
        {notice&&<div className="nx-toast" role="status"><span>{notice}</span><button onClick={()=>setNotice('')}>×</button></div>}
        {!page?<div className="nx-landing"><span className="nx-breadcrumb-label">DOCUMENTAÇÃO &amp; CONHECIMENTO</span><h1>Seu conhecimento, organizado.</h1><p>Biblioteca do Centro de Inteligência Jurídica 190. Pesquise guias, protocolos orientativos e páginas publicadas.</p>
          <button className="nx-landing-search" onClick={()=>setCommand(true)}>⌕ &nbsp; Buscar na documentação <kbd>Ctrl K</kbd></button>
-         <h2>Explorar espaços</h2><div className="nx-space-cards">{spaces.map((s,i)=><button key={s} onClick={()=>{const first=pages.find(p=>p.space===s);if(first)open(first);else createPage(s)}}><span>{['🛡️','📚','⚖️','🧠','📘'][i%5]}</span><strong>{s}</strong><small>{pages.filter(p=>p.space===s).length} páginas</small></button>)}</div>
+         <h2>Explorar espaços</h2><div className="nx-space-cards">{spaces.map((s,i)=><button key={s} onClick={()=>{const first=pages.find(p=>p.space===s);if(first)open(first);else createPage(s)}}><span>{folderByName[s]?.icon||'📁'}</span><strong>{s}</strong><small>{pages.filter(p=>p.space===s).length} páginas</small></button>)}</div>
          {isAdmin&&<button className="nx-create-btn nx-landing-create" onClick={()=>createPage()}>⊕ Nova página</button>}</div>:<>
-        <div className={'nx-page-cover '+COVERS[(currentMeta.coverIndex||0)%COVERS.length]}>{isAdmin&&<button className="nx-cover-change" onClick={()=>patchMeta({coverIndex:((currentMeta.coverIndex||0)+1)%COVERS.length})}>◉ Alterar capa</button>}</div>
+        <div className={'nx-page-cover '+(currentMeta.cover?.mode&&currentMeta.cover.mode!=='preset'?'':COVERS[(currentMeta.coverIndex||0)%COVERS.length])} style={coverStyle(currentMeta)}><div className="nx-cover-inner-shine"/>{currentMeta.cover?.caption&&<span className="nx-cover-caption">{currentMeta.cover.caption}</span>}{isAdmin&&<button className="nx-cover-change" onClick={openCoverEditor}>✦ Personalizar capa</button>}</div>
         <article className="nx-page-body">
           <div className="nx-heading-row"><div className="nx-emoji-wrapper"><button className="nx-page-emoji" disabled={!isAdmin} onClick={()=>setEmojiPicker(v=>!v)}>{currentMeta.icon||'📘'}</button>{emojiPicker&&<div className="nx-emoji-popover">{ICONS.map(i=><button key={i} onClick={()=>{patchMeta({icon:i});setEmojiPicker(false);}}>{i}</button>)}</div>}</div>
           <div className="nx-status-actions"><span className={'nx-doc-badge '+(page.status==='published'?'published':'draft')}>● &nbsp; {status}</span><small>Editado {page.updated_at?new Date(page.updated_at).toLocaleDateString('pt-BR'):'agora'}</small></div></div>
@@ -289,6 +353,38 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
     </div>
     {showPalette&&<div className="nx-modal-scrim" onMouseDown={e=>{if(e.target===e.currentTarget)setShowPalette(false)}}><div className="nx-command-modal"><div className="nx-modal-title"><strong>Inserir novo bloco</strong><button onClick={()=>setShowPalette(false)}>ESC ×</button></div><div className="nx-command-list">{TYPES.map(([type,label,symbol])=><button key={type} onClick={()=>addBlock(type,blockPalette??undefined)}><span>{symbol}</span><b>{label}</b><small>Inserir no documento</small></button>)}</div></div></div>}
     {command&&<div className="nx-modal-scrim" onMouseDown={e=>{if(e.target===e.currentTarget)setCommand(false)}}><div className="nx-command-modal"><div className="nx-command-search"><span>⌕</span><input autoFocus aria-label="Buscar páginas e documentos" placeholder="Buscar páginas, espaços ou executar ação…" value={query} onChange={e=>setQuery(e.target.value)}/><button onClick={()=>setCommand(false)}>ESC</button></div><div className="nx-command-list">{filtered.slice(0,30).map(p=><button key={p.id} onClick={()=>{open(p);setCommand(false);}}><span>{p.nexus_meta?.icon||'📘'}</span><b>{p.title}</b><small>{p.space}</small></button>)}{!filtered.length&&<p>Nenhuma página encontrada.</p>}</div></div></div>}
-    {newSpace&&<div className="nx-modal-scrim"><form className="nx-small-modal" onSubmit={e=>{e.preventDefault();const value=spaceValue.trim().slice(0,80);if(value){setSpacesExtra(p=>[...new Set([...p,value])]);setNewSpace(false);createPage(value);}}}><h3>Criar novo espaço</h3><input autoFocus value={spaceValue} onChange={e=>setSpaceValue(e.target.value)} placeholder="Nome do espaço" maxLength={80} required/><div><button type="button" onClick={()=>setNewSpace(false)}>Cancelar</button><button type="submit" className="nx-primary-small">Criar espaço</button></div></form></div>}
+    {spaceDialog&&<div className="nx-modal-scrim nx-dialog-scrim" onMouseDown={e=>{if(e.target===e.currentTarget&&!savingSpace)setSpaceDialog(null);}}>
+      <form className="nx-folder-dialog" onSubmit={saveSpace}>
+        <div className="nx-dialog-header"><span className="nx-dialog-emblem">{spaceDialog.icon}</span><div><small>ORGANIZAÇÃO DA BIBLIOTECA</small><h3>{spaceDialog.kind==='edit'?'Personalizar pasta':'Criar nova pasta'}</h3><p>{spaceDialog.kind==='edit'?'Altere a identidade da pasta sem perder os documentos nela.':'Crie um espaço para organizar seus documentos.'}</p></div><button type="button" onClick={()=>setSpaceDialog(null)} aria-label="Fechar" disabled={savingSpace}>×</button></div>
+        <div className="nx-dialog-body">
+          <label htmlFor="nx-folder-name">Nome da pasta</label>
+          <input id="nx-folder-name" autoFocus required maxLength={80} value={spaceDialog.name} placeholder="Ex.: Procedimentos e protocolos" onChange={e=>setSpaceDialog(d=>({...d,name:e.target.value}))}/>
+          <label>Ícone da pasta <span>Escolha uma identidade visual</span></label>
+          <div className="nx-folder-icon-grid">{SPACE_ICONS.map(icon=><button type="button" key={icon} className={spaceDialog.icon===icon?'selected':''} aria-pressed={spaceDialog.icon===icon} title={'Ícone '+icon} onClick={()=>setSpaceDialog(d=>({...d,icon}))}>{icon}</button>)}</div>
+          <label htmlFor="nx-folder-desc">Descrição <span>Opcional</span></label>
+          <textarea id="nx-folder-desc" rows={2} maxLength={240} value={spaceDialog.description} placeholder="Para que serve esta pasta?" onChange={e=>setSpaceDialog(d=>({...d,description:e.target.value}))}/>
+          {spaceDialog.kind==='edit'&&<p className="nx-dialog-hint">Ao renomear, todas as páginas desta pasta serão movidas juntas e o histórico será preservado.</p>}
+        </div>
+        <div className="nx-dialog-actions"><button type="button" onClick={()=>setSpaceDialog(null)} disabled={savingSpace}>Cancelar</button><button type="submit" className="nx-dialog-primary" disabled={savingSpace||!spaceDialog.name.trim()}>{savingSpace?'Salvando…':spaceDialog.kind==='edit'?'Salvar alterações':'Criar pasta'}</button></div>
+      </form>
+    </div>}
+    {coverEditor&&<div className="nx-modal-scrim nx-dialog-scrim" onMouseDown={e=>{if(e.target===e.currentTarget&&!coverUploading)setCoverEditor(null);}}>
+       <div className="nx-cover-studio" role="dialog" aria-modal="true" aria-label="Personalizar capa do documento">
+         <div className="nx-studio-heading"><div><small>ESTÚDIO DE CAPAS</small><h3>Personalize a capa</h3><p>Uma identidade própria para <strong>{page?.title||'seu documento'}</strong></p></div><button title="Fechar editor de capas" aria-label="Fechar" onClick={()=>setCoverEditor(null)} disabled={coverUploading}>×</button></div>
+         <div className="nx-studio-scroll">
+           <div className={'nx-page-cover nx-cover-preview '+(coverEditor.cover.mode==='preset'?COVERS[coverEditor.index]:'')} style={coverStyle({cover:coverEditor.cover})}><div className="nx-cover-inner-shine"/><span>{coverEditor.cover.caption||'Prévia da capa'}</span></div>
+           <div className="nx-studio-section"><div className="nx-studio-section-head"><strong>Capas prontas</strong><span>Selecione um gradiente</span></div><div className="nx-cover-swatches">{COVERS.map((preset,i)=><button key={preset} type="button" title={'Usar capa '+(i+1)} aria-label={'Capa predefinida '+(i+1)} aria-pressed={coverEditor.cover.mode==='preset'&&coverEditor.index===i} className={'nx-cover-swatch '+preset+(coverEditor.cover.mode==='preset'&&coverEditor.index===i?' active':'')} onClick={()=>setCoverEditor(d=>({...d,index:i,cover:{...d.cover,mode:'preset'}}))}>{coverEditor.cover.mode==='preset'&&coverEditor.index===i?'✓':''}</button>)}</div></div>
+           <div className="nx-studio-section"><div className="nx-studio-section-head"><strong>Gradiente personalizado</strong><button className="nx-studio-switch" onClick={()=>coverPatch({mode:'gradient'})} aria-pressed={coverEditor.cover.mode==='gradient'}>Usar gradiente</button></div>
+             <div className="nx-cover-fields"><label>Cor inicial <input type="color" value={coverEditor.cover.from} onChange={e=>coverPatch({mode:'gradient',from:e.target.value})}/></label><label>Cor final <input type="color" value={coverEditor.cover.to} onChange={e=>coverPatch({mode:'gradient',to:e.target.value})}/></label><label>Ângulo <span>{coverEditor.cover.angle}°</span><input type="range" min={0} max={360} value={coverEditor.cover.angle} onChange={e=>coverPatch({mode:'gradient',angle:Number(e.target.value)})}/></label></div>
+           </div>
+           <div className="nx-studio-section"><div className="nx-studio-section-head"><strong>Cor sólida</strong><button className="nx-studio-switch" onClick={()=>coverPatch({mode:'solid'})} aria-pressed={coverEditor.cover.mode==='solid'}>Usar cor sólida</button></div><div className="nx-cover-fields"><label>Cor da capa <input type="color" value={coverEditor.cover.color} onChange={e=>coverPatch({mode:'solid',color:e.target.value})}/></label></div></div>
+           <div className="nx-studio-section"><div className="nx-studio-section-head"><strong>Imagem personalizada</strong><span>PNG, JPG ou WebP • até 3 MB</span></div><button className="nx-cover-upload" disabled={coverUploading} onClick={()=>coverInput.current?.click()}><span>▧</span><strong>{coverUploading?'Enviando imagem…':'Escolher imagem para a capa'}</strong><small>Armazenamento privado da Base 190</small></button><input type="file" hidden ref={coverInput} accept="image/png,image/jpeg,image/webp" onChange={e=>{const file=e.target.files?.[0];e.target.value='';void uploadCover(file);}}/>
+             {coverEditor.cover.mode==='image'&&<div className="nx-cover-fields nx-image-adjust"><label>Posição vertical <span>{coverEditor.cover.position}%</span><input type="range" min={0} max={100} value={coverEditor.cover.position} onChange={e=>coverPatch({position:Number(e.target.value)})}/></label><label>Escurecimento <span>{coverEditor.cover.overlay}%</span><input type="range" min={0} max={75} value={coverEditor.cover.overlay} onChange={e=>coverPatch({overlay:Number(e.target.value)})}/></label></div>}
+           </div>
+           <div className="nx-studio-section"><label htmlFor="nx-cover-caption">Legenda da capa <span>Opcional</span></label><input id="nx-cover-caption" type="text" maxLength={110} value={coverEditor.cover.caption} placeholder="Ex.: Central de protocolos e orientações" onChange={e=>coverPatch({caption:e.target.value})}/></div>
+         </div>
+         <div className="nx-dialog-actions"><button onClick={()=>setCoverEditor(null)} disabled={coverUploading||busy}>Cancelar</button><button className="nx-dialog-primary" disabled={coverUploading||busy} onClick={applyCover}>{busy?'Salvando…':'✓ Aplicar capa'}</button></div>
+       </div>
+    </div>}
   </section>;
 }
