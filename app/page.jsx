@@ -1,6 +1,6 @@
 'use client';
 import dynamic from 'next/dynamic';
-const Documentation=dynamic(()=>import('./documentation.jsx'),{loading:()=> <p role="status">Carregando documentação…</p>,ssr:false});
+const Documentation=dynamic(()=>import('./nexus-documentation.jsx'),{loading:()=> <p role="status">Carregando Nexus Docs…</p>,ssr:false});
 import AnalysisFeedback from './analysis-feedback.jsx';
 import LegalReference from './legal-reference.jsx';
 import WritingReview from './writing-review.jsx';
