@@ -3,6 +3,11 @@ import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 
 const ICONS=['🚀','📘','⚡','🛠️','🎯','📊','🧩','🛡️','💡','🗂️','🏛️','🧪','🌐','🔥','✨','📌','🧠','💻','📚','⚖️','🚓'];
 const COVERS=['indigo','emerald','amber','blue','fuchsia','slate'];
+const SPACE_ICONS=['📁','📚','⚖️','🛡️','🚓','📘','🧠','🗂️','🏛️','📝','🎯','🔍','💡','📊','🧩','🚨','🧭','🚦','👥','🔐','⚡','✅','📌','🗺️','📂','🗃️','⭐','🌐','🏢','🔎','🛠️'];
+const DEFAULT_COVER={mode:'preset',imageId:null,from:'#4f46e5',to:'#9333ea',color:'#4f46e5',angle:115,overlay:18,position:50,caption:''};
+const UUID_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function coverStyle(meta){const c={...DEFAULT_COVER,...(meta?.cover||{})};if(c.mode==='solid')return {background:c.color};if(c.mode==='gradient')return {background:'linear-gradient('+c.angle+'deg,'+c.from+','+c.to+')'};if(c.mode==='image'&&UUID_RE.test(String(c.imageId||'')))return {backgroundImage:'linear-gradient(rgba(4,6,20,'+(c.overlay/100)+'),rgba(4,6,20,'+(c.overlay/100)+')),url(/api/documentation/assets/'+c.imageId+')',backgroundSize:'cover',backgroundPosition:'center '+c.position+'%'};return undefined;}
+
 const TYPES=[['h1','Título grande','H1'],['h2','Subtítulo','H2'],['h3','Título pequeno','H3'],['paragraph','Parágrafo','¶'],['tabs','Bloco de abas','▣'],['table','Tabela dinâmica','▦'],['callout','Painel de aviso','ⓘ'],['checklist','Checklist','☑'],['kanban','Quadro Kanban','☷'],['code','Código','</>'],['toggle','Expansível','▸'],['divider','Divisor','—']];
 const uid=()=>globalThis.crypto?.randomUUID?.()||'b-'+Math.random().toString(36).slice(2);
 const now=()=>new Date().toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
@@ -22,10 +27,10 @@ function newBlock(type='paragraph'){
 }
 const metaFor=page=>{
  const meta=page?.nexus_meta&&typeof page.nexus_meta==='object'?page.nexus_meta:{};
- return {icon:meta.icon||'📘',subtitle:meta.subtitle||'',coverIndex:Number.isInteger(meta.coverIndex)?meta.coverIndex:0,favorite:!!meta.favorite,
+ return {icon:meta.icon||'📘',subtitle:meta.subtitle||'',coverIndex:Number.isInteger(meta.coverIndex)?meta.coverIndex:0,cover:{...DEFAULT_COVER,...(meta.cover||{})},favorite:!!meta.favorite,
   blocks:Array.isArray(meta.blocks)&&meta.blocks.length?structuredClone(meta.blocks):[ {...newBlock('rich'),content:page?.content||'<p></p>'}]};
 };
-const empty=(space='Geral')=>({title:'Sem título',space,content:'',status:'draft',parent_id:null,nexus_meta:{icon:'📘',subtitle:'',coverIndex:0,favorite:false,blocks:[newBlock('paragraph')]}});
+const empty=(space='Geral')=>({title:'Sem título',space,content:'',status:'draft',parent_id:null,nexus_meta:{icon:'📘',subtitle:'',coverIndex:0,cover:{...DEFAULT_COVER},favorite:false,blocks:[newBlock('paragraph')]}});
 async function api(path='',options={}){
  const r=await fetch('/api/documentation'+path,{credentials:'same-origin',cache:'no-store',...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...options.headers}});
  let data={};try{data=await r.json();}catch{}
@@ -137,10 +142,10 @@ function Block({block,index,total,editable,onChange,onMove,onDuplicate,onDelete,
 export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
  const [pages,setPages]=useState([]),[page,setPage]=useState(null),[query,setQuery]=useState(''),[mode,setMode]=useState('view');
  const [busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[saveState,setSaveState]=useState(''),[showPalette,setShowPalette]=useState(false),[command,setCommand]=useState(false);
- const [blockPalette,setBlockPalette]=useState(null),[emojiPicker,setEmojiPicker]=useState(false),[exportMenu,setExportMenu]=useState(false),[sideOpen,setSideOpen]=useState(true),[newSpace,setNewSpace]=useState(false),[spaceValue,setSpaceValue]=useState(''),[history,setHistory]=useState([]);
+ const [blockPalette,setBlockPalette]=useState(null),[emojiPicker,setEmojiPicker]=useState(false),[exportMenu,setExportMenu]=useState(false),[sideOpen,setSideOpen]=useState(true),[spaceDialog,setSpaceDialog]=useState(null),[savingSpace,setSavingSpace]=useState(false),[history,setHistory]=useState([]);
  const [dark,setDark]=useState(true);
- const [spacesExtra,setSpacesExtra]=useState([]);
- const pageRef=useRef(null),imageInput=useRef(null),timer=useRef(null),draftRevision=useRef(0),baseline=useRef(''),savedRef=useRef('');
+ const [folderList,setFolderList]=useState([]),[coverEditor,setCoverEditor]=useState(null),[coverUploading,setCoverUploading]=useState(false);
+ const pageRef=useRef(null),imageInput=useRef(null),coverInput=useRef(null),timer=useRef(null),draftRevision=useRef(0),baseline=useRef(''),savedRef=useRef('');
  pageRef.current=page;
  const isEditing=mode==='edit'&&isAdmin;
  const currentMeta=page?.nexus_meta||{};
@@ -149,13 +154,14 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
  const patch=useCallback(change=>setPage(p=>p?{...p,...change}:p),[]);
  const patchMeta=useCallback(change=>setPage(p=>p?{...p,nexus_meta:{...p.nexus_meta,...change}}:p),[]);
  const updateBlocks=useCallback(blocks=>patchMeta({blocks}),[patchMeta]);
- async function reload(){try{const d=await api();setPages(d.pages||[]);return d.pages||[];}catch(e){setNotice(e.message);return []}}
+ async function reload(){try{const d=await api();setPages(d.pages||[]);setFolderList(d.spaces||[]);return d.pages||[];}catch(e){setNotice(e.message);return []}}
  useEffect(()=>{reload();const theme=localStorage.getItem('nx_docs_theme');setDark(theme!=='light');if(window.innerWidth<=760)setSideOpen(false);},[]);
  useEffect(()=>{const nav=e=>{if(active&&dirty&&notRecovered){e.preventDefault();setNotice('Existem alterações ainda não recuperadas. Salve seu rascunho antes de sair.');}};window.addEventListener('base190:before-navigation',nav);return()=>window.removeEventListener('base190:before-navigation',nav);},[active,dirty,notRecovered]);
- useEffect(()=>{const keydown=e=>{if(!active)return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();setCommand(v=>!v);}if(e.key==='Escape'){setCommand(false);setShowPalette(false);setEmojiPicker(false);setExportMenu(false);}};window.addEventListener('keydown',keydown);return()=>window.removeEventListener('keydown',keydown);},[active]);
+ useEffect(()=>{const keydown=e=>{if(!active)return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();setCommand(v=>!v);}if(e.key==='Escape'){setCommand(false);setShowPalette(false);setEmojiPicker(false);setExportMenu(false);setCoverEditor(null);setSpaceDialog(null);}};window.addEventListener('keydown',keydown);return()=>window.removeEventListener('keydown',keydown);},[active]);
  useEffect(()=>{if(!dirty||!notRecovered)return;const warn=e=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty,notRecovered]);
  const filtered=useMemo(()=>pages.filter(p=>((p.title||'')+' '+(p.space||'')+' '+(p.nexus_meta?.subtitle||'')+' '+(p.content||'').replace(/<[^>]+>/g,' ')).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(query.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase())),[pages,query]);
- const spaces=useMemo(()=>[...new Set([...pages.map(p=>p.space),...spacesExtra])], [pages,spacesExtra]);
+ const spaces=useMemo(()=>[...new Set([...folderList.map(f=>f.name),...pages.map(p=>p.space)])],[pages,folderList]);
+ const folderByName=useMemo(()=>Object.fromEntries(folderList.map(f=>[f.name,f])),[folderList]);
  async function open(p,edit=false){
    if(busy)return;
    if(dirty&&notRecovered){setNotice('Salve a recuperação desta página antes de navegar.');return;}
