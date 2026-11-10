@@ -1,9 +1,9 @@
 /* Nexus Docs — escopo independente; inspirado diretamente no arquivo HTML de referência. */
-.main:has(.nexus-docs) .topbar{display:none}
-.main:has(.nexus-docs) .content{padding:0;width:100%;max-width:none;display:block;margin:0}
-.main:has(.nexus-docs) .content>:not(.nexus-docs):not(div[hidden]){max-width:100%}
-.main:has(.nexus-docs) .content>div:has(.nexus-docs){margin:0}
-.main:has(.nexus-docs){height:100vh;overflow:hidden}
+.main:has(.content > div:not([hidden]) > .nexus-docs) .topbar{display:none}
+.main:has(.content > div:not([hidden]) > .nexus-docs) .content{padding:0;width:100%;max-width:none;display:block;margin:0}
+.main:has(.content > div:not([hidden]) > .nexus-docs) .content>:not(.nexus-docs):not(div[hidden]){max-width:100%}
+.main:has(.content > div:not([hidden]) > .nexus-docs) .content>div:has(.content > div:not([hidden]) > .nexus-docs){margin:0}
+.main:has(.content > div:not([hidden]) > .nexus-docs){height:100vh;overflow:hidden}
 .nexus-docs{--nx-brand:#6366f1;--nx-brand-hover:#818cf8;--nx-brand-glow:rgba(99,102,241,.18);--nx-border:#252b39;--nx-muted:#94a3b8;--nx-text:#f1f5f9;--nx-bg:#0d0f14;--nx-panel:#14171f;--nx-side:#08090c;--nx-soft:#1e222d;--nx-hover:#272c39;--nx-darker:#0b0d12;color:var(--nx-text);background:var(--nx-bg);width:100%;height:100vh;min-height:550px;display:flex;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:13px;position:relative;overflow:hidden}
 .nexus-docs.nx-light{--nx-border:#e2e8f0;--nx-muted:#64748b;--nx-text:#1e293b;--nx-bg:#fff;--nx-panel:#f8fafc;--nx-side:#f1f5f9;--nx-soft:#f1f5f9;--nx-hover:#e2e8f0;--nx-darker:#fff}
 .nexus-docs *, .nexus-docs *::before,.nexus-docs *::after{box-sizing:border-box}
@@ -235,12 +235,12 @@
 
 
 /* Ao abrir a documentação, o workspace assume a janela inteira. A navegação Base 190 volta pelo rodapé Nexus. */
-.shell:has(.nexus-docs){display:block}
-.shell:has(.nexus-docs)>.sidebar{display:none}
-.shell:has(.nexus-docs)>.main{min-width:0;width:100%;height:100vh}
-.main:has(.nexus-docs) .content{height:100vh}
-.main:has(.nexus-docs) .content>div:has(.nexus-docs){height:100vh}
-@media(max-width:760px){.shell:has(.nexus-docs)>.main{min-height:100dvh}.nexus-docs{height:100dvh}}
+.shell:has(.content > div:not([hidden]) > .nexus-docs){display:block}
+.shell:has(.content > div:not([hidden]) > .nexus-docs)>.sidebar{display:none}
+.shell:has(.content > div:not([hidden]) > .nexus-docs)>.main{min-width:0;width:100%;height:100vh}
+.main:has(.content > div:not([hidden]) > .nexus-docs) .content{height:100vh}
+.main:has(.content > div:not([hidden]) > .nexus-docs) .content>div:has(.content > div:not([hidden]) > .nexus-docs){height:100vh}
+@media(max-width:760px){.shell:has(.content > div:not([hidden]) > .nexus-docs)>.main{min-height:100dvh}.nexus-docs{height:100dvh}}
 
 
 /* Nexus Workspace · Folder identity + Cover Studio */
