@@ -74,3 +74,59 @@
 .fc-empty{padding:38px;text-align:center;border:1px dashed var(--line);border-radius:15px;background:var(--panel);color:var(--muted)}
 @media(max-width:1050px){.fc-forms{grid-template-columns:1fr}.fc-map-grid{grid-template-columns:repeat(6,minmax(0,1fr))}}
 @media(max-width:680px){.fc-hero-mark{display:none}.fc-stats{grid-template-columns:1fr}.fc-stat{padding:13px 16px}.fc-stat strong{font-size:28px}.fc-form{padding:16px}.fc-panel-head{padding:18px}.fc-two{grid-template-columns:1fr}.fc-map-grid{grid-template-columns:repeat(4,minmax(0,1fr));padding:11px;gap:7px}.fc-map-desk{min-height:78px}.fc-selected{flex-direction:column;align-items:stretch}.fc-selected button{width:100%}.fc-tabs button{flex:1;font-size:11px;padding:10px}.fc-hero{padding:21px}.fc-hero h1{font-size:27px}}
+
+
+/* Motion polish v2 — somente microinterações; respeita reduzir movimento. */
+@keyframes fc-enter{from{opacity:0;transform:translateY(14px) scale(.992)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes fc-fade-in{from{opacity:0}to{opacity:1}}
+@keyframes fc-slide-left{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fc-gradient-breathe{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes fc-icon-float{0%,100%{transform:rotate(-6deg) translateY(0)}50%{transform:rotate(-3deg) translateY(-7px)}}
+@keyframes fc-shimmer{0%{transform:translateX(-140%) skewX(-23deg)}100%{transform:translateX(260%) skewX(-23deg)}}
+@keyframes fc-dot-pulse{0%{box-shadow:0 0 0 0 rgba(20,124,189,.36)}70%,100%{box-shadow:0 0 0 8px transparent}}
+@keyframes fc-pop{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.03);opacity:1}100%{transform:scale(1);opacity:1}}
+.fc-wrap{animation:fc-fade-in .35s ease both}
+.fc-hero{background-size:210% 210%;animation:fc-enter .5s cubic-bezier(.2,.8,.2,1),fc-gradient-breathe 16s ease-in-out infinite}
+.fc-hero-mark{animation:fc-icon-float 6s ease-in-out infinite}
+.fc-hero h1,.fc-hero p,.fc-hero .fc-pilot{animation:fc-slide-left .54s cubic-bezier(.2,.8,.2,1) both}
+.fc-hero p{animation-delay:.07s}.fc-hero .fc-pilot{animation-delay:.15s}
+.fc-tabs{animation:fc-enter .35s .06s both}
+.fc-tabs button{position:relative;transition:color .22s,background .22s,transform .2s,box-shadow .22s}
+.fc-tabs button:not(.active):hover{background:color-mix(in srgb,var(--fc-teal) 10%,var(--panel));transform:translateY(-1px)}
+.fc-tabs button.active{box-shadow:0 6px 15px #071f321f}
+.fc-stats .fc-stat{animation:fc-enter .46s cubic-bezier(.22,.8,.22,1) backwards;transition:transform .24s,box-shadow .24s,border-color .24s}
+.fc-stats .fc-stat:nth-child(1){animation-delay:.08s}.fc-stats .fc-stat:nth-child(2){animation-delay:.16s}.fc-stats .fc-stat:nth-child(3){animation-delay:.24s}
+.fc-stat:hover{transform:translateY(-4px);box-shadow:0 17px 32px #00000016;border-color:color-mix(in srgb,var(--fc-cyan) 35%,var(--line))}
+.fc-stat strong{font-variant-numeric:tabular-nums}
+.fc-forms .fc-panel{animation:fc-enter .52s cubic-bezier(.2,.8,.2,1) backwards;transition:transform .3s,box-shadow .3s,border-color .3s}
+.fc-forms .fc-panel:first-child{animation-delay:.1s}.fc-forms .fc-panel:last-child{animation-delay:.18s}
+.fc-panel:hover{box-shadow:0 15px 37px #00000012}
+.fc-panel-head{background-size:180% 180%;animation:fc-gradient-breathe 15s ease infinite}
+.fc-symbol{transition:transform .28s;background:#ffffff22}
+.fc-panel:hover .fc-symbol{transform:rotate(-9deg) scale(1.09)}
+.fc-choice,.fc-categories button,.fc-chips button{transition:transform .2s,border-color .2s,box-shadow .2s,background .2s}
+.fc-choice:hover,.fc-categories button:hover,.fc-chips button:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--fc-cyan) 60%,var(--line));box-shadow:0 7px 18px #00000010}
+.fc-choice:has(input:checked){box-shadow:inset 3px 0 var(--fc-rose)}
+.fc-action{position:relative;overflow:hidden;transition:transform .24s,box-shadow .24s,filter .24s}
+.fc-action:before{content:"";position:absolute;inset:-30% auto -30% -25%;width:30%;background:linear-gradient(90deg,transparent,#ffffff56,transparent);transform:translateX(-140%) skewX(-23deg);pointer-events:none}
+.fc-action:not(:disabled):hover{transform:translateY(-3px);box-shadow:0 11px 25px #09324229;filter:brightness(1.08)}
+.fc-action:not(:disabled):hover:before{animation:fc-shimmer .8s ease-out forwards}
+.fc-action:active:not(:disabled){transform:translateY(0) scale(.985)}
+.fc-feedback{animation:fc-pop .36s cubic-bezier(.17,.9,.3,1) both}
+.fc-map-grid{animation:fc-enter .4s ease-out both}
+.fc-map-desk{animation:fc-pop .3s ease-out backwards;transition:transform .2s,border-color .22s,background .22s,box-shadow .22s}
+.fc-map-desk:nth-child(8n + 1){animation-delay:.02s}.fc-map-desk:nth-child(8n + 2){animation-delay:.04s}.fc-map-desk:nth-child(8n + 3){animation-delay:.06s}.fc-map-desk:nth-child(8n + 4){animation-delay:.08s}
+.fc-map-desk:nth-child(8n + 5){animation-delay:.10s}.fc-map-desk:nth-child(8n + 6){animation-delay:.12s}.fc-map-desk:nth-child(8n + 7){animation-delay:.14s}.fc-map-desk:nth-child(8n){animation-delay:.16s}
+.fc-map-desk:hover{transform:translateY(-5px) scale(1.035);box-shadow:0 12px 26px #0000001a}
+.fc-map-desk.selected{transform:translateY(-3px);box-shadow:0 0 0 5px color-mix(in srgb,var(--fc-cyan) 15%,transparent)}
+.fc-map-desk.cell .fc-map-dot,.fc-map-desk.pc .fc-map-dot{animation:fc-dot-pulse 2.2s ease-out infinite}
+.fc-selected,.fc-events-toolbar{animation:fc-enter .32s ease-out both}
+.fc-event{animation:fc-enter .32s ease-out both;transition:border-color .22s,box-shadow .22s,transform .22s}
+.fc-event:nth-child(2){animation-delay:.06s}.fc-event:nth-child(3){animation-delay:.11s}.fc-event:nth-child(4){animation-delay:.15s}.fc-event:nth-child(5){animation-delay:.19s}
+.fc-event:hover{border-color:color-mix(in srgb,var(--fc-cyan) 37%,var(--line));box-shadow:0 9px 27px #00000012;transform:translateY(-2px)}
+.fc-event-bottom button,.fc-toolbar-actions button,.fc-selected button{transition:transform .2s,filter .2s,box-shadow .2s}
+.fc-event-bottom button:not(:disabled):hover,.fc-toolbar-actions button:not(:disabled):hover,.fc-selected button:not(:disabled):hover{filter:brightness(1.08);transform:translateY(-2px);box-shadow:0 6px 15px #00000017}
+.fc-legend i{transition:box-shadow .3s}
+@media(prefers-reduced-motion:reduce){
+.fc-wrap,.fc-wrap *,.fc-wrap *:before,.fc-wrap *:after{animation:none!important;transition-duration:.01ms!important;transform:none!important;scroll-behavior:auto!important}
+}
