@@ -198,6 +198,64 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
   }catch(e){setNotice(e.message);setSaveState('Falha ao salvar');}
   finally{setBusy(false);}
  }
+
+ function openSpaceDialog(space=null){
+   if(!isAdmin)return;
+   if(dirty){setNotice('Publique ou salve o documento antes de editar as pastas.');return;}
+   setSpaceDialog(space?{kind:'edit',oldName:space.name,name:space.name,icon:space.icon||'📁',description:space.description||''}:{kind:'create',oldName:null,name:'',icon:'📁',description:''});
+ }
+ async function saveSpace(e){
+   e.preventDefault();
+   if(!spaceDialog||savingSpace||!isAdmin)return;
+   if(dirty){setNotice('Salve o documento antes de alterar pastas.');return;}
+   setSavingSpace(true);
+   try{
+     const old=spaceDialog.oldName;
+     const data=await api('/spaces',{method:spaceDialog.kind==='edit'?'PATCH':'POST',body:JSON.stringify(spaceDialog)});
+     const fresh=await reload();
+     if(pageRef.current?.id){
+       const current=fresh.find(p=>p.id===pageRef.current.id);
+       if(current){const next={...current,nexus_meta:metaFor(current)};setPage(next);baseline.current=JSON.stringify(next);savedRef.current=JSON.stringify(next);}
+     }
+     setSpaceDialog(null);
+     setNotice(spaceDialog.kind==='edit'?'Pasta atualizada. '+(data.moved||0)+' documento(s) preservado(s).':'Pasta criada e salva no servidor.');
+   }catch(err){setNotice(err.message);}
+   finally{setSavingSpace(false);}
+ }
+ function openCoverEditor(){
+   if(!isAdmin||!page)return;
+   setCoverEditor({index:currentMeta.coverIndex||0,cover:{...DEFAULT_COVER,...(currentMeta.cover||{})}});
+ }
+ function coverPatch(patch){setCoverEditor(d=>d?{...d,cover:{...d.cover,...patch}}:d);}
+ async function uploadCover(file){
+   if(!file||!isAdmin||coverUploading)return;
+   if(file.size>3145728){setNotice('A imagem da capa deve ter até 3 MB.');return;}
+   setCoverUploading(true);
+   try{
+     const response=await fetch('/api/documentation/assets',{method:'POST',credentials:'same-origin',headers:{'Content-Type':file.type},body:file});
+     const data=await response.json();
+     if(!response.ok)throw Error(data.error||'Falha ao enviar imagem da capa.');
+     if(!UUID_RE.test(String(data.id||'')))throw Error('Identificador de imagem inválido.');
+     coverPatch({mode:'image',imageId:data.id,position:50,overlay:18});
+     setNotice('Imagem carregada com segurança. Clique em Aplicar capa para salvar.');
+   }catch(err){setNotice(err.message);}
+   finally{setCoverUploading(false);}
+ }
+ async function applyCover(){
+   if(!isAdmin||!page||!coverEditor||busy||coverUploading)return;
+   const patch={coverIndex:coverEditor.index,cover:coverEditor.cover};
+   if(isEditing){patchMeta(patch);setCoverEditor(null);setNotice('Nova capa aplicada ao editor. Publique ou salve o rascunho para persistir.');return;}
+   setBusy(true);
+   try{
+     const result=await api('',{method:'POST',body:JSON.stringify({...page,nexus_meta:{...currentMeta,...patch}})});
+     const next={...result.page,nexus_meta:metaFor(result.page)};
+     setPage(next);baseline.current=JSON.stringify(next);savedRef.current=JSON.stringify(next);
+     await reload();setCoverEditor(null);setSaveState('Capa sincronizada');
+     setNotice('Capa personalizada e salva no servidor.');
+   }catch(err){setNotice(err.message);}
+   finally{setBusy(false);}
+ }
+
  async function createPage(space){const p=empty(space||page?.space||'Geral');await open(p,true);}
  function changeBlock(index,block){updateBlocks((currentMeta.blocks||[]).map((b,i)=>i===index?block:b));}
  function blockMove(index,direction){const items=[...(currentMeta.blocks||[])],n=index+direction;if(n<0||n>=items.length)return;[items[index],items[n]]=[items[n],items[index]];updateBlocks(items);}
