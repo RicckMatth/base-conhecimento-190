@@ -196,7 +196,7 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
  function changeBlock(index,block){updateBlocks((currentMeta.blocks||[]).map((b,i)=>i===index?block:b));}
  function blockMove(index,direction){const items=[...(currentMeta.blocks||[])],n=index+direction;if(n<0||n>=items.length)return;[items[index],items[n]]=[items[n],items[index]];updateBlocks(items);}
  function addBlock(type,index){const items=[...(currentMeta.blocks||[])];items.splice(index??items.length,0,newBlock(type));updateBlocks(items);setShowPalette(false);setBlockPalette(null);}
- async async function uploadImage(file){
+ async function uploadImage(file){
    if(!isEditing||!file)return;
    if(file.size>3145728){setNotice('A imagem deve ter até 3 MB.');return;}
    setBusy(true);setSaveState('Enviando imagem…');
@@ -211,7 +211,7 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
      setSaveState('Imagem anexada, aguardando publicação');
    }catch(e){setNotice(e.message);}finally{setBusy(false);}
  }
- function toggleFav(){if(!isAdmin||!page||busy)return;if(isEditing){patchMeta({favorite:!currentMeta.favorite});return;}setBusy(true);try{const res=await api('',{method:'POST',body:JSON.stringify({...page,nexus_meta:{...currentMeta,favorite:!currentMeta.favorite}})});const next={...res.page,nexus_meta:metaFor(res.page)};setPage(next);baseline.current=JSON.stringify(next);savedRef.current=JSON.stringify(next);await reload();setSaveState('Favorito salvo no servidor');}catch(e){setNotice(e.message);}finally{setBusy(false);}}
+ async function toggleFav(){if(!isAdmin||!page||busy)return;if(isEditing){patchMeta({favorite:!currentMeta.favorite});return;}setBusy(true);try{const res=await api('',{method:'POST',body:JSON.stringify({...page,nexus_meta:{...currentMeta,favorite:!currentMeta.favorite}})});const next={...res.page,nexus_meta:metaFor(res.page)};setPage(next);baseline.current=JSON.stringify(next);savedRef.current=JSON.stringify(next);await reload();setSaveState('Favorito salvo no servidor');}catch(e){setNotice(e.message);}finally{setBusy(false);}}
  async function viewHistory(){if(!page?.id)return;try{const d=await api('/history?id='+page.id);setHistory(d.versions||[]);}catch(e){setNotice(e.message);}}
  function download(content,name,mime){const url=URL.createObjectURL(new Blob([content],{type:mime}));const a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);}
  function exportDocument(kind){
