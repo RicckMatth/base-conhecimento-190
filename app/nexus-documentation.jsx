@@ -173,7 +173,7 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
    if(!isAdmin||!target)return false;
    clearTimeout(timer.current);
    setSaveState('Salvando recuperação…');
-   try{const res=await api('/draft',{method:'POST',body:JSON.stringify({key:target.id||'new',revision:draftRevision.current,payload:{title:target.title,space:target.space,parent_id:target.parent_id,content:target.content||'',nexus_meta:target.nexus_meta,status:target.status,baseRevision:target.revision||0}})});
+   try{const res=await api('/draft',{method:'POST',body:JSON.stringify({key:target.id||'new',revision:draftRevision.current,payload:{title:target.title,space:target.space,parent_id:target.parent_id,content:'',nexus_meta:target.nexus_meta,status:target.status,baseRevision:target.revision||0}})});
      draftRevision.current=res.draft.revision;savedRef.current=JSON.stringify(target);setSaveState('Recuperação salva');return true;
    }catch(e){setSaveState('Falha ao salvar recuperação');setNotice(e.message);return false;}
  }
@@ -181,7 +181,7 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
  async function save(status){
   if(!isAdmin||!page||busy)return;
   setBusy(true);setNotice('');setSaveState('Publicando…');
-  try{clearTimeout(timer.current);const payload={...page,status,content:page.content||''};
+  try{clearTimeout(timer.current);const payload={...page,status,content:''};
     const res=await api('',{method:'POST',body:JSON.stringify(payload)});
     await api('/draft?key='+(page.id||'new'),{method:'DELETE'}).catch(()=>{});
     draftRevision.current=0;const next={...res.page,nexus_meta:metaFor(res.page)};
