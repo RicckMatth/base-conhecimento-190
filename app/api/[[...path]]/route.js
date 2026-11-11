@@ -1,6 +1,7 @@
 import {put,get,del} from '@vercel/blob';
 import {normalizeImage,readLimited,storeAsset,readableAsset,deleteAsset,requireEditor,importExternalImage} from '../../../lib/documentation-assets.js';
 import {saveDocument,saveDraft,uuid} from '../../../lib/documentation-store.js';
+import {getSchedule,editOperationalRole,editShift,editScheduleDay,generateMonth} from '../../../lib/floor-scheduling.js';
 import {listDocumentationSpaces,createDocumentationSpace,updateDocumentationSpace} from '../../../lib/documentation-spaces.js';
 import {cleanDocument} from '../../../lib/documentation.js';
 import { newFeedbackTicket,readFeedbackTicket,learnableQuestions } from '../../../lib/question-feedback.js';
@@ -25,12 +26,12 @@ async function identity(){
   const cookieStore=await cookies();
   const raw=cookieStore.get(COOKIE_NAME)?.value;
   if(!raw || raw.length<35) return null;
-  const result=await db().query(`SELECT u.id,u.username,u.display_name,u.role,u.must_change_password
+  const result=await db().query(`SELECT u.id,u.username,u.display_name,u.role,u.operational_role,u.must_change_password
     FROM sessions s JOIN users u ON s.user_id=u.id
     WHERE s.token_hash=$1 AND s.expires_at>now() AND s.revoked_at IS NULL AND u.active=true`,[digest(raw)]);
   return result.rows[0]||null;
 }
-function publicUser(u){return {id:u.id,username:u.username,name:u.display_name,role:u.role,canTestGemini:canTestGemini(u),mustChangePassword:Boolean(u.must_change_password)};}
+function publicUser(u){return {id:u.id,username:u.username,name:u.display_name,role:u.role,operationalRole:u.operational_role||'attendant',canTestGemini:canTestGemini(u),mustChangePassword:Boolean(u.must_change_password)};}
 function requireRole(u,admin=false){if(!u) return failure('Sessão ausente ou expirada.',401);if(admin&&u.role!=='admin')return failure('Acesso restrito ao administrador.',403);return null;}
 const usernameOf=(v)=>string(v,40).toLowerCase();
 function entryPayload(v) {
@@ -77,7 +78,7 @@ async function gate(request,method,ctx){
     const key='login:'+username;
     if(await isRateLimited(key)) return failure('Acesso temporariamente limitado. Tente novamente em 15 minutos.',429);
     if(username===ADMIN_LOGIN) await ensureAdmin();
-    const found=await db().query('SELECT id,username,display_name,role,password_hash,active,must_change_password FROM users WHERE username=$1',[username]);
+    const found=await db().query('SELECT id,username,display_name,role,operational_role,password_hash,active,must_change_password FROM users WHERE username=$1',[username]);
     const u=found.rows[0];
     // Mesmo em usuário não encontrado executa hash para reduzir diferenças de tempo.
     const valid=await passwordVerify(pass,u?.password_hash||'scrypt:00000000000000000000000000000000:'+('00'.repeat(64)));
@@ -228,6 +229,26 @@ async function gate(request,method,ctx){
 
   }
 
+  // Escalas: qualquer usuário autenticado pode consultar; servidor aplica RBAC em toda mutação.
+  if(route==='/floor/schedules'&&method==='GET'){
+    try{
+      const month=new URL(request.url).searchParams.get('month')||new Date().toISOString().slice(0,7);
+      return reply(await getSchedule(db(),u,month));
+    }catch(e){return failure(e.message,e.status||400);}
+  }
+  if(route==='/floor/schedules/roles'&&method==='PATCH'){
+    try{return reply(await editOperationalRole(db(),u,await input(request,1800)));}catch(e){return failure(e.message,e.status||400);}
+  }
+  if(route==='/floor/schedules/shift'&&method==='PATCH'){
+    try{return reply(await editShift(db(),u,await input(request,1800)));}catch(e){return failure(e.message,e.status||400);}
+  }
+  if(route==='/floor/schedules/day'&&method==='PATCH'){
+    try{return reply(await editScheduleDay(db(),u,await input(request,2200)));}catch(e){return failure(e.message,e.status||400);}
+  }
+  if(route==='/floor/schedules/generate'&&method==='POST'){
+    try{return reply(await generateMonth(db(),u,await input(request,6000)));}catch(e){return failure(e.message,e.status||400);}
+  }
+
   // Gestão de piso — autenticação existente; leitura e tratamento restritos à administração.
   if(route==='/floor/events'&&method==='GET'){
     if(u.role!=='admin')return reply({events:[],summary:null,canView:false});
@@ -282,7 +303,7 @@ async function gate(request,method,ctx){
     return reply({requests:v.rows});
   }
   if(route==='/admin/users'&&method==='GET'){
-    const v=await db().query('SELECT id,username,display_name,role,active,created_at FROM users ORDER BY created_at DESC LIMIT 250');
+    const v=await db().query('SELECT id,username,display_name,role,operational_role,active,created_at FROM users ORDER BY created_at DESC LIMIT 250');
     return reply({users:v.rows});
   }
   if(route==='/admin/audit'&&method==='GET'){
