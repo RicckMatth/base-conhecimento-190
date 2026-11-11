@@ -1,5 +1,6 @@
 'use client';
 import {useCallback,useEffect,useMemo,useState} from 'react';
+import FloorSchedule from './floor-schedule.jsx';
 
 const DESKS=Array.from({length:32},(_,i)=>i+1);
 const CELL_OPTIONS=[
@@ -110,6 +111,7 @@ export default function FloorControl({isAdmin=false}){
     <div className="fc-tabs" role="tablist" aria-label="Seções do painel operacional">
       <button role="tab" aria-selected={tab==='reports'} className={tab==='reports'?'active':''} onClick={()=>setTab('reports')}>Central de reportes</button>
       <button role="tab" aria-selected={tab==='map'} className={tab==='map'?'active':''} onClick={()=>setTab('map')}>Mapa de PAs</button>
+      <button role="tab" aria-selected={tab==='schedules'} className={tab==='schedules'?'active':''} onClick={()=>setTab('schedules')}>◷ Escalas e pausas <span className="fc-tab-new">NOVO</span></button>
       {isAdmin&&<button role="tab" aria-selected={tab==='events'} className={tab==='events'?'active':''} onClick={()=>setTab('events')}>Gestão de eventos {summary.open>0?'('+summary.open+')':''}</button>}
     </div>
     {feedback&&<div role={feedback.type==='error'?'alert':'status'} className={'fc-feedback '+feedback.type}>{feedback.text}<button type="button" onClick={()=>setFeedback(null)} aria-label="Fechar aviso">×</button></div>}
@@ -118,6 +120,7 @@ export default function FloorControl({isAdmin=false}){
       <div className="fc-stat"><span>Chamados de TI abertos</span><strong className="sky">{summary.computador}</strong><small>Inclui em atendimento</small></div>
       <div className="fc-stat"><span>Eventos em aberto</span><strong>{summary.open}</strong><small>Atualiza automaticamente a cada 20s</small></div>
     </div>}
+    {tab==='schedules'&&<FloorSchedule/>}
     {tab==='reports'&&<>
       <div className="fc-forms">
         <article className="fc-panel">
