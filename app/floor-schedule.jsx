@@ -90,6 +90,7 @@ export default function FloorSchedule(){
  const profiles=useMemo(()=>new Map((data?.profiles||[]).map(p=>[p.user_id,p])),[data]);
  const role=data?.currentRole||'attendant';
  const selected=people.find(p=>p.id===selectedId)||people[0]||null;
+ useEffect(()=>{if(people.length&&!people.some(p=>p.operational_role===selectedGroup&&can(role,p.operational_role,'days'))){const eligibleRole=ROLE_ORDER.find(k=>people.some(p=>p.operational_role===k)&&can(role,k,'days'));if(eligibleRole)setSelectedGroup(eligibleRole);}},[role,people,selectedGroup]);
  useEffect(()=>{if(people.length&&(!selectedId||!people.some(p=>p.id===selectedId)))setSelectedId(people[0].id);},[people,selectedId]);
  const selectedProfile=selected&&profiles.get(selected.id)||{start_time:'08:00',end_time:'14:20'};
  useEffect(()=>{setShiftDraft({start:selectedProfile.start_time,end:selectedProfile.end_time});},[selectedId,selectedProfile.start_time,selectedProfile.end_time]);
