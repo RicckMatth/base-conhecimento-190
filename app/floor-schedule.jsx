@@ -5,6 +5,8 @@ const ROLE_LABEL={attendant:'Atendente',manager:'Gestor · Supervisor',coordinat
 const ROLE_MARK={attendant:'◉',manager:'◆',coordinator:'✦',dev:'⌘'};
 const ROLE_ORDER=['attendant','manager','coordinator','dev'];
 const WEEKDAYS=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+const OFF_DAYS=[['1','Segunda-feira'],['2','Terça-feira'],['3','Quarta-feira'],['4','Quinta-feira'],['5','Sexta-feira'],['6','Sábado'],['0','Domingo']];
+const ROUND_OPTIONS=[['0','Livre · qualquer minuto'],['5','De 5 em 5 minutos'],['10','De 10 em 10 minutos'],['15','De 15 em 15 minutos'],['30','De 30 em 30 minutos']];
 const PAD=n=>String(n).padStart(2,'0');
 const LOCAL_DAY=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
 const asUTC=value=>new Date(value+'T12:00:00Z');
@@ -77,6 +79,9 @@ export default function FloorSchedule(){
  const [selectedGroup,setSelectedGroup]=useState('attendant');
  const [breakDraft,setBreakDraft]=useState(['','','']);
  const [shiftDraft,setShiftDraft]=useState({start:'08:00',end:'14:20'});
+ const [offDraft,setOffDraft]=useState('random');
+ const [roundDraft,setRoundDraft]=useState('0');
+ const [roundSelection,setRoundSelection]=useState('profile');
  const [rolePending,setRolePending]=useState('');
  const load=useCallback(async()=>{
   setLoading(true);
@@ -92,7 +97,9 @@ export default function FloorSchedule(){
  const selected=people.find(p=>p.id===selectedId)||people[0]||null;
  useEffect(()=>{if(people.length&&!people.some(p=>p.operational_role===selectedGroup&&can(role,p.operational_role,'days'))){const eligibleRole=ROLE_ORDER.find(k=>people.some(p=>p.operational_role===k)&&can(role,k,'days'));if(eligibleRole)setSelectedGroup(eligibleRole);}},[role,people,selectedGroup]);
  useEffect(()=>{if(people.length&&(!selectedId||!people.some(p=>p.id===selectedId)))setSelectedId(people[0].id);},[people,selectedId]);
- const selectedProfile=selected&&profiles.get(selected.id)||{start_time:'08:00',end_time:'14:20'};
+ const selectedProfile=selected&&profiles.get(selected.id)||{start_time:'08:00',end_time:'14:20',fixed_off_weekday:null,break_round_minutes:0};
+ useEffect(()=>{setOffDraft(selectedProfile.fixed_off_weekday==null?'random':String(selectedProfile.fixed_off_weekday));},[selected?.id,selectedProfile.fixed_off_weekday]);
+ useEffect(()=>{setRoundDraft(String(selectedProfile.break_round_minutes||0));},[selected?.id,selectedProfile.break_round_minutes]);
  useEffect(()=>{setShiftDraft({start:selectedProfile.start_time,end:selectedProfile.end_time});},[selectedId,selectedProfile.start_time,selectedProfile.end_time]);
  const currentEntry=selected&&entries.find(e=>e.user_id===selected.id&&e.day===selectedDate);
  useEffect(()=>setBreakDraft([currentEntry?.break_1||'',currentEntry?.break_2||'',currentEntry?.break_3||'']),[selectedId,selectedDate,currentEntry?.break_1,currentEntry?.break_2,currentEntry?.break_3]);
@@ -120,7 +127,7 @@ export default function FloorSchedule(){
   if(!eligible.length){addMessage('Selecione um grupo que seu perfil pode administrar.','error');return;}
   const users=eligible.slice(0,100),name=kind==='days'?'folgas 6×1':'pausas 10–20–10';
   if(!window.confirm('Gerar '+name+' para '+users.length+' pessoa(s) em '+longMonth(month)+'? Ajustes manuais existentes serão preservados.'))return;
-  await mutate('/generate','POST',{month,kind,userIds:users.map(p=>p.id)});
+  await mutate('/generate','POST',{month,kind,userIds:users.map(p=>p.id),...(roundSelection==='profile'?{}:{roundMinutes:Number(roundSelection)})});
  }
  function exportCsv(){
   const rows=[['Data','Nome','Usuário','Perfil','Situação','Início','Fim','Pausa 10','Pausa 20','Pausa 10']];
@@ -165,6 +172,13 @@ export default function FloorSchedule(){
       <div className="rs-subtitle">Pausas programadas</div><div className="rs-mini-breaks">{breakItems.map(b=><div key={b.key}><span>{b.sort}</span><strong>{b.label} <small>{b.duration}</small></strong><b>{currentEntry?.is_off?'—':hours(currentEntry?.[b.key])}</b></div>)}</div>
       {can(role,selectedCap,'days')&&<div className="rs-manual-actions"><small>AJUSTE MANUAL DE FOLGA</small><div><button disabled={busy||!selectedDate.startsWith(month)} className="rs-rest-btn" onClick={()=>mutate('/day','PATCH',{targetId:selected.id,date:selectedDate,kind:'days',off:true},'Folga registrada.')}>☼ Marcar folga</button><button disabled={busy||!selectedDate.startsWith(month)} className="rs-work-btn" onClick={()=>mutate('/day','PATCH',{targetId:selected.id,date:selectedDate,kind:'days',off:false},'Turno registrado.')}>◷ Marcar trabalho</button></div></div>}
       {currentEntry?.off_source==='manual'&&<p className="rs-note">✎ Dia configurado manualmente. Gerações automáticas não substituirão essa escolha.</p>}
+      <div className="rs-weekday-settings">
+        <div className="rs-setting-heading"><span className="rs-setting-icon">☼</span><div><strong>Dia fixo de folga</strong><small>Uma folga por semana · ciclo 6×1</small></div></div>
+        <p>Escolha o dia que se repetirá semanalmente para <b>{selected.display_name}</b>. Você pode voltar à distribuição automática a qualquer momento.</p>
+        <div className="rs-weekday-choice"><select aria-label="Dia fixo de folga do profissional" disabled={!can(role,selectedCap,'days')||busy} value={offDraft} onChange={e=>setOffDraft(e.target.value)}><option value="random">✧ Automático · distribuir folgas</option>{OFF_DAYS.map(([value,label])=><option key={value} value={value}>{label} · toda semana</option>)}</select>
+        {can(role,selectedCap,'days')&&<button type="button" disabled={busy||(offDraft==='random'?selectedProfile.fixed_off_weekday==null:Number(offDraft)===selectedProfile.fixed_off_weekday)} onClick={()=>mutate('/preferences','PATCH',{targetId:selected.id,fixedOffWeekday:offDraft==='random'?null:Number(offDraft)},'Dia de folga salvo. Gere novamente o mês para atualizar os dias automáticos.')}>Salvar dia fixo</button>}</div>
+        <div className="rs-setting-note">{selectedProfile.fixed_off_weekday==null?'✧ Preferência atual: folga distribuída automaticamente.':'✓ Preferência atual: toda '+(OFF_DAYS.find(([value])=>Number(value)===selectedProfile.fixed_off_weekday)?.[1]||'semana')+'.'} <span>Alterações manuais de dias específicos continuam preservadas.</span></div>
+      </div>
       <div className="rs-shift-settings"><small>JORNADA PADRÃO · {selected.display_name}</small><div><label>Entrada<input aria-label="Entrada do turno" type="time" disabled={!can(role,selectedCap,'shift')} value={shiftDraft.start} onChange={e=>setShiftDraft(p=>({...p,start:e.target.value}))}/></label><label>Saída<input aria-label="Saída do turno" type="time" disabled={!can(role,selectedCap,'shift')} value={shiftDraft.end} onChange={e=>setShiftDraft(p=>({...p,end:e.target.value}))}/></label></div>{can(role,selectedCap,'shift')&&<button disabled={busy} onClick={()=>mutate('/shift','PATCH',{targetId:selected.id,start:shiftDraft.start,end:shiftDraft.end},'Novo turno padrão salvo. Aplique ao gerar próximos períodos.')}>Salvar jornada padrão</button>}<p>Turnos que cruzam a meia-noite são aceitos. A nova jornada será aplicada aos dias gerados posteriormente.</p></div>
      </>}
     </aside>
@@ -178,6 +192,11 @@ export default function FloorSchedule(){
      {selected&&<><ScheduleBadge entry={currentEntry}/><div className="rs-break-inputs">{breakItems.map((b,i)=><label key={b.key}><span><i>{b.sort}</i>{b.label}<small>{b.duration}</small></span><input type="time" aria-label={b.label} disabled={!can(role,selectedCap,'breaks')||!currentEntry||currentEntry.is_off} value={breakDraft[i]} onChange={e=>setBreakDraft(p=>p.map((x,n)=>n===i?e.target.value:x))}/></label>)}</div>
       {can(role,selectedCap,'breaks')&&<button className="rs-primary" disabled={busy||!currentEntry||currentEntry.is_off||breakDraft.some(x=>!x)} onClick={()=>mutate('/day','PATCH',{targetId:selected.id,date:selectedDate,kind:'breaks',breaks:breakDraft},'Pausas atualizadas.')}>✓ Salvar pausas deste dia</button>}
       {!can(role,selectedCap,'breaks')&&<div className="rs-locked">⌁ Apenas gestores/supervisores podem ajustar as pausas de atendentes. O perfil Dev possui acesso administrativo.</div>}
+      <div className="rs-round-settings"><div className="rs-setting-heading"><span className="rs-setting-icon">◷</span><div><strong>Pausas em número redondo</strong><small>Horários com minutos exatos e previsíveis</small></div></div>
+      <p>O gerador procura horários próximos do ideal, sem sobrepor as pausas ou sair da jornada. Exemplos em múltiplos de 10: <b>09:00, 10:20, 11:40</b>.</p>
+      <select aria-label="Arredondamento das pausas deste atendente" disabled={!can(role,selectedCap,'breaks')||busy} value={roundDraft} onChange={e=>setRoundDraft(e.target.value)}>{ROUND_OPTIONS.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select>
+      {can(role,selectedCap,'breaks')&&<button type="button" disabled={busy||Number(roundDraft)===(selectedProfile.break_round_minutes||0)} onClick={()=>mutate('/preferences','PATCH',{targetId:selected.id,breakRoundMinutes:Number(roundDraft)},'Arredondamento salvo. Gere as pausas novamente para aplicar.')}>Salvar preferência de pausas</button>}
+      <small>Configuração atual: {ROUND_OPTIONS.find(([key])=>Number(key)===(selectedProfile.break_round_minutes||0))?.[1]||'Livre'}. A configuração vale para as próximas gerações, sem alterar pausas já salvas manualmente.</small></div>
       <div className="rs-break-reminder"><strong>Regras da sequência</strong><p>Os intervalos devem permanecer dentro do turno, na ordem 10–20–10, sem sobreposição. Jornadas noturnas também são aceitas.</p></div>
      </>}</aside>
    </div>}
@@ -186,7 +205,7 @@ export default function FloorSchedule(){
     <div className="rs-team-list">{people.map(p=><div className="rs-team-member" key={p.id}><EmployeeAvatar person={p} size="large"/><div><strong>{p.display_name}</strong><small>{p.username}</small></div><UserPill person={p}/>{role==='dev'&&p.operational_role!=='dev'?<select aria-label={'Alterar perfil de '+p.display_name} disabled={busy||rolePending===p.id} value={p.operational_role} onChange={e=>{const next=e.target.value;if(window.confirm('Alterar o perfil operacional de '+p.display_name+' para '+ROLE_LABEL[next]+'?'))void updateRole(p,next);}}>{ROLE_ORDER.filter(k=>k!=='dev').map(k=><option key={k} value={k}>{ROLE_LABEL[k]}</option>)}</select>:<span className="rs-readonly">{p.operational_role==='dev'?'🔒 Conta Dev protegida':'Somente leitura'}</span>}</div>)}</div>
     <div className="rs-access-info"><strong>🔐 Permissões da escala</strong><p><b>Atendente:</b> consulta todas as escalas. <b>Gestor/Supervisor:</b> edita folgas, jornadas e pausas de atendentes. <b>Coordenador:</b> edita folgas e jornadas de gestores. <b>Dev:</b> administra os perfis e pode corrigir escalas conforme necessário. Todas as alterações são verificadas no servidor e auditadas.</p></div>
    </div>}
-   {(role==='manager'||role==='coordinator'||role==='dev')&&<section className="rs-automation"><div className="rs-automation-icon">✧</div><div className="rs-automation-text"><small>PLANEJAMENTO ASSISTIDO</small><h3>Gerador de escalas mensais</h3><p>Distribui automaticamente as folgas 6×1 e os horários das três pausas sem apagar alterações manuais.</p><div className="rs-automation-target"><label htmlFor="rs-role-group">Gerar para</label><select id="rs-role-group" value={selectedGroup} onChange={e=>setSelectedGroup(e.target.value)}>{ROLE_ORDER.filter(k=>people.some(p=>p.operational_role===k)&&can(role,k,'days')).map(k=><option key={k} value={k}>{ROLE_LABEL[k]}</option>)}</select><span>{eligible.length} profissional(is)</span></div></div><div className="rs-automation-buttons"><button disabled={busy||!eligible.length} className="rs-primary" onClick={()=>generate('days')}>☼ Gerar folgas 6×1</button><button disabled={busy||!eligible.length||!can(role,selectedGroup,'breaks')} onClick={()=>generate('breaks')}>☕ Gerar pausas 10–20–10</button><small>{busy?'Processando…':'Cada geração é salva no banco e registrada na auditoria.'}</small></div></section>}
+   {(role==='manager'||role==='coordinator'||role==='dev')&&<section className="rs-automation"><div className="rs-automation-icon">✧</div><div className="rs-automation-text"><small>PLANEJAMENTO ASSISTIDO</small><h3>Gerador de escalas mensais</h3><p>Respeita os dias fixos de folga de cada profissional e permite pausas com horários redondos. Preserva todas as alterações manuais.</p><div className="rs-automation-target"><label htmlFor="rs-role-group">Gerar para</label><select id="rs-role-group" value={selectedGroup} onChange={e=>setSelectedGroup(e.target.value)}>{ROLE_ORDER.filter(k=>people.some(p=>p.operational_role===k)&&can(role,k,'days')).map(k=><option key={k} value={k}>{ROLE_LABEL[k]}</option>)}</select><span>{eligible.length} profissional(is)</span></div></div><div className="rs-automation-buttons"><label className="rs-generation-round"><strong>Arredondar pausas</strong><select aria-label="Arredondamento para esta geração" value={roundSelection} onChange={e=>setRoundSelection(e.target.value)}><option value="profile">Usar preferência individual</option>{ROUND_OPTIONS.map(([value,label])=><option value={value} key={value}>{label}</option>)}</select><span>Escolha só para esta geração; não substitui a preferência salva de cada profissional.</span></label><button disabled={busy||!eligible.length} className="rs-primary" onClick={()=>generate('days')}>☼ Gerar folgas 6×1</button><button disabled={busy||!eligible.length||!can(role,selectedGroup,'breaks')} onClick={()=>generate('breaks')}>☕ Gerar pausas 10–20–10</button><small>{busy?'Processando…':'Cada geração é salva no banco e registrada na auditoria.'}</small></div></section>}
    <p className="rs-footer-note">O planejamento gerado é uma proposta operacional. Verifique cobertura mínima, turnos, domingos, feriados, legislação aplicável e acordos coletivos antes de colocá-lo em prática. Escalas já ajustadas manualmente são preservadas nas novas gerações.</p>
    </>}
  </div>;
