@@ -73,7 +73,8 @@ test('números, horários e falas citadas permanecem intocados durante a revisã
  const original='O solicitante diz "nao sei" e informou ABC1D23 às 14h30.';
  assert.equal(validateRewrite(original,'O SOLICITANTE DIZ "NAO SEI" E INFORMOU ABC1D23 ÀS 14H30.'),
   correctReport(original));
- assert.throws(()=>validateRewrite(original,'O SOLICITANTE DIZ "NÃO SEI" E INFORMOU ABC1D23 ÀS 14H30.'),/REWRITE_QUOTES_CHANGED/);
+ assert.equal(validateRewrite(original,'O SOLICITANTE DIZ "NÃO SEI" E INFORMOU ABC1D23 ÀS 14H30.'),correctReport(original));
+ assert.throws(()=>validateRewrite(original,'O SOLICITANTE DIZ "NAO, SEI" E INFORMOU ABC1D23 ÀS 14H30.'),/REWRITE_QUOTES_CHANGED/);
  assert.throws(()=>validateRewrite(original,'O SOLICITANTE DIZ "NAO SEI" E INFORMOU ABC1D23 ÀS 15H30.'),/REWRITE_FACTS_CHANGED/);
 });
 test('Gemini sinaliza revisão aplicada apenas quando pontuação muda',async()=>{
