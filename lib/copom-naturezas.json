@@ -1,0 +1,3078 @@
+[
+  {
+    "id": 1,
+    "natureza": "ABORDAGEM DE SUSPEITOS - SEM ILICITUDE"
+  },
+  {
+    "id": 2,
+    "natureza": "PERTURBACAO DO TRABALHO OU SOSSEGO ALHEIO"
+  },
+  {
+    "id": 3,
+    "natureza": "POLICIAMENTO PRESENÇA"
+  },
+  {
+    "id": 4,
+    "natureza": "LESAO CORPORAL - VIOLENCIA DOMESTICA E FAMILIAR"
+  },
+  {
+    "id": 5,
+    "natureza": "AMEACA"
+  },
+  {
+    "id": 6,
+    "natureza": "ATENDIMENTO DE ACIDENTE - SEM ILICITUDE"
+  },
+  {
+    "id": 7,
+    "natureza": "FURTO QUALIFICADO"
+  },
+  {
+    "id": 8,
+    "natureza": "APOIO A OUTROS ORGAOS - SEM ILICITUDE"
+  },
+  {
+    "id": 9,
+    "natureza": "LESAO CORPORAL"
+  },
+  {
+    "id": 10,
+    "natureza": "FURTO SIMPLES"
+  },
+  {
+    "id": 11,
+    "natureza": "VIAS DE FATO"
+  },
+  {
+    "id": 12,
+    "natureza": "VIOLACAO DE DOMICILIO"
+  },
+  {
+    "id": 13,
+    "natureza": "INFRACAO DE TRANSITO - SEM ILICITUDE"
+  },
+  {
+    "id": 14,
+    "natureza": "VISITA COMUNITÁRIA VÍTIMA – VIOLÊNCIA DOMÉSTICA PREVENTIVA GERAL"
+  },
+  {
+    "id": 15,
+    "natureza": "VISITA COMUNITÁRIA -VIOLÊNCIA DOMÉSTICA PREVENTIVA (DESATIVADO)"
+  },
+  {
+    "id": 16,
+    "natureza": "ROUBO"
+  },
+  {
+    "id": 17,
+    "natureza": "DANO"
+  },
+  {
+    "id": 18,
+    "natureza": "VISITA COMUNITÁRIA -VIOLÊNCIA DOMÉSTICA FISCALIZAÇÃO MPU (DESATIVADO)"
+  },
+  {
+    "id": 19,
+    "natureza": "AMEACA CONTRA MULHER - CONDICAO SEXO FEMININO E VIOLENCIA DOMESTICA E FAMILIAR"
+  },
+  {
+    "id": 20,
+    "natureza": "VISITA FISCALIZAÇÃO MPU – VÍTIMA - VIOLÊNCIA DOMÉSTICA"
+  },
+  {
+    "id": 21,
+    "natureza": "APOIO A OUTRA OPM/OBM - SEM ILICITUDE"
+  },
+  {
+    "id": 22,
+    "natureza": "LESAO CORPORAL CONTRA MULHER - CONDICAO SEXO FEMININO E VIOLENCIA DOMESTICA E FAMILIAR"
+  },
+  {
+    "id": 23,
+    "natureza": "DESINTELIGÊNCIA"
+  },
+  {
+    "id": 24,
+    "natureza": "MULHER - DESCUMPRIR DECISÃO JUDICIAL QUE DEFERE MEDIDAS PROTETIVAS DE URGÊNCIA"
+  },
+  {
+    "id": 25,
+    "natureza": "NOTICIA DE FATO FUTURO"
+  },
+  {
+    "id": 26,
+    "natureza": "DISPARO DE ALARME - SEM ILICITUDE"
+  },
+  {
+    "id": 27,
+    "natureza": "DISPARO DE ARMA DE FOGO"
+  },
+  {
+    "id": 28,
+    "natureza": "ESTELIONATO"
+  },
+  {
+    "id": 29,
+    "natureza": "CUMPRIMENTO DE MANDADO JUDICIAL - SEM ILICITUDE"
+  },
+  {
+    "id": 30,
+    "natureza": "ADQUIRIR / VENDER / FORNECER E OU PRODUZIR DROGAS"
+  },
+  {
+    "id": 31,
+    "natureza": "RIXA"
+  },
+  {
+    "id": 32,
+    "natureza": "DROGAS PARA O CONSUMO PESSOAL"
+  },
+  {
+    "id": 33,
+    "natureza": "VEICULO RECUPERADO - SEM ILICITUDE"
+  },
+  {
+    "id": 34,
+    "natureza": "DIRECAO PERIGOSA DE VEICULO OU EMBARCACAO"
+  },
+  {
+    "id": 35,
+    "natureza": "ATENDIMENTO DE LOCAL DE MORTE"
+  },
+  {
+    "id": 36,
+    "natureza": "EXTRAVIO OU PERDA DE DOCUMENTOS - SEM ILICITUDE"
+  },
+  {
+    "id": 37,
+    "natureza": "ROUBO AGRAVADO"
+  },
+  {
+    "id": 38,
+    "natureza": "VISITA COMUNITARIA - OCORRÊNCIA NÃO DELITUOSA"
+  },
+  {
+    "id": 39,
+    "natureza": "DESAPARECIMENTO DE PESSOA - SEM ILICITUDE"
+  },
+  {
+    "id": 40,
+    "natureza": "PATRULHAMENTO AMBIENTAL"
+  },
+  {
+    "id": 41,
+    "natureza": "VISITA COMUNITÁRIA – AUSENTE/NÃO LOCALIZADO - VIOLÊNCIA DOMÉSTICA"
+  },
+  {
+    "id": 42,
+    "natureza": "OMISSAO DE CAUTELA NA GUARDA DE ANIMAIS"
+  },
+  {
+    "id": 43,
+    "natureza": "VEICULO ABANDONADO/ RECOLHIDO AO PATIO - SEM ILICITUDE"
+  },
+  {
+    "id": 44,
+    "natureza": "PATRULHA RURAL VISITA COMUNITÁRIA"
+  },
+  {
+    "id": 45,
+    "natureza": "CONDUZIR VEÍCULO AUTOMOTOR COM CAPACIDADE PSICOMOTORA ALTERADA EM RAZAO DA INFLUÊNCIA DE ÁLCOOL OU DE OUTRA SUBSTÂNCIA PSICOATIVA QUE DETERMINE DEPENDÊNCIA"
+  },
+  {
+    "id": 46,
+    "natureza": "MAUS TRATOS"
+  },
+  {
+    "id": 47,
+    "natureza": "EMISSAO DE FUMACA / VAPOR OU GAS"
+  },
+  {
+    "id": 48,
+    "natureza": "SUICIDIO - SEM ILICITUDE"
+  },
+  {
+    "id": 49,
+    "natureza": "VIAS DE FATO  CONTRA MULHER - CONDICAO SEXO FEMININO E VIOLENCIA DOMESTICA E FAMILIAR"
+  },
+  {
+    "id": 50,
+    "natureza": "DESACATO"
+  },
+  {
+    "id": 51,
+    "natureza": "PROXIMIDADE - VISITA DE CADASTRO"
+  },
+  {
+    "id": 52,
+    "natureza": "INJURIA"
+  },
+  {
+    "id": 53,
+    "natureza": "ABANDONO DE INCAPAZ"
+  },
+  {
+    "id": 54,
+    "natureza": "PATRULHA RURAL VISITA PREVENTIVA DE CADASTRO"
+  },
+  {
+    "id": 55,
+    "natureza": "ACHADO DE OBJETO - SEM ILICITUDE"
+  },
+  {
+    "id": 56,
+    "natureza": "RISCO A SEGURANCA ESCOLAR"
+  },
+  {
+    "id": 57,
+    "natureza": "PROXIMIDADE - VISITA COMUNITÁRIA"
+  },
+  {
+    "id": 58,
+    "natureza": "PRATICA DE ABUSO / MAUS TRATOS CONTRA ANIMAIS"
+  },
+  {
+    "id": 59,
+    "natureza": "DESAPARECIMENTO DE CRIANCA - SEM ILICITUDE"
+  },
+  {
+    "id": 60,
+    "natureza": "CRIMES DE MAUS TRATOS AOS ANIMAIS QUANDO SE TRATAR DE CÃO E GATOS"
+  },
+  {
+    "id": 61,
+    "natureza": "VISITA FISCALIZAÇÃO MPU – AUSENTE/NÃO LOCALIZADO - VIOLÊNCIA DOMÉSTICA"
+  },
+  {
+    "id": 62,
+    "natureza": "OPERAÇÃO BARREIRA - SEM ILICUTUDE"
+  },
+  {
+    "id": 63,
+    "natureza": "APROPRIACAO INDEBITA"
+  },
+  {
+    "id": 64,
+    "natureza": "DESOBEDIENCIA A DECISAO JUDICIAL"
+  },
+  {
+    "id": 65,
+    "natureza": "CUMPRIMENTO DE MANDADO DE PRISAO"
+  },
+  {
+    "id": 66,
+    "natureza": "FATO NAO CONSTATADO - SEM ILICITUDE"
+  },
+  {
+    "id": 67,
+    "natureza": "ATO OBSCENO"
+  },
+  {
+    "id": 68,
+    "natureza": "LESAO CORPORAL DE NATUREZA GRAVE"
+  },
+  {
+    "id": 69,
+    "natureza": "EXTRAVIO OU PERDA DE OBJETO - SEM ILICITUDE"
+  },
+  {
+    "id": 70,
+    "natureza": "OUTRAS FRAUDES - REFEICAO / ALOJAMENTO OU TRANSPORTE"
+  },
+  {
+    "id": 71,
+    "natureza": "INCENDIO"
+  },
+  {
+    "id": 72,
+    "natureza": "ESTUPRO DE VULNERAVEL"
+  },
+  {
+    "id": 73,
+    "natureza": "IMPORTUNAÇÃO SEXUAL"
+  },
+  {
+    "id": 74,
+    "natureza": "PALESTRA - PREVENÇÃO À VIOLÊNCIA DOMÉSTICA E FAMILIAR"
+  },
+  {
+    "id": 75,
+    "natureza": "RECEPTACAO"
+  },
+  {
+    "id": 76,
+    "natureza": "PORTE ILEGAL DE ARMA DE FOGO / ACESSORIO OU MUNICAO - USO PERMITIDO"
+  },
+  {
+    "id": 77,
+    "natureza": "VIOLACAO DE LUGAR OU OBJETO"
+  },
+  {
+    "id": 78,
+    "natureza": "APOIO AO MINISTERIO PUBLICO"
+  },
+  {
+    "id": 79,
+    "natureza": "ESTUPRO OU ATENTADO VIOLENTO AO PUDOR"
+  },
+  {
+    "id": 80,
+    "natureza": "DANO QUALIFICADO"
+  },
+  {
+    "id": 81,
+    "natureza": "SEQUESTRO E CARCERE PRIVADO"
+  },
+  {
+    "id": 82,
+    "natureza": "ATROPELAMENTO - SEM ILICITUDE"
+  },
+  {
+    "id": 83,
+    "natureza": "VISITA COMUNITÁRIA AUTOR – VIOLÊNCIA DOMÉSTICA PREVENTIVA GERAL"
+  },
+  {
+    "id": 84,
+    "natureza": "ESCOLTA EM GERAL"
+  },
+  {
+    "id": 85,
+    "natureza": "ENCAMINHAMENTO ASSISTENCIAL - SEM ILICITUDE"
+  },
+  {
+    "id": 86,
+    "natureza": "DESTRUIR OU DANIFICAR VEGETAÇAO PRIMÁRIA OU SECUNDÁRIA"
+  },
+  {
+    "id": 87,
+    "natureza": "DIFAMACAO"
+  },
+  {
+    "id": 88,
+    "natureza": "CALUNIA"
+  },
+  {
+    "id": 89,
+    "natureza": "ASSEDIO SEXUAL"
+  },
+  {
+    "id": 90,
+    "natureza": "ABUSO - ATENTADO A INVIOLABILIDADE DO DOMICILIO"
+  },
+  {
+    "id": 91,
+    "natureza": "OUTRAS AÇÕES PREVENTIVAS – PREVENÇÃO À VIOLÊNCIA DOMÉSTICA E FAMILIAR"
+  },
+  {
+    "id": 92,
+    "natureza": "DESOBEDIENCIA"
+  },
+  {
+    "id": 93,
+    "natureza": "PERSEGUIR ALGUÉM / REITERADAMENTE E POR QUALQUER MEIO / AMEAÇANDO-LHE A INTEGRIDADE FÍSICA OU PSICOLÓGICA /"
+  },
+  {
+    "id": 94,
+    "natureza": "EXERCICIO ARBITRARIO DAS PROPRIAS RAZOES"
+  },
+  {
+    "id": 95,
+    "natureza": "ADULTERACAO DE SINAL IDENTIFICADOR DE VEICULO AUTOMOTOR"
+  },
+  {
+    "id": 96,
+    "natureza": "LESAO CORPORAL - SE A LESÃO FOR PRATICADA CONTRA AUTORIDADE OU AGENTE DESCRITO NOS ARTS. 142 E 144"
+  },
+  {
+    "id": 97,
+    "natureza": "CONSTRANGER ALGUEM COM VIOLENCIA OU AMEACA"
+  },
+  {
+    "id": 98,
+    "natureza": "CONTRABANDO OU DESCAMINHO"
+  },
+  {
+    "id": 99,
+    "natureza": "ESCOLTA DE PRESO(S) / ATENDIMENTO MÉDICO/ATENDIMENTO ODONTOLÓGICO/EXAMES LABORATORIAIS"
+  },
+  {
+    "id": 100,
+    "natureza": "ACIDENTE DE TRANSITO EM AREA PARTICULAR"
+  },
+  {
+    "id": 101,
+    "natureza": "REUNIÃO DE REDE - PREVENÇÃO À VIOLÊNCIA DOMÉSTICA E FAMILIA"
+  },
+  {
+    "id": 102,
+    "natureza": "JOGO DE AZAR"
+  },
+  {
+    "id": 103,
+    "natureza": "ASSEDIO SEXUAL VITIMA MENOR ANOS"
+  },
+  {
+    "id": 104,
+    "natureza": "FISCALIZACAO DE TRANSITO - BLOQUEIO - OCORRENCIAS NAO DELITUOSAS"
+  },
+  {
+    "id": 105,
+    "natureza": "APOIO A ORGAOS AMBIENTAIS GOVERNAMENTAIS"
+  },
+  {
+    "id": 106,
+    "natureza": "FURTO DE COISA COMUM (Subtrair o condômino / co-herdeiro ou sócio / para si ou para outrem / a quem legitimamente a detém / a coisa comum)"
+  },
+  {
+    "id": 107,
+    "natureza": "ESBULHO POSSESSORIO"
+  },
+  {
+    "id": 108,
+    "natureza": "INVASAO DE ESTABELECIMENTO IND. / COM. / AGRICOLA / SABOTAGEM"
+  },
+  {
+    "id": 109,
+    "natureza": "ESCOLTA DE PRESO(S) / OUTRAS ESCOLTAS"
+  },
+  {
+    "id": 110,
+    "natureza": "PORTE ILEGAL DE ARMA BRANCA"
+  },
+  {
+    "id": 111,
+    "natureza": "CAUSAR DANO EMOCIONAL À MULHER"
+  },
+  {
+    "id": 112,
+    "natureza": "GUARDAR/TER EM DEPOSITO OVOS/LARVAS/ESPECIMES DA FAUNA S/LIC"
+  },
+  {
+    "id": 113,
+    "natureza": "VISITA FISCALIZAÇÃO MPU – AUTOR - VIOLÊNCIA DOMÉSTICA"
+  },
+  {
+    "id": 114,
+    "natureza": "RETIRADA DE PERTENCES – PREVENÇÃO À VIOLÊNCIA DOMÉSTICA E FAMILIAR"
+  },
+  {
+    "id": 115,
+    "natureza": "ACIONAMENTO DE MONITORAÇÃO SIMULTÂNEA - SEM ILICITUDE"
+  },
+  {
+    "id": 116,
+    "natureza": "LESAO CORPORAL DE NATUREZA GRAVISSIMA"
+  },
+  {
+    "id": 117,
+    "natureza": "INJURIAR ALGUEM EM RAZAO DE RACA / COR OU ATNIA / OFENDENDO-LHE A DIGNIDADE OU O DECORO - LEI 7.716/89"
+  },
+  {
+    "id": 118,
+    "natureza": "DESTRUICAO OU DANO DE FLORESTAS DE PRESERVACAO PERMANENTE"
+  },
+  {
+    "id": 119,
+    "natureza": "CUMPRIMENTO DE BUSCA E APREENSAO"
+  },
+  {
+    "id": 120,
+    "natureza": "ABORTO PROVOCADO PELA GESTANTE OU COM SEU CONSENTIMENTO"
+  },
+  {
+    "id": 121,
+    "natureza": "CAUSAR POLUICAO DE QUALQUER NATUREZA"
+  },
+  {
+    "id": 122,
+    "natureza": "INVADIR OU ADENTRAR / CLANDESTINA OU ASTUCIOSAMENTE"
+  },
+  {
+    "id": 123,
+    "natureza": "COBRANCA COM COACAO / CONSTRANGIMENTO / AMEACA"
+  },
+  {
+    "id": 124,
+    "natureza": "ABANDONAR IDOSO OU NAO PROVER NECESSIDADES BASICAS"
+  },
+  {
+    "id": 125,
+    "natureza": "DESCUMPRIR DECISÃO JUDICIAL"
+  },
+  {
+    "id": 126,
+    "natureza": "SERVIR BEBIDA ALCOOLICA A MENOR/INCAPAZ"
+  },
+  {
+    "id": 127,
+    "natureza": "CORTAR ARVORE EM FLORESTA DE PRESERVACAO"
+  },
+  {
+    "id": 128,
+    "natureza": "LOCALIZAÇÃO PESSOA DESAPARECIDA - SEM ILICITUDE"
+  },
+  {
+    "id": 129,
+    "natureza": "T2 - ACIDENTE DE TRANSITO"
+  },
+  {
+    "id": 130,
+    "natureza": "EMBRIAGUEZ"
+  },
+  {
+    "id": 131,
+    "natureza": "LESAO CORPORAL CULPOSA"
+  },
+  {
+    "id": 132,
+    "natureza": "LESAO CORPORAL SEM ILICITUDE NO TRANSITO"
+  },
+  {
+    "id": 133,
+    "natureza": "SUBTRAIR CRIANCA/ADOLESCENTE DE QUEM TEM GUARDA"
+  },
+  {
+    "id": 134,
+    "natureza": "POSSE/PORTE ILEGAL DE ARMA DE FOGO ACESSORIO OU MUNICAO - USO RESTRITO"
+  },
+  {
+    "id": 135,
+    "natureza": "OMISSAO DE SOCORRO"
+  },
+  {
+    "id": 136,
+    "natureza": "CONSTRANGIMENTO ILEGAL"
+  },
+  {
+    "id": 137,
+    "natureza": "PROVOCACAO DE TUMULTO"
+  },
+  {
+    "id": 138,
+    "natureza": "PATRULHA RURAL VISITA SOLIDÁRIA"
+  },
+  {
+    "id": 139,
+    "natureza": "PROXIMIDADE - VISITA SOLIDÁRIA"
+  },
+  {
+    "id": 140,
+    "natureza": "EXTORSAO"
+  },
+  {
+    "id": 141,
+    "natureza": "ARREGIMENTACAO DE ELEITOR OU A PROPAGANDA DE BOCA DE URNA"
+  },
+  {
+    "id": 142,
+    "natureza": "FRAUDE NO COMERCIO"
+  },
+  {
+    "id": 143,
+    "natureza": "POSSE IRREGULAR DE ARMA DE FOGO / ACESSORIO OU MUNICAO - USO PERMITIDO"
+  },
+  {
+    "id": 144,
+    "natureza": "DIRIGIR VEICULO SEM CNH"
+  },
+  {
+    "id": 145,
+    "natureza": "FORNECER PRODUTOS DE DEPENDENCIA FISICA/QUIMICA"
+  },
+  {
+    "id": 146,
+    "natureza": "HOMICIDIO QUALIFICADO"
+  },
+  {
+    "id": 147,
+    "natureza": "PICHACAO/GRAFITAGEM MONUMENTO OU EDIFICACAO"
+  },
+  {
+    "id": 148,
+    "natureza": "DESCAMINHO"
+  },
+  {
+    "id": 149,
+    "natureza": "HOMICIDIO SIMPLES"
+  },
+  {
+    "id": 150,
+    "natureza": "CACAR ESPECIMES DA FAUNA"
+  },
+  {
+    "id": 151,
+    "natureza": "NAO CUMPRIR/FRUSTAR EXECUCAO DE ORDEM JUDICIAL ACAO CIVIL"
+  },
+  {
+    "id": 152,
+    "natureza": "PROVOCAR INCENDIO EM MATA OU FLORESTA"
+  },
+  {
+    "id": 153,
+    "natureza": "ACIDENTE DE TRABALHO COM LESAO CORPORAL - SEM ILICITUDE"
+  },
+  {
+    "id": 154,
+    "natureza": "OMISSAO DE CAUTELA"
+  },
+  {
+    "id": 155,
+    "natureza": "INJURIA REFERENTE A RACA/COR/ETNIA/RELIGIAO/ORIGEM"
+  },
+  {
+    "id": 156,
+    "natureza": "CRUELDADE CONTRA ANIMAIS"
+  },
+  {
+    "id": 157,
+    "natureza": "EXPOR A PERIGO INTEGRIDADE/SAUDE FISICA/PSIQUICA DO IDOSO"
+  },
+  {
+    "id": 158,
+    "natureza": "ABUSO DE INCAPAZES"
+  },
+  {
+    "id": 159,
+    "natureza": "ANIMAL MORTO/FERIDO ENCONTRADO/RESGATADO - SEM ILICITUADE"
+  },
+  {
+    "id": 160,
+    "natureza": "MOEDA FALSA"
+  },
+  {
+    "id": 161,
+    "natureza": "PATRULHA RURAL REUNIÕES COMUNITÁRIAS"
+  },
+  {
+    "id": 162,
+    "natureza": "AFASTAR-SE DO LOCAL DO ACIDENTE PARA FUGIR DA RESPONSABILIDADE PENAL OU CIVIL"
+  },
+  {
+    "id": 163,
+    "natureza": "ANIMAL ÍNTEGRO ENCONTRADO/RECUPERADO - SEM ILICITUDE"
+  },
+  {
+    "id": 164,
+    "natureza": "SEQUESTRO RELAMPAGO"
+  },
+  {
+    "id": 165,
+    "natureza": "ACHADO DE DROGAS ILICITAS"
+  },
+  {
+    "id": 166,
+    "natureza": "PRATICAR/INDUZIR/INCITAR DISCRIMINACAO/PRECONCEITO"
+  },
+  {
+    "id": 167,
+    "natureza": "EXPOR A PERIGO IDOSO COM RESULTADO LESAO CORPORAL"
+  },
+  {
+    "id": 168,
+    "natureza": "T7 - QUEDAS-TRAUMA DE COLUNA"
+  },
+  {
+    "id": 169,
+    "natureza": "DEIXAR DE LIBERAR CRIANCA/ADOLESCENTE"
+  },
+  {
+    "id": 170,
+    "natureza": "INTIMIDAR SISTEMATICAMENTE / INDIVIDUALMENTE OU EM GRUPO / MEDIANTE VIOLENCIA FISICA OU PSICOLOGICA (BULLYING)"
+  },
+  {
+    "id": 171,
+    "natureza": "CORTAR/TRANSFORMAR EM CARVAO MADEIRA DE LEI"
+  },
+  {
+    "id": 172,
+    "natureza": "PERIGO PARA A VIDA OU SAUDE DE OUTREM"
+  },
+  {
+    "id": 173,
+    "natureza": "PESCAR EM PERIODO E LOCAIS PROIBIDOS"
+  },
+  {
+    "id": 174,
+    "natureza": "SE A INJRIA CONSISTE EM VIOLNCIA OU VIAS DE FATO / QUE / POR SUA NATUREZA OU MEIO EMPREGADO / SE CONSIDEREM AVILTANTES"
+  },
+  {
+    "id": 175,
+    "natureza": "INCENDIO CULPOSO"
+  },
+  {
+    "id": 176,
+    "natureza": "ACHADO DE DOCUMENTO - SEM ILICITUDE"
+  },
+  {
+    "id": 177,
+    "natureza": "DANO A BEM PROTEGIDO"
+  },
+  {
+    "id": 178,
+    "natureza": "FISCALIZACAO DE TRANSITO - PINCAMENTO - OCORRENCIAS NAO DELITUOSAS"
+  },
+  {
+    "id": 179,
+    "natureza": "INVADIR DISPOSITIVO INFORMÁTICO ALHEIO"
+  },
+  {
+    "id": 180,
+    "natureza": "OBRAS/SERVICOS POLUIDORES SEM LICENCA"
+  },
+  {
+    "id": 181,
+    "natureza": "ATIVIDADE FRONTEIRIÇA - RELATORIO"
+  },
+  {
+    "id": 182,
+    "natureza": "SUBTRACAO DE INCAPAZES"
+  },
+  {
+    "id": 183,
+    "natureza": "RECUSAR OU OMITIR DADOS CADASTRAIS / REGISTROS / DOCUMENTOS E INFORMAÇÕES REQUISITADAS PELO JUIZ / MINISTÉRIO PÚBLICO OU DELEGADO DE POLÍCIA / NO CURSO DE INVESTIGAÇAO OU DO PROCESSO"
+  },
+  {
+    "id": 184,
+    "natureza": "POSSE DE INSTRUMENTO USUAL DE FURTO"
+  },
+  {
+    "id": 185,
+    "natureza": "FABRICAR / VENDER / TRANSPORTAR OU SOLTAR BALOES"
+  },
+  {
+    "id": 186,
+    "natureza": "PERTURBACAO DA TRANQUILIDADE"
+  },
+  {
+    "id": 187,
+    "natureza": "SE O AGENTE CONDUZ VEÍCULO AUTOMOTOR SOB A INFLUÊNCIA DE ÁLCOOL OU DE QUALQUER OUTRA SUBSTÂNCIA PSICOATIVA QUE DETERMINE DEPENDÊNCIA"
+  },
+  {
+    "id": 188,
+    "natureza": "CAUSAR POLUICAO ATMOSFERICA QUE CAUSE DANOS A SAUDE"
+  },
+  {
+    "id": 189,
+    "natureza": "FURTO SEMOVENTE - ABIGEATO"
+  },
+  {
+    "id": 190,
+    "natureza": "DIRECAO SEM HABILITACAO VEICULO OU EMBARCACAO"
+  },
+  {
+    "id": 191,
+    "natureza": "EXTRAVIO LIVRO/PROCESSO/DOCUMENTO"
+  },
+  {
+    "id": 192,
+    "natureza": "B1 - ANIMAL - SALVAM. - CAPTU"
+  },
+  {
+    "id": 193,
+    "natureza": "ESCOLTA DE PRESO(S) / AUDIÊNCIA DE CUSTÓDIA"
+  },
+  {
+    "id": 194,
+    "natureza": "PESCAR UTILIZANDO APARELHO/PETRECHOS/TECNICAS NAO PERMITIDOS"
+  },
+  {
+    "id": 195,
+    "natureza": "ALICIAR CRIANCA PARA A PRATICA DE ATO LIBIDINOSO"
+  },
+  {
+    "id": 196,
+    "natureza": "FALSIDADE IDEOLOGICA"
+  },
+  {
+    "id": 197,
+    "natureza": "APROPRIACAO DE COISA ACHADA"
+  },
+  {
+    "id": 198,
+    "natureza": "DEIXAR DE PRESTAR SOCORRO EM ACIDENTE COM VITIMA"
+  },
+  {
+    "id": 199,
+    "natureza": "FUGA DE PESSOA PRESA OU SUBMETIDA A MEDIDA DE SEGURANCA"
+  },
+  {
+    "id": 200,
+    "natureza": "INVADIR OU ADENTRAR / CLANDESTINA OU ASTUCIOSAMENTE / OU À REVELIA DA VONTADE DO OCUPANTE / IMÓVEL ALHEIO OU SUAS DEPENDÊNCIAS / OU NELE PERMANECER NAS MESMAS CONDIÇÕES / SEM DETERMINAÇÃO JUDICIAL OU FORA DAS CONDIÇÕES ESTABELECIDAS EM LEI"
+  },
+  {
+    "id": 201,
+    "natureza": "ROUBO COM RESULTADO DE LESAO CORPORAL GRAVE"
+  },
+  {
+    "id": 202,
+    "natureza": "PARTICIPAR DE DISPUTA OU COMPETICAO NAO AUTORIZADA"
+  },
+  {
+    "id": 203,
+    "natureza": "CONSTRANGER O PRESO OU O DETENTO / MEDIANTE VIOLÊNCIA / GRAVE AMEAÇA OU REDUÇÃO DE SUA CAPACIDADE DE RESISTÊNCIA"
+  },
+  {
+    "id": 204,
+    "natureza": "ENCAMINHAMENTO DE DOENTE - SEM ILICITUDE"
+  },
+  {
+    "id": 205,
+    "natureza": "B10 - INCÊNDIO FLORESTAL"
+  },
+  {
+    "id": 206,
+    "natureza": "ADULTERAR / REMARCAR OU SUPRIMIR NÚMERO DE CHASSI / MONOBLOCO / MOTOR / PLACA DE IDENTIFICAÇÃO / OU QUALQUER SINAL IDENTIFICADOR DE VEÍCULO AUTOMOTOR / ELÉTRICO / HÍBRIDO / DE REBOQUE"
+  },
+  {
+    "id": 207,
+    "natureza": "CUMPRIMENTO DE OUTROS MANDADOS JUDICIAIS"
+  },
+  {
+    "id": 208,
+    "natureza": "RESISTENCIA"
+  },
+  {
+    "id": 209,
+    "natureza": "CONDUZIR EMBARCAÇAO OU AERONAVE APÓS O CONSUMO DE DROGAS"
+  },
+  {
+    "id": 210,
+    "natureza": "IMPEDIR/DIFICULTAR REGENERACAO DE FLORESTA"
+  },
+  {
+    "id": 211,
+    "natureza": "INTRODUCAO OU ABANDONO DE ANIMAIS EM PROPRIEDADE ALHEIA"
+  },
+  {
+    "id": 212,
+    "natureza": "ENTREGA DE ARMA DE FOGO - SEM ILICITUDE"
+  },
+  {
+    "id": 213,
+    "natureza": "INDUZIMENTO / INSTIGACAO OU AUXILIO A SUICIDIO"
+  },
+  {
+    "id": 214,
+    "natureza": "ABANDONO DE INCAPAZ COM RESULTADO DE LESAO CORPORAL"
+  },
+  {
+    "id": 215,
+    "natureza": "AFASTAR OU PROCURA AFASTAR LICITANTE / POR MEIO DE VIOLÊNCIA / GRAVE AMEAÇA / FRAUDE OU OFERECIMENTO DE VANTAGEM DE QUALQUER TIPO"
+  },
+  {
+    "id": 216,
+    "natureza": "EXTORSAO MEDIANTE SEQUESTRO"
+  },
+  {
+    "id": 217,
+    "natureza": "DAR / OFERECER / PROMETER / SOLICITAR OU RECEBER / PARA SI OU PARA OUTREM / DINHEIRO / DADIVA / OU QUALQUER OUTRA VANTAGEM / PARA OBTER OU DAR VOTO E PARA CONSEGUIR OU PROMETER ABSTENO / AINDA QUE A OFERTA NO SEJA ACEITA"
+  },
+  {
+    "id": 218,
+    "natureza": "DESTRUICAO / DANO DE FLORESTAS PRESERVACAO"
+  },
+  {
+    "id": 219,
+    "natureza": "INTIMADO DA SENTENÇA QUE DECRETA A FALÊNCIA OU CONCEDE A RECUPERAÇAO JUDICIAL / O MINISTÉRIO PÚBLICO / VERIFICANDO A OCORRÊNCIA DE QUALQUER CRIME PREVISTO NESTA LEI / PROMOVERÁ IMEDIATAMENTE A COMPETENTE AÇAO PENAL OU / SE ENTENDER NECESSÁRIO / REQUISITARÁ A ABERTURA DE INQUÉRITO POLICIAL."
+  },
+  {
+    "id": 220,
+    "natureza": "RECEPTACAO CULPOSA"
+  },
+  {
+    "id": 221,
+    "natureza": "LESAO CORPORAL SEGUIDA DE MORTE"
+  },
+  {
+    "id": 222,
+    "natureza": "JOGO DO BICHO"
+  },
+  {
+    "id": 223,
+    "natureza": "MAUS TRATOS COM RESULTADO DE LESAO CORPORAL GRAVE"
+  },
+  {
+    "id": 224,
+    "natureza": "CORRUPCAO DE MENORES"
+  },
+  {
+    "id": 225,
+    "natureza": "NAO FORNECER NOTA FISCAL"
+  },
+  {
+    "id": 226,
+    "natureza": "ACIDENTE DE TRABALHO COM MORTE - SEM ILICITUDE"
+  },
+  {
+    "id": 227,
+    "natureza": "PERTURBAR OU IMPEDIR DE QUALQUER FORMA O ALISTAMENTO"
+  },
+  {
+    "id": 228,
+    "natureza": "RETENCAO DE DOCUMENTO"
+  },
+  {
+    "id": 229,
+    "natureza": "INJURIAR"
+  },
+  {
+    "id": 230,
+    "natureza": "B8 - INCÊNDIO EM EDIFICAÇÃO"
+  },
+  {
+    "id": 231,
+    "natureza": "SUBMETER A CRIANCA/ADOLESCENTE A VEXAME"
+  },
+  {
+    "id": 232,
+    "natureza": "DESCUMPRIR S/ JUSTIFICATIVA PRAZO ESTABELECIDO"
+  },
+  {
+    "id": 233,
+    "natureza": "PARALISACAO DE TRABALHO SEGUIDA VIOLENCIA OU PERTURB. ORDEM"
+  },
+  {
+    "id": 234,
+    "natureza": "SATISFACAO DE LASCIVIA MEDIANTE PRESENCA DE CRIANCA OU ADOLESCENTE"
+  },
+  {
+    "id": 235,
+    "natureza": "RECUSAR OU RETARDAR ATENDIMENTO DE SAÚDE."
+  },
+  {
+    "id": 236,
+    "natureza": "MORTE A APURAR SEM INDICIOS DE CRIME"
+  },
+  {
+    "id": 237,
+    "natureza": "INTERRUPCAO/PERTURBACAO DE SERVICO TELEGRAFICO/TELEFONE/INFORMATICO/TELEMATICO OU DE INFORMAÇAO DE UTILIDADE PÚBLICA"
+  },
+  {
+    "id": 238,
+    "natureza": "INDUZIR CONSUMIDOR/USUARIO A ERRO"
+  },
+  {
+    "id": 239,
+    "natureza": "POSSE / EMPREGO ARTEFATO EXPLOSIVO DESAUTORIZADO"
+  },
+  {
+    "id": 240,
+    "natureza": "CAUSAR POLUICAO POR RESIDUO SOLIDO/LIQUIDO/GASOSO/DETRITO/OL"
+  },
+  {
+    "id": 241,
+    "natureza": "CRIMES ASSIMILADOS A MOEDA FALSA"
+  },
+  {
+    "id": 242,
+    "natureza": "PROXIMIDADE - REUNIÕES COMUNITÁRIAS"
+  },
+  {
+    "id": 243,
+    "natureza": "ESTUPRO OU ATENTADO VIOLENTO AO PUDOR RESULTA LESAO CORPORAL GRAVE OU SE VITIMA MENOR COM MAIS DE 14"
+  },
+  {
+    "id": 244,
+    "natureza": "CRIME ELEITORAL - DESCUMPRIR A PROIBIÇAO DOS ARTIGOS 5.O"
+  },
+  {
+    "id": 245,
+    "natureza": "OUTRAS SUBSTANCIAS NOCIVAS A SAUDE PUBLICA"
+  },
+  {
+    "id": 246,
+    "natureza": "VENDER/TRANSPORTAR PRODUTOS DE ORIGEM VEGETAL SEM LICENCA"
+  },
+  {
+    "id": 247,
+    "natureza": "B15 - INSETOS - REMOÇÃO - EXTER"
+  },
+  {
+    "id": 248,
+    "natureza": "INDUZIR / INSTIGAR OU AUXILIAR ALGUÉM AO USO INDEVIDO DE DROGAS"
+  },
+  {
+    "id": 249,
+    "natureza": "CAUSAR DANO A UNIDADES DE CONSERVACAO"
+  },
+  {
+    "id": 250,
+    "natureza": "CODIGO PENAL INJURIA REAL"
+  },
+  {
+    "id": 251,
+    "natureza": "FALSA IDENTIDADE"
+  },
+  {
+    "id": 252,
+    "natureza": "INFRACAO DE MEDIDA SANITARIA PREVENTIVA"
+  },
+  {
+    "id": 253,
+    "natureza": "PORTE / POSSE ARMA DE FOGO C/ SINAL ADULTERADO / SUPRIMIDO"
+  },
+  {
+    "id": 254,
+    "natureza": "TRAFEGAR EM VELOCIDADE INCOMPATIVEL GERANDO PERIGO DE DANO"
+  },
+  {
+    "id": 255,
+    "natureza": "A REALIZAÇAO DE QUALQUER ATO DE PROPAGANDA PARTIDÁRIA OU ELEITORAL / EM RECINTO ABERTO OU FECHADO / NAO DEPENDE DE LICENÇA DA POLÍCIA."
+  },
+  {
+    "id": 256,
+    "natureza": "DA EXPOSIÇÃO DA INTIMIDADE SEXUAL"
+  },
+  {
+    "id": 257,
+    "natureza": "DENUNCIA DE EXPLOSIVO NAO CONFIRMADA"
+  },
+  {
+    "id": 258,
+    "natureza": "ESTUPRO DE VULNERAVEL RESULTADO LESAO CORPORAL GRAVE"
+  },
+  {
+    "id": 259,
+    "natureza": "COMUNICACAO FALSA DE CRIME OU CONTRAVENCAO"
+  },
+  {
+    "id": 260,
+    "natureza": "ARMA ABANDONADA"
+  },
+  {
+    "id": 261,
+    "natureza": "FEMINICIDIO"
+  },
+  {
+    "id": 262,
+    "natureza": "INTIMIDAR SISTEMATICAMENTE DE FORMA VIRTUAL (CIBERBULLYING)"
+  },
+  {
+    "id": 263,
+    "natureza": "MAUS TRATOS COM RESULTADO DE MORTE"
+  },
+  {
+    "id": 264,
+    "natureza": "ABUSO - ATENTADO AO LIVRE EXERCICIO CULTO RELIGIOSO"
+  },
+  {
+    "id": 265,
+    "natureza": "RECEPTACAO QUALIFICADA"
+  },
+  {
+    "id": 266,
+    "natureza": "T9 - TRAUMAS ESPECÍFICOS"
+  },
+  {
+    "id": 267,
+    "natureza": "APROPRIAR/DESVIAR BENS/PROVENTOS DO IDOSO"
+  },
+  {
+    "id": 268,
+    "natureza": "B23 - SERVIÇO APOIO ORGAO"
+  },
+  {
+    "id": 269,
+    "natureza": "APANHAR ESPECIMES DA FAUNA"
+  },
+  {
+    "id": 270,
+    "natureza": "B2 - ARVORE - QUEDA DE - CORT"
+  },
+  {
+    "id": 271,
+    "natureza": "BLITZ EDUCATIVA - OCORRENCIAS NAO DELITUOSAS"
+  },
+  {
+    "id": 272,
+    "natureza": "ENCAMINHAMENTO DE FERIDO - SEM ILICITUDE"
+  },
+  {
+    "id": 273,
+    "natureza": "PERMITIR QUE PESSOA SEM CONDICOES DE FAZE-LO OU NAO HABILITADA CONDUZA VEICULO"
+  },
+  {
+    "id": 274,
+    "natureza": "ABUSO - ATENTADO A INCOLUMIDADE FISICA DO INDIVIDUO"
+  },
+  {
+    "id": 275,
+    "natureza": "APOIO A INSTITUIÇOES DE PROTECAO AMBIENTAL NAO GOVERNAMENTAIS"
+  },
+  {
+    "id": 276,
+    "natureza": "FRAUDE EM EMPRESA FINANCEIRA"
+  },
+  {
+    "id": 277,
+    "natureza": "NAO PRESTAR ASSITENCIA AO IDOSO"
+  },
+  {
+    "id": 278,
+    "natureza": "CORROMPER/FACILITAR CORRUPCAO DE MENOR"
+  },
+  {
+    "id": 279,
+    "natureza": "MORTE A APURAR COM INDÍCIOS DE CRIME"
+  },
+  {
+    "id": 280,
+    "natureza": "TRAFICO DE INFLUENCIA"
+  },
+  {
+    "id": 281,
+    "natureza": "APROPRIACAO COISA HAVIDA"
+  },
+  {
+    "id": 282,
+    "natureza": "PRATICAR LESAO CORPORAL CULPOSA NA DIRECAO DE VEICULO AUTOMOTOR"
+  },
+  {
+    "id": 283,
+    "natureza": "ABUSO - CARCERAGEM ABUSIVA"
+  },
+  {
+    "id": 284,
+    "natureza": "CUMPRIMENTO DE BUSCA E APREENSAO ADOLESCENTE"
+  },
+  {
+    "id": 285,
+    "natureza": "DOCUMENTO FALSO OU INEXATO"
+  },
+  {
+    "id": 286,
+    "natureza": "B11 - INCÊNDIO VEICULAR"
+  },
+  {
+    "id": 287,
+    "natureza": "NAO TOMAR PRECAUCAO EM CASO DE RISCO DE DANO AMBIENTAL"
+  },
+  {
+    "id": 288,
+    "natureza": "SE DA INVASAO RESULTAR A OBTENÇAO DE CONTEÚDO DE COMUNICAÇÕES ELETRÔNICAS PRIVADAS / SEGREDOS COMERCIAIS OU INDUSTRIAIS / INFORMAÇÕES SIGILOSAS / ASSIM DEFINIDAS EM LEI / OU O CONTROLE REMOTO NAO AUTORIZADO DO DISPOSITIVO INVADIDO"
+  },
+  {
+    "id": 289,
+    "natureza": "CAUSAR POLUICAO DE QUALQUER NATUREZA CULPOSA"
+  },
+  {
+    "id": 290,
+    "natureza": "DEIXAR DE CUMPRIR OBRIGACAO INTERESSE AMBIENTAL"
+  },
+  {
+    "id": 291,
+    "natureza": "EXPLOSAO"
+  },
+  {
+    "id": 292,
+    "natureza": "EXPOR/VENDER PRODUTO EM DESACORDO COM NORMA"
+  },
+  {
+    "id": 293,
+    "natureza": "ART. 244-B. CORROMPER OU FACILITAR A CORRUPÇÃO DE MENOR DE 18 (DEZOITO) ANOS / COM ELE PRATICANDO INFRAÇÃO PENAL OU INDUZINDO-O A PRATICÁ-LA"
+  },
+  {
+    "id": 294,
+    "natureza": "DENUNCIA CALUNIOSA"
+  },
+  {
+    "id": 295,
+    "natureza": "DIVULGACAO DE QUALQUER ESPECIE DE PROPAGANDA DE PARTIDOS POLITICOS OU DE SEUS CANDIDATOS / MEDIANTE PUBLICACOES / CARTAZES / CAMISAS / BONES / BROCHES OU DISTICOS EM VESTUARIO"
+  },
+  {
+    "id": 296,
+    "natureza": "FALSIFICACAO DE DOCUMENTO PARTICULAR"
+  },
+  {
+    "id": 297,
+    "natureza": "PUBLICAR OU DIVULGAR NOTICIA OU INFORMACAO SIGILOSA"
+  },
+  {
+    "id": 298,
+    "natureza": "B24 - SERVIÇO ASSIST CIDADAO"
+  },
+  {
+    "id": 299,
+    "natureza": "NAO CUMPRIR/FRUSTAR EXECUCAO DE ORDEM JUDICIAL PARTE IDOSO"
+  },
+  {
+    "id": 300,
+    "natureza": "R3 - INCONSCIENCIA-DESMAIO"
+  },
+  {
+    "id": 301,
+    "natureza": "IMPEDIMENTO OU PERTURBACAO DE CERIMONIA FUNERARIA"
+  },
+  {
+    "id": 302,
+    "natureza": "PROMOVER TUMULTO / PRATICAR OU INCITAR A VIOLÊNCIA NUM RAIO DE 5.000 (CINCO MIL) METROS AO REDOR DO L"
+  },
+  {
+    "id": 303,
+    "natureza": "RECEBER PRODUTOS DE ORIGEM VEGETAL SEM LICENCA"
+  },
+  {
+    "id": 304,
+    "natureza": "ABANDONO DE LAR - SEM ILICITUDE"
+  },
+  {
+    "id": 305,
+    "natureza": "ABANDONO/USO EM DESACORDO DE SUBSTANCIA TOXICA"
+  },
+  {
+    "id": 306,
+    "natureza": "C11 - PROBLEMA DESC - HOMEM CAÍ"
+  },
+  {
+    "id": 307,
+    "natureza": "VENDER MERCADORIA IMPROPRIA AO CONSUMO"
+  },
+  {
+    "id": 308,
+    "natureza": "ABANDONO FAMILIAR"
+  },
+  {
+    "id": 309,
+    "natureza": "APROPRIACAO INDEBITA PREVIDENCIARIA"
+  },
+  {
+    "id": 310,
+    "natureza": "DANO EM COISA DE VALOR ARTISTICO / ARQUEOLOGICO OU HISTORICO"
+  },
+  {
+    "id": 311,
+    "natureza": "DESTRUICAO SUBTRACAO OU OCULTACAO DE CADAVER"
+  },
+  {
+    "id": 312,
+    "natureza": "DESTRUICAO / DANO PLANTAS ORNAMENTACAO"
+  },
+  {
+    "id": 313,
+    "natureza": "SUBMETER A CRIANCA/ADOLESCENTE A PROSTITUICAO"
+  },
+  {
+    "id": 314,
+    "natureza": "DEIXAR DE PROMOVER AS MEDIDAS NECESSÁRIAS DE PROTEÇAO À SAÚDE E AO MEIO AMBIENTE"
+  },
+  {
+    "id": 315,
+    "natureza": "PRATICAR / INDUZIR OU INCITAR DISCRIMINAÇÃO DE PESSOA EM RAZÃO DE SUA DEFICIÊNCIA: PENA - RECLUSÃO / DE 1 (UM) A 3 (TRÊS) ANOS / E MULTA."
+  },
+  {
+    "id": 316,
+    "natureza": "ADQUIRIR / POSSUIR OU ARMAZENAR MATERIAL PORNOGRAFICO C CRIANCA OU ADOLESCENTE"
+  },
+  {
+    "id": 317,
+    "natureza": "COAGIR IDOSO A DOAR/CONTRATAR/TESTAR/OUTORGAR"
+  },
+  {
+    "id": 318,
+    "natureza": "FRAUDE NA ENTREGA DE COISA"
+  },
+  {
+    "id": 319,
+    "natureza": "MATAR ESPECIMES DA FAUNA"
+  },
+  {
+    "id": 320,
+    "natureza": "EXTRACAO DE MINERAIS SEM AUTORIZACAO"
+  },
+  {
+    "id": 321,
+    "natureza": "VIOLAR A SUSPENSAO OU PROIBICAO PARA DIRIGIR"
+  },
+  {
+    "id": 322,
+    "natureza": "ABANDONO INTELECTUAL"
+  },
+  {
+    "id": 323,
+    "natureza": "C3 - CONVULSÕES - EPILEPSIA"
+  },
+  {
+    "id": 324,
+    "natureza": "C14 - SUICÍDIO - TENTATIVA DE S"
+  },
+  {
+    "id": 325,
+    "natureza": "Celular recuperado"
+  },
+  {
+    "id": 326,
+    "natureza": "EXERCICIO ILEGAL DE PROFISSAO OU ATIVIDADE"
+  },
+  {
+    "id": 327,
+    "natureza": "FRAUDE PARA PAGAMENTO POR MEIO DE CHEQUE"
+  },
+  {
+    "id": 328,
+    "natureza": "PROVOCAR INCÊNDIO EM MATA OU FLORESTA"
+  },
+  {
+    "id": 329,
+    "natureza": "RECUSAR/DIFICULTAR ATENDIMENTO AO IDOSO"
+  },
+  {
+    "id": 330,
+    "natureza": "APOLOGIA AO CRIME OU CRIMINOSO"
+  },
+  {
+    "id": 331,
+    "natureza": "CALUNIAR"
+  },
+  {
+    "id": 332,
+    "natureza": "DOS CRIMES CONTRA A LIBERDADE SEXUAL"
+  },
+  {
+    "id": 333,
+    "natureza": "FALSIFICACAO DE DOCUMENTO PUBLICO"
+  },
+  {
+    "id": 334,
+    "natureza": "OFERECER / TROCAR / DISPONIBILIZAR / TRANSMITIR / DISTRIBUIR / PUBLICAR OU DIVULGAR POR QUALQUER MEIO / INCLUSIVE POR MEIO DE SISTEMA DE INFORMÁTICA OU TELEMÁTICO / FOTOGRAFIA / VÍDEO OU OUTRO REGISTRO QUE CONTENHA CENA DE SEXO EXPLÍCITO OU PORNOGRÁFICA ENVOLVENDO CRIANÇA OU ADOLESCENTE"
+  },
+  {
+    "id": 335,
+    "natureza": "T3 - AGRESSÃO - VIOL. SEXUAL"
+  },
+  {
+    "id": 336,
+    "natureza": "AFIRMACAO FALSA OU ENGANOSA SOBRE PRODUTO"
+  },
+  {
+    "id": 337,
+    "natureza": "COMERCIO ILEGAL DE ARMA DE FOGO"
+  },
+  {
+    "id": 338,
+    "natureza": "FALSIDADE DE ATESTADO MEDICO"
+  },
+  {
+    "id": 339,
+    "natureza": "NOMEAR/ADMITIR/DESIGNAR SERVIDOR EM DESACORDO COM A LEI"
+  },
+  {
+    "id": 340,
+    "natureza": "RECEPTACAO DE ANIMAL"
+  },
+  {
+    "id": 341,
+    "natureza": "RECUSAR/IMPEDIR ACESSO OU NEGAR SERVIR/ATENDER CLIENTE"
+  },
+  {
+    "id": 342,
+    "natureza": "VILIPENDIO A CADAVER"
+  },
+  {
+    "id": 343,
+    "natureza": "AQUELE QUE PRODUZIR / COMERCIALIZAR / TRANSPORTAR / APLICAR / PRESTAR SERVIÇO / DER DESTINAÇAO A RESÍDUOS E EMBALAGENS VAZIAS DE AGROTÓXICOS / SEUS COMPONENTES E AFINS / EM DESCUMPRIMENTO ÀS EXIGÊNCIAS ESTABELECIDAS NA LEGISLAÇAO PERTINENTE ESTARÁ SUJEITO À PENA DE RECLUSAO / DE DOIS A QUATRO ANOS / ALÉM DE MULTA"
+  },
+  {
+    "id": 344,
+    "natureza": "ASSOCIAREM-SE PARA A PRATICA DOS ARTS. 33 / CAPUT E 1° / 34 E 36 DESTA LEI"
+  },
+  {
+    "id": 345,
+    "natureza": "DIFAMAR"
+  },
+  {
+    "id": 346,
+    "natureza": "FALSO ALARMA"
+  },
+  {
+    "id": 347,
+    "natureza": "SUBMETER ALGUEM SOB SUA GUARDA A TORTURA"
+  },
+  {
+    "id": 348,
+    "natureza": "ADULTERACAO DE SUBSTANCIA / PRODUTO ALIMENTICIO"
+  },
+  {
+    "id": 349,
+    "natureza": "FORNECER FOGOS ARTIFICIO A CRIANCA/ADOLESCENTE"
+  },
+  {
+    "id": 350,
+    "natureza": "PESCAR ESPECIE PRESERVADA OU TAMANHO INFERIOR AO PERMITIDO"
+  },
+  {
+    "id": 351,
+    "natureza": "USAR DE VIOLENCIA OU GRAVE AMEACA PARA COAGIR ALGUEM A VOTAR / OU NAO VOTAR / EM DETERMINADO CANDIDATO OU PARTIDO / AINDA QUE OS FINS VISADOS NAO SEJAM C"
+  },
+  {
+    "id": 352,
+    "natureza": "VENDER/EXPOR BEM DESACORDO NORMA"
+  },
+  {
+    "id": 353,
+    "natureza": "C13 - PSIQUIÁTRICO"
+  },
+  {
+    "id": 354,
+    "natureza": "EXPOSICAO OU ABANDONO DE RECEM NASCIDO C/ LESAO GRAVE"
+  },
+  {
+    "id": 355,
+    "natureza": "PRISAO POR FALTA DE PAGAMENTO DE PENSAO ALIMENTICIA"
+  },
+  {
+    "id": 356,
+    "natureza": "REDUCAO A CONDICAO ANALOGA A DE ESCRAVO"
+  },
+  {
+    "id": 357,
+    "natureza": "ABUSO - ATENTADO A LIBERDADE DE LOCOMOCAO"
+  },
+  {
+    "id": 358,
+    "natureza": "ABUSO - ATO LESIVO DA HONRA OU PATRIMONIO"
+  },
+  {
+    "id": 359,
+    "natureza": "DESCUMPRIR A PROIBICAO ESTABELECIDA NO INCISO SEGUNDO DO ARTIGO 81."
+  },
+  {
+    "id": 360,
+    "natureza": "FACILITACAO DE CONTRABANDO OU DESCAMINHO"
+  },
+  {
+    "id": 361,
+    "natureza": "NAO POSSUIR PERMISSAO OU CNH"
+  },
+  {
+    "id": 362,
+    "natureza": "T4 - FAB E FAF"
+  },
+  {
+    "id": 363,
+    "natureza": "USO DE DOCUMENTO FALSO"
+  },
+  {
+    "id": 364,
+    "natureza": "FAVORECIMENTO DA PROSTITUIÇAO OU DE OUTRA FORMA DE EXPLORAÇAO SEXUAL DE CRIANÇA OU ADOLESCENTE OU DE VULNERÁVEL"
+  },
+  {
+    "id": 365,
+    "natureza": "FAVORECIMENTO DA PROSTITUICAO OU OUTRA FORMA DE EXPLORACAO SEXUAL COM VIOLENCIA / AMEACA"
+  },
+  {
+    "id": 366,
+    "natureza": "OMISSAO DE NOTIFICACAO DE DOENCA"
+  },
+  {
+    "id": 367,
+    "natureza": "PROMOVER DESORDEM QUE PREJUDIQUE OS TRABALHOS ELEITORAIS"
+  },
+  {
+    "id": 368,
+    "natureza": "USO / NA PROPAGANDA ELEITORAL / DE SIMBOLOS / FRASES OU IMAGENS / ASSOCIADAS OU SEMELHANTES ÀS EMPREGADAS POR ORGAO DE GOVERNO / EMPRESA PUBLICA OU SOCIEDADE DE ECONOMIA MISTA"
+  },
+  {
+    "id": 369,
+    "natureza": "VIOLACAO DE SEPULTURA"
+  },
+  {
+    "id": 370,
+    "natureza": "HOMICIDIO CULPOSO"
+  },
+  {
+    "id": 371,
+    "natureza": "IMPEDIR O ACESSO ENTRADA SOCIAL EM ED. PUBLICO/RESIDENCIAL"
+  },
+  {
+    "id": 372,
+    "natureza": "PROMOVER TUMULTO / PRATICAR OU INCITAR A VIOLÊNCIA / OU INVADIR LOCAL RESTRITO AOS COMPETIDORES EM EVE"
+  },
+  {
+    "id": 373,
+    "natureza": "PROPAGANDA ENGANOSA"
+  },
+  {
+    "id": 374,
+    "natureza": "USO DE ALTO-FALANTES E AMPLIFICADORES DE SOM OU A PROMOCAO DE COMICIO OU CARREATA"
+  },
+  {
+    "id": 375,
+    "natureza": "VIOLACAO DE DIREITO AUTORAL - COM INTUITO DE LUCRO"
+  },
+  {
+    "id": 376,
+    "natureza": "B9 - INCÊNDIO EXTERIOR"
+  },
+  {
+    "id": 377,
+    "natureza": "ENTREGA DE FILHO MENOR A PESSOA INIDONEA"
+  },
+  {
+    "id": 378,
+    "natureza": "ESTUPRO OU ATENTADO VIOLENTO AO PUDOR RESULTADO MORTE"
+  },
+  {
+    "id": 379,
+    "natureza": "EXTRAVIO / SONEGACAO OU INUTILIZACAO DE LIVRO OU DOCUMENTO"
+  },
+  {
+    "id": 380,
+    "natureza": "OBTER / MEDIANTE FRAUDE / FINANCIAMENTO EM INSTITUIÇAO FINANCEIRA"
+  },
+  {
+    "id": 381,
+    "natureza": "OFERECER / TROCAR / DISPONIBILIZAR / TRANSMITIR / VENDER OU EXPOR À VENDA / DISTRIBUIR / PUBLICAR OU DIVULGAR / POR QUALQUER MEIO - INCLUSIVE POR MEIO DE COMUNICAÇÃO DE MASSA OU SISTEMA DE INFORMÁTICA OU TELEMÁTICA - / FOTOGRAFIA / VÍDEO OU OUTRO REGISTRO AUDIOVISUAL QUE CONTENHA CENA DE ESTUPRO OU DE ESTUPRO DE VULNERÁVEL OU QUE FAÇA APOLOGIA OU INDUZA A SUA PRÁTICA / OU / SEM O CONSENTIMENTO DA VÍTIMA / CEN"
+  },
+  {
+    "id": 382,
+    "natureza": "R5 - PCR"
+  },
+  {
+    "id": 383,
+    "natureza": "VENDER/EXPORTAR/ADQUIRIR OVOS/LARVAS/ESPECIES DA FAUNA S/LIC"
+  },
+  {
+    "id": 384,
+    "natureza": "C8 - DOR NO PEITO - PROBLEMAS C"
+  },
+  {
+    "id": 385,
+    "natureza": "CORROMPER OU FACILITAR A CORRUPCAO DE MENOR DE 18 DEZOITO ANOS"
+  },
+  {
+    "id": 386,
+    "natureza": "EVASAO MEDIANTE VIOLENCIA CONTRA PESSOA"
+  },
+  {
+    "id": 387,
+    "natureza": "PRESCREVER OU MINISTRAR / CULPOSAMENTE / DROGAS PARA PACIENTE"
+  },
+  {
+    "id": 388,
+    "natureza": "PUBLICAR OU DIVULGAR NOTICIAS FALSAS"
+  },
+  {
+    "id": 389,
+    "natureza": "VIOLACAO SEXUAL MEDIANTE FRAUDE"
+  },
+  {
+    "id": 390,
+    "natureza": "VIOLAR CONTRATO"
+  },
+  {
+    "id": 391,
+    "natureza": "ART. 91. RETER OU UTILIZAR CARTÃO MAGNÉTICO / QUALQUER MEIO ELETRÔNICO OU DOCUMENTO DE PESSOA COM DEFICIÊNCIA DESTINADOS AO RECEBIMENTO DE BENEFÍCIOS / PROVENTOS / PENSÕES OU REMUNERAÇÃO OU À REALIZAÇÃO DE OPERAÇÕES FINANCEIRAS / COM O FIM DE OBTER VANTAGEM INDEVIDA PARA SI OU PARA OUTREM:"
+  },
+  {
+    "id": 392,
+    "natureza": "COMERCIO OU USO DE MOTOSERRA SEM LICENCA"
+  },
+  {
+    "id": 393,
+    "natureza": "CUMPRIMENTO DE MANDADOS JUDICIAIS – CONFLITOS FUNDIÁRIOS"
+  },
+  {
+    "id": 394,
+    "natureza": "IMPEDIR / PERTURBAR OU FRAUDAR A REALIZAÇAO DE QUALQUER ATO DE PROCEDIMENTO LICITATÓRIO"
+  },
+  {
+    "id": 395,
+    "natureza": "PESCAR QUANTIDADES SUPERIORES AS PERMITIDAS"
+  },
+  {
+    "id": 396,
+    "natureza": "R1 - INCIDENTE EM MEIO LÍQUIDO"
+  },
+  {
+    "id": 397,
+    "natureza": "TIRAR / SUPRIMIR / DESTRUIR OU DANIFICAR COISA PROPRIA"
+  },
+  {
+    "id": 398,
+    "natureza": "ADQUIRIR / DISTRIBUIR E REVENDER DERIVADOS DE PETROLEO"
+  },
+  {
+    "id": 399,
+    "natureza": "ALIENAR/ONERAR BENS/RENDAS EM DESACORDO COM A LEI"
+  },
+  {
+    "id": 400,
+    "natureza": "ALTERACAO DE LIMITES"
+  },
+  {
+    "id": 401,
+    "natureza": "CAUSAR / PROPOSITADAMENTE / DANO FISICO AO EQUIPAMENTO USADO NA VOTACAO OU NA TOTALIZACAO DE VOTOS OU A SUAS PARTES"
+  },
+  {
+    "id": 402,
+    "natureza": "COMERCIALIZAR ESPECIMES DE PESCA PROIBIDAS"
+  },
+  {
+    "id": 403,
+    "natureza": "CORRUPCAO ATIVA"
+  },
+  {
+    "id": 404,
+    "natureza": "FABRICAR INSTRUMENTO DE EMPREGO USUAL EM FURTO"
+  },
+  {
+    "id": 405,
+    "natureza": "IMPORTAR / EXPORTAR / VENDER / DISTRIBUIR / OFERECER OU EXPOR À VENDA / OCULTAR OU MANTER EM ESTOQUE SÍMBOLOS OFICIAIS OU PRODUTOS RESULTANTES DA REPRODUÇAO / IMITAÇAO / FALSIFICAÇAO OU MODIFICAÇAO NAO AUTORIZADAS DE SÍMBOLOS OFICIAIS PARA FINS COMERCIAIS OU DE PUBLICIDADE"
+  },
+  {
+    "id": 406,
+    "natureza": "OMISSAO DE COMUNICACAO DE CRIME"
+  },
+  {
+    "id": 407,
+    "natureza": "R4 - OVACE BEBE+ADULTO"
+  },
+  {
+    "id": 408,
+    "natureza": "RETER CARTAO/DOCUMENTO DO IDOSO"
+  },
+  {
+    "id": 409,
+    "natureza": "VIOLACAO DE COMUNICACAO TELEGRAFICA/RADIOELETRICA/TELEFONICA"
+  },
+  {
+    "id": 410,
+    "natureza": "ABANDONAR PESSOA COM DEFICIÊNCIA EM HOSPITAIS / CASAS DE SAÚDE / ENTIDADES DE ABRIGAMENTO OU CONGÊNERES"
+  },
+  {
+    "id": 411,
+    "natureza": "ABANDONO MATERIAL"
+  },
+  {
+    "id": 412,
+    "natureza": "ANTIBOMBAS - LOCALIZACAO DE OBJETO  SUSPEITO COM CARACTERISTICAS OU CIRCUNSTANCIAS DE ARTEFATO EXPLOSIVO"
+  },
+  {
+    "id": 413,
+    "natureza": "ATENDIMENTO INVÁLIDO (Trote / Elogio / Informação / Ligação Interrompida)"
+  },
+  {
+    "id": 414,
+    "natureza": "C12 - PROBLEMAS RESPIRATÓRIOS"
+  },
+  {
+    "id": 415,
+    "natureza": "DESPEJO S/ OBSERVANCIA DE NORMA REGULAMENTAR"
+  },
+  {
+    "id": 416,
+    "natureza": "DESTRUICAO OU DANO DE FLORESTAS DE PRESERVACAO PERMANENTE MODALIDADE CULPOSA"
+  },
+  {
+    "id": 417,
+    "natureza": "DESTRUIR/INUTILIZAR/DANIFICAR MATERIA"
+  },
+  {
+    "id": 418,
+    "natureza": "ESTA LEI CRIA MECANISMOS PARA COIBIR E PREVENIR A VIOLÊNCIA DOMÉSTICA E FAMILIAR CONTRA A MULHER / NOS TERMOS DO 8O DO ART. 226 DA CONSTITUIÇAO FEDERAL"
+  },
+  {
+    "id": 419,
+    "natureza": "EXTORSAO INDIRETA"
+  },
+  {
+    "id": 420,
+    "natureza": "FRAUDAR / POR QUALQUER MEIO / OU CONTRIBUIR PARA QUE SE FRAUDE / DE QUALQUER FORMA / O RESULTADO DE COMP"
+  },
+  {
+    "id": 421,
+    "natureza": "INFRINGIR INTRODUÇAO OU PROPAGAÇAO DE DOENÇA CONTAGIOSA"
+  },
+  {
+    "id": 422,
+    "natureza": "PORNOGRAFIA OU SEXO EXPLICITO C CRIANCA OU ADOLESCENTE NA INTERNET"
+  },
+  {
+    "id": 423,
+    "natureza": "VENDER OU EXPOR FOTO VIDEO C SEXO EXPLICITO OU PORNOGRAFICA C CRIANCA ADOLESCENTE"
+  },
+  {
+    "id": 424,
+    "natureza": "VIOLAR OU TENTAR VIOLAR O SIGILO DO VOTO"
+  },
+  {
+    "id": 425,
+    "natureza": "B16 - PESSOA PERDIDA"
+  },
+  {
+    "id": 426,
+    "natureza": "CONCORRENCIA DESLEAL - COMERCIO PRODUTO FALSO/ADULTERADO"
+  },
+  {
+    "id": 427,
+    "natureza": "ENVENENAMENTO DE AGUA POTAVEL OU SUBSTANCIA"
+  },
+  {
+    "id": 428,
+    "natureza": "REVELAR A IDENTIDADE / FOTOGRAFAR OU FILMAR O COLABORADOR / SEM SUA PRÉVIA AUTORIZAÇAO POR ESCRITO"
+  },
+  {
+    "id": 429,
+    "natureza": "ROUBO COM RESULTADO DE MORTE"
+  },
+  {
+    "id": 430,
+    "natureza": "SÃO VEDADAS A FABRICAÇÃO / A VENDA / A COMERCIALIZAÇÃO E A IMPORTAÇÃO DE BRINQUEDOS / RÉPLICAS E SIMULACROS DE ARMAS DE FOGO / QUE COM ESTAS SE POSSAM CONFUNDIR."
+  },
+  {
+    "id": 431,
+    "natureza": "T8 - QUEIMADURAS"
+  },
+  {
+    "id": 432,
+    "natureza": "ULTRAJE A CULTO"
+  },
+  {
+    "id": 433,
+    "natureza": "ANTECIPAR/INVERTER ORDEM DE PAGAMENTO A CREDORES"
+  },
+  {
+    "id": 434,
+    "natureza": "C6 - DOR DE CABEÇA"
+  },
+  {
+    "id": 435,
+    "natureza": "COACAO NO CURSO DO PROCESSO"
+  },
+  {
+    "id": 436,
+    "natureza": "CONSTITUI ATO DE IMPROBIDADE ADMINISTRATIVA QUE CAUSA LESAO AO ERÁRIO QUALQUER AÇAO OU OMISSAO / DOLOSA OU CULPOSA / QUE ENSEJE PERDA PATRIMONIAL / DESVIO / APROPRIAÇAO / MALBARATAMENTO OU DILAPIDAÇAO DOS BENS OU HAVERES DAS ENTIDADES REFERIDAS NO ART. 1O DESTA LEI / E NOTADAMENTE"
+  },
+  {
+    "id": 437,
+    "natureza": "DESCUMPRIR DETERMINAÇAO DE SIGILO DAS INVESTIGAÇÕES QUE ENVOLVAM A AÇAO CONTROLADA E A INFILTRAÇAO DE AGENTES"
+  },
+  {
+    "id": 438,
+    "natureza": "DOMINIO DE MERCADO"
+  },
+  {
+    "id": 439,
+    "natureza": "EXTRACAO / PESQUISA OU LAVRA SEM AUTORIZACAO"
+  },
+  {
+    "id": 440,
+    "natureza": "PERIGO DE CONTAGIO DE MOLESTIA GRAVE"
+  },
+  {
+    "id": 441,
+    "natureza": "PRATICAR HOMICIDIO CULPOSO NA DIRECAO DE VEICULO AUTOMOTOR"
+  },
+  {
+    "id": 442,
+    "natureza": "PRESUNCAO DE VIOLENCIA - NAO E MAIOR 14 ANOS"
+  },
+  {
+    "id": 443,
+    "natureza": "RECUSA DE DADOS SOBRE A SUA IDENTIDADE"
+  },
+  {
+    "id": 444,
+    "natureza": "teste  natureza"
+  },
+  {
+    "id": 445,
+    "natureza": "USURPACAO DE FUNCAO PUBLICA"
+  },
+  {
+    "id": 446,
+    "natureza": "DEIXAR O MÉDICO DE NOTIFICAR À AUTORIDADE SANITÁRIA AS ESTERILIZAÇÕES CIRÚRGICAS QUE REALIZAR."
+  },
+  {
+    "id": 447,
+    "natureza": "DEPOSITO/USO SUBSTANCIA TOXICA S/ LICENCA"
+  },
+  {
+    "id": 448,
+    "natureza": "DIRECAO NAO LICENCIADA DE AERONAVE"
+  },
+  {
+    "id": 449,
+    "natureza": "FRAUDE A EXECUCAO"
+  },
+  {
+    "id": 450,
+    "natureza": "INDUZIMENTO A FUGA"
+  },
+  {
+    "id": 451,
+    "natureza": "MAJORAR OS PREOS DE UTILIDADES E SERVIOS NECESSRIOS REALIZAO DE ELEIES / TAIS COMO TRANSPORTE E ALIMENTAO DE ELEITORES / IMPRESSO / PUBLICIDADE E DIVULGAO DE MATRIA ELEITORAL"
+  },
+  {
+    "id": 452,
+    "natureza": "PREVARICACAO"
+  },
+  {
+    "id": 453,
+    "natureza": "SE DA PRÁTICA DO CRIME PREVISTO NO CAPUT RESULTAR LESÃO CORPORAL DE NATUREZA GRAVE / E AS CIRCUNSTÂNCIAS DEMONSTRAREM QUE O AGENTE NÃO QUIS O RESULTADO NEM ASSUMIU O RISCO DE PRODUZI-LO / A PENA PRIVATIVA DE LIBERDADE É DE RECLUSÃO / DE 3 (TRÊS) A 6 (SEIS) ANOS / SEM PREJUÍZO DAS OUTRAS PENAS PREVISTAS NESTE ARTIGO"
+  },
+  {
+    "id": 454,
+    "natureza": "SINISTRO EM TRANSPORTE MARITIMO / FLUVIAL OU AEREO"
+  },
+  {
+    "id": 455,
+    "natureza": "USO DE GAS TOXICO OU ASFIXIANTE"
+  },
+  {
+    "id": 456,
+    "natureza": "UTILIZAR ESPECIMES DA FAUNA"
+  },
+  {
+    "id": 457,
+    "natureza": "VIOLACAO DE CORRESPONDENCIA"
+  },
+  {
+    "id": 458,
+    "natureza": "ADQUIRIR / RECEBER / USAR / ILICITAMENTE / BEM QUE SABE PERTENCER À MASSA FALIDA OU INFLUIR PARA QUE TERCEIRO / DE BOA-FÉ / O ADQUIRA / RECEBA OU USE"
+  },
+  {
+    "id": 459,
+    "natureza": "ART. 273 - FALSIFICAR / CORROMPER / ADULTERAR OU ALTERAR PRODUTO DESTINADO A FINS TERAPÊUTICOS OU MEDICINAIS: (REDAÇÃO DADA PELA LEI Nº 9.677 / DE 2.7.1998)"
+  },
+  {
+    "id": 460,
+    "natureza": "B25 - VENDAVAL GRANIZO"
+  },
+  {
+    "id": 461,
+    "natureza": "C7 - DOR NAS COSTAS"
+  },
+  {
+    "id": 462,
+    "natureza": "CAUSAR POLUICAO CAPAZ DE TORNAR AREA IMPROPRIA A OCUPACAO"
+  },
+  {
+    "id": 463,
+    "natureza": "DEIXAR DE CUMPRIR OBRIGACAO INTERESSE AMBIENTAL (PARAGRAFO UNICO - CULPOSO)"
+  },
+  {
+    "id": 464,
+    "natureza": "FAVORECIMENTO PESSOAL"
+  },
+  {
+    "id": 465,
+    "natureza": "FRUSTRACAO DE DIREITO ASSEGURADO POR LEI DE TRABALHISTA"
+  },
+  {
+    "id": 466,
+    "natureza": "IMPEDIR/OBSTAR CASAMENTO/CONVIVENCIA FAMILIAR E SOCIAL"
+  },
+  {
+    "id": 467,
+    "natureza": "INDUZIR ALGUÉM MENOR DE 14 (CATORZE) ANOS A SATISFAZER A LASCÍVIA DE OUTREM"
+  },
+  {
+    "id": 468,
+    "natureza": "OFENDER A MORAL PUBLICA E OS BONS COSTUMES"
+  },
+  {
+    "id": 469,
+    "natureza": "OFERECER DROGA / EVENTUALMENTE E SEM OBJETIVO DE LUCRO / A PESSOA DE SEU RELACIONAMENTO / PARA JUNTOS A"
+  },
+  {
+    "id": 470,
+    "natureza": "PERSEGUIR ESPECIMES DA FAUNA"
+  },
+  {
+    "id": 471,
+    "natureza": "RUFIANISMO - COM VIOLENCIA / AMEACA"
+  },
+  {
+    "id": 472,
+    "natureza": "SONEGACAO FISCAL"
+  },
+  {
+    "id": 473,
+    "natureza": "SUPRESSAO DE DOCUMENTO"
+  },
+  {
+    "id": 474,
+    "natureza": "TRAFICO INTERNO PESSOA VITIMA MENOR DEFICIENTE MENTAL AGENTE C DEVER DE CUIDADO COM VIOLENCIA AMEACA"
+  },
+  {
+    "id": 475,
+    "natureza": "ABUSO - AOS DIREITOS E GARANTIAS LEGAIS ASSEGURADOS AO EXERCÍCIO PROFISSIONAL"
+  },
+  {
+    "id": 476,
+    "natureza": "ARREMESSO DE PROJETIL"
+  },
+  {
+    "id": 477,
+    "natureza": "ART. 25. CONSTITUI CRIME ELEITORAL A ARGUICAO DE INELEGIBILIDADE / OU A IMPUGNACAO DE REGISTRO DE CANDIDATO FEITO POR INTERFERENCIA DO PODER ECONOMICO / DESVIO OU ABUSO DO PODER DE AUTORIDADE / DEDUZIDA DE FORMA TEMERARIA OU DE MANIFESTA MA-FE"
+  },
+  {
+    "id": 478,
+    "natureza": "CALUNIAR ALGUM / NA PROPAGANDA ELEITORAL / OU VISANDO FINS DE PROPAGANDA / IMPUTANDO-LHE FALSAMENTE FATO DEFINIDO COMO CRIME"
+  },
+  {
+    "id": 479,
+    "natureza": "CASA DE PROSTITUICAO"
+  },
+  {
+    "id": 480,
+    "natureza": "COLABORAR / COMO INFORMANTE DOS CRIMES PREVISTOS NOS ARTS. 33 / CAPUT E 1° / E 34 DESTA LEI"
+  },
+  {
+    "id": 481,
+    "natureza": "DAR / OFERECER OU PROMETER DINHEIRO OU QUALQUER OUTRA VANTAGEM A TESTEMUNHA / PERITO / CONTADOR / TRADUTOR OU INTÉRPRETE / PARA FAZER AFIRMAÇAO FALSA / NEGAR OU CALAR A VERDADE EM DEPOIMENTO / PERÍCIA / CÁLCULOS / TRADUÇAO OU INTERPRETAÇAO"
+  },
+  {
+    "id": 482,
+    "natureza": "DIFAMAR ALGUM / NA PROPAGANDA ELEITORAL / OU VISANDO A FINS DE PROPAGANDA / IMPUTANDO-LHE FATO OFENSIVO A SUA REPUTAO"
+  },
+  {
+    "id": 483,
+    "natureza": "EXAME DE LOCAL"
+  },
+  {
+    "id": 484,
+    "natureza": "EXPOSICAO OU ABANDONO DE RECEM NASCIDO"
+  },
+  {
+    "id": 485,
+    "natureza": "FAB / FORN / AQUIS / POSSE / TRANSP. DE EXPLOSIVOS / GAS TOX/ASF"
+  },
+  {
+    "id": 486,
+    "natureza": "FABRICAR/COMERCIALIZAR/DISTRIBUIR/VEICULAR PARA FINS NAZISMO"
+  },
+  {
+    "id": 487,
+    "natureza": "FAVORECIMENTO DA PROSTITUICAO OU OUTRA FORMA DE EXPLORACAO SEXUAL"
+  },
+  {
+    "id": 488,
+    "natureza": "INCORRE NA MESMA PENA AQUELE QUE / SEM AUTORIZAÇAO LEGAL / ADQUIRIR / TRANSPORTAR / INDUSTRIALIZAR / TIVER CONSIGO / CONSUMIR OU COMERCIALIZAR PRODUTOS OU MATÉRIA-PRIMA / OBTIDOS NA FORMA PREVISTA NO CAPUT DESTE ARTIGO."
+  },
+  {
+    "id": 489,
+    "natureza": "INUTILIZAR / ALTERAR OU PERTURBAR MEIO DE PROPAGANDA DEVIDAMENTE EMPREGADO"
+  },
+  {
+    "id": 490,
+    "natureza": "MENDICANCIA"
+  },
+  {
+    "id": 491,
+    "natureza": "MOEDA FALSA RESTITUIR A CIRCULACAO"
+  },
+  {
+    "id": 492,
+    "natureza": "REALIZAR ATOS PREPARATÓRIOS DE TERRORISMO COM O PROPÓSITO INEQUÍVOCO DE CONSUMAR TAL DELITO"
+  },
+  {
+    "id": 493,
+    "natureza": "RECUSAR PRESTACAO DE SERVICO ESSENCIAL / SONEGAR VENDA"
+  },
+  {
+    "id": 494,
+    "natureza": "SEGREGAR NO AMBIENTE DE TRABALHO OU ESCOLAR"
+  },
+  {
+    "id": 495,
+    "natureza": "T1 - ACIDENTE C MAQUINA-INDUST"
+  },
+  {
+    "id": 496,
+    "natureza": "T5 - MORDIDA DE ANIMAL"
+  },
+  {
+    "id": 497,
+    "natureza": "teste envio mobile"
+  },
+  {
+    "id": 498,
+    "natureza": "VADIAGEM"
+  },
+  {
+    "id": 499,
+    "natureza": "ALICIAMENTO IRREGULAR DE TRABALHADOR"
+  },
+  {
+    "id": 500,
+    "natureza": "ALIENACAO OU ONERACAO FRAUDULENTA DE COISA PROPRIA"
+  },
+  {
+    "id": 501,
+    "natureza": "ARREMESSO OU COLOCACAO PERIGOSA"
+  },
+  {
+    "id": 502,
+    "natureza": "C5 - DOR ABDOMINAL"
+  },
+  {
+    "id": 503,
+    "natureza": "CONDUCAO DE PRESO PARA AUDIENCIA DE CUSTODIA"
+  },
+  {
+    "id": 504,
+    "natureza": "CORRUPCAO OU POLUICAO DE AGUA POTAVEL"
+  },
+  {
+    "id": 505,
+    "natureza": "CRIME MILITAR - ROUBO SIMPLES"
+  },
+  {
+    "id": 506,
+    "natureza": "DESABAMENTO OU DESMORONAMENTO"
+  },
+  {
+    "id": 507,
+    "natureza": "DESTRUIR SEM AUTORIZACAO PRODUTO CONSUMO"
+  },
+  {
+    "id": 508,
+    "natureza": "DISCRIMINAR PESSOA IDOSA IMPEDIR/DIFICULTAR ACESSO"
+  },
+  {
+    "id": 509,
+    "natureza": "DISPENSAR OU INEXIGIR LICITAÇAO FORA DAS HIPÓTESES PREVISTAS EM LE"
+  },
+  {
+    "id": 510,
+    "natureza": "EMISSAO DE TITULO AO PORTADOR SEM PERMISSAO LEGAL"
+  },
+  {
+    "id": 511,
+    "natureza": "ESCRITO OU OBJETO OBSCENO"
+  },
+  {
+    "id": 512,
+    "natureza": "ESTUPRO DE VULNERAVEL RESULTADO MORTE"
+  },
+  {
+    "id": 513,
+    "natureza": "EXERCICIO ILEGAL DE MEDICINA / ARTE DENTARIA OU FARMACEUTICA"
+  },
+  {
+    "id": 514,
+    "natureza": "FABRICAR / MANDAR FABRICAR / ADQUIRIR / FORNECER / AINDA QUE GRATUITAMENTE / SUBTRAIR OU GUARDAR URNAS / OBJETOS / MAPAS / CDULAS OU PAPIS DE USO EXCLUSIVO DA JUSTIA ELEITORAL"
+  },
+  {
+    "id": 515,
+    "natureza": "FORNECER ARMA / MUNICAO/EXPLOSIVOS A CRIANCA/ADOLESCENTE"
+  },
+  {
+    "id": 516,
+    "natureza": "FRAUDAR PRECOS"
+  },
+  {
+    "id": 517,
+    "natureza": "IMPEDIR/RECUSAR ATENDIMENTO/ACESSO BARES E SIMILARES"
+  },
+  {
+    "id": 518,
+    "natureza": "IMPEDIR/RECUSAR HOSPEDAGEM"
+  },
+  {
+    "id": 519,
+    "natureza": "INFANTICIDIO"
+  },
+  {
+    "id": 520,
+    "natureza": "INOVAR ARTIFICIOSAMENTE EM ACIDENTE COM VITIMA"
+  },
+  {
+    "id": 521,
+    "natureza": "MANIPULA / ACONDICIONA / ARMAZENA / COLETA / TRANSPORTA / REUTILIZA / RECICLA OU DÁ DESTINAÇAO FINAL A RESÍDUOS PERIGOSOS DE FORMA DIVERSA DA ESTABELECIDA EM LEI OU REGULAMENTO."
+  },
+  {
+    "id": 522,
+    "natureza": "PRODUZIR CENA DE SEXO EXPLICITO OU PORNOGRAFICA C/ CRIANCA/ADOLESCENTE"
+  },
+  {
+    "id": 523,
+    "natureza": "RECUSAR ENTRADA EM LOCAL COMERCIAL"
+  },
+  {
+    "id": 524,
+    "natureza": "USAR COMO PROPRIO DOCUMENTO ALHEIO OU CEDER A OUTREM"
+  },
+  {
+    "id": 525,
+    "natureza": "\"\"\"ART. 349-A. INGRESSAR / PROMOVER / INTERMEDIAR / AUXILIAR OU FACILITAR A ENTRADA DE APARELHO TELEFÔNICO DE COMUNICAÇÃO MÓVEL / DE RÁDIO OU SIMILAR / SEM AUTORIZAÇÃO LEGAL / EM ESTABELECIMENTO PRISIONAL.\""
+  },
+  {
+    "id": 526,
+    "natureza": "ABANDONO MORAL"
+  },
+  {
+    "id": 527,
+    "natureza": "ABUSO - ATENTADO AO DIREITO DE REUNIAO"
+  },
+  {
+    "id": 528,
+    "natureza": "ABUSO - ATENTADO AO EXERCICIO DO VOTO"
+  },
+  {
+    "id": 529,
+    "natureza": "ABUSO - RECUSAR RECIBO CARCERAGEM"
+  },
+  {
+    "id": 530,
+    "natureza": "ACAO DE ALEIMENTOS E OUTRAS PROVIDENCIAS"
+  },
+  {
+    "id": 531,
+    "natureza": "ADQUIRIR O JUIZ / O REPRESENTANTE DO MINISTÉRIO PÚBLICO / O ADMINISTRADOR JUDICIAL / O GESTOR JUDICIAL / O PERITO / O AVALIADOR / O ESCRIVAO / O OFICIAL DE JUSTIÇA OU O LEILOEIRO / POR SI OU POR INTERPOSTA PESSOA / BENS DE MASSA FALIDA OU DE DEVEDOR EM RECUPERAÇAO JUDICIAL / OU / EM RELAÇAO A ESTES / ENTRAR EM ALGUMA ESPECULAÇAO DE LUCRO / QUANDO TENHAM ATUADO NOS RESPECTIVOS PROCESSOS"
+  },
+  {
+    "id": 532,
+    "natureza": "ALICIAMENTO PARA O FIM DE EMIGRACAO"
+  },
+  {
+    "id": 533,
+    "natureza": "ATENTADO CONTRA A LIBERDADE DE TRABALHO"
+  },
+  {
+    "id": 534,
+    "natureza": "ATENTADO CONTRA SEG. DE TRANSPORT MARITIMO / FLUVIAL OU AEREO"
+  },
+  {
+    "id": 535,
+    "natureza": "B7 - INCÊNDIO - ALARME"
+  },
+  {
+    "id": 536,
+    "natureza": "B22 - VAZAMENTO GAS - GLP-GN"
+  },
+  {
+    "id": 537,
+    "natureza": "C2 - ALERGIA-REAÇÃO MEDICAMENT"
+  },
+  {
+    "id": 538,
+    "natureza": "C10 - GRAVIDEZ - PARTO - ABORTO"
+  },
+  {
+    "id": 539,
+    "natureza": "COBRANCA ANTECIPADA DE ALUGUEL"
+  },
+  {
+    "id": 540,
+    "natureza": "CONCEDER EMPRESTIMO/AUXILIOS EM DESACORDO COM A LEI"
+  },
+  {
+    "id": 541,
+    "natureza": "CONSTRUCAO EM SOLO NAO EDIFICAVEL"
+  },
+  {
+    "id": 542,
+    "natureza": "DESASTRE FERROVIARIO"
+  },
+  {
+    "id": 543,
+    "natureza": "DISSEMINAR DOENCA OU PRAGA"
+  },
+  {
+    "id": 544,
+    "natureza": "DIVULGACAO DE SEGREDO"
+  },
+  {
+    "id": 545,
+    "natureza": "EXIBIR/VEICULAR INFORMACOES INJURIOSAS A PESSOA DO IDOSO"
+  },
+  {
+    "id": 546,
+    "natureza": "FAVORECIMENTO DA PROSTITUICAO OU OUTRA FORMA DE EXPLORACAO SEXUAL DE VULNERAVEL"
+  },
+  {
+    "id": 547,
+    "natureza": "FAZER USO DE QUALQUER DOS DOCUMENTOS FALSIFICADOS OU ALTERADOS / A QUE SE REFEREM OS ARTIGOS. 348 A 352"
+  },
+  {
+    "id": 548,
+    "natureza": "FRAUDE PROCESSUAL"
+  },
+  {
+    "id": 549,
+    "natureza": "FRAUDES E ABUSOS NA FUND. OU ADMIN. DE SOCIEDADE POR ACOES"
+  },
+  {
+    "id": 550,
+    "natureza": "IMPEDIR OU EMBARACAR O EXERCICIO DO SUFRAGIO/VOTO"
+  },
+  {
+    "id": 551,
+    "natureza": "INSCREVER-SE O ELEITOR / SIMULTANEAMENTE / EM DOIS OU MAIS PARTIDOS"
+  },
+  {
+    "id": 552,
+    "natureza": "INSERIR OU FACILITAR / O FUNCIONÁRIO AUTORIZADO / A INSERÇAO DE DADOS FALSOS / ALTERAR OU EXCLUIR INDEVIDAMENTE DADOS CORRETOS NOS SISTEMAS INFORMATIZADOS OU BANCOS DE DADOS DA ADMINISTRAÇAO PÚBLICA COM O FIM DE OBTER VANTAGEM INDEVIDA PARA SI OU PARA OUTREM OU PARA CAUSAR DANO:"
+  },
+  {
+    "id": 553,
+    "natureza": "MEDICAMENTO EM DESACORDO COM RECEITA MEDICA"
+  },
+  {
+    "id": 554,
+    "natureza": "NEGAR ACOLHIMENTO DO IDOSO"
+  },
+  {
+    "id": 555,
+    "natureza": "NEGAR NOTA RELATIVA A PRESTACAO DE SERVICOS"
+  },
+  {
+    "id": 556,
+    "natureza": "PARALISACAO DE TRABALHO DE INTERESSE COLETIVO"
+  },
+  {
+    "id": 557,
+    "natureza": "PECULATO"
+  },
+  {
+    "id": 558,
+    "natureza": "PERIGO DE DESASTRE FERROVIARIO"
+  },
+  {
+    "id": 559,
+    "natureza": "PRESUNCAO DE VIOLENCIA - NAO OFERECE RESISTENCIA"
+  },
+  {
+    "id": 560,
+    "natureza": "RECUSAR HOSPEDAGEM"
+  },
+  {
+    "id": 561,
+    "natureza": "RUFIANISMO"
+  },
+  {
+    "id": 562,
+    "natureza": "RUFIANISMO - VITIMA MAIOR 14 E MENOR 18"
+  },
+  {
+    "id": 563,
+    "natureza": "SIMULAR PARTICIPACAO DE CRIANCA OU ADOLESCENTE EM PORNOGRAFIA"
+  },
+  {
+    "id": 564,
+    "natureza": "TELECOMUNICAÇÃO"
+  },
+  {
+    "id": 565,
+    "natureza": "TRAFICO INTER DE PES VITIMA MENOR / DEFICIENTE MENTAL / AGENTE COM DEVER DE CUIDADO OU VIOLENCIA AMEAC"
+  },
+  {
+    "id": 566,
+    "natureza": "TRANSPORTAR/USAR OVOS/LARVAS/ESPECIMES DA FAUNA S/LICENCA"
+  },
+  {
+    "id": 567,
+    "natureza": "VAZAMENTO DE GAS - SEM ILICITUDE"
+  },
+  {
+    "id": 568,
+    "natureza": "VENDENDO / COMO VERDADEIRA OU PERFEITA / MERCADORIA FALSIFICADA OU DETERIORADA"
+  },
+  {
+    "id": 569,
+    "natureza": "A QUEBRA DE SIGILO / FORA DAS HIPÓTESES AUTORIZADAS NESTA LEI COMPLEMENTAR / CONSTITUI CRIME E SUJEITA OS RESPONSÁVEIS À PENA DE RECLUSAO / DE UM A QUATRO ANOS / E MULTA / APLICANDO-SE / NO QUE COUBER / O CÓDIGO PENAL / SEM PREJUÍZO DE OUTRAS SANÇÕES CABÍVEIS."
+  },
+  {
+    "id": 570,
+    "natureza": "ABORTO PROVOCADO POR TERCEIRO SEM CONSENTIMENTO"
+  },
+  {
+    "id": 571,
+    "natureza": "ABORTO QUALIFICADO"
+  },
+  {
+    "id": 572,
+    "natureza": "ABUSO - ATENTADO A LIBERDADE DE CRENCA/LIBERDADE"
+  },
+  {
+    "id": 573,
+    "natureza": "ADQUIRIR BENS OU REALIZAR SERVICOS/OBRAS / SEM CONCORRENCIA"
+  },
+  {
+    "id": 574,
+    "natureza": "ADQUIRIR / DISTRIBUIR E REVENDER DERIVADOS DE PETROLEO / GAS NATURAL E SUAS FRACOES"
+  },
+  {
+    "id": 575,
+    "natureza": "ANIMAL FERIDO / RESGATADO"
+  },
+  {
+    "id": 576,
+    "natureza": "ANTIBOMBAS - VISTORIA ANTIBOMBAS (SEM ILICITUDE)"
+  },
+  {
+    "id": 577,
+    "natureza": "APROPRIAR-SE / DESVIAR OU OCULTAR BENS PERTENCENTES AO DEVEDOR SOB RECUPERAÇAO JUDICIAL OU À MASSA FALIDA / INCLUSIVE POR MEIO DA AQUISIÇAO POR INTERPOSTA PESSOA"
+  },
+  {
+    "id": 578,
+    "natureza": "ART. 24. VIOLAR SIGILO PROCESSUAL / PERMITINDO QUE DEPOIMENTO DE CRIANÇA OU ADOLESCENTE SEJA ASSISTIDO POR PESSOA ESTRANHA AO PROCESSO /"
+  },
+  {
+    "id": 579,
+    "natureza": "ART. 89. APROPRIAR-SE DE OU DESVIAR BENS / PROVENTOS / PENSÃO / BENEFÍCIOS / REMUNERAÇÃO OU QUALQUER OUTRO RENDIMENTO DE PESSOA COM DEFICIÊNCIA"
+  },
+  {
+    "id": 580,
+    "natureza": "ASSOCIAÇAO CRIMINOSA"
+  },
+  {
+    "id": 581,
+    "natureza": "ATENTADO CONTRA SEG. DE SERVICO DE UTILIDADE PUBLICA"
+  },
+  {
+    "id": 582,
+    "natureza": "AUMENTA-SE A PENA DE UM SEXTO A UM TERÇO SE DA INVASAO RESULTA PREJUÍZO ECONÔMICO."
+  },
+  {
+    "id": 583,
+    "natureza": "AUTO-ACUSACAO FALSA"
+  },
+  {
+    "id": 584,
+    "natureza": "B12 - INCIDENTE COM AERONAVE"
+  },
+  {
+    "id": 585,
+    "natureza": "B18 - SALV ALTURA"
+  },
+  {
+    "id": 586,
+    "natureza": "B19 - SALV AQUATICO - ENCHENTE"
+  },
+  {
+    "id": 587,
+    "natureza": "C4 - DIABETES"
+  },
+  {
+    "id": 588,
+    "natureza": "COMPRAR OU VENDER TECIDOS / ÓRGAOS OU PARTES DO CORPO HUMANO:"
+  },
+  {
+    "id": 589,
+    "natureza": "CONCORRENCIA DESLEAL - USO/IMITACAO EXPRESSAO"
+  },
+  {
+    "id": 590,
+    "natureza": "CONCUSSAO"
+  },
+  {
+    "id": 591,
+    "natureza": "CONSTITUEM CRIMES / NO DIA DA ELEIÇAO / PUNÍVEIS COM DETENÇAO DE 6 MESES A 1 ANO / COM A ALTERNATIVA DE PRESTAÇAO DE SERVIÇOS À COMUNIDADE PELO MESMO PERÍODO / E MULTA NO VALOR DE R$ 5.320 /50 (CINCO MIL TREZENTOS E VINTE REAIS E CINQUENTA CENTAVOS) A R$ 15.961 /50 (QUINZE MIL NOVECENTOS E SESSENTA E UM REAIS E CINQUENTA CENTAVOS)"
+  },
+  {
+    "id": 592,
+    "natureza": "CONSTITUI CRIME CONTRA A ADMINISTRAÇAO PÚBLICA LEI 6.766/79 - LEI DO LOTEAMENTO (ART.50 / INCISOS I /II /II / PARAGRAFO UNICO INCISOS I /II E III)"
+  },
+  {
+    "id": 593,
+    "natureza": "CONTRAIR EMPRESTIMO / EMITIR APOLICES EM DESACORDO C/ A LEI"
+  },
+  {
+    "id": 594,
+    "natureza": "CURANDEIRISMO"
+  },
+  {
+    "id": 595,
+    "natureza": "DEIXAR DE CORRIGIR INFORMACAO DE CADASTRO"
+  },
+  {
+    "id": 596,
+    "natureza": "DEIXAR DE ELABORAR / ESCRITURAR OU AUTENTICAR / ANTES OU DEPOIS DA SENTENÇA QUE DECRETAR A FALÊNCIA / CONCEDER A RECUPERAÇAO JUDICIAL OU HOMOLOGAR O PLANO DE RECUPERAÇAO EXTRAJUDICIAL / OS DOCUMENTOS DE ESCRITURAÇAO CONTÁBIL OBRIGATÓRIOS"
+  },
+  {
+    "id": 597,
+    "natureza": "DESCUMPRIMENTO DE MEDIDA PROTETIVA"
+  },
+  {
+    "id": 598,
+    "natureza": "DIFICULTAR FISCALIZACAO DO PODER PUBLICO"
+  },
+  {
+    "id": 599,
+    "natureza": "DIVULGAR OU PROPALAR / POR QUALQUER MEIO / INFORMAÇAO FALSA SOBRE DEVEDOR EM RECUPERAÇAO JUDICIAL / COM O FIM DE LEVÁ-LO À FALÊNCIA OU DE OBTER VANTAGEM"
+  },
+  {
+    "id": 600,
+    "natureza": "ELEVANDO ARBITRARIAMENTE OS PREÇO"
+  },
+  {
+    "id": 601,
+    "natureza": "EXIGIR VALOR ALEM DO ALUGUEL"
+  },
+  {
+    "id": 602,
+    "natureza": "EXPOR A PERIGO IDOSO COM RESULTADO MORTE"
+  },
+  {
+    "id": 603,
+    "natureza": "FALSO TESTEMUNHO OU FALSA PERICIA"
+  },
+  {
+    "id": 604,
+    "natureza": "FAVORECIMENTO DA PROSTITUIÇÃO OU OUTRA FORMA DE EXPLORAÇÃO SEXUAL DE VULNERÁVEL."
+  },
+  {
+    "id": 605,
+    "natureza": "FAVORECIMENTO REAL"
+  },
+  {
+    "id": 606,
+    "natureza": "FINANCIAR - ARTS. 33 / CAPUT E 1°  / E 34 DESTA LEI"
+  },
+  {
+    "id": 607,
+    "natureza": "FORMA ASSIMILADA FALSIFICACAO"
+  },
+  {
+    "id": 608,
+    "natureza": "FRAUDAR PESOS E MEDIDAS PADROES"
+  },
+  {
+    "id": 609,
+    "natureza": "FRAUDE NA FISCALIZACAO TRIBUTARIA"
+  },
+  {
+    "id": 610,
+    "natureza": "FRAUDE PARA RECEBIMENTO DE INDENIZACAO OU VALOR DE SEGURO"
+  },
+  {
+    "id": 611,
+    "natureza": "IMPEDIMENTO / PERTURBACAO OU FRAUDE DE CONCORRENCIA"
+  },
+  {
+    "id": 612,
+    "natureza": "INDUZIR PESSOA IDOSA OUTORGAR PROCURACAO"
+  },
+  {
+    "id": 613,
+    "natureza": "INTERCEPTACAO TELEFONICA"
+  },
+  {
+    "id": 614,
+    "natureza": "INTRODUCAO DE ESPECIME ANIMAL SEM LICENCA"
+  },
+  {
+    "id": 615,
+    "natureza": "INUMACAO OU EXUMACAO DE CADAVER"
+  },
+  {
+    "id": 616,
+    "natureza": "MEDIACAO PARA SERVIR DE LASCIVIA DE OUTREM COM VIOLENCIA"
+  },
+  {
+    "id": 617,
+    "natureza": "MOTIM DE PRESOS"
+  },
+  {
+    "id": 618,
+    "natureza": "NA MESMA PENA INCORRE QUEM PRODUZ / OFERECE / DISTRIBUI / VENDE OU DIFUNDE DISPOSITIVO OU PROGRAMA DE COMPUTADOR COM O INTUITO DE PERMITIR A PRÁTICA DA CONDUTA DEFINIDA NO CAPUT"
+  },
+  {
+    "id": 619,
+    "natureza": "NAO PROMOVER/ORDENAR LIQUIDACAO OPERACAO DE CREDITO"
+  },
+  {
+    "id": 620,
+    "natureza": "NOS CRIMES DEFINIDOS NO ART. 154-A / SOMENTE SE PROCEDE MEDIANTE REPRESENTAÇAO / SALVO SE O CRIME É COMETIDO CONTRA A ADMINISTRAÇAO PÚBLICA DIRETA OU INDIRETA DE QUALQUER DOS PODERES DA UNIAO / ESTADOS / DISTRITO FEDERAL OU MUNICÍPIOS OU CONTRA EMPRESAS CONCESSIONÁRIAS DE SERVIÇOS PÚBLICOS."
+  },
+  {
+    "id": 621,
+    "natureza": "OBSTAR / IMPEDIR OU DIFICULTAR / INJUSTAMENTE / A INSCRIÇAO DE QUALQUER INTERESSADO NOS REGISTROS CADASTRAIS OU PROMOVER INDEVIDAMENTE A ALTERAÇAO / SUSPENSAO OU CANCELAMENTO DE REGISTRO DO INSCRITO"
+  },
+  {
+    "id": 622,
+    "natureza": "OCORRENCIA CANCELADA - SEM ILICITUDE"
+  },
+  {
+    "id": 623,
+    "natureza": "OMITIR / EM DOCUMENTO PUBLICO OU PARTICULAR / DECLARACAO QUE DELE DEVIA CONSTAR / OU NELE INSERIR OU FAZER INSERIR DECLARACAO FALSA OU DIVERSA DA QUE DEV"
+  },
+  {
+    "id": 624,
+    "natureza": "POSSE SEXUAL MEDIANTE FRAUDE - VITIMA VIRGEM MAIOR 14 / MENOR 18"
+  },
+  {
+    "id": 625,
+    "natureza": "POSSUIR OU LANCAR EM CIRCULACAO LOTERIA ESTRANGEIRA"
+  },
+  {
+    "id": 626,
+    "natureza": "PRATICA FAIXA DE PEDESTRE OU CALCADA"
+  },
+  {
+    "id": 627,
+    "natureza": "PUBLICIDADE ENGANOSA OU ABUSIVA"
+  },
+  {
+    "id": 628,
+    "natureza": "R2 - CHOQUE ELÉTRICO-RAIO"
+  },
+  {
+    "id": 629,
+    "natureza": "REALIZAR JOGO DO BICHO"
+  },
+  {
+    "id": 630,
+    "natureza": "REALIZAR/RECEBER TRANSFERENCIA EM DESACORDO COM A LEI"
+  },
+  {
+    "id": 631,
+    "natureza": "RECUSA DE MOEDA DE CURSO LEGAL"
+  },
+  {
+    "id": 632,
+    "natureza": "RECUSAR A ENTRADA EM LOCAL PUBLICO"
+  },
+  {
+    "id": 633,
+    "natureza": "RECUSAR A VENDA"
+  },
+  {
+    "id": 634,
+    "natureza": "RECUSAR ALGUEM CUMPRIMENTO OU OBEDIENCIA A DILIGENCIAS / ORDENS OU INSTRUCOES DA JUSTICA ELEITORAL OU OPOR EMBARACOS SUA EXECUCAO"
+  },
+  {
+    "id": 635,
+    "natureza": "REMOVER TECIDOS / ÓRGAOS OU PARTES DO CORPO DE PESSOA OU CADÁVER / EM DESACORDO COM AS DISPOSIÇÕES DESTA LEI"
+  },
+  {
+    "id": 636,
+    "natureza": "RETARDAR / IMPEDIR OU DIFICULTAR A ACAO FISCALIZADORA DOS PARTIDOS"
+  },
+  {
+    "id": 637,
+    "natureza": "SUBTRACAO OU INUTILIZACAO DE LIVRO OU DOCUMENTO"
+  },
+  {
+    "id": 638,
+    "natureza": "TENTAR OU OBTER GANHOS ILICITOS"
+  },
+  {
+    "id": 639,
+    "natureza": "Teste egsys ó"
+  },
+  {
+    "id": 640,
+    "natureza": "TRAFICO DE INFLUENCIA EM TRANSACAO COMERCIAL INTERNACIONAL"
+  },
+  {
+    "id": 641,
+    "natureza": "TRAFICO INTERNACIONAL DE ARMA DE FOGO"
+  },
+  {
+    "id": 642,
+    "natureza": "USURA"
+  },
+  {
+    "id": 643,
+    "natureza": "USURPACAO DE AGUAS"
+  },
+  {
+    "id": 644,
+    "natureza": "UTILIZAR EM PROVEITO PROPRIO BENS/RENDAS/SERVICOS PUBLICOS"
+  },
+  {
+    "id": 645,
+    "natureza": "UTILIZAR ORGANIZAO COMERCIAL DE VENDAS / DISTRIBUIO DE MERCADORIAS / PRMIOS E SORTEIOS PARA PROPAGANDA OU ALICIAMENTO DE ELEITORES"
+  },
+  {
+    "id": 646,
+    "natureza": "UTILIZAR OU DIVULGAR / INDEVIDAMENTE / COM O FIM DE BENEFICIAR A SI OU A OUTREM / OU DE COMPROMETER A CREDIBILIDADE DO CERTAME / CONTEÚDO SIGILOSO"
+  },
+  {
+    "id": 647,
+    "natureza": "VENDA / ENTREGA DE ARMA DE FOGO A CRIANCA/ADOLESCENTE"
+  },
+  {
+    "id": 648,
+    "natureza": "VIOLACAO DE DIREITO AUTORAL"
+  },
+  {
+    "id": 649,
+    "natureza": "VIOLACAO DE SEGREDO PROFISSIONAL"
+  },
+  {
+    "id": 650,
+    "natureza": "VIOLACAO DO MONOPOLIO POSTAL DA UNIAO"
+  },
+  {
+    "id": 651,
+    "natureza": "VIOLENCIA ARBITRARIA"
+  },
+  {
+    "id": 652,
+    "natureza": "ABANDONO DE INCAPAZ COM RESULTADO DE MORTE"
+  },
+  {
+    "id": 653,
+    "natureza": "ABORDAGEM DE SUSPEITOS - CF25-Blitz1 (PC /BPRV /CBM /PM /BPTRAN)"
+  },
+  {
+    "id": 654,
+    "natureza": "ABUSO - ATENTADO A LIBERDADE DE ASSOCIACAO"
+  },
+  {
+    "id": 655,
+    "natureza": "ABUSO - ATENTADO AO SIGILO DA CORRESPONDENCIA"
+  },
+  {
+    "id": 656,
+    "natureza": "ABUSO - CONSTRANGIMENTO DE CUSTODIADO"
+  },
+  {
+    "id": 657,
+    "natureza": "ABUSO - OMISSAO DE COMUNICACAO PRISAO"
+  },
+  {
+    "id": 658,
+    "natureza": "ABUSO DO PODER ECONOMICO"
+  },
+  {
+    "id": 659,
+    "natureza": "Acidente de trânsito"
+  },
+  {
+    "id": 660,
+    "natureza": "APROPRIAR/DESVIAR BENS/RENDAS PUBLICAS EM PROVEITO PROPRIO"
+  },
+  {
+    "id": 661,
+    "natureza": "ART. 313-B. MODIFICAR OU ALTERAL / O FUNCIONÁRIO / SISTEMA DE INFORMAÇÃO OU PROGRAMA DE INFORMÁTICA SEM AUTORIZAÇÃO OU SOLICITAÇÃO DE AUTORIDADE COMPETENTE."
+  },
+  {
+    "id": 662,
+    "natureza": "ATENTADO CONTRA A LIBERDADE CONTRATO DE TRAB. E BOIC. VIOL."
+  },
+  {
+    "id": 663,
+    "natureza": "ATENTADO CONTRA SEG. DE OUTRO MEIO DE TRANSPORTE"
+  },
+  {
+    "id": 664,
+    "natureza": "ATENTADO CONTRA SEG. TRANSP MARITIMO/FLUVIAL/AEREO - CULPOSO"
+  },
+  {
+    "id": 665,
+    "natureza": "B5 - EXPLOSÃO"
+  },
+  {
+    "id": 666,
+    "natureza": "B14 - INCIDENTE COM TREM - METR"
+  },
+  {
+    "id": 667,
+    "natureza": "B18 - SALVAMENTO EM ALTURA"
+  },
+  {
+    "id": 668,
+    "natureza": "B21 - SALV ELEVADOR"
+  },
+  {
+    "id": 669,
+    "natureza": "BENEFICIAR/INDUSTRIALIZAR ESPECIMES DE PESCA PROIBIDAS"
+  },
+  {
+    "id": 670,
+    "natureza": "C1 - AVC-DERRAME"
+  },
+  {
+    "id": 671,
+    "natureza": "C9 - ENVENENAMENTO - OVERDOSE"
+  },
+  {
+    "id": 672,
+    "natureza": "CAUSAR EPIDEMIA / MEDIANTE A PROPAGAÇAO DE GERMES PATOGÊNICOS (MODALIDADE CULPOSA SEM RESULTADO MORTE)."
+  },
+  {
+    "id": 673,
+    "natureza": "CAUSAR POLUICAO HIDRICA INTERROMPENDO ABASTECIMENTO PUBLICO"
+  },
+  {
+    "id": 674,
+    "natureza": "CERTIDAO OU ATESTADO IDEOLOGICAMENTE FALSO"
+  },
+  {
+    "id": 675,
+    "natureza": "CONCORRENCIA DESLEAL - DIVULGACAO MEIO ILICITO"
+  },
+  {
+    "id": 676,
+    "natureza": "CONCORRENCIA DESLEAL - USO INDEVIDO NOME COMERCIAL"
+  },
+  {
+    "id": 677,
+    "natureza": "CONHECIMENTO PREVIO DE IMPEDIMENTO"
+  },
+  {
+    "id": 678,
+    "natureza": "CONSIDERA-SE CLANDESTINA A ATIVIDADE DESENVOLVIDA SEM A COMPETENTE CONCESSAO / PERMISSAO OU AUTORIZAÇAO DE SERVIÇO / DE USO DE RADIOFREQÜÊNCIA E DE EXPLORAÇAO DE SATÉLITE."
+  },
+  {
+    "id": 679,
+    "natureza": "CONSTITUI CRIME CONTRA O PATRIMÔNIO / NA MODALIDADE DE USURPACAO / PRODUZIR BENS OU EXPLORAR MATÉRIA-PRIMA PERTENCENTES À UNIAO / SEM AUTORIZAÇAO LEGAL OU EM DESACORDO COM AS OBRIGAÇÕES IMPOSTAS PELO TÍTULO AUTORIZATIVO."
+  },
+  {
+    "id": 680,
+    "natureza": "CORRUPCAO PASSIVA"
+  },
+  {
+    "id": 681,
+    "natureza": "CRIME CONTRA MARCA - COMERCIO"
+  },
+  {
+    "id": 682,
+    "natureza": "CRIME CONTRA MARCA - REPRODUZIR/IMITAR SEM AUTORIZACAO"
+  },
+  {
+    "id": 683,
+    "natureza": "CRIME CONTRA PATENTE - FABRICAR SEM AUTORIZACAO"
+  },
+  {
+    "id": 684,
+    "natureza": "CRIME MILITAR - FURTO DE USO"
+  },
+  {
+    "id": 685,
+    "natureza": "CRIME MILITAR - FURTO QUALIFICADO"
+  },
+  {
+    "id": 686,
+    "natureza": "CRIME MILITAR - LESAO CULPOSA"
+  },
+  {
+    "id": 687,
+    "natureza": "CRIME MILITAR - ROUBO QUALIFICADO"
+  },
+  {
+    "id": 688,
+    "natureza": "CRIME MILITAR - VIOLACAO DE DOMICILIO"
+  },
+  {
+    "id": 689,
+    "natureza": "DECLARACAO FALSA OU OMISSAO"
+  },
+  {
+    "id": 690,
+    "natureza": "DEIXAR DE ORGANIZAR DADOS PARA PUBLICIDADE"
+  },
+  {
+    "id": 691,
+    "natureza": "DEIXAR FORNECER RECIBO"
+  },
+  {
+    "id": 692,
+    "natureza": "DEPOSITO/USO SUBSTANCIA TOXICA S/ LICENCA - CULPOSO"
+  },
+  {
+    "id": 693,
+    "natureza": "DESABAMENTO DE CONTRUCAO"
+  },
+  {
+    "id": 694,
+    "natureza": "DESENVOLVER CLANDESTINAMENTE ATIVIDADES DE TELECOMUNICAÇAO"
+  },
+  {
+    "id": 695,
+    "natureza": "DIFICULTAR/IMPEDIR ATRAVES DE POLUICAO O USO PUBLICO PRAIAS"
+  },
+  {
+    "id": 696,
+    "natureza": "DISTRIBUIR LISTA OU AVISOS DE LOTERIA DE CIRCULACAO ILEGAL"
+  },
+  {
+    "id": 697,
+    "natureza": "DIVULGACAO DE PESQUISA FRAUDULENTA"
+  },
+  {
+    "id": 698,
+    "natureza": "DIVULGAÇÃO DO SEGREDO"
+  },
+  {
+    "id": 699,
+    "natureza": "DIVULGAR / NA PROPAGANDA / FATOS QUE SABE INVERIDICOS / EM RELAO A PARTIDOS OU CANDIDATOS E CAPAZES DE EXERCEREM INFLUNCIA PERANTE O ELEITORADO"
+  },
+  {
+    "id": 700,
+    "natureza": "É PERMITIDA / NO DIA DAS ELEIÇÕES / A MANIFESTAÇAO INDIVIDUAL E SILENCIOSA DA PREFERÊNCIA DO ELEITOR POR PARTIDO POLÍTICO / COLIGAÇAO OU CANDIDATO / REVELADA EXCLUSIVAMENTE PELO USO DE BANDEIRAS / BROCHES / DÍSTICOS E ADESIVOS"
+  },
+  {
+    "id": 701,
+    "natureza": "ELABORAR OU APRESENTAR / NO LICENCIAMENTO / CONCESSAO FLORESTAL OU QUALQUER OUTRO PROCEDIMENTO ADMINISTRATIVO / ESTUDO / LAUDO OU RELATÓRIO AMBIENTAL TOTAL OU PARCIALMENTE FALSO OU ENGANOSO / INCLUSIVE POR OMISSAO"
+  },
+  {
+    "id": 702,
+    "natureza": "EMPREGAR SUBVENCOES/AUXILIOS/EMPRESTIMOS EM DESACORDO"
+  },
+  {
+    "id": 703,
+    "natureza": "EMPREGO DE PROCESSO PROIBIDO OU DE SUBSTANCIA NAO PERMITIDA"
+  },
+  {
+    "id": 704,
+    "natureza": "ENTRADA DE APARELHO TELEFONICO DE COMUNICACAO MOVEL OU SIMILAR EM ESTABELECIMENTO PRISIONAL"
+  },
+  {
+    "id": 705,
+    "natureza": "EXAME DE LOCAL  - LUMINOL"
+  },
+  {
+    "id": 706,
+    "natureza": "EXAME EM LOCAL DE MORTE"
+  },
+  {
+    "id": 707,
+    "natureza": "EXECUTAR SERVICO PERIGOSO SEM LICENCA"
+  },
+  {
+    "id": 708,
+    "natureza": "EXERCER ATIVIDADE PARA A QUAL FOI INABILITADO OU INCAPACITADO POR DECISAO JUDICIAL / NOS TERMOS DESTA LEI"
+  },
+  {
+    "id": 709,
+    "natureza": "EXERCICIO ILEGAL COMERCIO COISAS ANTIGAS/OBRAS ARTE"
+  },
+  {
+    "id": 710,
+    "natureza": "EXERCICIO PROFISSAO/ ATIVIDADE TRANSPORTE PASSAGEIROS"
+  },
+  {
+    "id": 711,
+    "natureza": "EXIBICAO OU GUARDA DE LISTA DE SORTEIO"
+  },
+  {
+    "id": 712,
+    "natureza": "EXIGIR CHEQUE-CAUÇAO / NOTA PROMISSÓRIA OU QUALQUER GARANTIA / BEM COMO O PREENCHIMENTO PRÉVIO DE FORMULÁRIOS ADMINISTRATIVOS / COMO CONDIÇAO PARA O ATENDIMENTO MÉDICO-HOSPITALAR EMERGENCIAL"
+  },
+  {
+    "id": 713,
+    "natureza": "EXIGIR INFORMAÇÃO OU CUMPRIMENTO DE OBRIGAÇÃO"
+  },
+  {
+    "id": 714,
+    "natureza": "EXPLOSAO - CULPOSA"
+  },
+  {
+    "id": 715,
+    "natureza": "FABRICO COMERCIO DE ARMA/MUNICAO SEM PERMISSAO"
+  },
+  {
+    "id": 716,
+    "natureza": "FALSIDADE MATERIAL DE ATESTADO OU CERTIDAO"
+  },
+  {
+    "id": 717,
+    "natureza": "FALSIFICACAO DE PRODUTO TERAPEUTICO / MEDICINAL"
+  },
+  {
+    "id": 718,
+    "natureza": "FALSIFICACAO DE PRODUTO TERAPEUTICO / MEDICINAL - CULPOSA"
+  },
+  {
+    "id": 719,
+    "natureza": "FALSIFICAR / NO TODO OU EM PARTE / DOCUMENTO PARTICULAR OU ALTERAR DOCUMENTO PARTICULAR VERDADEIRO / PARA FINS ELEITORAIS"
+  },
+  {
+    "id": 720,
+    "natureza": "FALTA DE SINAIS DE PERIGO EM VIA PUBLICA"
+  },
+  {
+    "id": 721,
+    "natureza": "FINGIR-SE FUNCIONÁRIO PÚBLICO"
+  },
+  {
+    "id": 722,
+    "natureza": "FORMA ASSIMILADA REPRODUCAO/ADULTERACAO"
+  },
+  {
+    "id": 723,
+    "natureza": "FORMA ASSIMILADA VIOLACAO PRIVILEGIO"
+  },
+  {
+    "id": 724,
+    "natureza": "FRAUDAR / EM PREJUÍZO DA FAZENDA PÚBLICA / LICITAÇAO INSTAURADA PARA AQUISIÇAO OU VENDA DE BENS OU MERCADORIAS / OU CONTRATO DELA DECORRENTE"
+  },
+  {
+    "id": 725,
+    "natureza": "FRUSTRACAO DE LEI SOBRE NACIONALIZACAO DO TRABALHO"
+  },
+  {
+    "id": 726,
+    "natureza": "Furto"
+  },
+  {
+    "id": 727,
+    "natureza": "GESTAO TEMERARIA EM INSTITUIÇAO FINANCEIRA"
+  },
+  {
+    "id": 728,
+    "natureza": "IMPEDIR ACESSO A INFORMACOES EM CADASTRO"
+  },
+  {
+    "id": 729,
+    "natureza": "IMPEDIR/RECUSAR ATENDIMENTO/ACESSO CLUBES E SIMILARES"
+  },
+  {
+    "id": 730,
+    "natureza": "INCITACAO AO CRIME"
+  },
+  {
+    "id": 731,
+    "natureza": "INTERNACAO IRREGULAR EM ESTABELECIMENTO PSIQUIATRICO"
+  },
+  {
+    "id": 732,
+    "natureza": "LAVRAR ATO NOTARIAL QUE ENVOLVA PESSOA IDOSA"
+  },
+  {
+    "id": 733,
+    "natureza": "MEDIACAO PARA SERVIR DE LASCIVIA DE OUTREM"
+  },
+  {
+    "id": 734,
+    "natureza": "MEDIACAO PARA SERVIR DE LASCIVIA DE OUTREM - MAIOR 14 / MENOR 18"
+  },
+  {
+    "id": 735,
+    "natureza": "MEDICAMENTO EM DESACORDO COM RECEITA MEDICA - CULPOSO"
+  },
+  {
+    "id": 736,
+    "natureza": "NAO COMUNICAR APREENSAO CRIANCA/ADOLESCENTE"
+  },
+  {
+    "id": 737,
+    "natureza": "NEGAR EXECUCAO LEI FEDERAL / ESTADUAL OU MUNICIPAL"
+  },
+  {
+    "id": 738,
+    "natureza": "NO ASSEGURAR O FUNCIONRIO POSTAL A PRIORIDADE PREVISTA NO ART. 239"
+  },
+  {
+    "id": 739,
+    "natureza": "O SERVIÇO DE QUALQUER REPARTIÇAO / FEDERAL / ESTADUAL / MUNICIPAL / AUTARQUIA / FUNDAÇAO DO ESTADO / SOCIEDADE DE ECONOMIA MISTA / ENTIDADE MANTIDA OU SUBVENCIONADA PELO PODER PÚBLICO / OU QUE REALIZA CONTRATO COM ÊSTE / INCLUSIVE O RESPECTIVO PRÉDIO E SUAS DEPENDÊNCIAS NAO PODERÁ SER UTILIZADO PARA BENEFICIAR PARTIDO OU ORGANIZAÇAO DE CARÁTER POLÍTICO."
+  },
+  {
+    "id": 740,
+    "natureza": "ORDENAR/AUTORIZAR ABERTURA DE CREDITO EM DESACORDO"
+  },
+  {
+    "id": 741,
+    "natureza": "ORDENAR/AUTORIZAR DESTINACAO RECURSO EM DESACORDO"
+  },
+  {
+    "id": 742,
+    "natureza": "ORDENAR/AUTORIZAR REALIZACAO OPERACAO DE CREDITO"
+  },
+  {
+    "id": 743,
+    "natureza": "PECULATO CULPOSO"
+  },
+  {
+    "id": 744,
+    "natureza": "PERIGO DE CONTAGIO VENEREO"
+  },
+  {
+    "id": 745,
+    "natureza": "PESSOA SUICÍDA/SUICÍDIO"
+  },
+  {
+    "id": 746,
+    "natureza": "PETRECHOS PARA FALSIFICACAO DE MOEDA"
+  },
+  {
+    "id": 747,
+    "natureza": "PRESUNCAO DE VIOLENCIA - ALIENADA OU DEBIL MENTAL"
+  },
+  {
+    "id": 748,
+    "natureza": "PRISAO ILEGAL DE CRIANCA OU ADOLESCENTE"
+  },
+  {
+    "id": 749,
+    "natureza": "PROMOVER / CONSTITUIR / FINANCIAR OU INTEGRAR / PESSOALMENTE OU POR INTERPOSTA PESSOA / ORGANIZAÇAO CRIMINOSA"
+  },
+  {
+    "id": 750,
+    "natureza": "PROMOVER / NO DIA DA ELEICAO / COM O FIM DE IMPEDIR / EMBARACAR OU FRAUDAR O EXERCICIO DO VOTO A CONCENTRACAO DE ELEITORES / SOB QUALQUER FORMA / INCLUSIVE"
+  },
+  {
+    "id": 751,
+    "natureza": "REALIZAR TRANSPLANTE OU ENXERTO UTILIZANDO TECIDOS / ÓRGAOS OU PARTES DO CORPO HUMANO DE QUE SE TEM CIÊNCIA TEREM SIDO OBTIDOS EM DESACORDO COM OS DISPOSITIVOS DESTA LEI"
+  },
+  {
+    "id": 752,
+    "natureza": "RECUSAR / SUSPENDER / PROCRASTINAR / CANCELAR OU FAZER CESSAR / SEM JUSTA CAUSA / A INSCRIÇAO DE ALUNO EM ESTABELECIMENTO DE ENSINO DE QUALQUER CURSO OU GRAU / PÚBLICO OU PRIVADO / POR MOTIVOS DERIVADOS DA DEFICIÊNCIA QUE PORTA"
+  },
+  {
+    "id": 753,
+    "natureza": "REGISTRAR LOTEAMENTO OU DESMEMBRAMENTO NAO APROVADO PELOS ÓRGAOS COMPETENTES"
+  },
+  {
+    "id": 754,
+    "natureza": "SUBSTANCIA DESTINADA A FALSIFICACAO"
+  },
+  {
+    "id": 755,
+    "natureza": "SUPRESSAO DE SINAIS DE UTILIZACAO"
+  },
+  {
+    "id": 756,
+    "natureza": "T6 - ANIMAIS PEÇONHENTOS"
+  },
+  {
+    "id": 757,
+    "natureza": "TESTE SADE"
+  },
+  {
+    "id": 758,
+    "natureza": "TORNANDO / POR QUALQUER MODO / INJUSTAMENTE / MAIS ONEROSA A PROPOSTA OU A EXECUÇAO DO CONTRATO"
+  },
+  {
+    "id": 759,
+    "natureza": "TRANSPORTAR ESPECIMES DE PESCA PROIBIDAS"
+  },
+  {
+    "id": 760,
+    "natureza": "Traumas Específicos. Outros"
+  },
+  {
+    "id": 761,
+    "natureza": "USO DE GAS TOXICO OU ASFIXIANTE - CULPOSO"
+  },
+  {
+    "id": 762,
+    "natureza": "USURPACAO DE FUNCAO PUBLICA - OBTER VANTAGEM"
+  },
+  {
+    "id": 763,
+    "natureza": "UTILIZAR OU DIVULGAR / INDEVIDAMENTE / COM O FIM DE BENEFICIAR A SI OU A OUTREM / OU DE COMPROMETER A CREDIBILIDADE DO CERTAME / CONTEÚDO SIGILOSO DE"
+  },
+  {
+    "id": 764,
+    "natureza": "VIOLACAO DE SIGILO FUNCIONAL"
+  },
+  {
+    "id": 765,
+    "natureza": "VIOLAR OU TENTAR VIOLAR O SIGILO DA URNA OU DOS INVOLUCROS"
+  },
+  {
+    "id": 766,
+    "natureza": "VIOLAR / EXPLORAR OU DIVULGAR / SEM JUSTA CAUSA / SIGILO EMPRESARIAL OU DADOS CONFIDENCIAIS SOBRE OPERAÇÕES OU SERVIÇOS / CONTRIBUINDO PARA A CONDUÇAO DO DEVEDOR A ESTADO DE INVIABILIDADE ECONÔMICA OU FINANCEIRA"
+  },
+  {
+    "id": 767,
+    "natureza": "Violência Doméstica"
+  },
+  {
+    "id": 768,
+    "natureza": "VOTAR EM SEO ELEITORAL EM QUE NO EST INSCRITO / SALVO NOS CASOS EXPRESSAMENTE PREVISTOS / E PERMITIR / O PRESIDENTE DA MESA RECEPTORA / QUE O VOTO SEJA ADMITIDO"
+  },
+  {
+    "id": 769,
+    "natureza": "VOTAR OU TENTAR VOTAR MAIS DE UMA VEZ / O EM LUGAR DE OUTREM"
+  }
+]
