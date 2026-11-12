@@ -194,10 +194,10 @@ test('escolher domingo da folga mensal substitui a folga fixa somente naquela se
   assert.equal(all.find(e=>e.day==='2026-11-24').is_off,true,'folga fixa volta na semana seguinte');
   assert.equal(all.find(e=>e.day==='2026-11-10').is_off,true);
   // Troca não apaga ajustes manuais.
-  await editScheduleDay(pool,manager,{targetId:attendant.id,date:'2026-11-24',kind:'days',off:true});
+  await editScheduleDay(pool,manager,{targetId:attendant.id,date:'2026-11-25',kind:'days',off:true});
   const regen=await generateMonth(pool,manager,{month:'2026-11',kind:'days',userIds:[attendant.id]});
   assert.ok(regen.manualConflicts>=1);
-  assert.equal((await getSchedule(pool,manager,'2026-11')).entries.find(e=>e.user_id===attendant.id&&e.day==='2026-11-24').is_off,true);
+  assert.equal((await getSchedule(pool,manager,'2026-11')).entries.find(e=>e.user_id===attendant.id&&e.day==='2026-11-25').is_off,true);
   await editSundayChoice(pool,dev,{targetId:attendant.id,month:'2026-11',sundayDate:null});
   assert.equal((await getSchedule(pool,manager,'2026-11')).sundays.length,0);
   await editSchedulePreferences(pool,manager,{targetId:attendant.id,fixedOffWeekday:0});
