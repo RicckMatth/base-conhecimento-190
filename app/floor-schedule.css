@@ -242,3 +242,13 @@
 .rs-generation-round span{font-size:9px;color:var(--rs-muted);line-height:1.5}
 @media(max-width:620px){.rs-weekday-settings,.rs-round-settings{margin:0 13px;padding:14px;gap:9px}.rs-setting-heading strong{font-size:12px}.rs-generation-round{padding:10px}}
 @media(prefers-reduced-motion:reduce){.rs-weekday-choice select,.rs-round-settings select,.rs-generation-round select{transition:none!important}}
+
+/* Domingo mensal, preservando o design da central de escalas */
+.rs-sunday-selector{display:grid;gap:11px;border-top:1px solid #0d94883d;margin-top:5px;padding-top:16px}
+.rs-sunday-selector>.rs-setting-heading .rs-setting-icon{background:color-mix(in srgb,#eab308 12%,var(--rs-panel));border-color:#eab3084a;color:#eab308}
+.rs-sunday-selector>p{font-size:11px;line-height:1.75;color:var(--rs-muted)}
+.rs-sunday-selector>p b{color:var(--rs-ink)}
+.rs-sunday-selector .rs-setting-note{border-top:0;padding:12px;border:1px solid var(--rs-line);background:var(--rs-panel);border-radius:10px}
+.rs-break-row>span:nth-child(2){font-size:9px;white-space:nowrap;letter-spacing:-.1px}
+.rs-break-month-head,.rs-break-row{grid-template-columns:minmax(54px,1.1fr) minmax(78px,1.5fr) repeat(3,minmax(48px,.85fr))}
+@media(max-width:620px){.rs-sunday-selector{padding-top:13px}.rs-break-month-head,.rs-break-row{grid-template-columns:minmax(41px,1fr) minmax(75px,1.45fr) repeat(3,minmax(40px,.8fr))}.rs-break-row>span:nth-child(2){font-size:8px}}
