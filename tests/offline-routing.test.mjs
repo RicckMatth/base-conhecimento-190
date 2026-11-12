@@ -8,7 +8,8 @@ const inspector=readFileSync(new URL('../app/gemini-insights.jsx',import.meta.ur
 test('analyze e chat operam exclusivamente offline, sem API Gemini de geração',()=>{
  assert.match(api,/if\(\(route==='\/chat'\|\|route==='\/analyze'\)\&\&method==='POST'\)/);
  assert.match(api,/answerOffline\(\{text:relato,entries\}\)/);
- assert.match(api,/analyzeOfflineReport\(\{text:relato,entries\}\)/);
+ assert.match(api,/resolveChatIntent\(relato,v\.history\)/);
+ assert.match(api,/analyzeOfflineReport\(\{text:intent\.text,entries\}\)/);
  assert.doesNotMatch(api,/askGemini\s*\(/);
  assert.doesNotMatch(api,/GEMINI_API_KEY.*\/chat/);
 });

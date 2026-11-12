@@ -10,6 +10,7 @@ import { aiStatus,rewriteWithGemini } from '../../../lib/gemini.js';
 import {analyzeOfflineReport,answerOffline} from '../../../lib/offline-sade-triage.js';
 import {COPOM_CATALOG,catalogRules} from '../../../lib/copom-catalog.js';
 import { answerLocally,aiFailure } from '../../../lib/assistant.js';
+import {resolveChatIntent} from '../../../lib/chat-intent.js';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { randomUUID } from 'node:crypto';
@@ -240,10 +241,16 @@ async function gate(request,method,ctx){
         console.error('Base190 local triage catalog fallback',{code:error?.code||'unknown'});
         entries=COPOM_CATALOG;readFallback=true;
       }
-      // Perguntas conceituais previstas na base têm precedência; os demais relatos
-      // são tratados 100% pelo motor local, mesmo sem natureza reconhecida.
-      const faq=route==='/chat'?answerLocally({text:relato,history:v.history,entries}):null;
-      const result=faq||(route==='/analyze'?analyzeOfflineReport({text:relato,entries}):answerOffline({text:relato,entries}));
+      // Não confundir "qual natureza?" com pergunta teórica. A pergunta pode
+      // conter os fatos de uma ocorrência; complementos podem retomar o relato
+      // anterior, mas casos independentes não devem misturar seus contextos.
+      const intent=route==='/chat'?resolveChatIntent(relato,v.history):{type:'report',text:relato,usedHistory:false};
+      const result=intent.type==='question'
+        ?(answerLocally({text:relato,history:[],entries})||answerOffline({text:relato,entries}))
+        :intent.type==='needs_context'
+          ?{tipo:'faq',source:'local',titulo:'Informe o caso para continuar',resposta:'Ainda não há um relato anterior identificável nesta conversa. Descreva os fatos, as pessoas envolvidas e o que foi informado para receber sugestões de natureza e cinco perguntas de sondagem.'}
+          :analyzeOfflineReport({text:intent.text,entries});
+      if(intent.usedHistory){result.contextUsed=true;result.contextNote='Complemento analisado junto ao relato anterior desta conversa.';}
       return reply({result,degraded:readFallback,disclaimer:readFallback?
         'Triagem em contingência com as 769 naturezas do arquivo local. O banco deve ser verificado; não há sincronização de edições administrativas neste modo.':
         'Análise inteiramente local e heurística. Confira natureza, fatos e protocolo institucional. O Gemini só é utilizado mediante solicitação explícita para aprimorar a escrita.'});
