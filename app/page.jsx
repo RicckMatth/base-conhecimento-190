@@ -30,6 +30,7 @@ export default function Home(){
   const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
   const [user,setUser]=useState(null),[dark,setDark]=useState(false);
   const [notice,setNotice]=useState(''),[success,setSuccess]=useState('');
+  const [catalogIssue,setCatalogIssue]=useState(''),[catalogDegraded,setCatalogDegraded]=useState(false),[catalogRefreshing,setCatalogRefreshing]=useState(false);
   const [docsOpened,setDocsOpened]=useState(false);
   const [screen,setScreen]=useState('home'),[requestMode,setRequestMode]=useState(false);
   const [login,setLogin]=useState({username:'',password:''});
@@ -63,8 +64,18 @@ export default function Home(){
       document.documentElement.dataset.theme=next?'dark':'light';return next;});
   }
   async function refreshCatalog(){
-    const [catalog,rules]=await Promise.all([call('/entries'),call('/rules')]);
-    setEntries(catalog.entries);setBrainRules(rules);
+    setCatalogRefreshing(true);
+    try{
+      // Consultas independentes: uma falha em regras não deve apagar 769 fichas.
+      const [catalog,rules]=await Promise.allSettled([call('/entries'),call('/rules')]);
+      if(catalog.status==='fulfilled'&&Array.isArray(catalog.value.entries))setEntries(catalog.value.entries);
+      if(rules.status==='fulfilled'&&Array.isArray(rules.value.base))setBrainRules(rules.value);
+      const errors=[catalog,rules].filter(x=>x.status==='rejected').map(x=>x.reason?.message||'Falha de consulta');
+      const degraded=[catalog,rules].filter(x=>x.status==='fulfilled'&&x.value.degraded).map(x=>x.value.warning).filter(Boolean);
+      setCatalogDegraded(degraded.length>0);
+      setCatalogIssue(errors.length?'Falha ao consultar '+(catalog.status==='rejected'?'o catálogo':'as regras')+'. '+errors.join(' ')+' Tente recarregar.':degraded[0]||'');
+      return !errors.length&&!degraded.length;
+    }finally{setCatalogRefreshing(false);}
   }
   async function refreshAdmin(){
     const [a,b]=await Promise.all([call('/admin/requests'),call('/admin/users')]);
@@ -79,8 +90,15 @@ export default function Home(){
       const a=await call('/session');
       if(!live)return;
       setUser(a.user);setLoadingPhase('catalog');
-      const [catalog,rules]=await Promise.all([call('/entries'),call('/rules')]);
-      if(live){setEntries(catalog.entries);setBrainRules(rules);}
+      const [catalog,rules]=await Promise.allSettled([call('/entries'),call('/rules')]);
+      if(live){
+        if(catalog.status==='fulfilled'&&Array.isArray(catalog.value.entries))setEntries(catalog.value.entries);
+        if(rules.status==='fulfilled'&&Array.isArray(rules.value.base))setBrainRules(rules.value);
+        const errors=[catalog,rules].filter(x=>x.status==='rejected').map(x=>x.reason?.message||'Falha de consulta');
+        const degraded=[catalog,rules].filter(x=>x.status==='fulfilled'&&x.value.degraded).map(x=>x.value.warning).filter(Boolean);
+        setCatalogDegraded(degraded.length>0);
+        setCatalogIssue(errors.length?'Não foi possível carregar '+(catalog.status==='rejected'?'o catálogo':'as regras')+'. '+errors.join(' '):degraded[0]||'');
+      }
     }catch(e){if(live && !/Sessão ausente|Sessão expirada|não autorizado/i.test(e.message))setNotice(e.message);}
     finally{if(live)setLoading(false);}})();
     return()=>{live=false;};
@@ -219,7 +237,7 @@ export default function Home(){
       .includes(search.trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()))),[entries,cat,search,priorityFilter]);
   useEffect(()=>setCatalogLimit(60),[search,cat,priorityFilter]);
   const totalRules=(brainRules.base?.length||0)+(brainRules.extras?.length||0)+(brainRules.custom?.length||0);
-  function editEntry(entry){setEditor(entry?{...entry,tags:entry.tags||[]}:emptyEntry());setRevisionHistory([]);go('editor');}
+  function editEntry(entry){if(entry?.readOnly||catalogDegraded){setCatalogIssue('A edição está indisponível no catálogo de contingência. Recarregue os dados do banco antes de modificar uma ficha.');return;}setEditor(entry?{...entry,tags:entry.tags||[]}:emptyEntry());setRevisionHistory([]);go('editor');}
   async function saveEntry(e){
     e.preventDefault();clear();setBusy(true);
     try{
@@ -375,6 +393,10 @@ export default function Home(){
       </header>
       <main className="content spaced">
         {notice&&<div className="notice" role="alert">{notice}</div>}{success&&<div className="notice success" role="status">{success}</div>}
+        {catalogIssue&&<div className="notice" role="alert" style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
+          <span>{catalogIssue}{catalogDegraded?' Consulta em modo de contingência: não é confirmação de que as alterações do banco estejam sincronizadas.':''}</span>
+          <Btn className="secondary tiny" disabled={catalogRefreshing} onClick={()=>{refreshCatalog().catch(err);}}>{catalogRefreshing?'Verificando…':'Tentar novamente'}</Btn>
+        </div>}
 
         {screen==='home'&&<>
           <section className="hero"><div className="hero-orbit" aria-hidden="true"><Icon name="shield" size={114}/></div><span className="eyebrow">CÉREBRO 190 • TRIAGEM ORIENTATIVA</span><h1>Clareza para cada atendimento.</h1>
@@ -390,8 +412,8 @@ export default function Home(){
               <Btn className="secondary" onClick={activateExtension}>Abrir chat →</Btn>
             </div>
           </div>
-          <div className="grid3"><div className="card stat"><small><Icon name="book"/> Fichas no catálogo</small><strong>{entries.length}</strong><span className="badge">Conhecimento</span></div>
-            <div className="card stat"><small><Icon name="brain"/> Regras de classificação</small><strong>{totalRules}</strong><span className="badge">Cérebro 190</span></div>
+          <div className="grid3"><div className="card stat"><small><Icon name="book"/> Fichas no catálogo</small><strong>{catalogIssue&&!entries.length?'—':entries.length}</strong><span className="badge">{catalogDegraded?'Contingência · somente leitura':'Conhecimento'}</span></div>
+            <div className="card stat"><small><Icon name="brain"/> Regras de classificação</small><strong>{catalogIssue&&!totalRules?'—':totalRules}</strong><span className="badge">{catalogDegraded?'Regras locais':'Cérebro 190'}</span></div>
             <div className="card stat"><small><Icon name="shield"/> Nível de acesso</small><strong style={{fontSize:21}}>{isAdmin?'Administrador':'Consulta'}</strong><span className="badge">Sessão autenticada</span></div></div>
           <section className="domain-section"><div className="panel-head"><div><span className="eyebrow">CONSULTA POR ÁREA</span><h2>Encontre o contexto do atendimento</h2></div><span className="badge">{categories.length-1} áreas</span></div><div className="domain-grid">{categories.filter(c=>c!=='Todas').map(c=><button className="domain-card" key={c} onClick={()=>{setCat(c);setSearch('');setPriorityFilter('Todas');go('catalog');}}><Icon name={categoryIcon(c)} size={24}/><b>{c}</b><small>{entries.filter(e=>e.category===c).length} fichas</small><Icon name="arrow" size={16}/></button>)}</div></section>
           <section><div className="panel-head"><div><h2>Naturezas em destaque</h2><p className="muted">Consulte fichas e orientações existentes</p></div><Btn className="secondary" onClick={()=>go('catalog')}>Ver catálogo →</Btn></div>{entryGrid(entries.slice(0,6))}</section>

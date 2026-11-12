@@ -8,6 +8,7 @@ import { readFeedbackTicket,learnableQuestions } from '../../../lib/question-fee
 import { canTestGemini } from '../../../lib/permissions.js';
 import { aiStatus,rewriteWithGemini } from '../../../lib/gemini.js';
 import {analyzeOfflineReport,answerOffline} from '../../../lib/offline-sade-triage.js';
+import {COPOM_CATALOG,catalogRules} from '../../../lib/copom-catalog.js';
 import { answerLocally,aiFailure } from '../../../lib/assistant.js';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
@@ -52,7 +53,14 @@ async function gate(request,method,ctx){
   const route='/'+seg.join('/');
   if(method!=='GET'&&!sameOrigin(request)) return failure('Requisição de origem não autorizada.',403);
   if(route==='/health'&&method==='GET') return reply({status:'ok',databaseConfigured:Boolean(process.env.DATABASE_URL)});
-  await prepare();
+  // Se a preparação complementar falhar, consultas autenticadas de leitura
+  // ainda podem exibir o catálogo estático, sem escrever no banco.
+  let bootstrapIssue=null;
+  try{await prepare();}catch(error){
+    bootstrapIssue=error;
+    console.error('Base190 bootstrap failure',{route,code:error?.code||'unknown'});
+    if(!((method==='GET'&&['/entries','/rules','/session'].includes(route))||(method==='POST'&&['/chat','/analyze'].includes(route))))throw error;
+  }
 
   if(route==='/access-requests'&&method==='POST') {
     const v=await input(request,2000), username=usernameOf(v.username),name=string(v.name,100),reason=string(v.reason,500);
@@ -119,15 +127,27 @@ async function gate(request,method,ctx){
   }
   if(u.must_change_password)return failure('Troca obrigatória da senha provisória antes de utilizar a plataforma.',403);
   if(route==='/entries'&&method==='GET'){
-    const rows=await db().query('SELECT id,code,title,category,priority,summary,body,tags,revision,updated_at FROM knowledge WHERE active_in_catalog=true ORDER BY title LIMIT 2000');
-    return reply({entries:rows.rows,catalogSource:'copom-csv-v2',catalogImported:769});
+    try{
+      if(bootstrapIssue)throw bootstrapIssue;
+      const rows=await db().query('SELECT id,code,title,category,priority,summary,body,tags,revision,updated_at FROM knowledge WHERE active_in_catalog=true ORDER BY title LIMIT 2000');
+      if(rows.rows.length)return reply({entries:rows.rows,catalogSource:'copom-csv-v2',catalogImported:769,degraded:false});
+      console.error('Base190 catalog empty: no active rows (read-only fallback)');
+    }catch(error){console.error('Base190 entries query failure',{code:error?.code||'unknown'});}
+    return reply({entries:COPOM_CATALOG.map(e=>({...e,id:'offline-'+e.code,revision:0,readOnly:true})),catalogSource:'copom-csv-v2-static',catalogImported:769,degraded:true,
+      warning:'Catálogo exibido a partir do arquivo local. A conexão ou sincronização do banco precisa ser verificada; alterações administrativas podem estar temporariamente indisponíveis.'});
   }
   if(route==='/rules'&&method==='GET'){
-    const [custom,knowledge]=await Promise.all([
-      db().query('SELECT id,definition,created_at FROM custom_rules WHERE active_in_catalog=true ORDER BY created_at DESC LIMIT 200'),
-      db().query('SELECT code,title,category,priority,summary FROM knowledge WHERE active_in_catalog=true ORDER BY title LIMIT 2000')
-    ]);
-    return reply({base:catalogRules(knowledge.rows),extras:[],custom:custom.rows});
+    try{
+      if(bootstrapIssue)throw bootstrapIssue;
+      const [custom,knowledge]=await Promise.all([
+        db().query('SELECT id,definition,created_at FROM custom_rules WHERE active_in_catalog=true ORDER BY created_at DESC LIMIT 200'),
+        db().query('SELECT code,title,category,priority,summary FROM knowledge WHERE active_in_catalog=true ORDER BY title LIMIT 2000')
+      ]);
+      if(knowledge.rows.length)return reply({base:catalogRules(knowledge.rows),extras:[],custom:custom.rows,degraded:false});
+      console.error('Base190 classification rules empty: no active knowledge records');
+    }catch(error){console.error('Base190 rules query failure',{code:error?.code||'unknown'});}
+    return reply({base:catalogRules(COPOM_CATALOG),extras:[],custom:[],degraded:true,
+      warning:'Regras exibidas a partir do catálogo local. Regras personalizadas estão indisponíveis enquanto a conexão do banco não for restabelecida.'});
   }
   if(route.startsWith('/documentation/assets')){
     const assetId=route.slice('/documentation/assets/'.length);
@@ -210,13 +230,23 @@ async function gate(request,method,ctx){
     const v=await input(request,32000),relato=string(v.text,8000);
     if(relato.length<3)return failure('Insira pelo menos 3 caracteres.');
     try{
-      const knowledge=await db().query('SELECT code,title,category,summary,body,tags FROM knowledge WHERE active_in_catalog=true ORDER BY title LIMIT 2000');
-      const entries=knowledge.rows;
+      let entries,readFallback=false;
+      try{
+        if(bootstrapIssue)throw bootstrapIssue;
+        const knowledge=await db().query('SELECT code,title,category,summary,body,tags FROM knowledge WHERE active_in_catalog=true ORDER BY title LIMIT 2000');
+        entries=knowledge.rows.length?knowledge.rows:COPOM_CATALOG;
+        readFallback=!knowledge.rows.length;
+      }catch(error){
+        console.error('Base190 local triage catalog fallback',{code:error?.code||'unknown'});
+        entries=COPOM_CATALOG;readFallback=true;
+      }
       // Perguntas conceituais previstas na base têm precedência; os demais relatos
       // são tratados 100% pelo motor local, mesmo sem natureza reconhecida.
       const faq=route==='/chat'?answerLocally({text:relato,history:v.history,entries}):null;
       const result=faq||(route==='/analyze'?analyzeOfflineReport({text:relato,entries}):answerOffline({text:relato,entries}));
-      return reply({result,disclaimer:'Análise inteiramente local e heurística. Confira natureza, fatos e protocolo institucional. O Gemini só é utilizado mediante solicitação explícita para aprimorar a escrita.'});
+      return reply({result,degraded:readFallback,disclaimer:readFallback?
+        'Triagem em contingência com as 769 naturezas do arquivo local. O banco deve ser verificado; não há sincronização de edições administrativas neste modo.':
+        'Análise inteiramente local e heurística. Confira natureza, fatos e protocolo institucional. O Gemini só é utilizado mediante solicitação explícita para aprimorar a escrita.'});
     }catch(error){
       console.error('Erro na triagem local:',error?.message||error);
       return failure('Não foi possível consultar o catálogo para a triagem local. Tente novamente.',503);
