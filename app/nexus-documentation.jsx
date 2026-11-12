@@ -299,9 +299,9 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
  const blockList=currentMeta.blocks||[];
  return <section className={'nexus-docs '+(dark?'nx-dark':'nx-light')+(sideOpen?'':' nx-collapsed')}>
     <InlineToolbar enabled={isEditing}/>
-    <aside className="nx-sidebar">
+    <aside className="nx-sidebar" id="nx-documentation-sidebar" aria-label="Navegação da biblioteca">
       <div className="nx-workspace-head"><div className="nx-logo">N</div><div className="nx-workspace-title"><strong>Base 190 <span>PRO</span></strong><small>Centro de Inteligência Jurídica</small></div>
-      <button className="nx-icon-button" title="Recolher sidebar" onClick={()=>setSideOpen(false)}>◧</button></div>
+      <button type="button" className="nx-icon-button" aria-label="Ocultar barra lateral da biblioteca" title="Ocultar barra lateral" onClick={()=>setSideOpen(false)}>◧</button></div>
       <div className="nx-quick-actions">
         <button className="nx-search-trigger" onClick={()=>setCommand(true)}><span>⌕ &nbsp; Buscar ou comando...</span><kbd>Ctrl K</kbd></button>
         {isAdmin&&<button className="nx-create-btn" onClick={()=>createPage()}>⊕ &nbsp; Nova Página / Documento</button>}
@@ -318,7 +318,7 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
     </aside>
     <div className="nx-main">
       <header className="nx-top-navbar">
-       <div className="nx-breadcrumb"><button className="nx-icon-button nx-expand" onClick={()=>setSideOpen(v=>!v)} title="Alternar sidebar">☷</button><button className="nx-home-button" onClick={onExit} title="Voltar para a página inicial do Centro 190"><span className="nx-home-symbol">⌂</span><span className="nx-home-label">Início do sistema</span></button><span>{folderByName[page?.space]?.icon||'📁'} {page?.space||'Biblioteca 190'}</span><b className="nx-slash">›</b><strong>{currentMeta.icon||'📘'} {page?.title||'Selecione uma página'}</strong></div>
+       <div className="nx-breadcrumb"><button type="button" className="nx-icon-button nx-expand" onClick={()=>setSideOpen(v=>!v)} aria-label={sideOpen?"Ocultar barra lateral da biblioteca":"Mostrar barra lateral da biblioteca"} aria-controls="nx-documentation-sidebar" aria-expanded={sideOpen} title={sideOpen?"Ocultar barra lateral":"Mostrar barra lateral"}>{sideOpen?"◧":"☰"}</button><button className="nx-home-button" onClick={onExit} title="Voltar para a página inicial do Centro 190"><span className="nx-home-symbol">⌂</span><span className="nx-home-label">Início do sistema</span></button><span>{folderByName[page?.space]?.icon||'📁'} {page?.space||'Biblioteca 190'}</span><b className="nx-slash">›</b><strong>{currentMeta.icon||'📘'} {page?.title||'Selecione uma página'}</strong></div>
        <div className="nx-navbar-actions"><span className="nx-save-state">{dirty&&notRecovered?'Alterações pendentes':saveState||'Sincronizado'}</span>{page&&<><button className={'nx-icon-button '+(currentMeta.favorite?'nx-starred':'')} title="Favoritar página" disabled={!isAdmin} onClick={toggleFav}>☆</button><div className="nx-dropdown-anchor"><button className="nx-pill-button" onClick={()=>setExportMenu(v=>!v)}>⇩ <span>Exportar</span></button>{exportMenu&&<div className="nx-export-menu"><button onClick={()=>exportDocument('md')}>Documento Markdown (.md)</button><button onClick={()=>exportDocument('json')}>Backup de blocos (.json)</button><button onClick={()=>{window.print();setExportMenu(false);}}>Imprimir / PDF</button></div>}</div></>}
        <button className="nx-icon-button" title="Alternar tema" onClick={()=>{const next=!dark;setDark(next);localStorage.setItem('nx_docs_theme',next?'dark':'light');}}>{dark?'☼':'☾'}</button></div>
       </header>
