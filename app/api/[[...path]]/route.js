@@ -192,7 +192,7 @@ async function gate(request,method,ctx){
     if(!await consumeAiBudget(u.id,30))return failure('Limite de consultas à IA atingido. A revisão local continua disponível.',429);
     try{return reply(await rewriteWithGemini(text));}
     catch(error){
-      if(/^REWRITE_/.test(error?.message||''))return failure('A revisão sugerida alterou informações protegidas e foi descartada. Confira a revisão local.',422);
+      if(/^REWRITE_/.test(error?.message||''))return failure(error.message==='REWRITE_EMPTY'?'O Gemini não retornou um texto revisado. O texto local continua disponível.':error.message==='REWRITE_WORDS_CHANGED'?'A IA tentou acrescentar, retirar ou trocar palavras. A sugestão foi rejeitada; nenhuma alteração foi aplicada ao relato.':'A IA propôs alterações incompatíveis com a preservação fiel do relato. A sugestão foi rejeitada; use a versão local.',422);
       return failure(aiFailure(error).message,503);
     }
   }
