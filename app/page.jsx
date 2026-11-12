@@ -30,6 +30,7 @@ export default function Home(){
   const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
   const [user,setUser]=useState(null),[dark,setDark]=useState(false);
   const [notice,setNotice]=useState(''),[success,setSuccess]=useState('');
+  const [catalogIssue,setCatalogIssue]=useState(''),[catalogDegraded,setCatalogDegraded]=useState(false),[catalogRefreshing,setCatalogRefreshing]=useState(false);
   const [docsOpened,setDocsOpened]=useState(false);
   const [screen,setScreen]=useState('home'),[requestMode,setRequestMode]=useState(false);
   const [login,setLogin]=useState({username:'',password:''});
@@ -63,8 +64,18 @@ export default function Home(){
       document.documentElement.dataset.theme=next?'dark':'light';return next;});
   }
   async function refreshCatalog(){
-    const [catalog,rules]=await Promise.all([call('/entries'),call('/rules')]);
-    setEntries(catalog.entries);setBrainRules(rules);
+    setCatalogRefreshing(true);
+    try{
+      // Consultas independentes: uma falha em regras não deve apagar 769 fichas.
+      const [catalog,rules]=await Promise.allSettled([call('/entries'),call('/rules')]);
+      if(catalog.status==='fulfilled'&&Array.isArray(catalog.value.entries))setEntries(catalog.value.entries);
+      if(rules.status==='fulfilled'&&Array.isArray(rules.value.base))setBrainRules(rules.value);
+      const errors=[catalog,rules].filter(x=>x.status==='rejected').map(x=>x.reason?.message||'Falha de consulta');
+      const degraded=[catalog,rules].filter(x=>x.status==='fulfilled'&&x.value.degraded).map(x=>x.value.warning).filter(Boolean);
+      setCatalogDegraded(degraded.length>0);
+      setCatalogIssue(errors.length?'Falha ao consultar '+(catalog.status==='rejected'?'o catálogo':'as regras')+'. '+errors.join(' ')+' Tente recarregar.':degraded[0]||'');
+      return !errors.length&&!degraded.length;
+    }finally{setCatalogRefreshing(false);}
   }
   async function refreshAdmin(){
     const [a,b]=await Promise.all([call('/admin/requests'),call('/admin/users')]);
@@ -79,8 +90,15 @@ export default function Home(){
       const a=await call('/session');
       if(!live)return;
       setUser(a.user);setLoadingPhase('catalog');
-      const [catalog,rules]=await Promise.all([call('/entries'),call('/rules')]);
-      if(live){setEntries(catalog.entries);setBrainRules(rules);}
+      const [catalog,rules]=await Promise.allSettled([call('/entries'),call('/rules')]);
+      if(live){
+        if(catalog.status==='fulfilled'&&Array.isArray(catalog.value.entries))setEntries(catalog.value.entries);
+        if(rules.status==='fulfilled'&&Array.isArray(rules.value.base))setBrainRules(rules.value);
+        const errors=[catalog,rules].filter(x=>x.status==='rejected').map(x=>x.reason?.message||'Falha de consulta');
+        const degraded=[catalog,rules].filter(x=>x.status==='fulfilled'&&x.value.degraded).map(x=>x.value.warning).filter(Boolean);
+        setCatalogDegraded(degraded.length>0);
+        setCatalogIssue(errors.length?'Não foi possível carregar '+(catalog.status==='rejected'?'o catálogo':'as regras')+'. '+errors.join(' '):degraded[0]||'');
+      }
     }catch(e){if(live && !/Sessão ausente|Sessão expirada|não autorizado/i.test(e.message))setNotice(e.message);}
     finally{if(live)setLoading(false);}})();
     return()=>{live=false;};
