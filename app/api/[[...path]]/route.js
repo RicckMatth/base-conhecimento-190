@@ -133,7 +133,7 @@ async function gate(request,method,ctx){
       if(rows.rows.length)return reply({entries:rows.rows,catalogSource:'copom-csv-v2',catalogImported:769,degraded:false});
       console.error('Base190 catalog empty: no active rows (read-only fallback)');
     }catch(error){console.error('Base190 entries query failure',{code:error?.code||'unknown'});}
-    return reply({entries:COPOM_CATALOG,catalogSource:'copom-csv-v2-static',catalogImported:769,degraded:true,
+    return reply({entries:COPOM_CATALOG.map(e=>({...e,id:'offline-'+e.code,revision:0,readOnly:true})),catalogSource:'copom-csv-v2-static',catalogImported:769,degraded:true,
       warning:'Catálogo exibido a partir do arquivo local. A conexão ou sincronização do banco precisa ser verificada; alterações administrativas podem estar temporariamente indisponíveis.'});
   }
   if(route==='/rules'&&method==='GET'){
