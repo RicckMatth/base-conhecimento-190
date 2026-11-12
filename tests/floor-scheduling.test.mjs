@@ -2,12 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {PGlite} from '@electric-sql/pglite';
-import {ROLES,ROLE_LABELS,canManage,daysInMonth,validDate,shiftLength,defaultBreaks,validateBreaks,weekdayOf,validOffWeekday,validRoundInterval,generateMonth,editScheduleDay,editShift,editSchedulePreferences,editOperationalRole,getSchedule} from '../lib/floor-scheduling.js';
+import {distributedBreaks,isSundayInMonth,isRestDay,mondayOf} from '../lib/floor-planning.js';
+import {ROLES,ROLE_LABELS,canManage,daysInMonth,validDate,shiftLength,defaultBreaks,validateBreaks,weekdayOf,validOffWeekday,validRoundInterval,generateMonth,editScheduleDay,editShift,editSchedulePreferences,editSundayChoice,editOperationalRole,getSchedule} from '../lib/floor-scheduling.js';
 
 const newUser=(username,operational_role)=>({id:randomUUID(),username,display_name:username,role:'user',operational_role,active:true});
 async function setup(){
  const pg=new PGlite();
  await pg.exec("CREATE TABLE users(id uuid PRIMARY KEY,username text UNIQUE NOT NULL,display_name text NOT NULL,role text NOT NULL DEFAULT 'user',operational_role text NOT NULL DEFAULT 'attendant',active boolean NOT NULL DEFAULT true);CREATE TABLE audit_log(id uuid PRIMARY KEY,actor_id uuid,action text,target text);CREATE TABLE floor_shift_profiles(user_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,start_time text NOT NULL DEFAULT '08:00',end_time text NOT NULL DEFAULT '14:20',fixed_off_weekday smallint CHECK(fixed_off_weekday BETWEEN 0 AND 6),break_round_minutes smallint NOT NULL DEFAULT 0 CHECK(break_round_minutes IN (0,5,10,15,30)),updated_by uuid REFERENCES users(id),updated_at timestamptz NOT NULL DEFAULT now());CREATE TABLE floor_schedule_entries(user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,day date NOT NULL,is_off boolean NOT NULL DEFAULT false,start_time text NOT NULL DEFAULT '08:00',end_time text NOT NULL DEFAULT '14:20',break_1 text,break_2 text,break_3 text,off_source text NOT NULL DEFAULT 'auto' CHECK(off_source IN ('auto','manual')),break_source text NOT NULL DEFAULT 'auto' CHECK(break_source IN ('auto','manual')),updated_by uuid REFERENCES users(id),updated_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(user_id,day));");
+ await pg.exec("CREATE TABLE floor_sunday_preferences(user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,month date NOT NULL,sunday_date date NOT NULL,updated_by uuid REFERENCES users(id),updated_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(user_id,month))");
  const pool={query:(q,a)=>pg.query(q,a),connect:async()=>({query:(q,a)=>pg.query(q,a),release(){}})};
  const dev=newUser('pm-civil.bandeira','dev'),coordinator=newUser('coord.001','coordinator'),manager=newUser('gestor.001','manager'),attendant=newUser('atendente.001','attendant');
  for(const person of [dev,coordinator,manager,attendant]){
@@ -49,7 +51,7 @@ test('geração 6×1, folgas e pausas manuais são preservadas no banco',async()
   let all=(await getSchedule(pool,attendant,'2026-11')).entries.filter(e=>e.user_id===attendant.id);
   assert.equal(all.length,30);
   assert.equal(all.filter(e=>e.is_off).length>=4,true);
-  for(let i=0;i<all.length-6;i++)assert.ok(all.slice(i,i+7).some(r=>r.is_off),'não deve haver mais de 6 dias trabalhados consecutivos');
+  assert.ok(all.some(r=>r.is_off&&weekdayOf(r.day)===0),'uma folga dominical automática no mês');
   const work=all.find(e=>!e.is_off);
   const manualBreak=['09:00','10:50','13:00'];
   await editScheduleDay(pool,manager,{targetId:attendant.id,date:work.day,kind:'breaks',breaks:manualBreak});
@@ -65,10 +67,13 @@ test('geração 6×1, folgas e pausas manuais são preservadas no banco',async()
   assert.equal(all.find(e=>e.day===changed.day).off_source,'manual');
   await assert.rejects(editScheduleDay(pool,coordinator,{targetId:attendant.id,date:work.day,kind:'breaks',breaks:manualBreak}),e=>e.status===403);
   await assert.rejects(editScheduleDay(pool,manager,{targetId:manager.id,date:work.day,kind:'days',off:true}),e=>e.status===403);
-  await editShift(pool,manager,{targetId:attendant.id,start:'18:00',end:'00:20'});
+  await editShift(pool,manager,{targetId:attendant.id,month:'2026-11',start:'18:00',end:'00:20'});
   const afterShift=await getSchedule(pool,manager,'2026-11');
   assert.equal(afterShift.profiles.find(p=>p.user_id===attendant.id).start_time,'18:00');
-  assert.equal(afterShift.entries.find(e=>e.user_id===attendant.id).start_time,'08:00','jornada anterior preservada até uma nova geração');
+  const altered=afterShift.entries.filter(e=>e.user_id===attendant.id);
+  assert.ok(altered.every(e=>e.start_time==='18:00'&&e.end_time==='00:20'),'toda a escala do mês deve refletir o turno atualizado');
+  for(const e of altered.filter(e=>!e.is_off))validateBreaks('18:00','00:20',[e.break_1,e.break_2,e.break_3]);
+  assert.equal(altered.find(e=>e.day===work.day).break_source,'auto','pausa manual incompatível precisa ser redistribuída');
   const entries=(await pg.query('SELECT action FROM audit_log')).rows;
   assert.ok(entries.some(e=>e.action==='floor_month_generate_days'));
   assert.ok(entries.some(e=>e.action==='floor_break_manual'));
@@ -107,7 +112,9 @@ test('folga fixa semanal: segunda a domingo, preferências persistem e geração
   await generateMonth(pool,manager,{month:'2026-12',kind:'days',userIds:[attendant.id]});
   let entries=(await getSchedule(pool,attendant,'2026-12')).entries.filter(p=>p.user_id===attendant.id);
   assert.equal(entries.length,31);
-  assert.ok(entries.every(p=>p.is_off===(weekdayOf(p.day)===1)));
+  const autoSunday=entries.filter(p=>p.is_off&&weekdayOf(p.day)===0);
+  assert.equal(autoSunday.length,1);
+  assert.ok(entries.every(p=>p.is_off===(weekdayOf(p.day)===1&&mondayOf(p.day)!==mondayOf(autoSunday[0].day)||p.day===autoSunday[0].day)));
   // Exceções manuais continuam mais importantes que a folga fixa.
   const monday=entries.find(p=>weekdayOf(p.day)===1);
   await editScheduleDay(pool,manager,{targetId:attendant.id,date:monday.day,kind:'days',off:false});
@@ -118,7 +125,9 @@ test('folga fixa semanal: segunda a domingo, preferências persistem e geração
   await editSchedulePreferences(pool,manager,{targetId:attendant.id,fixedOffWeekday:5});
   await generateMonth(pool,manager,{month:'2027-01',kind:'days',userIds:[attendant.id]});
   entries=(await getSchedule(pool,attendant,'2027-01')).entries.filter(p=>p.user_id===attendant.id);
-  assert.ok(entries.every(p=>p.is_off===(weekdayOf(p.day)===5)));
+  const janSunday=entries.filter(p=>p.is_off&&weekdayOf(p.day)===0);
+  assert.equal(janSunday.length,1);
+  assert.ok(entries.every(p=>p.is_off===(weekdayOf(p.day)===5&&mondayOf(p.day)!==mondayOf(janSunday[0].day)||p.day===janSunday[0].day)));
   await editSchedulePreferences(pool,manager,{targetId:attendant.id,fixedOffWeekday:null});
   const reverted=(await getSchedule(pool,attendant,'2027-01')).profiles.find(p=>p.user_id===attendant.id);
   assert.equal(reverted.fixed_off_weekday,null);
@@ -163,5 +172,81 @@ test('arredondamento salva por atendente e pode ser substituído só na geraçã
   assert.equal(manual.break_source,'manual');
   assert.ok(entries.filter(e=>e.break_source==='auto').every(e=>[e.break_1,e.break_2,e.break_3].every(t=>Number(t.slice(-2))%30===0)));
   await assert.rejects(generateMonth(pool,manager,{month:'2027-03',kind:'days',userIds:[attendant.id],roundMinutes:7}),e=>e.status===400);
+ }finally{await pg.close();}
+});
+
+
+test('escolher domingo da folga mensal substitui a folga fixa somente naquela semana',async()=>{
+ const {pg,pool,dev,manager,coordinator,attendant}=await setup();
+ try{
+  await editSchedulePreferences(pool,manager,{targetId:attendant.id,fixedOffWeekday:2});
+  assert.equal(isSundayInMonth('2026-11','2026-11-22'),true);
+  assert.equal(isSundayInMonth('2026-11','2026-11-21'),false);
+  await assert.rejects(editSundayChoice(pool,coordinator,{targetId:attendant.id,month:'2026-11',sundayDate:'2026-11-22'}),e=>e.status===403);
+  await assert.rejects(editSundayChoice(pool,manager,{targetId:attendant.id,month:'2026-11',sundayDate:'2026-11-21'}),e=>e.status===400);
+  await editSundayChoice(pool,manager,{targetId:attendant.id,month:'2026-11',sundayDate:'2026-11-22'});
+  assert.equal((await getSchedule(pool,attendant,'2026-11')).sundays[0].sunday_date,'2026-11-22');
+  await generateMonth(pool,manager,{month:'2026-11',kind:'days',userIds:[attendant.id]});
+  const all=(await getSchedule(pool,manager,'2026-11')).entries.filter(e=>e.user_id===attendant.id);
+  assert.equal(all.filter(e=>e.is_off&&weekdayOf(e.day)===0).length,1);
+  assert.equal(all.find(e=>e.day==='2026-11-22').is_off,true);
+  assert.equal(all.find(e=>e.day==='2026-11-17').is_off,true);
+  assert.equal(all.find(e=>e.day==='2026-11-24').is_off,false,'terça da semana do domingo selecionado vira dia trabalhado');
+  assert.equal(all.find(e=>e.day==='2026-11-10').is_off,true);
+  // Troca não apaga ajustes manuais.
+  await editScheduleDay(pool,manager,{targetId:attendant.id,date:'2026-11-24',kind:'days',off:true});
+  const regen=await generateMonth(pool,manager,{month:'2026-11',kind:'days',userIds:[attendant.id]});
+  assert.ok(regen.manualConflicts>=1);
+  assert.equal((await getSchedule(pool,manager,'2026-11')).entries.find(e=>e.user_id===attendant.id&&e.day==='2026-11-24').is_off,true);
+  await editSundayChoice(pool,dev,{targetId:attendant.id,month:'2026-11',sundayDate:null});
+  assert.equal((await getSchedule(pool,manager,'2026-11')).sundays.length,0);
+  await editSchedulePreferences(pool,manager,{targetId:attendant.id,fixedOffWeekday:0});
+  await assert.rejects(editSundayChoice(pool,manager,{targetId:attendant.id,month:'2026-11',sundayDate:'2026-11-15'}),e=>e.status===400);
+ }finally{await pg.close();}
+});
+
+test('turno das 18h às 00h20 corrige todas as pausas do mês e mantém marcações manuais válidas',async()=>{
+ const {pg,pool,manager,attendant}=await setup();
+ try{
+  await generateMonth(pool,manager,{month:'2027-04',kind:'days',userIds:[attendant.id]});
+  let work=(await getSchedule(pool,manager,'2027-04')).entries.find(x=>x.user_id===attendant.id&&!x.is_off);
+  const retimed=await editShift(pool,manager,{targetId:attendant.id,month:'2027-04',start:'18:00',end:'00:20'});
+  assert.ok(retimed.updated>=28);
+  let all=(await getSchedule(pool,manager,'2027-04')).entries.filter(x=>x.user_id===attendant.id);
+  assert.ok(all.every(x=>x.start_time==='18:00'&&x.end_time==='00:20'));
+  for(const e of all.filter(e=>!e.is_off))validateBreaks('18:00','00:20',[e.break_1,e.break_2,e.break_3]);
+  const valid=['19:30','21:10','23:00'];
+  await editScheduleDay(pool,manager,{targetId:attendant.id,date:work.day,kind:'breaks',breaks:valid});
+  await editShift(pool,manager,{targetId:attendant.id,month:'2027-04',start:'18:10',end:'00:30'});
+  all=(await getSchedule(pool,manager,'2027-04')).entries.filter(x=>x.user_id===attendant.id);
+  assert.equal(all.find(x=>x.day===work.day).break_source,'manual');
+  assert.deepEqual([all.find(x=>x.day===work.day).break_1,all.find(x=>x.day===work.day).break_2,all.find(x=>x.day===work.day).break_3],valid);
+  await editShift(pool,manager,{targetId:attendant.id,month:'2027-04',start:'08:00',end:'14:20'});
+  all=(await getSchedule(pool,manager,'2027-04')).entries.filter(x=>x.user_id===attendant.id);
+  assert.equal(all.find(x=>x.day===work.day).break_source,'auto');
+  for(const e of all.filter(e=>!e.is_off))validateBreaks('08:00','14:20',[e.break_1,e.break_2,e.break_3]);
+ }finally{await pg.close();}
+});
+
+test('pausas entre colegas são escalonadas no mesmo dia e respeitam o arredondamento noturno',async()=>{
+ const {pg,pool,manager,attendant}=await setup();
+ try{
+  const colleague={id:randomUUID(),username:'atendente.002',display_name:'Outra pessoa',operational_role:'attendant'};
+  await pg.query("INSERT INTO users(id,username,display_name,role,operational_role,active) VALUES($1,$2,$3,'user','attendant',true)",[colleague.id,colleague.username,colleague.display_name]);
+  for(const target of [attendant,colleague]){
+   await editShift(pool,manager,{targetId:target.id,month:'2027-05',start:'18:00',end:'00:20'});
+   await editSchedulePreferences(pool,manager,{targetId:target.id,breakRoundMinutes:10,fixedOffWeekday:2});
+  }
+  await generateMonth(pool,manager,{month:'2027-05',kind:'days',userIds:[attendant.id,colleague.id]});
+  const all=(await getSchedule(pool,manager,'2027-05')).entries;
+  const day='2027-05-03';
+  let first=all.find(x=>x.user_id===attendant.id&&x.day===day),second=all.find(x=>x.user_id===colleague.id&&x.day===day);
+  assert.equal(first.is_off,false);assert.equal(second.is_off,false);
+  const a=[first.break_1,first.break_2,first.break_3],b=[second.break_1,second.break_2,second.break_3];
+  validateBreaks('18:00','00:20',a);validateBreaks('18:00','00:20',b);
+  assert.notDeepEqual(a,b,'colegas devem receber horários de pausa diferentes');
+  assert.ok([...a,...b].every(t=>Number(t.split(':')[1])%10===0),'minutos redondos');
+  const choice=distributedBreaks('18:00','00:20',{roundMinutes:10,personKey:'teste',date:day,occupied:[first]});
+  validateBreaks('18:00','00:20',choice);
  }finally{await pg.close();}
 });
