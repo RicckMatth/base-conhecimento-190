@@ -137,7 +137,7 @@ export default function Home(){
   async function testAI(){
     if(!user?.canTestGemini)return;
     setAITesting(true);setAITestResult('');
-    try{const data=await call('/admin/ai/test',{method:'POST',body:'{}'});setAITestResult(data.result?.resposta||'Conexão verificada.');}
+    try{const data=await call('/admin/ai/test',{method:'POST',body:'{}'});setAITestResult(data.result?.resposta||'Configuração consultada.');}
     catch(e){setAITestResult(e.message);}finally{setAITesting(false);}
   }
   function activateExtension(){
@@ -163,7 +163,7 @@ export default function Home(){
       const history=chatMessages.filter(m=>!m.sourceText&&m.id!=='live-sade-relato').flatMap(m=>m.kind==='user'?[{role:'user',content:m.text}]:m.kind==='answer'&&m.result?.resposta?[{role:'assistant',content:m.result.resposta}]:[]).slice(-8);
       const reply=await call('/chat',{method:'POST',body:body({text,history})});
       const now=Date.now();
-      setChatMessages(prev=>[...prev.slice(-23),{id:'answer-'+now,kind:'answer',origin:reply.result?.source==='gemini'?'Gemini · resposta complementar':'Base 190 · resposta local',result:reply.result,at:now}]);
+      setChatMessages(prev=>[...prev.slice(-23),{id:'answer-'+now,kind:'answer',origin:'Base 190 · análise local offline',result:reply.result,at:now}]);
       window.dispatchEvent(new CustomEvent('base190:site-analysis',{detail:{result:reply.result,disclaimer:reply.disclaimer}}));
     }catch(error){
       setChatMessages(prev=>[...prev.slice(-23),{id:'error-'+Date.now(),kind:'error',text:error.message||'Falha na análise.',at:Date.now()}]);
@@ -281,7 +281,7 @@ export default function Home(){
   }
   function chatAnswer(result){
     if(!result)return <p>Sem resposta da Base 190.</p>;
-    if(result.tipo==='faq'||result.tipo==='ia')return <div className="chat-answer"><span className="badge">{result.source==='gemini'?'Gemini · resposta complementar':'Base local · sem consulta à IA'}</span><h3>{result.titulo||'Orientação'}</h3><p className="assistant-text">{result.resposta}</p>{result.tipo==='ia'&&<GeminiInsights result={result}/>} {!!result.references?.length&&<details><summary>Fichas consultadas</summary><ul>{result.references.map(r=><li key={r.code}>{r.code} · {r.title}</li>)}</ul></details>}{result.tipo==='ia'&&<><small>Conteúdo gerado por IA. Confira as informações antes de utilizar.</small><AnalysisFeedback key={result.feedbackTicket||'legacy'} result={result}/></>}</div>;
+    if(result.tipo==='faq'||result.tipo==='ia'||result.tipo==='local-triage')return <div className="chat-answer"><span className="badge">{result.source==='gemini'?'Gemini · resposta complementar':'Base local · sem consulta à IA'}</span><h3>{result.titulo||'Orientação'}</h3><p className="assistant-text" style={{whiteSpace:'pre-line'}}>{result.resposta}</p>{(result.tipo==='ia'||result.tipo==='local-triage')&&<GeminiInsights result={result}/>} {result.tipo==='local-triage'&&<WritingReview original={result.originalReport} aiConfigured={Boolean(ai?.configured)}/>}  {!!result.references?.length&&<details><summary>Fichas consultadas</summary><ul>{result.references.map(r=><li key={r.code}>{r.code} · {r.title}</li>)}</ul></details>}{result.tipo==='ia'&&<><small>Conteúdo gerado por IA. Confira as informações antes de utilizar.</small><AnalysisFeedback key={result.feedbackTicket||'legacy'} result={result}/></>}</div>;
     if(result.tipo!=='classificacao')return <div className="chat-answer"><b>Análise não conclusiva</b><p>{result.mensagem||'Verifique o relato e consulte os procedimentos oficiais.'}</p></div>;
     const main=result.principal||{};
     return <div className="chat-answer">
@@ -298,7 +298,7 @@ export default function Home(){
   }
   function resultView(result=analysis){
     if(!result)return <div className="helpnote">O Cérebro utiliza regras de linguagem e palavras-chave. O operador deve confirmar as informações e a natureza conforme o protocolo em vigor.</div>;
-    if(result.tipo==='ia')return <div className="card result-result">{chatAnswer(result)}</div>;
+    if(result.tipo==='ia'||result.tipo==='local-triage')return <div className="card result-result">{chatAnswer(result)}</div>;
     if(result.tipo==='faq')return <div className="card result-result"><span className="eyebrow">Dúvida operacional</span><h2>{result.titulo}</h2><p style={{whiteSpace:'pre-wrap'}}>{result.resposta}</p></div>;
     if(result.tipo==='indefinido')return <div className="card result-result"><span className="badge">Não conclusivo</span><h2>Natureza não identificada com segurança</h2><p>{result.mensagem}</p></div>;
     const a=result.principal;
@@ -418,7 +418,7 @@ export default function Home(){
         {screen==='extension'&&<section className="integrated-chat">
           <div className="chat-main">
             <header className="chat-head">
-              <div className="chat-ident"><span className="chat-avatar"><Icon name="brain"/></span><div><b>Assistente da Base 190</b><small>Base local primeiro · Gemini como complemento</small></div></div>
+              <div className="chat-ident"><span className="chat-avatar"><Icon name="brain"/></span><div><b>Assistente da Base 190</b><small>Reconhecimento local · Gemini só para revisar a escrita</small></div></div>
               <div className="chat-head-actions"><span className={'chat-pill '+(extensionOnline?'connected':'')}>{extensionOnline?'● Extensão detectada':'○ Extensão ausente'}</span>
                 <Btn className="ghost tiny" onClick={()=>setChatMessages([])}>Limpar chat</Btn></div>
             </header>
@@ -444,11 +444,11 @@ export default function Home(){
                   placeholder="Pergunte ou descreva uma situação fictícia…" onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();e.currentTarget.form?.requestSubmit();}}}/>
                 <Btn type="submit" disabled={chatSending||chatInput.trim().length<3} className="chat-send">{chatSending?'…':'Enviar ↗'}</Btn>
               </form>
-              <small>A base local responde primeiro. Sem resposta adequada, o texto e o histórico recente são enviados ao Google Gemini. Use dados fictícios ou anonimizados.</small>
+              <small>Classificação e sondagem funcionam sem Gemini. Apenas ao clicar em Revisar texto com IA, o relato é enviado ao Google. Para testes, use dados fictícios ou anonimizados.</small>
             </div>
           </div>
           <aside className="chat-side">
-            <div className="card ai-status"><span className="eyebrow">ASSISTENTE HÍBRIDO</span><h3>Base local primeiro</h3><p>{ai?.configured?'Gemini configurado para complementar perguntas sem resposta local.':'Gemini ainda não configurado. A consulta local continua disponível.'}</p><small>{ai?.model||'Status da IA indisponível'}</small>{user?.canTestGemini&&<><Btn className="secondary full" onClick={testAI} disabled={aiTesting||!ai?.configured}>{aiTesting?'Testando conexão…':'Testar conexão com Gemini'}</Btn><small>O teste faz uma consulta curta à IA.</small>{aiTestResult&&<p role="status" className="assistant-text">{aiTestResult}</p>}</>}</div>
+            <div className="card ai-status"><span className="eyebrow">TRIAGEM LOCAL</span><h3>Reconhecimento sem IA</h3><p>{ai?.configured?'Análises e naturezas usam apenas regras locais. Gemini disponível somente no botão de aprimorar a escrita.':'Análises e naturezas funcionam sem Gemini. O aprimoramento opcional de escrita não está configurado.'}</p><small>{ai?.configured?ai.model+' · uso exclusivo para revisão textual':'Serviço local independente do Gemini'}</small>{user?.canTestGemini&&<><Btn className="secondary full" onClick={testAI} disabled={aiTesting||!ai?.configured}>{aiTesting?'Verificando configuração…':'Verificar chave configurada'}</Btn><small>Esta verificação não envia relatos nem faz chamada ao modelo.</small>{aiTestResult&&<p role="status" className="assistant-text">{aiTestResult}</p>}</>}</div>
             <div className="chat-side-top">
               <span className="eyebrow">CONFIGURAÇÃO SIMPLIFICADA</span>
               <h2>Extensão Relato 190</h2>
@@ -473,7 +473,7 @@ export default function Home(){
             <a className="chat-download" href="https://github.com/RicckMatth/190-extensao_integrada/archive/refs/heads/main.zip" target="_blank" rel="noopener noreferrer">Baixar extensão atualizada ↗</a>
           </aside>
         </section>}
-        {screen==='brain'&&<>{busy&&<div className="analysis-loading" role="status" aria-live="polite"><span className="analysis-spinner"/><div><strong>Analisando o relato…</strong><p>Consultando a base local. Se necessário, o Gemini complementará a análise. Aguarde o resultado.</p></div></div>}<div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Consulta à base local com reconhecimento de frases. O Gemini complementa somente quando a base não encontra resposta adequada.</p></div><span className="badge">{totalRules} regras</span></div>
+        {screen==='brain'&&<>{busy&&<div className="analysis-loading" role="status" aria-live="polite"><span className="analysis-spinner"/><div><strong>Analisando o relato…</strong><p>Reconhecendo fatos, papéis e naturezas diretamente pelo catálogo local. Nenhuma chamada ao Gemini.</p></div></div>}<div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Motor SADE offline com reconhecimento de papéis, negações, armas e sugestões do catálogo. Gemini é opcional e exclusivo para aprimorar o texto.</p></div><span className="badge">{totalRules} regras</span></div>
           <form className="card spaced" onSubmit={analyze}><div><label htmlFor="brain-input">Relato de teste (sem dados pessoais)</label><textarea id="brain-input" rows={5} value={relato} onChange={e=>setRelato(e.target.value)} placeholder="Descreva o fato observado ou relatado, sem nomes e endereços…"/></div>
             <div className="btn-row"><Btn type="submit" disabled={busy}><Icon name="brain" size={18}/>{busy?'Analisando…':'Analisar relato'}</Btn><Btn className="secondary" onClick={()=>{setRelato('');setAnalysis(null);}}>Limpar</Btn></div></form>
           {resultView()}
