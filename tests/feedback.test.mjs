@@ -38,9 +38,10 @@ test('pergunta aprendida ou sugerida é ocultada quando o relato já a responde'
 test('Gemini separa explicação e perguntas; sem natureza reconhecida não aprende',async()=>{
  const text='Preciso de orientação adicional sobre este fato de teste';
  const entries=[{...rule,summary:text,body:text,tags:['teste']}];
- const generate=async()=>({output:{resposta:'Confira os dados informados.',natureCode:'TEST',questionTopics:['injured']}});
- const result=await askGemini({text,entries,generate});
+ const generate=async()=>({output:{resposta:'Confira os dados informados.',tipoConsulta:'relato',dadosInsuficientes:false,natureSuggestions:[{code:'TEST',proximidade:63,motivo:'Hipótese de teste.'}],questionTopics:['injured']}});
+ const result=await askGemini({text,entries,generate,mode:'relato'});
  assert.equal(result.feedbackNature.code,'TEST');assert.equal(result.analysisQuestions[0].topic,'injured');
- const uncertain=await askGemini({text,entries,generate:async()=>({output:{resposta:'Faltam dados.',natureCode:null,questionTopics:['injured']}})});
- assert.equal(uncertain.feedbackNature,null);assert.deepEqual(uncertain.analysisQuestions,[]);
+ assert.equal(result.analysisQuestions.length,5);
+ const uncertain=await askGemini({text,entries,mode:'relato',generate:async()=>({output:{resposta:'Faltam dados.',tipoConsulta:'relato',dadosInsuficientes:true,natureSuggestions:[],questionTopics:['injured']}})});
+ assert.equal(uncertain.feedbackNature,null);assert.equal(uncertain.analysisQuestions.length,5);assert.equal(uncertain.insufficientData,true);
 });
