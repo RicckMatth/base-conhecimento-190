@@ -190,8 +190,8 @@ test('escolher domingo da folga mensal substitui a folga fixa somente naquela se
   const all=(await getSchedule(pool,manager,'2026-11')).entries.filter(e=>e.user_id===attendant.id);
   assert.equal(all.filter(e=>e.is_off&&weekdayOf(e.day)===0).length,1);
   assert.equal(all.find(e=>e.day==='2026-11-22').is_off,true);
-  assert.equal(all.find(e=>e.day==='2026-11-17').is_off,true);
-  assert.equal(all.find(e=>e.day==='2026-11-24').is_off,false,'terça da semana do domingo selecionado vira dia trabalhado');
+  assert.equal(all.find(e=>e.day==='2026-11-17').is_off,false,'terça da semana do domingo escolhido vira dia de trabalho');
+  assert.equal(all.find(e=>e.day==='2026-11-24').is_off,true,'folga fixa volta na semana seguinte');
   assert.equal(all.find(e=>e.day==='2026-11-10').is_off,true);
   // Troca não apaga ajustes manuais.
   await editScheduleDay(pool,manager,{targetId:attendant.id,date:'2026-11-24',kind:'days',off:true});
