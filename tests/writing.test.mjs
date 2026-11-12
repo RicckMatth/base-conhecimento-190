@@ -47,3 +47,51 @@ test('fallback de revisão aceita chamada explícita e aplica caixa alta no reto
   assert.equal(calls,1);assert.equal(result.text,'A VÍTIMA NÃO ESTÁ FERIDA.');
  }finally{if(old===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=old;}
 });
+
+
+test('revisão IA melhora a pontuação mantendo a sequência integral de palavras',()=>{
+ const original='solicitante relata que seu pai sofreu ameacas do amigo, pede viatura no local pois o individuo esta em frente a residencia armado com um facao tentando entrar na residencia';
+ const proposed='SOLICITANTE RELATA QUE SEU PAI SOFREU AMEAÇAS DO AMIGO. PEDE VIATURA NO LOCAL, POIS O INDIVÍDUO ESTÁ EM FRENTE A RESIDÊNCIA ARMADO COM UM FACÃO TENTANDO ENTRAR NA RESIDÊNCIA.';
+ const revised=validateRewrite(original,proposed);
+ const words=v=>v.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().match(/[\p{L}\p{M}\p{N}]+/gu);
+ assert.deepEqual(words(revised),words(correctReport(original)));
+ assert.match(revised,/DO AMIGO\. PEDE VIATURA NO LOCAL, POIS/);
+ assert.ok(revised.includes('ARMADO COM UM FACÃO'));
+});
+test('revisão remota rejeita qualquer palavra acrescentada, removida, trocada ou reordenada',()=>{
+ const input='O SOLICITANTE RELATA AMEAÇA DO VIZINHO.';
+ const invalid=[
+  'O SOLICITANTE RELATA GRAVE AMEAÇA DO VIZINHO.',
+  'O SOLICITANTE RELATA AMEAÇA.',
+  'O SOLICITANTE RELATA AGRESSÃO DO VIZINHO.',
+  'O VIZINHO RELATA AMEAÇA DO SOLICITANTE.',
+  'O SOLICITANTE RELATA AMEAÇA DO VIZINHO. A VIATURA FOI ENVIADA.'
+ ];
+ for(const value of invalid)assert.throws(()=>validateRewrite(input,value),/REWRITE_/);
+});
+test('números, horários e falas citadas permanecem intocados durante a revisão',()=>{
+ const original='O solicitante diz "nao sei" e informou ABC1D23 às 14h30.';
+ assert.equal(validateRewrite(original,'O SOLICITANTE DIZ "NAO SEI" E INFORMOU ABC1D23 ÀS 14H30.'),
+  correctReport(original));
+ assert.throws(()=>validateRewrite(original,'O SOLICITANTE DIZ "NÃO SEI" E INFORMOU ABC1D23 ÀS 14H30.'),/REWRITE_QUOTES_CHANGED/);
+ assert.throws(()=>validateRewrite(original,'O SOLICITANTE DIZ "NAO SEI" E INFORMOU ABC1D23 ÀS 15H30.'),/REWRITE_FACTS_CHANGED/);
+});
+test('Gemini sinaliza revisão aplicada apenas quando pontuação muda',async()=>{
+ const old=process.env.GEMINI_API_KEY;process.env.GEMINI_API_KEY='unit-test';
+ try{
+  const text='solicitante relata ameacas do amigo, pede viatura no local pois o individuo esta com um facao.';
+  const improved=await rewriteWithGemini(text,{generate:async args=>{
+   assert.match(args.instructions,/MESMAS PALAVRAS/);
+   assert.match(args.instructions,/pontuação/);
+   assert.match(args.prompt,/SOLICITANTE RELATA AMEAÇAS DO AMIGO/);
+   return {text:'SOLICITANTE RELATA AMEAÇAS DO AMIGO. PEDE VIATURA NO LOCAL, POIS O INDIVÍDUO ESTÁ COM UM FACÃO.'};
+  }});
+  assert.equal(improved.changed,true);
+  assert.equal(improved.status,'improved');
+  assert.match(improved.text,/AMIGO\. PEDE VIATURA/);
+  const identical=await rewriteWithGemini(text,{generate:async()=>({text:correctReport(text)})});
+  assert.equal(identical.changed,false);
+  assert.equal(identical.status,'unchanged');
+  assert.equal(identical.text,correctReport(text));
+ }finally{if(old===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=old;}
+});
