@@ -2,6 +2,7 @@
 import dynamic from 'next/dynamic';
 const Documentation=dynamic(()=>import('./nexus-documentation.jsx'),{loading:()=> <p role="status">Carregando Nexus Docs…</p>,ssr:false});
 import AnalysisFeedback from './analysis-feedback.jsx';
+import GeminiInsights from './gemini-insights.jsx';
 import LegalReference from './legal-reference.jsx';
 import WritingReview from './writing-review.jsx';
 import StartupScreen from './startup-screen.jsx';
@@ -280,7 +281,7 @@ export default function Home(){
   }
   function chatAnswer(result){
     if(!result)return <p>Sem resposta da Base 190.</p>;
-    if(result.tipo==='faq'||result.tipo==='ia')return <div className="chat-answer"><span className="badge">{result.source==='gemini'?'Gemini · resposta complementar':'Base local · sem consulta à IA'}</span><h3>{result.titulo||'Orientação'}</h3><p className="assistant-text">{result.resposta}</p>{!!result.references?.length&&<details><summary>Fichas consultadas</summary><ul>{result.references.map(r=><li key={r.code}>{r.code} · {r.title}</li>)}</ul></details>}{result.tipo==='ia'&&<><small>Conteúdo gerado por IA. Confira as informações antes de utilizar.</small><AnalysisFeedback key={result.feedbackTicket||'legacy'} result={result}/></>}</div>;
+    if(result.tipo==='faq'||result.tipo==='ia')return <div className="chat-answer"><span className="badge">{result.source==='gemini'?'Gemini · resposta complementar':'Base local · sem consulta à IA'}</span><h3>{result.titulo||'Orientação'}</h3><p className="assistant-text">{result.resposta}</p>{result.tipo==='ia'&&<GeminiInsights result={result}/>} {!!result.references?.length&&<details><summary>Fichas consultadas</summary><ul>{result.references.map(r=><li key={r.code}>{r.code} · {r.title}</li>)}</ul></details>}{result.tipo==='ia'&&<><small>Conteúdo gerado por IA. Confira as informações antes de utilizar.</small><AnalysisFeedback key={result.feedbackTicket||'legacy'} result={result}/></>}</div>;
     if(result.tipo!=='classificacao')return <div className="chat-answer"><b>Análise não conclusiva</b><p>{result.mensagem||'Verifique o relato e consulte os procedimentos oficiais.'}</p></div>;
     const main=result.principal||{};
     return <div className="chat-answer">
