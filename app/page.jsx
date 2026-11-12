@@ -237,7 +237,7 @@ export default function Home(){
       .includes(search.trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()))),[entries,cat,search,priorityFilter]);
   useEffect(()=>setCatalogLimit(60),[search,cat,priorityFilter]);
   const totalRules=(brainRules.base?.length||0)+(brainRules.extras?.length||0)+(brainRules.custom?.length||0);
-  function editEntry(entry){setEditor(entry?{...entry,tags:entry.tags||[]}:emptyEntry());setRevisionHistory([]);go('editor');}
+  function editEntry(entry){if(entry?.readOnly||catalogDegraded){setCatalogIssue('A edição está indisponível no catálogo de contingência. Recarregue os dados do banco antes de modificar uma ficha.');return;}setEditor(entry?{...entry,tags:entry.tags||[]}:emptyEntry());setRevisionHistory([]);go('editor');}
   async function saveEntry(e){
     e.preventDefault();clear();setBusy(true);
     try{
@@ -393,6 +393,10 @@ export default function Home(){
       </header>
       <main className="content spaced">
         {notice&&<div className="notice" role="alert">{notice}</div>}{success&&<div className="notice success" role="status">{success}</div>}
+        {catalogIssue&&<div className="notice" role="alert" style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
+          <span>{catalogIssue}{catalogDegraded?' Consulta em modo de contingência: não é confirmação de que as alterações do banco estejam sincronizadas.':''}</span>
+          <Btn className="secondary tiny" disabled={catalogRefreshing} onClick={()=>{refreshCatalog().catch(err);}}>{catalogRefreshing?'Verificando…':'Tentar novamente'}</Btn>
+        </div>}
 
         {screen==='home'&&<>
           <section className="hero"><div className="hero-orbit" aria-hidden="true"><Icon name="shield" size={114}/></div><span className="eyebrow">CÉREBRO 190 • TRIAGEM ORIENTATIVA</span><h1>Clareza para cada atendimento.</h1>
@@ -408,8 +412,8 @@ export default function Home(){
               <Btn className="secondary" onClick={activateExtension}>Abrir chat →</Btn>
             </div>
           </div>
-          <div className="grid3"><div className="card stat"><small><Icon name="book"/> Fichas no catálogo</small><strong>{entries.length}</strong><span className="badge">Conhecimento</span></div>
-            <div className="card stat"><small><Icon name="brain"/> Regras de classificação</small><strong>{totalRules}</strong><span className="badge">Cérebro 190</span></div>
+          <div className="grid3"><div className="card stat"><small><Icon name="book"/> Fichas no catálogo</small><strong>{catalogIssue&&!entries.length?'—':entries.length}</strong><span className="badge">{catalogDegraded?'Contingência · somente leitura':'Conhecimento'}</span></div>
+            <div className="card stat"><small><Icon name="brain"/> Regras de classificação</small><strong>{catalogIssue&&!totalRules?'—':totalRules}</strong><span className="badge">{catalogDegraded?'Regras locais':'Cérebro 190'}</span></div>
             <div className="card stat"><small><Icon name="shield"/> Nível de acesso</small><strong style={{fontSize:21}}>{isAdmin?'Administrador':'Consulta'}</strong><span className="badge">Sessão autenticada</span></div></div>
           <section className="domain-section"><div className="panel-head"><div><span className="eyebrow">CONSULTA POR ÁREA</span><h2>Encontre o contexto do atendimento</h2></div><span className="badge">{categories.length-1} áreas</span></div><div className="domain-grid">{categories.filter(c=>c!=='Todas').map(c=><button className="domain-card" key={c} onClick={()=>{setCat(c);setSearch('');setPriorityFilter('Todas');go('catalog');}}><Icon name={categoryIcon(c)} size={24}/><b>{c}</b><small>{entries.filter(e=>e.category===c).length} fichas</small><Icon name="arrow" size={16}/></button>)}</div></section>
           <section><div className="panel-head"><div><h2>Naturezas em destaque</h2><p className="muted">Consulte fichas e orientações existentes</p></div><Btn className="secondary" onClick={()=>go('catalog')}>Ver catálogo →</Btn></div>{entryGrid(entries.slice(0,6))}</section>
