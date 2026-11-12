@@ -80,6 +80,7 @@ export default function FloorSchedule(){
  const [breakDraft,setBreakDraft]=useState(['','','']);
  const [shiftDraft,setShiftDraft]=useState({start:'08:00',end:'14:20'});
  const [offDraft,setOffDraft]=useState('random');
+ const [sundayDraft,setSundayDraft]=useState('auto');
  const [roundDraft,setRoundDraft]=useState('0');
  const [roundSelection,setRoundSelection]=useState('profile');
  const [rolePending,setRolePending]=useState('');
@@ -98,7 +99,11 @@ export default function FloorSchedule(){
  useEffect(()=>{if(people.length&&!people.some(p=>p.operational_role===selectedGroup&&can(role,p.operational_role,'days'))){const eligibleRole=ROLE_ORDER.find(k=>people.some(p=>p.operational_role===k)&&can(role,k,'days'));if(eligibleRole)setSelectedGroup(eligibleRole);}},[role,people,selectedGroup]);
  useEffect(()=>{if(people.length&&(!selectedId||!people.some(p=>p.id===selectedId)))setSelectedId(people[0].id);},[people,selectedId]);
  const selectedProfile=selected&&profiles.get(selected.id)||{start_time:'08:00',end_time:'14:20',fixed_off_weekday:null,break_round_minutes:0};
+ const selectedSunday=(data?.sundays||[]).find(x=>x.user_id===selected?.id)?.sunday_date||null;
+ const calendarSundays=(data?.dates||[]).filter(day=>asUTC(day).getUTCDay()===0);
+ const effectiveSunday=entries.find(x=>x.user_id===selected?.id&&x.is_off&&asUTC(x.day).getUTCDay()===0)?.day||null;
  useEffect(()=>{setOffDraft(selectedProfile.fixed_off_weekday==null?'random':String(selectedProfile.fixed_off_weekday));},[selected?.id,selectedProfile.fixed_off_weekday]);
+ useEffect(()=>{setSundayDraft(selectedSunday||'auto');},[selected?.id,selectedSunday,month]);
  useEffect(()=>{setRoundDraft(String(selectedProfile.break_round_minutes||0));},[selected?.id,selectedProfile.break_round_minutes]);
  useEffect(()=>{setShiftDraft({start:selectedProfile.start_time,end:selectedProfile.end_time});},[selectedId,selectedProfile.start_time,selectedProfile.end_time]);
  const currentEntry=selected&&entries.find(e=>e.user_id===selected.id&&e.day===selectedDate);
@@ -128,6 +133,14 @@ export default function FloorSchedule(){
   const users=eligible.slice(0,100),name=kind==='days'?'folgas 6×1':'pausas 10–20–10';
   if(!window.confirm('Gerar '+name+' para '+users.length+' pessoa(s) em '+longMonth(month)+'? Ajustes manuais existentes serão preservados.'))return;
   await mutate('/generate','POST',{month,kind,userIds:users.map(p=>p.id),...(roundSelection==='profile'?{}:{roundMinutes:Number(roundSelection)})});
+ }
+ async function saveOffDay(){
+  const done=await mutate('/preferences','PATCH',{targetId:selected.id,fixedOffWeekday:offDraft==='random'?null:Number(offDraft)},'Preferência semanal salva.');
+  if(done)await mutate('/generate','POST',{month,kind:'days',userIds:[selected.id]});
+ }
+ async function saveSunday(){
+  const done=await mutate('/sunday','PATCH',{targetId:selected.id,month,sundayDate:sundayDraft==='auto'?null:sundayDraft},'Domingo salvo.');
+  if(done)await mutate('/generate','POST',{month,kind:'days',userIds:[selected.id]});
  }
  function exportCsv(){
   const rows=[['Data','Nome','Usuário','Perfil','Situação','Início','Fim','Pausa 10','Pausa 20','Pausa 10']];
@@ -176,17 +189,26 @@ export default function FloorSchedule(){
         <div className="rs-setting-heading"><span className="rs-setting-icon">☼</span><div><strong>Dia fixo de folga</strong><small>Uma folga por semana · ciclo 6×1</small></div></div>
         <p>Escolha o dia que se repetirá semanalmente para <b>{selected.display_name}</b>. Você pode voltar à distribuição automática a qualquer momento.</p>
         <div className="rs-weekday-choice"><select aria-label="Dia fixo de folga do profissional" disabled={!can(role,selectedCap,'days')||busy} value={offDraft} onChange={e=>setOffDraft(e.target.value)}><option value="random">✧ Automático · distribuir folgas</option>{OFF_DAYS.map(([value,label])=><option key={value} value={value}>{label} · toda semana</option>)}</select>
-        {can(role,selectedCap,'days')&&<button type="button" disabled={busy||(offDraft==='random'?selectedProfile.fixed_off_weekday==null:Number(offDraft)===selectedProfile.fixed_off_weekday)} onClick={()=>mutate('/preferences','PATCH',{targetId:selected.id,fixedOffWeekday:offDraft==='random'?null:Number(offDraft)},'Dia de folga salvo. Gere novamente o mês para atualizar os dias automáticos.')}>Salvar dia fixo</button>}</div>
+        {can(role,selectedCap,'days')&&<button type="button" disabled={busy||(offDraft==='random'?selectedProfile.fixed_off_weekday==null:Number(offDraft)===selectedProfile.fixed_off_weekday)} onClick={saveOffDay}>Salvar e aplicar neste mês</button>}</div>
         <div className="rs-setting-note">{selectedProfile.fixed_off_weekday==null?'✧ Preferência atual: folga distribuída automaticamente.':'✓ Preferência atual: toda '+(OFF_DAYS.find(([value])=>Number(value)===selectedProfile.fixed_off_weekday)?.[1]||'semana')+'.'} <span>Alterações manuais de dias específicos continuam preservadas.</span></div>
+        <div className="rs-sunday-selector">
+         <div className="rs-setting-heading"><span className="rs-setting-icon">☀</span><div><strong>Domingo de folga do mês</strong><small>Um domingo mensal · troca do descanso naquela semana</small></div></div>
+         <p>Escolha em qual domingo <b>{selected.display_name}</b> descansará em <b>{longMonth(month)}</b>. Na semana escolhida, o dia fixo passa a ser trabalhado para manter uma folga semanal.</p>
+         {selectedProfile.fixed_off_weekday===0?<div className="rs-setting-note">A folga fixa já é domingo; este profissional descansará todos os domingos.</div>:<div className="rs-weekday-choice"><select aria-label="Selecionar domingo de folga do mês" disabled={!can(role,selectedCap,'days')||busy} value={sundayDraft} onChange={e=>setSundayDraft(e.target.value)}>
+          <option value="auto">✧ Escolher domingo automaticamente</option>
+          {calendarSundays.map((day,i)=><option key={day} value={day}>{i+1}º domingo · {dateDisplay(day)}</option>)}
+         </select>{can(role,selectedCap,'days')&&<button type="button" disabled={busy||(sundayDraft==='auto'?selectedSunday===null:sundayDraft===selectedSunday)} onClick={saveSunday}>Salvar e aplicar domingo</button>}</div>}
+         <div className="rs-setting-note">{selectedSunday?'✓ Domingo selecionado: '+dateDisplay(selectedSunday):'✧ Domingo automático ao gerar folgas.'} {effectiveSunday?'Calendário atual: '+dateDisplay(effectiveSunday)+'.':''}</div>
+        </div>
       </div>
-      <div className="rs-shift-settings"><small>JORNADA PADRÃO · {selected.display_name}</small><div><label>Entrada<input aria-label="Entrada do turno" type="time" disabled={!can(role,selectedCap,'shift')} value={shiftDraft.start} onChange={e=>setShiftDraft(p=>({...p,start:e.target.value}))}/></label><label>Saída<input aria-label="Saída do turno" type="time" disabled={!can(role,selectedCap,'shift')} value={shiftDraft.end} onChange={e=>setShiftDraft(p=>({...p,end:e.target.value}))}/></label></div>{can(role,selectedCap,'shift')&&<button disabled={busy} onClick={()=>mutate('/shift','PATCH',{targetId:selected.id,start:shiftDraft.start,end:shiftDraft.end},'Novo turno padrão salvo. Aplique ao gerar próximos períodos.')}>Salvar jornada padrão</button>}<p>Turnos que cruzam a meia-noite são aceitos. A nova jornada será aplicada aos dias gerados posteriormente.</p></div>
+      <div className="rs-shift-settings"><small>JORNADA PADRÃO · {selected.display_name}</small><div><label>Entrada<input aria-label="Entrada do turno" type="time" disabled={!can(role,selectedCap,'shift')} value={shiftDraft.start} onChange={e=>setShiftDraft(p=>({...p,start:e.target.value}))}/></label><label>Saída<input aria-label="Saída do turno" type="time" disabled={!can(role,selectedCap,'shift')} value={shiftDraft.end} onChange={e=>setShiftDraft(p=>({...p,end:e.target.value}))}/></label></div>{can(role,selectedCap,'shift')&&<button disabled={busy} onClick={()=>mutate('/shift','PATCH',{targetId:selected.id,month,start:shiftDraft.start,end:shiftDraft.end},'Jornada e pausas do mês sincronizadas.')}>Salvar e atualizar mês</button>}<p>Ao salvar, a jornada e as pausas automáticas de {longMonth(month)} são ajustadas imediatamente, incluindo turnos que atravessam 00h. Pausas manuais válidas são preservadas.</p></div>
      </>}
     </aside>
    </div>}
    {view==='breaks'&&<div className="rs-detail-grid"><div className="rs-card"><div className="rs-card-head"><div><small>GESTÃO DE INTERVALOS</small><h3>Pausas de atendimento</h3><p>Dois descansos de 10 min e um de 20 min, conforme a configuração da operação.</p></div><span className="rs-coffee">☕</span></div>
      <div className="rs-person-picker"><select aria-label="Profissional das pausas" value={selected?.id||''} onChange={e=>setSelectedId(e.target.value)}>{people.map(p=><option key={p.id} value={p.id}>{p.display_name} · {ROLE_LABEL[p.operational_role]}</option>)}</select></div>
      <div className="rs-break-guide">{breakItems.map((b,i)=><div key={b.key} className="rs-break-guide-part"><div className="rs-guide-ring">{b.sort}</div><span>{b.label}<strong>{b.duration}</strong></span>{i!==2&&<i/>}</div>)}</div>
-     {selected&&<div className="rs-break-month"><div className="rs-break-month-head"><span>Data</span><span>Turno</span><span>Pausa 10</span><span>Pausa 20</span><span>Pausa 10</span></div>{(data?.dates||[]).map(date=>{const entry=forDay(date,selectedEntries);return <button type="button" key={date} className={'rs-break-row '+(selectedDate===date?'active':'')} onClick={()=>setSelectedDate(date)}><span>{weekday(date)} {Number(date.slice(-2))}</span><span>{entry?.is_off?'FOLGA':entry?'Turno':'—'}</span><span>{entry?.break_1||'—'}</span><span>{entry?.break_2||'—'}</span><span>{entry?.break_3||'—'}</span></button>;})}</div>}
+     {selected&&<div className="rs-break-month"><div className="rs-break-month-head"><span>Data</span><span>Turno</span><span>Pausa 10</span><span>Pausa 20</span><span>Pausa 10</span></div>{(data?.dates||[]).map(date=>{const entry=forDay(date,selectedEntries);return <button type="button" key={date} className={'rs-break-row '+(selectedDate===date?'active':'')} onClick={()=>setSelectedDate(date)}><span>{weekday(date)} {Number(date.slice(-2))}</span><span title={entry&&!entry.is_off?entry.start_time+'–'+entry.end_time:''}>{entry?.is_off?'FOLGA':entry?entry.start_time+'–'+entry.end_time:'—'}</span><span>{entry?.break_1||'—'}</span><span>{entry?.break_2||'—'}</span><span>{entry?.break_3||'—'}</span></button>;})}</div>}
     </div>
     <aside className="rs-card rs-break-edit"><div className="rs-card-head"><div><small>INTERVALOS DO DIA</small><h3>{dateDisplay(selectedDate)}</h3><p>{selected?.display_name||'Selecione alguém'}</p></div><span className="rs-detail-symbol">✎</span></div>
      {selected&&<><ScheduleBadge entry={currentEntry}/><div className="rs-break-inputs">{breakItems.map((b,i)=><label key={b.key}><span><i>{b.sort}</i>{b.label}<small>{b.duration}</small></span><input type="time" aria-label={b.label} disabled={!can(role,selectedCap,'breaks')||!currentEntry||currentEntry.is_off} value={breakDraft[i]} onChange={e=>setBreakDraft(p=>p.map((x,n)=>n===i?e.target.value:x))}/></label>)}</div>
