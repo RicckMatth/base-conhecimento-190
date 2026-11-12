@@ -131,7 +131,7 @@ test('pausas redondas: múltiplos de 5, 10, 15 e 30 minutos dentro da jornada',(
   for(const [start,end] of [['08:00','14:20'],['18:00','00:20'],['08:07','11:07'],['23:17','05:37']]){
    const breaks=defaultBreaks(start,end,4,step);
    assert.deepEqual(validateBreaks(start,end,breaks),breaks);
-   assert.ok(breaks.every(time=>/^([01]\\d|2[0-3]):[0-5]\\d$/.test(time)));
+   assert.ok(breaks.every(time=>/^([01]\d|2[0-3]):[0-5]\d$/.test(time)));
    assert.ok(breaks.every(time=>Number(time.slice(3,5))%step===0||step===15&&[0,15,30,45].includes(Number(time.slice(3,5)))),'pausa em minuto arredondado: '+step+' '+breaks.join(','));
   }
  }
