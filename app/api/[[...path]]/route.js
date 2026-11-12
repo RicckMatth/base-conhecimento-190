@@ -1,7 +1,7 @@
 import {put,get,del} from '@vercel/blob';
 import {normalizeImage,readLimited,storeAsset,readableAsset,deleteAsset,requireEditor,importExternalImage} from '../../../lib/documentation-assets.js';
 import {saveDocument,saveDraft,uuid} from '../../../lib/documentation-store.js';
-import {getSchedule,editOperationalRole,editShift,editScheduleDay,generateMonth,editSchedulePreferences} from '../../../lib/floor-scheduling.js';
+import {getSchedule,editOperationalRole,editShift,editScheduleDay,generateMonth,editSchedulePreferences,editSundayChoice} from '../../../lib/floor-scheduling.js';
 import {listDocumentationSpaces,createDocumentationSpace,updateDocumentationSpace} from '../../../lib/documentation-spaces.js';
 import {cleanDocument} from '../../../lib/documentation.js';
 import { newFeedbackTicket,readFeedbackTicket,learnableQuestions } from '../../../lib/question-feedback.js';
@@ -242,6 +242,9 @@ async function gate(request,method,ctx){
   }
   if(route==='/floor/schedules/preferences'&&method==='PATCH'){
     try{return reply(await editSchedulePreferences(db(),u,await input(request,2000)));}catch(e){return failure(e.message,e.status||400);}
+  }
+  if(route==='/floor/schedules/sunday'&&method==='PATCH'){
+    try{return reply(await editSundayChoice(db(),u,await input(request,1800)));}catch(e){return failure(e.message,e.status||400);}
   }
   if(route==='/floor/schedules/shift'&&method==='PATCH'){
     try{return reply(await editShift(db(),u,await input(request,1800)));}catch(e){return failure(e.message,e.status||400);}
