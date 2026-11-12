@@ -59,7 +59,7 @@ async function gate(request,method,ctx){
   try{await prepare();}catch(error){
     bootstrapIssue=error;
     console.error('Base190 bootstrap failure',{route,code:error?.code||'unknown'});
-    if(!(method==='GET'&&['/entries','/rules','/session'].includes(route)))throw error;
+    if(!((method==='GET'&&['/entries','/rules','/session'].includes(route))||(method==='POST'&&['/chat','/analyze'].includes(route))))throw error;
   }
 
   if(route==='/access-requests'&&method==='POST') {
@@ -230,13 +230,23 @@ async function gate(request,method,ctx){
     const v=await input(request,32000),relato=string(v.text,8000);
     if(relato.length<3)return failure('Insira pelo menos 3 caracteres.');
     try{
-      const knowledge=await db().query('SELECT code,title,category,summary,body,tags FROM knowledge WHERE active_in_catalog=true ORDER BY title LIMIT 2000');
-      const entries=knowledge.rows;
+      let entries,readFallback=false;
+      try{
+        if(bootstrapIssue)throw bootstrapIssue;
+        const knowledge=await db().query('SELECT code,title,category,summary,body,tags FROM knowledge WHERE active_in_catalog=true ORDER BY title LIMIT 2000');
+        entries=knowledge.rows.length?knowledge.rows:COPOM_CATALOG;
+        readFallback=!knowledge.rows.length;
+      }catch(error){
+        console.error('Base190 local triage catalog fallback',{code:error?.code||'unknown'});
+        entries=COPOM_CATALOG;readFallback=true;
+      }
       // Perguntas conceituais previstas na base têm precedência; os demais relatos
       // são tratados 100% pelo motor local, mesmo sem natureza reconhecida.
       const faq=route==='/chat'?answerLocally({text:relato,history:v.history,entries}):null;
       const result=faq||(route==='/analyze'?analyzeOfflineReport({text:relato,entries}):answerOffline({text:relato,entries}));
-      return reply({result,disclaimer:'Análise inteiramente local e heurística. Confira natureza, fatos e protocolo institucional. O Gemini só é utilizado mediante solicitação explícita para aprimorar a escrita.'});
+      return reply({result,degraded:readFallback,disclaimer:readFallback?
+        'Triagem em contingência com as 769 naturezas do arquivo local. O banco deve ser verificado; não há sincronização de edições administrativas neste modo.':
+        'Análise inteiramente local e heurística. Confira natureza, fatos e protocolo institucional. O Gemini só é utilizado mediante solicitação explícita para aprimorar a escrita.'});
     }catch(error){
       console.error('Erro na triagem local:',error?.message||error);
       return failure('Não foi possível consultar o catálogo para a triagem local. Tente novamente.',503);
