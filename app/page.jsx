@@ -37,6 +37,7 @@ export default function Home(){
   const [entries,setEntries]=useState([]),[brainRules,setBrainRules]=useState({base:[],extras:[],custom:[]});
   const [search,setSearch]=useState(''),[cat,setCat]=useState('Todas'),[selectedId,setSelectedId]=useState(null);
   const [priorityFilter,setPriorityFilter]=useState('Todas');
+  const [catalogLimit,setCatalogLimit]=useState(60);
   const [relato,setRelato]=useState(''),[analysis,setAnalysis]=useState(null);
   const [extensionOnline,setExtensionOnline]=useState(false);
   const [extensionAnalysis,setExtensionAnalysis]=useState(null);
@@ -215,6 +216,7 @@ export default function Home(){
   const filtered=useMemo(()=>entries.filter(e=>(cat==='Todas'||e.category===cat)&&(priorityFilter==='Todas'||e.priority===priorityFilter)&&
     (!search.trim()||[e.title,e.code,e.category,e.summary,e.body,...(e.tags||[])].join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
       .includes(search.trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()))),[entries,cat,search,priorityFilter]);
+  useEffect(()=>setCatalogLimit(60),[search,cat,priorityFilter]);
   const totalRules=(brainRules.base?.length||0)+(brainRules.extras?.length||0)+(brainRules.custom?.length||0);
   function editEntry(entry){setEditor(entry?{...entry,tags:entry.tags||[]}:emptyEntry());setRevisionHistory([]);go('editor');}
   async function saveEntry(e){
@@ -400,8 +402,8 @@ export default function Home(){
         {screen==='catalog'&&<>
           <div className="panel-head"><div><span className="eyebrow">BIBLIOTECA OPERACIONAL</span><h1>Catálogo de naturezas</h1><p className="muted">Busque por título, código, resumo, conteúdo ou palavra-chave.</p></div>{isAdmin&&<Btn onClick={()=>editEntry(null)}><Icon name="plus" size={18}/> Nova ficha</Btn>}</div>
           <div className="card catalog-filters"><div><label htmlFor="search">Pesquisa</label><input id="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Código, natureza, palavra-chave…"/></div><div><label htmlFor="category">Categoria</label><select id="category" value={cat} onChange={e=>setCat(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</select></div><div><label htmlFor="priority-filter">Prioridade sugerida</label><select id="priority-filter" value={priorityFilter} onChange={e=>setPriorityFilter(e.target.value)}>{['Todas','Crítica','Alta','Média','Consulta'].map(v=><option key={v}>{v}</option>)}</select></div></div>
-          <p className="catalog-note"><Icon name="shield" size={16}/> Catálogo orientativo. Códigos CAT e SUG são internos; confirme a classificação institucional.</p><div className="toolbar"><p className="muted">{filtered.length} resultado(s)</p><Btn className="ghost tiny" onClick={()=>{setSearch('');setCat('Todas');setPriorityFilter('Todas');}}>Limpar filtros</Btn></div>
-          {filtered.length?entryGrid(filtered):<div className="card empty-state"><Icon name="search" size={36}/><h2>Nenhuma ficha encontrada</h2><p className="muted">Tente outro termo ou remova os filtros de categoria e prioridade.</p></div>}
+          <p className="catalog-note"><Icon name="shield" size={16}/> Relação COPOM corrigida: 769 naturezas importadas do CSV recebido. IDs NAT são códigos internos desta plataforma; as descrições foram acrescentadas para consulta e dependem de validação institucional.</p><div className="toolbar"><p className="muted">{filtered.length} resultado(s)</p><Btn className="ghost tiny" onClick={()=>{setSearch('');setCat('Todas');setPriorityFilter('Todas');}}>Limpar filtros</Btn></div>
+          {filtered.length?<>{entryGrid(filtered.slice(0,catalogLimit))}{filtered.length>catalogLimit&&<div className="toolbar" style={{justifyContent:'center',padding:'18px 0'}}><Btn className="secondary" onClick={()=>setCatalogLimit(v=>v+60)}>Ver mais naturezas ({Math.min(filtered.length-catalogLimit,60)} próximas)</Btn></div>}</>:<div className="card empty-state"><Icon name="search" size={36}/><h2>Nenhuma ficha encontrada</h2><p className="muted">Tente outro termo ou remova os filtros de categoria e prioridade.</p></div>}
         </>}
 
         {screen==='detail'&&selected&&<section className="card spaced">
@@ -518,7 +520,7 @@ export default function Home(){
         </>}
 
         {isAdmin&&screen==='rules'&&<>
-          <div><span className="eyebrow">MATRIZ SEMÂNTICA</span><h1>Regras de reconhecimento</h1><p className="muted">Amplie os cenários reconhecidos sem alterar o código-fonte. As alterações são armazenadas no servidor.</p></div>
+          <div><span className="eyebrow">MATRIZ SEMÂNTICA</span><h1>Naturezas e regras do Cérebro</h1><p className="muted">Catálogo de 769 naturezas importadas do CSV. As fichas servem de consulta; a classificação automática usa somente correspondências suficientemente claras. Regras personalizadas continuam sob controle administrativo.</p></div>
           <form className="card spaced" onSubmit={createRule}>
             <h2>Adicionar natureza personalizada</h2>
             <div className="grid2"><div><label>Código da regra</label><input required value={ruleDraft.code} onChange={e=>setRuleDraft({...ruleDraft,code:e.target.value})} placeholder="EX.: TRI-101"/></div>
@@ -530,9 +532,9 @@ export default function Home(){
             <div><label>Explicação para o operador</label><textarea value={ruleDraft.explanation} onChange={e=>setRuleDraft({...ruleDraft,explanation:e.target.value})}/></div>
             <Btn type="submit" disabled={busy}>＋ Salvar regra no banco</Btn>
           </form>
-          <div className="card spaced"><div className="panel-head"><h2>Regras ativas ({totalRules})</h2><span className="badge">{brainRules.custom?.length||0} personalizadas</span></div>
+          <div className="card spaced"><div className="panel-head"><h2>Catálogo e regras visíveis ({totalRules})</h2><span className="badge">{brainRules.custom?.length||0} personalizadas</span></div>
             {brainRules.custom?.map(x=><div key={x.id} className="record-item"><div><b>{x.definition.officialNature}</b><p>{x.definition.code} • {x.definition.category} • Personalizada</p></div><Btn className="danger tiny" onClick={()=>deleteRule(x.id)}>Excluir</Btn></div>)}
-            {brainRules.extras?.concat(brainRules.base||[]).map((x,i)=><div key={x.id||i} className="record-item"><div><b>{x.officialNature}</b><p>{x.code} • {x.category} • Regra de sistema</p></div><Tag priority={x.priority}/></div>)}
+            {brainRules.extras?.concat(brainRules.base||[]).slice(0,120).map((x,i)=><div key={x.id||i} className="record-item"><div><b>{x.officialNature}</b><p>{x.code} • {x.category} • Natureza importada</p></div><Tag priority={x.priority}/></div>)}{(brainRules.base?.length||0)>120&&<p className="muted">Exibindo as primeiras 120 naturezas nesta visão. Para consultar todas as 769 com descrição, use o Catálogo.</p>}
           </div>
         </>}
 

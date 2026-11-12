@@ -14,7 +14,7 @@ import { cookies } from 'next/headers';
 import { randomUUID } from 'node:crypto';
 import { db,prepare,ensureAdmin,log,loadLearnedQuestions,saveQuestionFeedback,consumeAiBudget,isRateLimited,recordFailure,clearFailure } from '../../../lib/db.js';
 import { CEREBRO_190 } from '../../../lib/cerebro.js';
-import { EXTRA_RULES } from '../../../lib/extras.js';
+import {catalogRules,localRecognitionRules} from '../../../lib/copom-catalog.js';
 import { ADMIN_LOGIN, COOKIE_NAME,HOURS,cookieSettings,token,digest,passwordHash,passwordVerify,validLogin,string,sameOrigin,input } from '../../../lib/security.js';
 export const runtime='nodejs';
 export const maxDuration=30;
@@ -121,15 +121,15 @@ async function gate(request,method,ctx){
   }
   if(u.must_change_password)return failure('Troca obrigatória da senha provisória antes de utilizar a plataforma.',403);
   if(route==='/entries'&&method==='GET'){
-    const rows=await db().query('SELECT id,code,title,category,priority,summary,body,tags,revision,updated_at FROM knowledge ORDER BY title LIMIT 800');
-    const learned=await loadLearnedQuestions();
-    const distributed=[...CEREBRO_190.regrasBase,...EXTRA_RULES].map(r=>withLearnedTriage(r,learned));
-    return reply({entries:rows.rows.map(entry=>{const rule=distributed.find(r=>r.code===entry.code);return rule?{...entry,triageQuestions:questionsFor(rule).map(q=>q.text),legalBase:rule.legalBase,legal:rule.legal}:entry;})});
+    const rows=await db().query('SELECT id,code,title,category,priority,summary,body,tags,revision,updated_at FROM knowledge WHERE active_in_catalog=true ORDER BY title LIMIT 2000');
+    return reply({entries:rows.rows,catalogSource:'copom-csv-v2',catalogImported:769});
   }
   if(route==='/rules'&&method==='GET'){
-    const custom=await db().query('SELECT id,definition,created_at FROM custom_rules ORDER BY created_at DESC LIMIT 200');
-    const learned=await loadLearnedQuestions();
-    return reply({base:CEREBRO_190.regrasBase.map(r=>withLearnedTriage(r,learned)),extras:EXTRA_RULES.map(r=>withLearnedTriage(r,learned)),custom:custom.rows});
+    const [custom,knowledge]=await Promise.all([
+      db().query('SELECT id,definition,created_at FROM custom_rules WHERE active_in_catalog=true ORDER BY created_at DESC LIMIT 200'),
+      db().query('SELECT code,title,category,priority,summary FROM knowledge WHERE active_in_catalog=true ORDER BY title LIMIT 2000')
+    ]);
+    return reply({base:catalogRules(knowledge.rows),extras:[],custom:custom.rows});
   }
   if(route.startsWith('/documentation/assets')){
     const assetId=route.slice('/documentation/assets/'.length);
@@ -179,9 +179,9 @@ async function gate(request,method,ctx){
     if(!await consumeAiBudget('feedback:'+u.id,120))return failure('Muitas avaliações. Aguarde para continuar.',429);
     let proposal;
     try{proposal=readFeedbackTicket(v.ticket,u.id);}catch{return failure('Esta avaliação expirou ou não pertence à sua sessão. Faça uma nova análise.',400);}
-    const distributed=[...CEREBRO_190.regrasBase,...EXTRA_RULES];
-    let rule=distributed.find(r=>r.code===proposal.code);
-    if(!rule&&proposal.code){const found=await db().query('SELECT code,title,category FROM knowledge WHERE code=$1',[proposal.code]);const row=found.rows[0];if(row)rule={...row,id:'custom-feedback',officialNature:row.title};}
+    // O feedback só pode referenciar naturezas do catálogo atual.
+    let rule=null;
+    if(proposal.code){const found=await db().query('SELECT code,title,category FROM knowledge WHERE code=$1 AND active_in_catalog=true',[proposal.code]);const row=found.rows[0];if(row)rule={...row,id:'copom-feedback',officialNature:row.title};}
     const questions=learnableQuestions(proposal,rule);
     const result=await saveQuestionFeedback(u.id,proposal,v.vote,questions);
     return reply({...result,message:v.vote==='dislike'?'Dislike registrado. Nenhuma pergunta desta avaliação alimenta o aprendizado.':questions.length?`${questions.length} pergunta(s) aprovada(s) para esta natureza. Somente as perguntas foram aproveitadas.`:'Like registrado. Não há pergunta nova ou natureza definida para acrescentar; nenhuma resposta foi salva.'});
@@ -204,15 +204,16 @@ async function gate(request,method,ctx){
     const v=await input(request,32000), relato=route==='/admin/ai/test'?'Responda apenas: conexão Gemini funcionando.':string(v.text,8000);
     if(relato.length<3)return failure('Insira pelo menos 3 caracteres.');
     const [custom,knowledge,learned]=await Promise.all([
-      db().query('SELECT definition FROM custom_rules ORDER BY created_at DESC LIMIT 200'),
-      db().query('SELECT code,title,category,summary,body,tags FROM knowledge ORDER BY title LIMIT 800'),
+      db().query('SELECT definition FROM custom_rules WHERE active_in_catalog=true ORDER BY created_at DESC LIMIT 200'),
+      db().query('SELECT code,title,category,summary,body,tags FROM knowledge WHERE active_in_catalog=true ORDER BY title LIMIT 2000'),
       loadLearnedQuestions()
     ]);
-    const rules=[...custom.rows.map(x=>x.definition),...EXTRA_RULES];
-    const distributed=[...CEREBRO_190.regrasBase,...EXTRA_RULES].map(r=>withLearnedTriage(r,learned));
-    const enriched=knowledge.rows.map(entry=>{const rule=distributed.find(r=>r.code===entry.code);return rule?{...entry,triageQuestions:questionsFor(rule).map(q=>q.text),legalBase:rule.legalBase,legal:rule.legal}:entry;});
+    // Os nomes do catálogo anterior não podem voltar pela classificação legada.
+    const allowedCodes=new Set(knowledge.rows.map(x=>x.code));
+    const rules=[...localRecognitionRules(knowledge.rows),...custom.rows.map(x=>x.definition).filter(x=>allowedCodes.has(x.code))];
+    const enriched=knowledge.rows;
     const local=route==='/admin/ai/test'?null:answerLocally({text:relato,history:v.history,entries:enriched,
-      classify:text=>CEREBRO_190.analisarEntrada(text,rules,learned)});
+      classify:text=>CEREBRO_190.analisarEntrada(text,rules,learned,{onlyProvided:true})});
     if(local)return reply({result:local,disclaimer:'Resposta da base local. Confirme fatos e protocolo institucional.'});
     {
       if(!aiStatus().configured)return reply({error:'IA ainda não configurada. O administrador deve definir GEMINI_API_KEY na Vercel.',code:'AI_NOT_CONFIGURED'},503);
