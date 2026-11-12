@@ -1,4 +1,5 @@
 import './globals.css';
+import './gemini-insights.css';
 import './floor-control.css';
 import './floor-schedule.css';
 import './nexus-documentation.css';

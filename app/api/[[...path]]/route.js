@@ -219,8 +219,8 @@ async function gate(request,method,ctx){
       if(!aiStatus().configured)return reply({error:'IA ainda não configurada. O administrador deve definir GEMINI_API_KEY na Vercel.',code:'AI_NOT_CONFIGURED'},503);
       if(!await consumeAiBudget(u.id,30))return failure('Limite de 30 consultas à IA em 15 minutos. Aguarde para continuar.',429);
       try{
-        const result=await askGemini({text:relato,history:v.history,entries:enriched});
-        if(route!=='/admin/ai/test')result.feedbackTicket=newFeedbackTicket(u.id,result.feedbackNature?.code,result.analysisQuestions);
+        const result=await askGemini({text:relato,history:v.history,entries:enriched,mode:route==='/analyze'?'relato':route==='/admin/ai/test'?'diagnostic':'auto'});
+        if(route!=='/admin/ai/test'&&result.feedbackNature&&result.analysisQuestions?.length)result.feedbackTicket=newFeedbackTicket(u.id,result.feedbackNature.code,result.analysisQuestions);
         return reply({result,disclaimer:'Resposta gerada por IA; confira fatos, legislação e protocolo institucional.'});
       }catch(error){
         const safe=aiFailure(error);
