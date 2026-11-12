@@ -4,17 +4,15 @@ import {saveDocument,saveDraft,uuid} from '../../../lib/documentation-store.js';
 import {getSchedule,editOperationalRole,editShift,editScheduleDay,generateMonth,editSchedulePreferences,editSundayChoice} from '../../../lib/floor-scheduling.js';
 import {listDocumentationSpaces,createDocumentationSpace,updateDocumentationSpace} from '../../../lib/documentation-spaces.js';
 import {cleanDocument} from '../../../lib/documentation.js';
-import { newFeedbackTicket,readFeedbackTicket,learnableQuestions } from '../../../lib/question-feedback.js';
-import { withLearnedTriage,questionsFor } from '../../../lib/triage.js';
+import { readFeedbackTicket,learnableQuestions } from '../../../lib/question-feedback.js';
 import { canTestGemini } from '../../../lib/permissions.js';
-import { askGemini,aiStatus,rewriteWithGemini } from '../../../lib/gemini.js';
+import { aiStatus,rewriteWithGemini } from '../../../lib/gemini.js';
+import {analyzeOfflineReport,answerOffline} from '../../../lib/offline-sade-triage.js';
 import { answerLocally,aiFailure } from '../../../lib/assistant.js';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { randomUUID } from 'node:crypto';
-import { db,prepare,ensureAdmin,log,loadLearnedQuestions,saveQuestionFeedback,consumeAiBudget,isRateLimited,recordFailure,clearFailure } from '../../../lib/db.js';
-import { CEREBRO_190 } from '../../../lib/cerebro.js';
-import {catalogRules,localRecognitionRules} from '../../../lib/copom-catalog.js';
+import { db,prepare,ensureAdmin,log,saveQuestionFeedback,consumeAiBudget,isRateLimited,recordFailure,clearFailure } from '../../../lib/db.js';
 import { ADMIN_LOGIN, COOKIE_NAME,HOURS,cookieSettings,token,digest,passwordHash,passwordVerify,validLogin,string,sameOrigin,input } from '../../../lib/security.js';
 export const runtime='nodejs';
 export const maxDuration=30;
@@ -199,35 +197,30 @@ async function gate(request,method,ctx){
     }
   }
 
-  if((route==='/chat'||route==='/admin/ai/test'||route==='/analyze')&&method==='POST'){
-    if(route==='/admin/ai/test'&&!canTestGemini(u))return failure('Teste de conexão restrito ao administrador principal.',403);
-    const v=await input(request,32000), relato=route==='/admin/ai/test'?'Responda apenas: conexão Gemini funcionando.':string(v.text,8000);
+  // Gemini é EXCLUSIVO para reescrever um relato sob solicitação explícita
+  // no POST /rewrite. Testes não geram texto e não consomem tokens.
+  if(route==='/admin/ai/test'&&method==='POST'){
+    if(!canTestGemini(u))return failure('Verificação restrita ao administrador principal.',403);
+    const configured=aiStatus().configured;
+    return reply({result:{resposta:configured?
+      'Chave do Gemini cadastrada. O serviço de IA só será chamado ao clicar em Revisar texto com IA no relato.':
+      'Chave do Gemini não configurada. A análise local continua funcionando.'}});
+  }
+  if((route==='/chat'||route==='/analyze')&&method==='POST'){
+    const v=await input(request,32000),relato=string(v.text,8000);
     if(relato.length<3)return failure('Insira pelo menos 3 caracteres.');
-    const [custom,knowledge,learned]=await Promise.all([
-      db().query('SELECT definition FROM custom_rules WHERE active_in_catalog=true ORDER BY created_at DESC LIMIT 200'),
-      db().query('SELECT code,title,category,summary,body,tags FROM knowledge WHERE active_in_catalog=true ORDER BY title LIMIT 2000'),
-      loadLearnedQuestions()
-    ]);
-    // Os nomes do catálogo anterior não podem voltar pela classificação legada.
-    const allowedCodes=new Set(knowledge.rows.map(x=>x.code));
-    const rules=[...localRecognitionRules(knowledge.rows),...custom.rows.map(x=>x.definition).filter(x=>allowedCodes.has(x.code))];
-    const enriched=knowledge.rows;
-    const local=route==='/admin/ai/test'?null:answerLocally({text:relato,history:v.history,entries:enriched,
-      classify:text=>CEREBRO_190.analisarEntrada(text,rules,learned,{onlyProvided:true})});
-    if(local)return reply({result:local,disclaimer:'Resposta da base local. Confirme fatos e protocolo institucional.'});
-    {
-      if(!aiStatus().configured)return reply({error:'IA ainda não configurada. O administrador deve definir GEMINI_API_KEY na Vercel.',code:'AI_NOT_CONFIGURED'},503);
-      if(!await consumeAiBudget(u.id,30))return failure('Limite de 30 consultas à IA em 15 minutos. Aguarde para continuar.',429);
-      try{
-        const result=await askGemini({text:relato,history:v.history,entries:enriched,mode:route==='/analyze'?'relato':route==='/admin/ai/test'?'diagnostic':'auto'});
-        if(route!=='/admin/ai/test'&&result.feedbackNature&&result.analysisQuestions?.length)result.feedbackTicket=newFeedbackTicket(u.id,result.feedbackNature.code,result.analysisQuestions);
-        return reply({result,disclaimer:'Resposta gerada por IA; confira fatos, legislação e protocolo institucional.'});
-      }catch(error){
-        const safe=aiFailure(error);
-        return reply({error:safe.message,code:safe.code},error?.statusCode===429?429:503);
-      }
+    try{
+      const knowledge=await db().query('SELECT code,title,category,summary,body,tags FROM knowledge WHERE active_in_catalog=true ORDER BY title LIMIT 2000');
+      const entries=knowledge.rows;
+      // Perguntas conceituais previstas na base têm precedência; os demais relatos
+      // são tratados 100% pelo motor local, mesmo sem natureza reconhecida.
+      const faq=route==='/chat'?answerLocally({text:relato,history:v.history,entries}):null;
+      const result=faq||(route==='/analyze'?analyzeOfflineReport({text:relato,entries}):answerOffline({text:relato,entries}));
+      return reply({result,disclaimer:'Análise inteiramente local e heurística. Confira natureza, fatos e protocolo institucional. O Gemini só é utilizado mediante solicitação explícita para aprimorar a escrita.'});
+    }catch(error){
+      console.error('Erro na triagem local:',error?.message||error);
+      return failure('Não foi possível consultar o catálogo para a triagem local. Tente novamente.',503);
     }
-
   }
 
   // Escalas: qualquer usuário autenticado pode consultar; servidor aplica RBAC em toda mutação.
