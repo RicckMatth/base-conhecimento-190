@@ -22,7 +22,7 @@ test('consultas autenticadas recuperam catálogo e regras de modo somente leitur
  assert.match(api,/readOnly:true/);
  assert.match(api,/degraded:true/);
  assert.match(api,/catalogRules\(COPOM_CATALOG\)/);
- assert.match(api,/if\(!u\)return failure/);
+ assert.match(api,/const blocked=requireRole\(u\);if\(blocked\) return blocked/);
  assert.match(api,/const u=await identity\(\)/);
  const fallbackArea=api.slice(api.indexOf("if(route==='/entries'"),api.indexOf("if(route.startsWith('/documentation/assets'))"));
  assert.doesNotMatch(fallbackArea,/UPDATE knowledge|DELETE FROM knowledge|TRUNCATE/);
