@@ -376,15 +376,15 @@ export default function Home(){
           <small>Revisão {selected.revision} • Atualizado em {formatDate(selected.updated_at)} • Validar legislação, código e procedimento antes do uso.</small>
         </section>}
 
-        {screen==='chat'&&<section className="integrated-chat">
+        {screen==='chat'&&<section className="chat-workspace">
           <div className="chat-main">
             <header className="chat-head">
-              <div className="chat-ident"><span className="chat-avatar"><Icon name="brain"/></span><div><b>Assistente da Base 190</b><small>Reconhecimento local · Gemini só para revisar a escrita</small></div></div>
-              <div className="chat-head-actions"><span className="chat-pill">Triagem independente</span>
+              <div className="chat-ident"><span className="chat-avatar"><Icon name="brain"/></span><div><span className="eyebrow">CÉREBRO 190</span><b>Assistente de triagem</b><small>Leitura local, objetiva e orientativa</small></div></div>
+              <div className="chat-head-actions"><span className="chat-pill"><i/> Online</span>
                 <Btn className="ghost tiny" onClick={()=>setChatMessages([])}>Limpar chat</Btn></div>
             </header>
             <div className="chat-stream" role="log" aria-label="Conversa de análises locais">
-              <div className="chat-bubble-system"><b>Assistente local de triagem.</b><p>Digite ou cole o relato para analisar fatos, conferir os envolvidos e selecionar perguntas essenciais. A análise não depende da extensão ou do Gemini.</p></div>
+              <div className="chat-bubble-system"><span className="chat-welcome-icon"><Icon name="sparkles" size={17}/></span><div><b>Como posso ajudar?</b><p>Descreva os fatos com suas próprias palavras. Vou separar os envolvidos, apontar hipóteses e sugerir perguntas para confirmar o que falta.</p></div></div>
               {chatMessages.map(m=><div className={'chat-message '+(m.kind==='user'?'from-user':'from-system')} key={m.id}>
                 {m.kind!=='user'&&<span className="chat-message-avatar">190</span>}
                 <div className="chat-bubble">
@@ -404,12 +404,15 @@ export default function Home(){
                   placeholder="Pergunte ou descreva uma situação fictícia…" onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();e.currentTarget.form?.requestSubmit();}}}/>
                 <Btn type="submit" disabled={chatSending||chatInput.trim().length<3} className="chat-send">{chatSending?'…':'Enviar ↗'}</Btn>
               </form>
-              <small>Classificação e sondagem funcionam sem Gemini. Apenas ao clicar em Revisar texto com IA, o relato é enviado ao Google. Para testes, use dados fictícios ou anonimizados.</small>
+              <small>Use dados fictícios ou anonimizados. A análise é orientativa e requer conferência humana.</small>
             </div>
           </div>
           <aside className="chat-side">
-            <div className="card ai-status"><span className="eyebrow">TRIAGEM LOCAL</span><h3>Reconhecimento sem IA</h3><p>{ai?.configured?'Análises e naturezas usam apenas regras locais. Gemini disponível somente no botão de aprimorar a escrita.':'Análises e naturezas funcionam sem Gemini. O aprimoramento opcional de escrita não está configurado.'}</p><small>{ai?.configured?ai.model+' · uso exclusivo para revisão textual':'Serviço local independente do Gemini'}</small>{user?.canTestGemini&&<><Btn className="secondary full" onClick={testAI} disabled={aiTesting||!ai?.configured}>{aiTesting?'Verificando configuração…':'Verificar chave configurada'}</Btn><small>Esta verificação não envia relatos nem faz chamada ao modelo.</small>{aiTestResult&&<p role="status" className="assistant-text">{aiTestResult}</p>}</>}</div>
-            <p>Descreva somente os fatos informados. Confira os papéis e use a correção manual quando necessário.</p>
+            <div className="chat-side-intro"><span className="eyebrow">COMO FUNCIONA</span><h2>Converse com clareza.</h2><p>O assistente transforma o relato em uma leitura estruturada para apoiar a decisão do operador.</p></div>
+            <div className="chat-side-card"><span className="chat-side-number">01</span><div><b>Descreva o fato</b><small>Inclua quem ligou, o que aconteceu e onde está a situação.</small></div></div>
+            <div className="chat-side-card"><span className="chat-side-number">02</span><div><b>Confira os papéis</b><small>Revise vítima e possível autor. Você pode corrigir e recalcular.</small></div></div>
+            <div className="chat-side-card"><span className="chat-side-number">03</span><div><b>Confirme as lacunas</b><small>Use as perguntas essenciais antes de qualquer encaminhamento.</small></div></div>
+            <div className="chat-side-note"><Icon name="shield" size={17}/><p>As sugestões são hipóteses de apoio. A natureza e o procedimento dependem da validação institucional.</p></div>
           </aside>
         </section>}
         {screen==='brain'&&<>{busy&&<div className="analysis-loading" role="status" aria-live="polite"><span className="analysis-spinner"/><div><strong>Analisando o relato…</strong><p>Reconhecendo fatos, papéis e naturezas diretamente pelo catálogo local. Nenhuma chamada ao Gemini.</p></div></div>}<div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Motor SADE offline com reconhecimento de papéis, negações, armas e sugestões do catálogo. Gemini é opcional e exclusivo para aprimorar o texto.</p></div><span className="badge">{totalRules} regras</span></div>

@@ -27,5 +27,5 @@ test('UI da triagem local inclui cinco perguntas, relatório, e revisão opt-in 
  assert.match(inspector,/natureSuggestions/);
  assert.match(inspector,/analysisQuestions/);
  assert.match(inspector,/Sem IA/);
- assert.match(page,/Gemini só para revisar a escrita/);
+ assert.match(page,/A análise é orientativa e requer conferência humana/);
 });
