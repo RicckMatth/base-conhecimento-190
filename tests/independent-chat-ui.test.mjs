@@ -57,7 +57,9 @@ test('chat montado ignora eventos da extensão e apresenta interface SADE isolad
   const iframe=document.querySelector('iframe.sade-embed-frame');
   assert.ok(iframe,'O Chat 190 deve montar a tela SADE completa.');
   assert.equal(iframe.getAttribute('src'),'/copom-sade-190.html');
-  assert.equal(iframe.getAttribute('sandbox'),'allow-scripts');
+  assert.equal(iframe.getAttribute('sandbox'),'allow-scripts allow-forms');
+  assert.equal(iframe.hasAttribute('allow-same-origin'),false);
+  assert.ok(!iframe.getAttribute('sandbox').includes('allow-same-origin'));
   assert.match(iframe.getAttribute('title'),/Assistente de Triagem Inteligente SADE/);
   assert.equal(calls.some(c=>c.url==='/api/chat'),false,'A navegação não deve disparar análise sem relato.');
   assert.deepEqual(outbound,[]);
