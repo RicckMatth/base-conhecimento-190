@@ -42,11 +42,8 @@ export default function Home(){
   const [priorityFilter,setPriorityFilter]=useState('Todas');
   const [catalogLimit,setCatalogLimit]=useState(60);
   const [relato,setRelato]=useState(''),[analysis,setAnalysis]=useState(null);
-  const [chatMessages,setChatMessages]=useState([]);
-  const [chatInput,setChatInput]=useState('');
-  const [chatSending,setChatSending]=useState(false);
+  const [pendingSadeReport,setPendingSadeReport]=useState('');
   const [ai,setAI]=useState(null),[aiTesting,setAITesting]=useState(false),[aiTestResult,setAITestResult]=useState('');
-  const chatBottomRef=useRef(null);
   const [adminRequests,setAdminRequests]=useState([]),[adminUsers,setAdminUsers]=useState([]),[events,setEvents]=useState([]);
   const [credential,setCredential]=useState(null);
   const [editor,setEditor]=useState(emptyEntry()),[ruleDraft,setRuleDraft]=useState({code:'',officialNature:'',category:'Proteção',priority:'Média',group1:'',group2:'',explanation:''});
@@ -110,27 +107,6 @@ export default function Home(){
     try{const data=await call('/admin/ai/test',{method:'POST',body:'{}'});setAITestResult(data.result?.resposta||'Configuração consultada.');}
     catch(e){setAITestResult(e.message);}finally{setAITesting(false);}
   }
-  useEffect(()=>{
-    if(screen==='chat'&&chatBottomRef.current){
-      chatBottomRef.current.scrollIntoView({behavior:'smooth',block:'end'});
-    }
-  },[chatMessages.length,screen]);
-  async function submitChatText(value){
-    const text=String(value||'').trim();
-    if(chatSending||text.length<3||text.length>8000)return;
-    const stamp=Date.now();setChatInput('');
-    setChatMessages(prev=>[...prev.slice(-23),{id:'user-'+stamp,kind:'user',text,at:stamp}]);
-    setChatSending(true);
-    try{
-      const history=chatMessages.flatMap(m=>m.kind==='user'?[{role:'user',content:m.text}]:m.kind==='answer'&&m.result?.resposta?[{role:'assistant',content:m.result.resposta}]:[]).slice(-8);
-      const reply=await call('/chat',{method:'POST',body:body({text,history})});
-      const now=Date.now();
-      setChatMessages(prev=>[...prev.slice(-23),{id:'answer-'+now,kind:'answer',origin:'Base 190 · análise local offline',result:reply.result,at:now}]);
-    }catch(error){
-      setChatMessages(prev=>[...prev.slice(-23),{id:'error-'+Date.now(),kind:'error',text:error.message||'Falha na análise.',at:Date.now()}]);
-    }finally{setChatSending(false);}
-  }
-  async function sendChat(event){event.preventDefault();await submitChatText(chatInput);}
   async function submitLogin(event){
     event.preventDefault();clear();setBusy(true);
     try{const data=await call('/auth/login',{method:'POST',body:body(login)});setUser(data.user);setScreen('home');setLogin({username:'',password:''});await refreshCatalog();}
@@ -154,7 +130,6 @@ export default function Home(){
     const waits=[];window.dispatchEvent(new CustomEvent('base190:flush-editors',{detail:{waits}}));const drafts=await Promise.all(waits);if(drafts.some(result=>result!==true)&&!confirm('Não foi possível salvar a recuperação. Sair mesmo assim pode perder alterações. Continuar?'))return;
     setBusy(true);try{await call('/auth/logout',{method:'POST',body:'{}'});}catch(e){err(e);}
     setDocsOpened(false);setUser(null);setScreen('home');setEntries([]);setBrainRules({base:[],extras:[],custom:[]});setBusy(false);setCredential(null);
-    setChatMessages([]);setChatInput('');
   }
   async function go(next){
     if(!window.dispatchEvent(new Event('base190:before-navigation',{cancelable:true})))return;
@@ -167,7 +142,7 @@ export default function Home(){
   }
   async function analyze(e){
     e?.preventDefault?.();clear();const text=relato.trim();if(text.length<3)return err(new Error('Informe o relato ou a dúvida para análise.'));
-    setRelato('');setScreen('chat');await submitChatText(text);
+    setRelato('');setPendingSadeReport(text);setScreen('chat');
   }
   function openEntry(id){setSelectedId(id);go('detail');}
   const selected=entries.find(e=>e.id===selectedId);
@@ -346,7 +321,7 @@ export default function Home(){
         {screen==='home'&&<>
           <section className="hero"><div className="hero-orbit" aria-hidden="true"><Icon name="shield" size={114}/></div><span className="eyebrow">CHAT 190 • ASSISTENTE UNIFICADO</span><h1>Clareza para cada atendimento.</h1>
             <p>Descreva uma ocorrência ou faça uma pergunta sobre uma natureza. O Chat 190 consulta o catálogo, explica quando usar cada ficha e sinaliza o que precisa ser confirmado.</p>
-            <form className="search-row" onSubmit={analyze}><input value={relato} onChange={e=>setRelato(e.target.value)} aria-label="Relato ou dúvida para análise" placeholder="Ex.: quando usar a natureza de roubo?"/><Btn type="submit" disabled={busy||chatSending}>Consultar no Chat 190 →</Btn></form>
+            <form className="search-row" onSubmit={analyze}><input value={relato} onChange={e=>setRelato(e.target.value)} aria-label="Relato ou dúvida para análise" placeholder="Ex.: quando usar a natureza de roubo?"/><Btn type="submit" disabled={busy}>Consultar no Chat 190 →</Btn></form>
           </section>
           <div className="grid3"><div className="card stat"><small><Icon name="book"/> Fichas no catálogo</small><strong>{catalogIssue&&!entries.length?'—':entries.length}</strong><span className="badge">{catalogDegraded?'Contingência · somente leitura':'Conhecimento'}</span></div>
             <div className="card stat"><small><Icon name="brain"/> Regras de classificação</small><strong>{catalogIssue&&!totalRules?'—':totalRules}</strong><span className="badge">{catalogDegraded?'Regras locais':'Chat 190'}</span></div>
@@ -374,44 +349,24 @@ export default function Home(){
           <small>Revisão {selected.revision} • Atualizado em {formatDate(selected.updated_at)} • Validar legislação, código e procedimento antes do uso.</small>
         </section>}
 
-        {screen==='chat'&&<section className="chat-workspace">
-          <div className="chat-main">
-            <header className="chat-head">
-              <div className="chat-ident"><span className="chat-avatar"><Icon name="brain"/></span><div><span className="eyebrow">CHAT 190</span><b>Assistente unificado</b><small>Ocorrências, dúvidas e consulta de naturezas</small></div></div>
-              <div className="chat-head-actions"><span className="chat-pill"><i/> Online</span>
-                <Btn className="ghost tiny" onClick={()=>setChatMessages([])}>Limpar chat</Btn></div>
-            </header>
-            <div className="chat-stream" role="log" aria-label="Conversa de análises locais">
-              <div className="chat-bubble-system"><span className="chat-welcome-icon"><Icon name="sparkles" size={17}/></span><div><b>Como posso ajudar?</b><p>Descreva os fatos com suas próprias palavras. Vou separar os envolvidos, apontar hipóteses e sugerir perguntas para confirmar o que falta.</p></div></div>
-              {chatMessages.map(m=><div className={'chat-message '+(m.kind==='user'?'from-user':'from-system')} key={m.id}>
-                {m.kind!=='user'&&<span className="chat-message-avatar">190</span>}
-                <div className="chat-bubble">
-                  <div className="chat-message-meta"><b>{m.kind==='user'?'Você':m.origin||'Sistema'}</b><span>{new Date(m.at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span></div>
-                  {m.kind==='answer'?<>
-                    {chatAnswer(m.result)}
-                  </>:<p>{m.text}</p>}
-                </div>
-              </div>)}
-              {chatSending&&<div className="chat-typing"><Icon name="brain"/> Chat 190 consultando a base…</div>}
-              <div ref={chatBottomRef} aria-hidden="true"/>
-            </div>
-            <div className="chat-compose">
-              <form onSubmit={sendChat}>
-                <label htmlFor="chat-input" className="sr-only">Descreva um relato fictício para análise</label>
-                <textarea id="chat-input" rows={2} maxLength={8000} value={chatInput} onChange={e=>setChatInput(e.target.value)}
-                  placeholder="Pergunte ou descreva uma situação fictícia…" onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();e.currentTarget.form?.requestSubmit();}}}/>
-                <Btn type="submit" disabled={chatSending||chatInput.trim().length<3} className="chat-send">{chatSending?'…':'Enviar ↗'}</Btn>
-              </form>
-              <small>Use dados fictícios ou anonimizados. A análise é orientativa e requer conferência humana.</small>
-            </div>
+        {screen==='chat'&&<section className="sade-workspace" aria-label="Chat 190 — Inteligência Tática SADE">
+          <div className="sade-integrated-notice">
+            <Icon name="shield" size={16}/>
+            <span>Motor SADE integrado • Triagem local, sem envio a serviços de IA. Utilize somente relatos fictícios ou anonimizados e confirme as sugestões pelo protocolo institucional.</span>
           </div>
-          <aside className="chat-side">
-            <div className="chat-side-intro"><span className="eyebrow">COMO FUNCIONA</span><h2>Uma base, várias respostas.</h2><p>O Chat 190 consulta o catálogo programado para explicar naturezas, responder dúvidas e estruturar ocorrências no mesmo lugar.</p></div>
-            <div className="chat-side-card"><span className="chat-side-number">01</span><div><b>Descreva o fato ou pergunte</b><small>Inclua quem ligou, o que aconteceu e onde está a situação — ou pergunte quando usar uma natureza.</small></div></div>
-            <div className="chat-side-card"><span className="chat-side-number">02</span><div><b>Consulte a ficha</b><small>A resposta traz descrição, quando considerar, quando não usar e referências do catálogo.</small></div></div>
-            <div className="chat-side-card"><span className="chat-side-number">03</span><div><b>Confirme as lacunas</b><small>Use as perguntas essenciais antes de qualquer encaminhamento ou classificação.</small></div></div>
-            <div className="chat-side-note"><Icon name="shield" size={17}/><p>As sugestões são hipóteses de apoio. A natureza e o procedimento dependem da validação institucional.</p></div>
-          </aside>
+          <iframe
+            className="sade-embed-frame"
+            src="/copom-sade-190.html"
+            title="Chat 190 — Assistente de Triagem Inteligente SADE"
+            sandbox="allow-scripts"
+            allow="clipboard-write"
+            referrerPolicy="no-referrer"
+            onLoad={(event)=>{
+              if(!pendingSadeReport)return;
+              event.currentTarget.contentWindow?.postMessage({type:'base190:sade-report',text:pendingSadeReport},'*');
+              setPendingSadeReport('');
+            }}
+          />
         </section>}
         {screen==='brain'&&<>{busy&&<div className="analysis-loading" role="status" aria-live="polite"><span className="analysis-spinner"/><div><strong>Analisando o relato…</strong><p>Reconhecendo fatos, papéis e naturezas diretamente pelo catálogo local. Nenhuma chamada ao Gemini.</p></div></div>}<div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Motor SADE offline com reconhecimento de papéis, negações, armas e sugestões do catálogo. Gemini é opcional e exclusivo para aprimorar o texto.</p></div><span className="badge">{totalRules} regras</span></div>
           <form className="card spaced" onSubmit={analyze}><div><label htmlFor="brain-input">Relato de teste (sem dados pessoais)</label><textarea id="brain-input" rows={5} value={relato} onChange={e=>setRelato(e.target.value)} placeholder="Descreva o fato observado ou relatado, sem nomes e endereços…"/></div>
