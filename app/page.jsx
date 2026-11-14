@@ -42,15 +42,11 @@ export default function Home(){
   const [priorityFilter,setPriorityFilter]=useState('Todas');
   const [catalogLimit,setCatalogLimit]=useState(60);
   const [relato,setRelato]=useState(''),[analysis,setAnalysis]=useState(null);
-  const [extensionOnline,setExtensionOnline]=useState(false);
-  const [extensionAnalysis,setExtensionAnalysis]=useState(null);
-  const [extensionReceivedAt,setExtensionReceivedAt]=useState(null);
   const [chatMessages,setChatMessages]=useState([]);
   const [chatInput,setChatInput]=useState('');
   const [chatSending,setChatSending]=useState(false);
   const [ai,setAI]=useState(null),[aiTesting,setAITesting]=useState(false),[aiTestResult,setAITestResult]=useState('');
   const chatBottomRef=useRef(null);
-  const extensionVersionsRef=useRef(new Map());
   const [adminRequests,setAdminRequests]=useState([]),[adminUsers,setAdminUsers]=useState([]),[events,setEvents]=useState([]);
   const [credential,setCredential]=useState(null);
   const [editor,setEditor]=useState(emptyEntry()),[ruleDraft,setRuleDraft]=useState({code:'',officialNature:'',category:'Proteção',priority:'Média',group1:'',group2:'',explanation:''});
@@ -104,51 +100,6 @@ export default function Home(){
     finally{if(live)setLoading(false);}})();
     return()=>{live=false;};
   },[]);
-  // Ponte visual com a extensão: não concede acesso, não solicita credenciais.
-  // Os resultados são eventos transitórios no navegador, sem persistência.
-  useEffect(()=>{
-    if(!user || user.mustChangePassword)return;
-    const ready=()=>setExtensionOnline(true);
-    const receive=e=>{
-      const payload=e?.detail;
-      if(!payload||typeof payload!=='object'||!payload.result||typeof payload.result!=='object')return;
-      if(!['classificacao','faq','indefinido','ia'].includes(payload.result.tipo))return;
-      const sourceId=String(payload.sourceId||'legacy').slice(0,100),version=Number(payload.version)||0;
-      const knownVersion=extensionVersionsRef.current.get(sourceId)||0;
-      if(version<knownVersion)return;
-      extensionVersionsRef.current.set(sourceId,version);
-      setExtensionOnline(true);
-      setExtensionAnalysis(payload.result);
-      const now=Date.now();
-      setExtensionReceivedAt(now);
-      const incoming={id:'live-sade-relato:'+sourceId,sourceId,kind:'answer',origin:'SADE · análise em tempo real',
-        result:payload.result,sourceText:String(payload.sourceText||'').slice(0,1800),at:now};
-      // Um painel de análise vivo, atualizado no lugar: não acumula uma mensagem por pausa na digitação.
-      setChatMessages(prev=>[...prev.filter(m=>m.sourceId!==sourceId||!['answer','pending'].includes(m.kind)).slice(-23),incoming]);
-      setScreen('extension');
-    };
-    const pending=e=>{
-      const detail=e?.detail||{},sourceId=String(detail.sourceId||'legacy').slice(0,100),version=Number(detail.version)||0;
-      const knownVersion=extensionVersionsRef.current.get(sourceId)||0;
-      if(version<knownVersion)return;
-      extensionVersionsRef.current.set(sourceId,version);
-      setExtensionAnalysis(null);
-      setExtensionReceivedAt(null);
-      const waiting={id:'live-sade-pending:'+sourceId,sourceId,kind:'pending',origin:'SADE · aguardando atualização',
-        text:'O relato mudou. Aguardando a análise da versão atual…',at:Date.now()};
-      setChatMessages(prev=>[...prev.filter(m=>m.sourceId!==sourceId||!['answer','pending'].includes(m.kind)).slice(-23),waiting]);
-      setScreen('extension');
-    };
-    window.addEventListener('base190:extension-ready',ready);
-    window.addEventListener('base190:extension-result',receive);
-    window.addEventListener('base190:extension-pending',pending);
-    window.dispatchEvent(new CustomEvent('base190:extension-discover'));
-    return()=>{
-      window.removeEventListener('base190:extension-ready',ready);
-      window.removeEventListener('base190:extension-result',receive);
-      window.removeEventListener('base190:extension-pending',pending);
-    };
-  },[user?.id,user?.mustChangePassword]);
   useEffect(()=>{
     if(!user||user.mustChangePassword)return;
     call('/ai/status').then(setAI).catch(()=>setAI(null));
@@ -159,15 +110,8 @@ export default function Home(){
     try{const data=await call('/admin/ai/test',{method:'POST',body:'{}'});setAITestResult(data.result?.resposta||'Configuração consultada.');}
     catch(e){setAITestResult(e.message);}finally{setAITesting(false);}
   }
-  function activateExtension(){
-    window.dispatchEvent(new CustomEvent('base190:extension-discover'));
-    setScreen('extension');
-  }
-  function openExtensionSettings(){
-    window.dispatchEvent(new CustomEvent('base190:open-settings'));
-  }
   useEffect(()=>{
-    if(screen==='extension'&&chatBottomRef.current){
+    if(screen==='chat'&&chatBottomRef.current){
       chatBottomRef.current.scrollIntoView({behavior:'smooth',block:'end'});
     }
   },[chatMessages.length,screen]);
@@ -179,11 +123,10 @@ export default function Home(){
     setChatMessages(prev=>[...prev.slice(-23),{id:'user-'+stamp,kind:'user',text,at:stamp}]);
     setChatSending(true);
     try{
-      const history=chatMessages.filter(m=>!m.sourceText&&m.id!=='live-sade-relato').flatMap(m=>m.kind==='user'?[{role:'user',content:m.text}]:m.kind==='answer'&&m.result?.resposta?[{role:'assistant',content:m.result.resposta}]:[]).slice(-8);
+      const history=chatMessages.flatMap(m=>m.kind==='user'?[{role:'user',content:m.text}]:m.kind==='answer'&&m.result?.resposta?[{role:'assistant',content:m.result.resposta}]:[]).slice(-8);
       const reply=await call('/chat',{method:'POST',body:body({text,history})});
       const now=Date.now();
       setChatMessages(prev=>[...prev.slice(-23),{id:'answer-'+now,kind:'answer',origin:'Base 190 · análise local offline',result:reply.result,at:now}]);
-      window.dispatchEvent(new CustomEvent('base190:site-analysis',{detail:{result:reply.result,disclaimer:reply.disclaimer}}));
     }catch(error){
       setChatMessages(prev=>[...prev.slice(-23),{id:'error-'+Date.now(),kind:'error',text:error.message||'Falha na análise.',at:Date.now()}]);
     }finally{setChatSending(false);}
@@ -211,7 +154,7 @@ export default function Home(){
     const waits=[];window.dispatchEvent(new CustomEvent('base190:flush-editors',{detail:{waits}}));const drafts=await Promise.all(waits);if(drafts.some(result=>result!==true)&&!confirm('Não foi possível salvar a recuperação. Sair mesmo assim pode perder alterações. Continuar?'))return;
     setBusy(true);try{await call('/auth/logout',{method:'POST',body:'{}'});}catch(e){err(e);}
     setDocsOpened(false);setUser(null);setScreen('home');setEntries([]);setBrainRules({base:[],extras:[],custom:[]});setBusy(false);setCredential(null);
-    setExtensionOnline(false);setExtensionAnalysis(null);setExtensionReceivedAt(null);setChatMessages([]);setChatInput('');
+    setChatMessages([]);setChatInput('');
   }
   async function go(next){
     if(!window.dispatchEvent(new Event('base190:before-navigation',{cancelable:true})))return;
@@ -225,8 +168,6 @@ export default function Home(){
     e?.preventDefault?.();clear();if(relato.trim().length<3)return err(new Error('Informe o relato para análise.'));
     setBusy(true);setAnalysis(null);setScreen('brain');try{const x=await call('/analyze',{method:'POST',body:body({text:relato})});
       setAnalysis(x.result);setScreen('brain');
-      // Resultado somente para visualização na extensão instalada (sem preenchimento ou envio automático).
-      window.dispatchEvent(new CustomEvent('base190:site-analysis',{detail:{result:x.result,disclaimer:x.disclaimer}}));
     }
     catch(e){err(e);}finally{setBusy(false);}
   }
@@ -298,9 +239,14 @@ export default function Home(){
       {pending.length?<ul className="triage-questions">{pending.map((q,i)=><li key={q.id}><span className="triage-index">{String(i+1).padStart(2,'0')}</span><div>{q.question}{q.reason==='conflicting'&&<small className="triage-conflict">Há informações divergentes no relato. Confirme.</small>}</div></li>)}</ul>:<p className="triage-complete"><Icon name="shield" size={18}/> As perguntas previstas para esta natureza já estão respondidas no relato. Confira os dados antes de concluir.</p>}
     </section>;
   }
+  async function reanalyzeResult(result,roleOverrides){
+    const reply=await call('/analyze',{method:'POST',body:body({text:result.originalReport,roleOverrides})});
+    setAnalysis(prev=>prev===result?reply.result:prev);
+    setChatMessages(prev=>prev.map(m=>m.result===result?{...m,result:reply.result}:m));
+  }
   function chatAnswer(result){
     if(!result)return <p>Sem resposta da Base 190.</p>;
-    if(result.tipo==='faq'||result.tipo==='ia'||result.tipo==='local-triage')return <div className="chat-answer"><span className="badge">{result.source==='gemini'?'Gemini · resposta complementar':'Base local · sem consulta à IA'}</span><h3>{result.titulo||'Orientação'}</h3>{result.contextUsed&&<p className="helpnote" role="note">{result.contextNote||'Complemento interpretado com o relato anterior desta conversa. Confira os fatos antes de utilizar.'}</p>}<p className="assistant-text" style={{whiteSpace:'pre-line'}}>{result.resposta}</p>{(result.tipo==='ia'||result.tipo==='local-triage')&&<GeminiInsights result={result}/>} {result.tipo==='local-triage'&&<WritingReview original={result.originalReport} aiConfigured={Boolean(ai?.configured)}/>}  {!!result.references?.length&&<details><summary>Fichas consultadas</summary><ul>{result.references.map(r=><li key={r.code}>{r.code} · {r.title}</li>)}</ul></details>}{result.tipo==='ia'&&<><small>Conteúdo gerado por IA. Confira as informações antes de utilizar.</small><AnalysisFeedback key={result.feedbackTicket||'legacy'} result={result}/></>}</div>;
+    if(result.tipo==='faq'||result.tipo==='ia'||result.tipo==='local-triage')return <div className="chat-answer"><span className="badge">{result.source==='gemini'?'Gemini · resposta complementar':'Base local · sem consulta à IA'}</span><h3>{result.titulo||'Orientação'}</h3>{result.contextUsed&&<p className="helpnote" role="note">{result.contextNote||'Complemento interpretado com o relato anterior desta conversa. Confira os fatos antes de utilizar.'}</p>}<p className="assistant-text" style={{whiteSpace:'pre-line'}}>{result.resposta}</p>{(result.tipo==='ia'||result.tipo==='local-triage')&&<GeminiInsights key={JSON.stringify([result.originalReport,result.roleAnalysis])} result={result} onReanalyze={roles=>reanalyzeResult(result,roles)}/>} {result.tipo==='local-triage'&&<WritingReview original={result.originalReport} aiConfigured={Boolean(ai?.configured)}/>}  {!!result.references?.length&&<details><summary>Fichas consultadas</summary><ul>{result.references.map(r=><li key={r.code}>{r.code} · {r.title}</li>)}</ul></details>}{result.tipo==='ia'&&<><small>Conteúdo gerado por IA. Confira as informações antes de utilizar.</small><AnalysisFeedback key={result.feedbackTicket||'legacy'} result={result}/></>}</div>;
     if(result.tipo!=='classificacao')return <div className="chat-answer"><b>Análise não conclusiva</b><p>{result.mensagem||'Verifique o relato e consulte os procedimentos oficiais.'}</p></div>;
     const main=result.principal||{};
     return <div className="chat-answer">
@@ -378,7 +324,7 @@ export default function Home(){
     </form>
   </section>;
 
-  const links=[['home','Visão geral','home'],['docs','Base de conhecimento','book'],['catalog','Catálogo','book'],['brain','Cérebro 190','brain'],['extension','Integração 190','link'],['floor','Gestão de piso','shield'],['quality','Qualidade','audit']];
+  const links=[['home','Visão geral','home'],['docs','Base de conhecimento','book'],['catalog','Catálogo','book'],['brain','Cérebro 190','brain'],['chat','Chat 190','brain'],['floor','Gestão de piso','shield'],['quality','Qualidade','audit']];
   const adminLinks=[['editor','Editar textos','edit'],['access','Autorizar acessos','users'],['rules','Regras do Cérebro','settings'],['audit','Auditoria','audit']];
   return <div className="shell">
     <aside className="sidebar">
@@ -389,8 +335,8 @@ export default function Home(){
       <div className="sidebar-bottom"><p className="who">{user.name}<br/><small>{user.username} • {isAdmin?'Admin':'Consulta'}</small></p><button className="nav-btn" onClick={logout} disabled={busy}><Icon name="logout"/> Sair</button></div>
     </aside>
     <div className="main">
-      <header className="topbar"><div><b>{screen==='docs'?'Base de conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='extension'?'Extensão integrada':screen==='floor'?'Gestão de piso':screen==='quality'?'Qualidade 190':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
-        <div className="btn-row"><button className="btn ghost tiny" onClick={activateExtension} type="button">{extensionOnline?'● Extensão conectada':'Abrir chat integrado'}</button><span className="badge">{isAdmin?'Administrador':'Usuário de consulta'}</span><Btn className="ghost tiny" onClick={theme}><Icon name={dark?'sun':'moon'} size={17}/>{dark?'Claro':'Escuro'}</Btn></div>
+      <header className="topbar"><div><b>{screen==='docs'?'Base de conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='chat'?'Chat 190':screen==='floor'?'Gestão de piso':screen==='quality'?'Qualidade 190':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
+        <div className="btn-row"><Btn className="ghost tiny" onClick={()=>go('chat')}>Abrir chat 190</Btn><span className="badge">{isAdmin?'Administrador':'Usuário de consulta'}</span><Btn className="ghost tiny" onClick={theme}><Icon name={dark?'sun':'moon'} size={17}/>{dark?'Claro':'Escuro'}</Btn></div>
       </header>
       <main className="content spaced">
         {notice&&<div className="notice" role="alert">{notice}</div>}{success&&<div className="notice success" role="status">{success}</div>}
@@ -404,15 +350,6 @@ export default function Home(){
             <p>Pesquise uma natureza ou descreva um cenário fictício para obter sugestões de triagem, máscaras e classificações que exigem validação humana.</p>
             <form className="search-row" onSubmit={analyze}><input value={relato} onChange={e=>setRelato(e.target.value)} aria-label="Relato para análise" placeholder="Ex.: dois indivíduos roubaram o celular mediante ameaça"/><Btn type="submit" disabled={busy}>Analisar relato →</Btn></form>
           </section>
-          <div className="card extension-status">
-            <div className="toolbar">
-              <div><span className="eyebrow">EXTENSÃO RELATO 190 • TESTE</span>
-                <h3 style={{marginTop:5}}>Integração automática com o Chrome</h3>
-                <p className="muted">{extensionOnline?'Extensão detectada neste navegador. Resultados serão exibidos nos dois painéis.':'Instale a versão integrada e recarregue esta página para detectar automaticamente.'}</p>
-              </div>
-              <Btn className="secondary" onClick={activateExtension}>Abrir chat →</Btn>
-            </div>
-          </div>
           <div className="grid3"><div className="card stat"><small><Icon name="book"/> Fichas no catálogo</small><strong>{catalogIssue&&!entries.length?'—':entries.length}</strong><span className="badge">{catalogDegraded?'Contingência · somente leitura':'Conhecimento'}</span></div>
             <div className="card stat"><small><Icon name="brain"/> Regras de classificação</small><strong>{catalogIssue&&!totalRules?'—':totalRules}</strong><span className="badge">{catalogDegraded?'Regras locais':'Cérebro 190'}</span></div>
             <div className="card stat"><small><Icon name="shield"/> Nível de acesso</small><strong style={{fontSize:21}}>{isAdmin?'Administrador':'Consulta'}</strong><span className="badge">Sessão autenticada</span></div></div>
@@ -439,21 +376,20 @@ export default function Home(){
           <small>Revisão {selected.revision} • Atualizado em {formatDate(selected.updated_at)} • Validar legislação, código e procedimento antes do uso.</small>
         </section>}
 
-        {screen==='extension'&&<section className="integrated-chat">
+        {screen==='chat'&&<section className="chat-workspace">
           <div className="chat-main">
             <header className="chat-head">
-              <div className="chat-ident"><span className="chat-avatar"><Icon name="brain"/></span><div><b>Assistente da Base 190</b><small>Reconhecimento local · Gemini só para revisar a escrita</small></div></div>
-              <div className="chat-head-actions"><span className={'chat-pill '+(extensionOnline?'connected':'')}>{extensionOnline?'● Extensão detectada':'○ Extensão ausente'}</span>
+              <div className="chat-ident"><span className="chat-avatar"><Icon name="brain"/></span><div><span className="eyebrow">CÉREBRO 190</span><b>Assistente de triagem</b><small>Leitura local, objetiva e orientativa</small></div></div>
+              <div className="chat-head-actions"><span className="chat-pill"><i/> Online</span>
                 <Btn className="ghost tiny" onClick={()=>setChatMessages([])}>Limpar chat</Btn></div>
             </header>
-            <div className="chat-stream" role="log" aria-label="Conversa de análises da integração">
-              <div className="chat-bubble-system"><b>Cérebro 190 conectado ao SADE.</b><p>Com a análise automática ativada por padrão (ou ligada nas opções) e login válido, este chat acompanha o relato. Ao editar o texto, a resposta anterior é limpa até chegar a análise atualizada. A extensão não exibe respostas nem pede que você clique para analisar.</p></div>
+            <div className="chat-stream" role="log" aria-label="Conversa de análises locais">
+              <div className="chat-bubble-system"><span className="chat-welcome-icon"><Icon name="sparkles" size={17}/></span><div><b>Como posso ajudar?</b><p>Descreva os fatos com suas próprias palavras. Vou separar os envolvidos, apontar hipóteses e sugerir perguntas para confirmar o que falta.</p></div></div>
               {chatMessages.map(m=><div className={'chat-message '+(m.kind==='user'?'from-user':'from-system')} key={m.id}>
                 {m.kind!=='user'&&<span className="chat-message-avatar">190</span>}
                 <div className="chat-bubble">
                   <div className="chat-message-meta"><b>{m.kind==='user'?'Você':m.origin||'Sistema'}</b><span>{new Date(m.at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span></div>
                   {m.kind==='answer'?<>
-                    {m.sourceText&&<details className="chat-live-source"><summary>Relato recebido do SADE — conferir texto</summary><p>{m.sourceText}</p></details>}
                     {chatAnswer(m.result)}
                   </>:<p>{m.text}</p>}
                 </div>
@@ -468,33 +404,15 @@ export default function Home(){
                   placeholder="Pergunte ou descreva uma situação fictícia…" onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();e.currentTarget.form?.requestSubmit();}}}/>
                 <Btn type="submit" disabled={chatSending||chatInput.trim().length<3} className="chat-send">{chatSending?'…':'Enviar ↗'}</Btn>
               </form>
-              <small>Classificação e sondagem funcionam sem Gemini. Apenas ao clicar em Revisar texto com IA, o relato é enviado ao Google. Para testes, use dados fictícios ou anonimizados.</small>
+              <small>Use dados fictícios ou anonimizados. A análise é orientativa e requer conferência humana.</small>
             </div>
           </div>
           <aside className="chat-side">
-            <div className="card ai-status"><span className="eyebrow">TRIAGEM LOCAL</span><h3>Reconhecimento sem IA</h3><p>{ai?.configured?'Análises e naturezas usam apenas regras locais. Gemini disponível somente no botão de aprimorar a escrita.':'Análises e naturezas funcionam sem Gemini. O aprimoramento opcional de escrita não está configurado.'}</p><small>{ai?.configured?ai.model+' · uso exclusivo para revisão textual':'Serviço local independente do Gemini'}</small>{user?.canTestGemini&&<><Btn className="secondary full" onClick={testAI} disabled={aiTesting||!ai?.configured}>{aiTesting?'Verificando configuração…':'Verificar chave configurada'}</Btn><small>Esta verificação não envia relatos nem faz chamada ao modelo.</small>{aiTestResult&&<p role="status" className="assistant-text">{aiTestResult}</p>}</>}</div>
-            <div className="chat-side-top">
-              <span className="eyebrow">CONFIGURAÇÃO SIMPLIFICADA</span>
-              <h2>Extensão Relato 190</h2>
-              <p>O compartilhamento do relato começa ativado. Abra as <strong>configurações da extensão</strong> para desligá-lo quando quiser.</p>
-            </div>
-            <div className={'chat-connection '+(extensionOnline?'is-on':'')}>
-              <span className="chat-connection-dot"/>
-              <div><b>{extensionOnline?'Extensão detectada':'Extensão não detectada'}</b>
-                <small>{extensionOnline?'Abra as configurações para desativar ou reativar o envio.':'Instale ou atualize a extensão de teste.'}</small>
-              </div>
-            </div>
-            <Btn className="full" onClick={openExtensionSettings} disabled={!extensionOnline}>Abrir configurações da extensão</Btn>
-            <p className="chat-small">Mantenha seu login nesta Base 190. O envio é automático por padrão e pode ser desligado nas opções da extensão.</p>
-            <div className="divider"/>
-            <h3>Etapas de utilização</h3>
-            <div className="chat-steps"><span><b>01</b> Entre nesta Base no mesmo perfil do Chrome</span>
-              <span><b>02</b> Abra o SADE ou simulador compatível</span>
-              <span><b>03</b> Aguarde a análise atualizada no chat</span></div>
-            <div className="divider"/>
-            <div className="chat-privacy"><b>Segurança da comunicação</b>
-              <p>O Chrome controla a preferência de envio; a Base verifica seu login a cada consulta. HTTPS/TLS protege o tráfego, mas não há criptografia ponta a ponta. Use apenas dados fictícios no teste.</p></div>
-            <a className="chat-download" href="https://github.com/RicckMatth/190-extensao_integrada/archive/refs/heads/main.zip" target="_blank" rel="noopener noreferrer">Baixar extensão atualizada ↗</a>
+            <div className="chat-side-intro"><span className="eyebrow">COMO FUNCIONA</span><h2>Converse com clareza.</h2><p>O assistente transforma o relato em uma leitura estruturada para apoiar a decisão do operador.</p></div>
+            <div className="chat-side-card"><span className="chat-side-number">01</span><div><b>Descreva o fato</b><small>Inclua quem ligou, o que aconteceu e onde está a situação.</small></div></div>
+            <div className="chat-side-card"><span className="chat-side-number">02</span><div><b>Confira os papéis</b><small>Revise vítima e possível autor. Você pode corrigir e recalcular.</small></div></div>
+            <div className="chat-side-card"><span className="chat-side-number">03</span><div><b>Confirme as lacunas</b><small>Use as perguntas essenciais antes de qualquer encaminhamento.</small></div></div>
+            <div className="chat-side-note"><Icon name="shield" size={17}/><p>As sugestões são hipóteses de apoio. A natureza e o procedimento dependem da validação institucional.</p></div>
           </aside>
         </section>}
         {screen==='brain'&&<>{busy&&<div className="analysis-loading" role="status" aria-live="polite"><span className="analysis-spinner"/><div><strong>Analisando o relato…</strong><p>Reconhecendo fatos, papéis e naturezas diretamente pelo catálogo local. Nenhuma chamada ao Gemini.</p></div></div>}<div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Motor SADE offline com reconhecimento de papéis, negações, armas e sugestões do catálogo. Gemini é opcional e exclusivo para aprimorar o texto.</p></div><span className="badge">{totalRules} regras</span></div>

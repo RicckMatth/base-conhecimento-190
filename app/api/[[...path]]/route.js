@@ -277,7 +277,7 @@ async function gate(request,method,ctx){
         ?(answerLocally({text:relato,history:[],entries})||answerOffline({text:relato,entries}))
         :intent.type==='needs_context'
           ?{tipo:'faq',source:'local',titulo:'Informe o caso para continuar',resposta:'Ainda não há um relato anterior identificável nesta conversa. Descreva os fatos, as pessoas envolvidas e o que foi informado para receber sugestões de natureza e cinco perguntas de sondagem.'}
-          :analyzeOfflineReport({text:intent.text,entries});
+          :analyzeOfflineReport({text:intent.text,entries,roleOverrides:v.roleOverrides});
       if(intent.usedHistory){result.contextUsed=true;result.contextNote='Complemento analisado junto ao relato anterior desta conversa.';}
       return reply({result,degraded:readFallback,disclaimer:readFallback?
         'Triagem em contingência com as 769 naturezas do arquivo local. O banco deve ser verificado; não há sincronização de edições administrativas neste modo.':

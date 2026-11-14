@@ -6,18 +6,9 @@ Portal de consulta de naturezas e análise de relatos com **Next.js (Node.js)**,
 
 > **Aviso operacional:** as classificações, prioridades, códigos e referências legais são sugestões técnicas NÃO homologadas. Valide-as com a instituição antes do uso. Não processe dados pessoais, sensíveis, sigilosos ou de ocorrências reais sem avaliação jurídica, segurança e autorização institucional.
 
-## Integração Relato 190 v5.14.0 — análise ao vivo no chat (TESTE)
+## Chat e triagem independentes
 
-A Base 190 é **a única interface de resultados** da extensão [Relato 190 integrada](https://github.com/RicckMatth/190-extensao_integrada). A extensão atua apenas como **ponte silenciosa**, sem exibir natureza, resultado, perguntas ou reformulações.
-
-1. Instale a extensão **v5.14.0** e faça login normalmente nesta Base 190.
-2. No Chrome, abra **Detalhes → Opções da extensão** e ligue **Análise automática de relatos**. Este é o único consentimento de transmissão; o site não precisa autorizar nada.
-3. Abra o SADE/simulador em uma página suportada. A ponte entra em funcionamento **automaticamente**, sem abrir o painel da extensão ou clicar em Analisar.
-4. Digite um relato fictício de pelo menos 20 caracteres. Depois de ~1,15 segundo sem alterações, a Base recebe o texto e analisa-o via API autenticada. O fluxo limita repetição e descarta resultados obsoletos.
-5. O chat **Integração 190** abre automaticamente ao receber a resposta, e atualiza sua última análise ao vivo, sem acumular dezenas de mensagens durante a digitação.
-6. Para parar, desative a preferência nas opções da extensão; nenhum resultado é enviado para o SADE e nenhuma ocorrência é salva/despachada automaticamente.
-
-**Segurança:** o opt-in de transmissão fica no `chrome.storage.local`; autenticação exigida pelo servidor com sessão `HttpOnly`, e HTTPS/TLS para o tráfego. Não há criptografia ponta a ponta. O texto do relato pode conter dados pessoais ou sigilosos: a função continua **experimental e não homologada para uso operacional com dados reais**, dependendo de autorização institucional e avaliação de LGPD.
+A integração com a extensão Relato 190 foi removida. Não há descoberta, eventos de troca de relatos, sincronização ou controles da extensão. O chat e a análise manual continuam disponíveis mediante login, sem Gemini para classificação. `/chat` e `/analyze` são rotas compartilhadas do site, protegidas por sessão e origem; não existem endpoints exclusivos da extensão neste repositório.
 
 ## Recursos
 
