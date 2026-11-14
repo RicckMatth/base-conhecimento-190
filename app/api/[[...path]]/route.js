@@ -61,7 +61,7 @@ async function gate(request,method,ctx){
   try{await prepare();}catch(error){
     bootstrapIssue=error;
     console.error('Base190 bootstrap failure',{route,code:error?.code||'unknown'});
-    if(!((method==='GET'&&['/entries','/rules','/session'].includes(route))||(method==='POST'&&['/chat','/analyze'].includes(route))))throw error;
+    if(!((method==='GET'&&['/entries','/rules','/session','/quality'].includes(route))||(method==='POST'&&['/chat','/analyze','/quality/monitor','/quality/followup','/quality/ack'].includes(route))))throw error;
   }
 
   if(route==='/access-requests'&&method==='POST') {
