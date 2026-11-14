@@ -25,7 +25,7 @@ function component(name){
  return module.exports;
 }
 
-test('chat montado ignora eventos da extensão, analisa texto manual e recalcula correções',async()=>{
+test('chat montado ignora eventos da extensão e apresenta interface SADE isolada',async()=>{
  const dom=new JSDOM('<div id="root"></div>',{url:'https://base.example'}),saved=new Map();
  const install=(key,value)=>{saved.set(key,Object.getOwnPropertyDescriptor(globalThis,key));Object.defineProperty(globalThis,key,{value,configurable:true,writable:true});};
  for(const key of ['window','document','navigator','HTMLElement','Event','CustomEvent','localStorage'])install(key,dom.window[key]);
@@ -54,26 +54,12 @@ test('chat montado ignora eventos da extensão, analisa texto manual e recalcula
   assert.equal(calls.length,before);assert.ok(document.body.textContent.includes('Clareza para cada atendimento.'));
   assert.doesNotMatch(document.body.textContent,/INJEÇÃO EXTERNA|Extensão detectada|Baixar extensão|Integração 190/);
   await click('Chat 190');
-  const textarea=document.querySelector('#chat-input');
-  await act(async()=>{
-   Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype,'value').set.call(textarea,'Meu marido me ameaça.');
-   textarea.dispatchEvent(new Event('input',{bubbles:true}));textarea.dispatchEvent(new Event('change',{bubbles:true}));
-  });
-  // React carrega antes do DOM neste teste; dispara o handler real com o valor
-  // controlado para não depender da detecção de input específica do navegador.
-  const propsKey=Object.keys(textarea).find(k=>k.startsWith('__reactProps'));
-  await act(async()=>textarea[propsKey].onChange({target:{value:'Meu marido me ameaça.'}}));
-  await act(async()=>textarea.form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
-  assert.ok(calls.some(c=>c.url==='/api/chat'));assert.match(document.body.textContent,/Possível vítima direta/);
-  await click('Corrigir envolvidos e recalcular');
-  const form=document.querySelector('form[aria-label="Correção manual dos envolvidos"]');
-  const selects=form.querySelectorAll('select');
-  await act(async()=>{selects[1].value='mulher';selects[1].dispatchEvent(new Event('change',{bubbles:true}));});
-  await act(async()=>form.querySelector('input[type="checkbox"]').click());
-  await act(async()=>form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
-  const correction=calls.find(c=>c.url==='/api/analyze');assert.ok(correction);
-  assert.equal(JSON.parse(correction.options.body).roleOverrides.victim,'mulher');
-  assert.match(document.body.textContent,/pessoa atingida: mulher/);assert.match(document.body.textContent,/Correção manual aplicada/);
+  const iframe=document.querySelector('iframe.sade-embed-frame');
+  assert.ok(iframe,'O Chat 190 deve montar a tela SADE completa.');
+  assert.equal(iframe.getAttribute('src'),'/copom-sade-190.html');
+  assert.equal(iframe.getAttribute('sandbox'),'allow-scripts');
+  assert.match(iframe.getAttribute('title'),/Assistente de Triagem Inteligente SADE/);
+  assert.equal(calls.some(c=>c.url==='/api/chat'),false,'A navegação não deve disparar análise sem relato.');
   assert.deepEqual(outbound,[]);
  }finally{
   await act(async()=>root.unmount());dom.window.close();
