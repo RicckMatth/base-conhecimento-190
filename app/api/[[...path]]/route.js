@@ -9,7 +9,7 @@ import { readFeedbackTicket,learnableQuestions } from '../../../lib/question-fee
 import { canTestGemini } from '../../../lib/permissions.js';
 import { aiStatus,rewriteWithGemini } from '../../../lib/gemini.js';
 import {analyzeOfflineReport,answerOffline} from '../../../lib/offline-sade-triage.js';
-import {COPOM_CATALOG,catalogRules} from '../../../lib/copom-catalog.js';
+import {COPOM_CATALOG,catalogRules,enrichCatalogEntry} from '../../../lib/copom-catalog.js';
 import { answerLocally,aiFailure } from '../../../lib/assistant.js';
 import {resolveChatIntent} from '../../../lib/chat-intent.js';
 import { NextResponse } from 'next/server';
@@ -159,7 +159,7 @@ async function gate(request,method,ctx){
     try{
       if(bootstrapIssue)throw bootstrapIssue;
       const rows=await db().query('SELECT id,code,title,category,priority,summary,body,tags,revision,updated_at FROM knowledge WHERE active_in_catalog=true ORDER BY title LIMIT 2000');
-      if(rows.rows.length)return reply({entries:rows.rows,catalogSource:'copom-csv-v2',catalogImported:769,degraded:false});
+      if(rows.rows.length)return reply({entries:rows.rows.map(enrichCatalogEntry),catalogSource:'copom-csv-v2',catalogImported:769,degraded:false});
       console.error('Base190 catalog empty: no active rows (read-only fallback)');
     }catch(error){console.error('Base190 entries query failure',{code:error?.code||'unknown'});}
     return reply({entries:COPOM_CATALOG.map(e=>({...e,id:'offline-'+e.code,revision:0,readOnly:true})),catalogSource:'copom-csv-v2-static',catalogImported:769,degraded:true,
@@ -263,7 +263,7 @@ async function gate(request,method,ctx){
       try{
         if(bootstrapIssue)throw bootstrapIssue;
         const knowledge=await db().query('SELECT code,title,category,summary,body,tags FROM knowledge WHERE active_in_catalog=true ORDER BY title LIMIT 2000');
-        entries=knowledge.rows.length?knowledge.rows:COPOM_CATALOG;
+        entries=(knowledge.rows.length?knowledge.rows:COPOM_CATALOG).map(enrichCatalogEntry);
         readFallback=!knowledge.rows.length;
       }catch(error){
         console.error('Base190 local triage catalog fallback',{code:error?.code||'unknown'});

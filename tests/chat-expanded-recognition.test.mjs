@@ -4,6 +4,7 @@ import {resolveChatIntent,hasReportFacts,isConceptualInquiry} from '../lib/chat-
 import {analyzeOfflineReport} from '../lib/offline-sade-triage.js';
 import {parseEvidence} from '../lib/offline-sade-parser.js';
 import {COPOM_CATALOG} from '../lib/copom-catalog.js';
+import {answerLocally} from '../lib/assistant.js';
 
 function run(text,history=[]){
  const intent=resolveChatIntent(text,history);
@@ -63,6 +64,15 @@ test('consulta teórica sobre diferença entre naturezas não gera ocorrência',
   assert.equal(isConceptualInquiry(text),true,text);
   assert.equal(resolveChatIntent(text).type,'question',text);
  }
+});
+test('dúvidas sobre quando usar uma natureza retornam a ficha programada',()=>{
+ const answer=answerLocally({text:'Quando usar a natureza de roubo?',entries:COPOM_CATALOG});
+ assert.equal(answer?.titulo,'ROUBO');
+ assert.equal(answer?.references?.[0]?.code,'NAT-0016');
+ assert.match(answer?.resposta||'',/Quando usar:/);
+ assert.match(answer?.resposta||'',/Não usar automaticamente:/);
+ assert.equal(resolveChatIntent('Quando usar a natureza de roubo?').type,'question');
+ assert.equal(resolveChatIntent('Explique a natureza de ameaça e quando usar').type,'question');
 });
 test('pedido genérico sem fato solicita informações, e complemento explícito herda o último relato',()=>{
  assert.equal(resolveChatIntent('Qual seria a natureza?').type,'needs_context');

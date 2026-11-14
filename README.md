@@ -6,9 +6,9 @@ Portal de consulta de naturezas e análise de relatos com **Next.js (Node.js)**,
 
 > **Aviso operacional:** as classificações, prioridades, códigos e referências legais são sugestões técnicas NÃO homologadas. Valide-as com a instituição antes do uso. Não processe dados pessoais, sensíveis, sigilosos ou de ocorrências reais sem avaliação jurídica, segurança e autorização institucional.
 
-## Chat e triagem independentes
+## Chat 190 unificado
 
-A integração com a extensão Relato 190 foi removida. Não há descoberta, eventos de troca de relatos, sincronização ou controles da extensão. O chat e a análise manual continuam disponíveis mediante login, sem Gemini para classificação. `/chat` e `/analyze` são rotas compartilhadas do site, protegidas por sessão e origem; não existem endpoints exclusivos da extensão neste repositório.
+A integração com a extensão Relato 190 foi removida. Não há descoberta, eventos de troca de relatos, sincronização ou controles da extensão. O Chat 190 é a interface única para ocorrências, dúvidas conceituais e consulta de naturezas; as fichas do catálogo incluem descrição orientativa, quando usar, quando não usar e perguntas essenciais. A classificação e as respostas programadas são locais, sem Gemini; `/chat` e `/analyze` permanecem protegidas por sessão e origem para compatibilidade interna.
 
 ## Recursos
 
@@ -18,7 +18,7 @@ A integração com a extensão Relato 190 foi removida. Não há descoberta, eve
 - Todo usuário aprovado recebe perfil simples (somente leitura). O administrador exclusivo `pm-civil.bandeira` é inicializado pelo servidor.
 - Editor de fichas restrito ao administrador, histórico de revisões e concorrência otimista.
 - Gestão de usuários, bloqueio, redefinição de senha, regras personalizadas e auditoria básica.
-- Cérebro 190 adaptado do mecanismo existente para execução no Node.js, com regras extras e índice **heurístico** (não probabilidade).
+- Chat 190 unificado, com motor local de triagem, respostas programadas do catálogo e índice **heurístico** (não probabilidade).
 - Tema claro/escuro funcional e responsividade mobile/desktop.
 - Implantação automática por Git Integration do Vercel.
 

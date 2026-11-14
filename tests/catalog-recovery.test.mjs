@@ -38,8 +38,8 @@ test('front-end recebe fichas mesmo se regras falharem e não mostra zero falso'
  assert.match(page,/if\(entry\?\.readOnly\|\|catalogDegraded\)/);
 });
 test('triagem offline continua utilizando apenas naturezas válidas do arquivo em falha de consulta',()=>{
- assert.match(api,/entries=knowledge\.rows\.length\?knowledge\.rows:COPOM_CATALOG/);
- assert.match(api,/entries=COPOM_CATALOG;readFallback=true/);
+ assert.match(api,/entries=\(knowledge\.rows\.length\?knowledge\.rows:COPOM_CATALOG\)\.map\(enrichCatalogEntry\)/);
+ assert.match(api,/readFallback=true/);
  assert.match(api,/result,degraded:readFallback/);
  assert.doesNotMatch(api.slice(api.indexOf("if((route==='/chat'"),api.indexOf("// Escalas:")),/askGemini\(/);
 });

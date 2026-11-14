@@ -115,9 +115,8 @@ export default function Home(){
       chatBottomRef.current.scrollIntoView({behavior:'smooth',block:'end'});
     }
   },[chatMessages.length,screen]);
-  async function sendChat(event){
-    event.preventDefault();
-    const text=chatInput.trim();
+  async function submitChatText(value){
+    const text=String(value||'').trim();
     if(chatSending||text.length<3||text.length>8000)return;
     const stamp=Date.now();setChatInput('');
     setChatMessages(prev=>[...prev.slice(-23),{id:'user-'+stamp,kind:'user',text,at:stamp}]);
@@ -131,6 +130,7 @@ export default function Home(){
       setChatMessages(prev=>[...prev.slice(-23),{id:'error-'+Date.now(),kind:'error',text:error.message||'Falha na análise.',at:Date.now()}]);
     }finally{setChatSending(false);}
   }
+  async function sendChat(event){event.preventDefault();await submitChatText(chatInput);}
   async function submitLogin(event){
     event.preventDefault();clear();setBusy(true);
     try{const data=await call('/auth/login',{method:'POST',body:body(login)});setUser(data.user);setScreen('home');setLogin({username:'',password:''});await refreshCatalog();}
@@ -158,6 +158,7 @@ export default function Home(){
   }
   async function go(next){
     if(!window.dispatchEvent(new Event('base190:before-navigation',{cancelable:true})))return;
+    if(next==='brain')next='chat';
     if(next==='docs')setDocsOpened(true);
     clear();setScreen(next);setCredential(null);
     if(next==='access'){try{await refreshAdmin();}catch(e){err(e);}}
@@ -165,11 +166,8 @@ export default function Home(){
     if(next==='rules'){try{const x=await call('/rules');setBrainRules(x);}catch(e){err(e);}}
   }
   async function analyze(e){
-    e?.preventDefault?.();clear();if(relato.trim().length<3)return err(new Error('Informe o relato para análise.'));
-    setBusy(true);setAnalysis(null);setScreen('brain');try{const x=await call('/analyze',{method:'POST',body:body({text:relato})});
-      setAnalysis(x.result);setScreen('brain');
-    }
-    catch(e){err(e);}finally{setBusy(false);}
+    e?.preventDefault?.();clear();const text=relato.trim();if(text.length<3)return err(new Error('Informe o relato ou a dúvida para análise.'));
+    setRelato('');setScreen('chat');await submitChatText(text);
   }
   function openEntry(id){setSelectedId(id);go('detail');}
   const selected=entries.find(e=>e.id===selectedId);
@@ -218,7 +216,7 @@ export default function Home(){
       const payload={...ruleDraft,group1:toEntries(ruleDraft.group1),group2:toEntries(ruleDraft.group2)};
       await call('/admin/rules',{method:'POST',body:body(payload)});
       const r=await call('/rules');setBrainRules(r);
-      setRuleDraft({code:'',officialNature:'',category:'Proteção',priority:'Média',group1:'',group2:'',explanation:''});ok('Nova regra adicionada ao Cérebro 190.');
+      setRuleDraft({code:'',officialNature:'',category:'Proteção',priority:'Média',group1:'',group2:'',explanation:''});ok('Nova regra adicionada ao assistente.');
     }catch(e){err(e);}finally{setBusy(false);}
   }
   async function deleteRule(id){
@@ -287,7 +285,7 @@ export default function Home(){
     <section className="login-art">
       <span className="mark">190</span><span className="eyebrow" style={{color:'#aecbff'}}>CENTRAL DE INTELIGÊNCIA E CONHECIMENTO</span>
       <h1>Conhecimento para decisões mais informadas.</h1>
-      <p>Consulte naturezas, analise relatos com o Cérebro 190 e acesse protocolos orientativos em uma plataforma com permissões controladas.</p>
+      <p>Consulte naturezas, analise relatos e esclareça dúvidas com o Chat 190 em uma plataforma com permissões controladas.</p>
       <div className="feature-pills"><span><Icon name="lock"/> Acesso autorizado</span><span><Icon name="brain"/> Triagem de relatos</span><span><Icon name="book"/> Base pesquisável</span><span><Icon name="shield"/> Gestão administrativa</span></div>
       <small style={{color:'#aebfe0'}}>Ambiente de apoio. Classificações e orientações devem ser revisadas e homologadas pela instituição.</small>
     </section>
@@ -324,8 +322,8 @@ export default function Home(){
     </form>
   </section>;
 
-  const links=[['home','Visão geral','home'],['docs','Base de conhecimento','book'],['catalog','Catálogo','book'],['brain','Cérebro 190','brain'],['chat','Chat 190','brain'],['floor','Gestão de piso','shield'],['quality','Qualidade','audit']];
-  const adminLinks=[['editor','Editar textos','edit'],['access','Autorizar acessos','users'],['rules','Regras do Cérebro','settings'],['audit','Auditoria','audit']];
+  const links=[['home','Visão geral','home'],['docs','Base de conhecimento','book'],['catalog','Catálogo','book'],['chat','Chat 190','brain'],['floor','Gestão de piso','shield'],['quality','Qualidade','audit']];
+  const adminLinks=[['editor','Editar textos','edit'],['access','Autorizar acessos','users'],['rules','Regras do assistente','settings'],['audit','Auditoria','audit']];
   return <div className="shell">
     <aside className="sidebar">
       <div className="logo"><div className="logoicon">190</div><div><strong>Base 190</strong><small>CONHECIMENTO OPERACIONAL</small></div></div>
@@ -346,12 +344,12 @@ export default function Home(){
         </div>}
 
         {screen==='home'&&<>
-          <section className="hero"><div className="hero-orbit" aria-hidden="true"><Icon name="shield" size={114}/></div><span className="eyebrow">CÉREBRO 190 • TRIAGEM ORIENTATIVA</span><h1>Clareza para cada atendimento.</h1>
-            <p>Pesquise uma natureza ou descreva um cenário fictício para obter sugestões de triagem, máscaras e classificações que exigem validação humana.</p>
-            <form className="search-row" onSubmit={analyze}><input value={relato} onChange={e=>setRelato(e.target.value)} aria-label="Relato para análise" placeholder="Ex.: dois indivíduos roubaram o celular mediante ameaça"/><Btn type="submit" disabled={busy}>Analisar relato →</Btn></form>
+          <section className="hero"><div className="hero-orbit" aria-hidden="true"><Icon name="shield" size={114}/></div><span className="eyebrow">CHAT 190 • ASSISTENTE UNIFICADO</span><h1>Clareza para cada atendimento.</h1>
+            <p>Descreva uma ocorrência ou faça uma pergunta sobre uma natureza. O Chat 190 consulta o catálogo, explica quando usar cada ficha e sinaliza o que precisa ser confirmado.</p>
+            <form className="search-row" onSubmit={analyze}><input value={relato} onChange={e=>setRelato(e.target.value)} aria-label="Relato ou dúvida para análise" placeholder="Ex.: quando usar a natureza de roubo?"/><Btn type="submit" disabled={busy||chatSending}>Consultar no Chat 190 →</Btn></form>
           </section>
           <div className="grid3"><div className="card stat"><small><Icon name="book"/> Fichas no catálogo</small><strong>{catalogIssue&&!entries.length?'—':entries.length}</strong><span className="badge">{catalogDegraded?'Contingência · somente leitura':'Conhecimento'}</span></div>
-            <div className="card stat"><small><Icon name="brain"/> Regras de classificação</small><strong>{catalogIssue&&!totalRules?'—':totalRules}</strong><span className="badge">{catalogDegraded?'Regras locais':'Cérebro 190'}</span></div>
+            <div className="card stat"><small><Icon name="brain"/> Regras de classificação</small><strong>{catalogIssue&&!totalRules?'—':totalRules}</strong><span className="badge">{catalogDegraded?'Regras locais':'Chat 190'}</span></div>
             <div className="card stat"><small><Icon name="shield"/> Nível de acesso</small><strong style={{fontSize:21}}>{isAdmin?'Administrador':'Consulta'}</strong><span className="badge">Sessão autenticada</span></div></div>
           <section className="domain-section"><div className="panel-head"><div><span className="eyebrow">CONSULTA POR ÁREA</span><h2>Encontre o contexto do atendimento</h2></div><span className="badge">{categories.length-1} áreas</span></div><div className="domain-grid">{categories.filter(c=>c!=='Todas').map(c=><button className="domain-card" key={c} onClick={()=>{setCat(c);setSearch('');setPriorityFilter('Todas');go('catalog');}}><Icon name={categoryIcon(c)} size={24}/><b>{c}</b><small>{entries.filter(e=>e.category===c).length} fichas</small><Icon name="arrow" size={16}/></button>)}</div></section>
           <section><div className="panel-head"><div><h2>Naturezas em destaque</h2><p className="muted">Consulte fichas e orientações existentes</p></div><Btn className="secondary" onClick={()=>go('catalog')}>Ver catálogo →</Btn></div>{entryGrid(entries.slice(0,6))}</section>
@@ -379,7 +377,7 @@ export default function Home(){
         {screen==='chat'&&<section className="chat-workspace">
           <div className="chat-main">
             <header className="chat-head">
-              <div className="chat-ident"><span className="chat-avatar"><Icon name="brain"/></span><div><span className="eyebrow">CÉREBRO 190</span><b>Assistente de triagem</b><small>Leitura local, objetiva e orientativa</small></div></div>
+              <div className="chat-ident"><span className="chat-avatar"><Icon name="brain"/></span><div><span className="eyebrow">CHAT 190</span><b>Assistente unificado</b><small>Ocorrências, dúvidas e consulta de naturezas</small></div></div>
               <div className="chat-head-actions"><span className="chat-pill"><i/> Online</span>
                 <Btn className="ghost tiny" onClick={()=>setChatMessages([])}>Limpar chat</Btn></div>
             </header>
@@ -394,7 +392,7 @@ export default function Home(){
                   </>:<p>{m.text}</p>}
                 </div>
               </div>)}
-              {chatSending&&<div className="chat-typing"><Icon name="brain"/> Cérebro 190 analisando…</div>}
+              {chatSending&&<div className="chat-typing"><Icon name="brain"/> Chat 190 consultando a base…</div>}
               <div ref={chatBottomRef} aria-hidden="true"/>
             </div>
             <div className="chat-compose">
@@ -408,10 +406,10 @@ export default function Home(){
             </div>
           </div>
           <aside className="chat-side">
-            <div className="chat-side-intro"><span className="eyebrow">COMO FUNCIONA</span><h2>Converse com clareza.</h2><p>O assistente transforma o relato em uma leitura estruturada para apoiar a decisão do operador.</p></div>
-            <div className="chat-side-card"><span className="chat-side-number">01</span><div><b>Descreva o fato</b><small>Inclua quem ligou, o que aconteceu e onde está a situação.</small></div></div>
-            <div className="chat-side-card"><span className="chat-side-number">02</span><div><b>Confira os papéis</b><small>Revise vítima e possível autor. Você pode corrigir e recalcular.</small></div></div>
-            <div className="chat-side-card"><span className="chat-side-number">03</span><div><b>Confirme as lacunas</b><small>Use as perguntas essenciais antes de qualquer encaminhamento.</small></div></div>
+            <div className="chat-side-intro"><span className="eyebrow">COMO FUNCIONA</span><h2>Uma base, várias respostas.</h2><p>O Chat 190 consulta o catálogo programado para explicar naturezas, responder dúvidas e estruturar ocorrências no mesmo lugar.</p></div>
+            <div className="chat-side-card"><span className="chat-side-number">01</span><div><b>Descreva o fato ou pergunte</b><small>Inclua quem ligou, o que aconteceu e onde está a situação — ou pergunte quando usar uma natureza.</small></div></div>
+            <div className="chat-side-card"><span className="chat-side-number">02</span><div><b>Consulte a ficha</b><small>A resposta traz descrição, quando considerar, quando não usar e referências do catálogo.</small></div></div>
+            <div className="chat-side-card"><span className="chat-side-number">03</span><div><b>Confirme as lacunas</b><small>Use as perguntas essenciais antes de qualquer encaminhamento ou classificação.</small></div></div>
             <div className="chat-side-note"><Icon name="shield" size={17}/><p>As sugestões são hipóteses de apoio. A natureza e o procedimento dependem da validação institucional.</p></div>
           </aside>
         </section>}
@@ -463,7 +461,7 @@ export default function Home(){
         </>}
 
         {isAdmin&&screen==='rules'&&<>
-          <div><span className="eyebrow">MATRIZ SEMÂNTICA</span><h1>Naturezas e regras do Cérebro</h1><p className="muted">Catálogo de 769 naturezas importadas do CSV. As fichas servem de consulta; a classificação automática usa somente correspondências suficientemente claras. Regras personalizadas continuam sob controle administrativo.</p></div>
+          <div><span className="eyebrow">MATRIZ SEMÂNTICA</span><h1>Naturezas e regras do assistente</h1><p className="muted">Catálogo de 769 naturezas importadas do CSV. As fichas servem de consulta; o Chat 190 usa correspondências suficientemente claras e respostas programadas. Regras personalizadas continuam sob controle administrativo.</p></div>
           <form className="card spaced" onSubmit={createRule}>
             <h2>Adicionar natureza personalizada</h2>
             <div className="grid2"><div><label>Código da regra</label><input required value={ruleDraft.code} onChange={e=>setRuleDraft({...ruleDraft,code:e.target.value})} placeholder="EX.: TRI-101"/></div>
