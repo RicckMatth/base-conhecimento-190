@@ -9,7 +9,7 @@ test('analyze e chat operam exclusivamente offline, sem API Gemini de geração'
  assert.match(api,/if\(\(route==='\/chat'\|\|route==='\/analyze'\)\&\&method==='POST'\)/);
  assert.match(api,/answerOffline\(\{text:relato,entries\}\)/);
  assert.match(api,/resolveChatIntent\(relato,v\.history\)/);
- assert.match(api,/analyzeOfflineReport\(\{text:intent\.text,entries\}\)/);
+ assert.match(api,/analyzeOfflineReport\(\{text:intent\.text,entries,roleOverrides:v\.roleOverrides\}\)/);
  assert.doesNotMatch(api,/askGemini\s*\(/);
  assert.doesNotMatch(api,/GEMINI_API_KEY.*\/chat/);
 });

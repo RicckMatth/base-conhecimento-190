@@ -17,7 +17,7 @@ button:focus-visible{outline:3px solid #70a9ff;outline-offset:2px}.btn{border:0;
 @media(max-width:650px){.shell{grid-template-columns:1fr}.sidebar{position:sticky;top:0;z-index:5;height:auto;flex-direction:row;align-items:center;gap:3px;padding:6px;overflow:auto}.logo{display:none}.nav-btn{white-space:nowrap;font-size:11px;padding:10px}.sidebar-bottom{margin:0;padding:0 0 0 8px;border:0}.topbar{height:59px;padding:0 12px}.content{padding:18px 12px}.hero{padding:23px 19px}.grid2,.grid3{grid-template-columns:1fr}.search-row{grid-template-columns:1fr}.login-art{padding:28px}.card{padding:17px}.hero h1{font-size:26px}.topbar .muted{display:none}}
 
 
-/* Integração Relato 190 v2 — layout conversacional responsivo.
+/* Chat local 190 — layout conversacional responsivo.
    Evita scroll horizontal mesmo com textos longos de ocorrências. */
 .shell,.main,.content,.card,.analysis-result{min-width:0}
 .content{width:100%;max-width:1480px;overflow-wrap:anywhere}
