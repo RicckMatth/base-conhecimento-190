@@ -9,7 +9,7 @@ test('Chat 190 é a única aba pública de atendimento',()=>{
  assert.match(page,/\['chat','Chat 190','brain'\]/);
  assert.doesNotMatch(page,/\['brain','Cérebro 190','brain'\]/);
  assert.match(page,/if\(next==='brain'\)next='chat'/);
- assert.match(page,/src="\\/copom-sade-190\\.html"/);
+ assert.ok(page.includes('src="/copom-sade-190.html"'));
  assert.match(page,/sandbox="allow-scripts"/);
 });
 
