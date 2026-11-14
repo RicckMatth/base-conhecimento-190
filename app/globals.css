@@ -180,3 +180,11 @@ html,body{font-family:Inter,"Segoe UI",system-ui,sans-serif}h1,h2,h3{text-wrap:b
 .writing-review-success,.writing-review-info{font-size:.8rem;line-height:1.6;padding:9px 12px;border-radius:9px;margin-top:10px}
 .writing-review-success{color:#047857;background:#10b98115;border:1px solid #10b98150}
 .writing-review-info{color:var(--muted);background:var(--soft);border:1px solid var(--line)}
+
+
+/* Chat 190 SADE v7 integrado, sem conflito com os estilos globais */
+.sade-workspace{display:flex;flex-direction:column;min-width:0;width:100%;gap:12px}
+.sade-integrated-notice{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:var(--soft);border:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.45}
+.sade-integrated-notice svg{flex:none;color:var(--blue)}
+.sade-embed-frame{display:block;width:100%;height:calc(100dvh - 205px);min-height:660px;border:1px solid var(--line);border-radius:20px;background:#060a12;box-shadow:var(--shadow);overflow:hidden}
+@media(max-width:760px){.sade-integrated-notice{font-size:11px;padding:9px 11px}.sade-embed-frame{height:calc(100dvh - 210px);min-height:560px;border-radius:13px}}
