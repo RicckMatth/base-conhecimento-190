@@ -2,6 +2,7 @@ import {put,get,del} from '@vercel/blob';
 import {normalizeImage,readLimited,storeAsset,readableAsset,deleteAsset,requireEditor,importExternalImage} from '../../../lib/documentation-assets.js';
 import {saveDocument,saveDraft,uuid} from '../../../lib/documentation-store.js';
 import {getSchedule,editOperationalRole,editShift,editScheduleDay,generateMonth,editSchedulePreferences,editSundayChoice} from '../../../lib/floor-scheduling.js';
+import {qualityBoard,qualitySaveMonitor,qualitySaveFollowup,qualityAcknowledge} from '../../../lib/quality-store.js';
 import {listDocumentationSpaces,createDocumentationSpace,updateDocumentationSpace} from '../../../lib/documentation-spaces.js';
 import {cleanDocument} from '../../../lib/documentation.js';
 import { readFeedbackTicket,learnableQuestions } from '../../../lib/question-feedback.js';
@@ -60,7 +61,7 @@ async function gate(request,method,ctx){
   try{await prepare();}catch(error){
     bootstrapIssue=error;
     console.error('Base190 bootstrap failure',{route,code:error?.code||'unknown'});
-    if(!((method==='GET'&&['/entries','/rules','/session'].includes(route))||(method==='POST'&&['/chat','/analyze'].includes(route))))throw error;
+    if(!((method==='GET'&&['/entries','/rules','/session','/quality'].includes(route))||(method==='POST'&&['/chat','/analyze','/quality/monitor','/quality/followup','/quality/ack'].includes(route))))throw error;
   }
 
   if(route==='/access-requests'&&method==='POST') {
@@ -127,6 +128,33 @@ async function gate(request,method,ctx){
     return out;
   }
   if(u.must_change_password)return failure('Troca obrigatória da senha provisória antes de utilizar a plataforma.',403);
+  // Qualidade 190: GET/POST protegidos pela sessão; todas as permissões,
+  // assinaturas e notas são verificadas novamente no servidor.
+  if(route==='/quality'&&method==='GET'){
+   try{
+    const month=new URL(request.url).searchParams.get('month')||new Date().toISOString().slice(0,7);
+    return reply(await qualityBoard(db(),u,month));
+   }catch(error){return failure(error.message,error.status||503);}
+  }
+  if(route==='/quality/monitor'&&method==='POST'){
+   try{
+    const v=await input(request,20000);
+    return reply(await qualitySaveMonitor(db(),u,v,{publish:v.publish===true}),v.id?200:201);
+   }catch(error){return failure(error.message,error.status||400);}
+  }
+  if(route==='/quality/followup'&&method==='POST'){
+   try{
+    const v=await input(request,16000);
+    return reply(await qualitySaveFollowup(db(),u,v,{publish:v.publish===true}),201);
+   }catch(error){return failure(error.message,error.status||400);}
+  }
+  if(route==='/quality/ack'&&method==='POST'){
+   try{
+    const v=await input(request,140000);
+    return reply(await qualityAcknowledge(db(),u,v));
+   }catch(error){return failure(error.message,error.status||400);}
+  }
+
   if(route==='/entries'&&method==='GET'){
     try{
       if(bootstrapIssue)throw bootstrapIssue;
