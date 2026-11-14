@@ -7,7 +7,7 @@ const html=readFileSync(new URL('../public/copom-sade-190.html',import.meta.url)
 const source=html.match(/<script>\s*([\s\S]*?)<\/script>\s*<\/body>/i)?.[1];
 assert.ok(source,'O motor completo deve constar no HTML incorporado.');
 const document={getElementById:()=>({textContent:'',classList:{add(){},remove(){}}})};
-const context=vm.createContext({document,window:{},console});
+const context=vm.createContext({document,window:{addEventListener(){}},console});
 new vm.Script(source,{filename:'copom-sade-190.html'}).runInContext(context,{timeout:3000});
 const evaluate=expression=>vm.runInContext(expression,context,{timeout:3000});
 const analyze=text=>evaluate('({ctx:extrairContexto('+JSON.stringify(text)+'),result:classificarOcorrenciaSADE('+JSON.stringify(text)+',extrairContexto('+JSON.stringify(text)+'))})');
@@ -46,4 +46,14 @@ test('perturbação sonora mantém sua natureza SADE',()=>{
  const {ctx,result}=analyze('Morador informa que o vizinho ligou o som automotivo no último volume desde a madrugada com gritaria e algazarra, impedindo a vizinhança de dormir.');
  assert.equal(ctx.armaTipo,'NENHUMA');
  assert.equal(result.candidatas[0].id,2);
+});
+
+test('botão Enviar impede navegação, limpa campo e entrega o relato ao motor',()=>{
+ const reportField={value:'  solicitante relata ameaça com facão  '};
+ context.document.getElementById=id=>id==='reportInput'?reportField:{textContent:'',classList:{add(){},remove(){}}};
+ const result=evaluate("(() => { let prevented=false; processarRelato = text => {globalThis.__submittedReport = text;}; handleSubmit({preventDefault(){prevented=true;}}); return {prevented,submitted:globalThis.__submittedReport,field:document.getElementById('reportInput').value}; })()");
+ assert.equal(result.prevented,true);
+ assert.equal(result.submitted,'solicitante relata ameaça com facão');
+ assert.equal(result.field,'');
+ assert.match(html,/<form onsubmit="handleSubmit\(event\)"/);
 });
