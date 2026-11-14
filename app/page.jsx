@@ -358,7 +358,7 @@ export default function Home(){
             className="sade-embed-frame"
             src="/copom-sade-190.html"
             title="Chat 190 — Assistente de Triagem Inteligente SADE"
-            sandbox="allow-scripts"
+            sandbox="allow-scripts allow-forms"
             allow="clipboard-write"
             referrerPolicy="no-referrer"
             onLoad={(event)=>{
