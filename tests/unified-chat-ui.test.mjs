@@ -10,7 +10,8 @@ test('Chat 190 é a única aba pública de atendimento',()=>{
  assert.doesNotMatch(page,/\['brain','Cérebro 190','brain'\]/);
  assert.match(page,/if\(next==='brain'\)next='chat'/);
  assert.ok(page.includes('src="/copom-sade-190.html"'));
- assert.match(page,/sandbox="allow-scripts"/);
+ assert.match(page,/sandbox="allow-scripts allow-forms"/);
+ assert.doesNotMatch(page,/sandbox="[^"]*allow-same-origin/);
 });
 
 test('cada natureza do catálogo tem descrição de uso e perguntas essenciais',()=>{
