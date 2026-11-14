@@ -57,7 +57,7 @@ test('atendente não publica avaliação, não pode avaliar a si mesmo e não ac
  const {pg,pool,manager,attendant,colleague}=await setup();
  try{
   await assert.rejects(qualitySaveMonitor(pool,attendant,form(colleague.id),{publish:true}),e=>e.status===403);
-  await assert.rejects(qualitySaveMonitor(pool,manager,form(manager.id),{publish:false}),/própria conta/);
+  await assert.rejects(qualitySaveMonitor(pool,manager,form(manager.id),{publish:false}),/atendentes do 190/);
   const draft=await qualitySaveMonitor(pool,manager,form(attendant.id,{ratings:{'1.1':'yes'}}));
   assert.equal(draft.record.status,'draft');
   const own=await qualityBoard(pool,attendant,month);
