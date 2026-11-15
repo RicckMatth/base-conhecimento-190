@@ -78,6 +78,8 @@ export default function FloorSchedule(){
  const [weekStart,setWeekStart]=useState(monday(LOCAL_DAY()));
  const [selectedGroup,setSelectedGroup]=useState('attendant');
  const [breakDraft,setBreakDraft]=useState(['','','']);
+ const [fixedDraft,setFixedDraft]=useState(['','','']);
+ const [liveRows,setLiveRows]=useState([]),[liveError,setLiveError]=useState(''),[liveTick,setLiveTick]=useState(0);
  const [shiftDraft,setShiftDraft]=useState({start:'08:00',end:'14:20'});
  const [offDraft,setOffDraft]=useState('random');
  const [sundayDraft,setSundayDraft]=useState('auto');
@@ -98,7 +100,7 @@ export default function FloorSchedule(){
  const selected=people.find(p=>p.id===selectedId)||people[0]||null;
  useEffect(()=>{if(people.length&&!people.some(p=>p.operational_role===selectedGroup&&can(role,p.operational_role,'days'))){const eligibleRole=ROLE_ORDER.find(k=>people.some(p=>p.operational_role===k)&&can(role,k,'days'));if(eligibleRole)setSelectedGroup(eligibleRole);}},[role,people,selectedGroup]);
  useEffect(()=>{if(people.length&&(!selectedId||!people.some(p=>p.id===selectedId)))setSelectedId(people[0].id);},[people,selectedId]);
- const selectedProfile=selected&&profiles.get(selected.id)||{start_time:'08:00',end_time:'14:20',fixed_off_weekday:null,break_round_minutes:0};
+ const selectedProfile=selected&&profiles.get(selected.id)||{start_time:'08:00',end_time:'14:20',fixed_off_weekday:null,break_round_minutes:0,fixed_break_1:null,fixed_break_2:null,fixed_break_3:null};
  const selectedSunday=(data?.sundays||[]).find(x=>x.user_id===selected?.id)?.sunday_date||null;
  const calendarSundays=(data?.dates||[]).filter(day=>asUTC(day).getUTCDay()===0);
  const effectiveSunday=entries.find(x=>x.user_id===selected?.id&&x.is_off&&asUTC(x.day).getUTCDay()===0)?.day||null;
@@ -108,6 +110,16 @@ export default function FloorSchedule(){
  useEffect(()=>{setShiftDraft({start:selectedProfile.start_time,end:selectedProfile.end_time});},[selectedId,selectedProfile.start_time,selectedProfile.end_time]);
  const currentEntry=selected&&entries.find(e=>e.user_id===selected.id&&e.day===selectedDate);
  useEffect(()=>setBreakDraft([currentEntry?.break_1||'',currentEntry?.break_2||'',currentEntry?.break_3||'']),[selectedId,selectedDate,currentEntry?.break_1,currentEntry?.break_2,currentEntry?.break_3]);
+ const selectedFixed=[selectedProfile.fixed_break_1,selectedProfile.fixed_break_2,selectedProfile.fixed_break_3];
+ const hasFixed=selectedFixed.every(Boolean);
+ useEffect(()=>setFixedDraft([selectedProfile.fixed_break_1||'',selectedProfile.fixed_break_2||'',selectedProfile.fixed_break_3||'']),[selectedId,selectedProfile.fixed_break_1,selectedProfile.fixed_break_2,selectedProfile.fixed_break_3]);
+ useEffect(()=>{
+  let alive=true;
+  const refresh=()=>api('/live').then(data=>{if(alive){setLiveRows(data.rows||[]);setLiveError('');}}).catch(e=>{if(alive)setLiveError(e.message);});
+  void refresh();const poll=setInterval(refresh,60000),ticker=setInterval(()=>setLiveTick(t=>t+1),30000);
+  return()=>{alive=false;clearInterval(poll);clearInterval(ticker);};
+ },[]);
+
  useEffect(()=>{if(!selectedDate.startsWith(month))setSelectedDate(month+'-01');if(!weekStart.startsWith(month))setWeekStart(monday(month+'-01'));},[month]);
  const filteredPeople=useMemo(()=>people.filter(p=>(roleFilter==='all'||roleFilter===p.operational_role)&&[p.display_name,p.username].join(' ').toLowerCase().includes(search.toLowerCase())),[people,roleFilter,search]);
  const monthCount=entries.filter(x=>!x.is_off).length,offCount=entries.filter(x=>x.is_off).length;
@@ -116,6 +128,32 @@ export default function FloorSchedule(){
  const selectedCap=selected?.operational_role;
  const eligible=people.filter(p=>can(role,p.operational_role,selectedGroup==='attendant'?'days':'days')&&p.operational_role===selectedGroup);
  const weekdayDates=Array.from({length:7},(_,i)=>addDays(weekStart,i));
+ const localTime=useMemo(()=>{
+  const parts=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).filter(p=>p.type!=='literal').map(p=>[p.type,p.value]));
+  return {day:parts.year+'-'+parts.month+'-'+parts.day,minute:Number(parts.hour)*60+Number(parts.minute),display:parts.hour+':'+parts.minute};
+ },[liveTick]);
+ const liveBreaks=useMemo(()=>{
+  const now=localTime.minute,prior=addDays(localTime.day,-1),current=[],upcoming=[];
+  for(const row of liveRows){
+   if(row.day!==localTime.day&&row.day!==prior)continue;
+   const start=Number(row.start_time.slice(0,2))*60+Number(row.start_time.slice(3,5));
+   const offset=row.day===prior?1440:0;
+   for(let i=0;i<3;i++){
+    const value=row['break_'+(i+1)];if(!value)continue;
+    let minute=Number(value.slice(0,2))*60+Number(value.slice(3,5));
+    if(minute<start)minute+=1440;
+    minute+=offset;
+    const remaining=minute-(now+1440*(row.day===prior?1:0));
+    // O relógio de hoje é comparado a horários absolutos de ontem e hoje.
+    const until=row.day===prior?minute-(now+1440):minute-now;
+    const item={id:row.user_id+'-'+row.day+'-'+i,name:row.display_name,time:value,duration:i===1?20:10,label:i===1?'Pausa de 20 min':'Pausa de 10 min',remaining:until};
+    if(until<=0&&until+item.duration>0)current.push({...item,remaining:until+item.duration});
+    else if(until>0&&until<=30)upcoming.push(item);
+   }
+  }
+  return {current:current.sort((a,b)=>a.remaining-b.remaining),upcoming:upcoming.sort((a,b)=>a.remaining-b.remaining)};
+ },[liveRows,localTime]);
+
  const addMessage=(text,kind='success')=>{setMessage({kind,text});};
  async function mutate(path,method,body,successText){
   setBusy(true);
@@ -133,6 +171,27 @@ export default function FloorSchedule(){
   const users=eligible.slice(0,100),name=kind==='days'?'folgas 6×1':'pausas 10–20–10';
   if(!window.confirm('Gerar '+name+' para '+users.length+' pessoa(s) em '+longMonth(month)+'? Ajustes manuais existentes serão preservados.'))return;
   await mutate('/generate','POST',{month,kind,userIds:users.map(p=>p.id),...(roundSelection==='profile'?{}:{roundMinutes:Number(roundSelection)})});
+ }
+ async function saveRestPattern(){
+  if(!selected)return;
+  setBusy(true);
+  try{
+   const off=offDraft==='random'?null:Number(offDraft);
+   const sunday=off===0||sundayDraft==='auto'?null:sundayDraft;
+   await api('/preferences',{method:'PATCH',body:JSON.stringify({targetId:selected.id,fixedOffWeekday:off})});
+   await api('/sunday',{method:'PATCH',body:JSON.stringify({targetId:selected.id,month,sundayDate:sunday})});
+   const result=await api('/generate',{method:'POST',body:JSON.stringify({month,kind:'days',userIds:[selected.id]})});
+   setData(await api('?month='+month));addMessage('Folga semanal e domingo salvos e aplicados em '+longMonth(month)+'. '+(result.manualConflicts?'Algumas exceções manuais foram mantidas.':''));
+  }catch(e){addMessage('Não foi possível concluir a aplicação: '+e.message+'. Confira as preferências antes de tentar novamente.','error');}
+  finally{setBusy(false);}
+ }
+ async function saveDailyBreaks(){
+  if(!selected||fixedDraft.some(x=>!x))return;
+  const result=await mutate('/daily-breaks','PATCH',{targetId:selected.id,month,breaks:fixedDraft});
+  if(result)await mutate('/generate','POST',{month,kind:'days',userIds:[selected.id]});
+ }
+ async function clearDailyBreaks(){
+  await mutate('/daily-breaks','PATCH',{targetId:selected.id,month,breaks:null});
  }
  async function saveOffDay(){
   const done=await mutate('/preferences','PATCH',{targetId:selected.id,fixedOffWeekday:offDraft==='random'?null:Number(offDraft)},'Preferência semanal salva.');
