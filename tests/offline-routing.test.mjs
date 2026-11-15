@@ -27,5 +27,6 @@ test('UI da triagem local inclui cinco perguntas, relatório, e revisão opt-in 
  assert.match(inspector,/natureSuggestions/);
  assert.match(inspector,/analysisQuestions/);
  assert.match(inspector,/Sem IA/);
- assert.match(page,/A análise é orientativa e requer conferência humana/);
+ assert.match(page,/confirme as sugestões pelo protocolo institucional/);
+ assert.match(page,/sandbox="allow-scripts allow-forms"/);
 });
