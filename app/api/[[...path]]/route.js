@@ -2,7 +2,7 @@ import {put,get,del} from '@vercel/blob';
 import {normalizeImage,readLimited,storeAsset,readableAsset,deleteAsset,requireEditor,importExternalImage} from '../../../lib/documentation-assets.js';
 import {saveDocument,saveDraft,uuid} from '../../../lib/documentation-store.js';
 import {getSchedule,editOperationalRole,editShift,editScheduleDay,generateMonth,editSchedulePreferences,editSundayChoice} from '../../../lib/floor-scheduling.js';
-import {qualityBoard,qualitySaveMonitor,qualitySaveFollowup,qualityAcknowledge} from '../../../lib/quality-store.js';
+import {qualityBoard,qualitySaveMonitor,qualitySaveFollowup,qualityAcknowledge,qualityHistory} from '../../../lib/quality-store.js';
 import {listDocumentationSpaces,createDocumentationSpace,updateDocumentationSpace} from '../../../lib/documentation-spaces.js';
 import {cleanDocument} from '../../../lib/documentation.js';
 import { readFeedbackTicket,learnableQuestions } from '../../../lib/question-feedback.js';
@@ -135,6 +135,12 @@ async function gate(request,method,ctx){
     const month=new URL(request.url).searchParams.get('month')||new Date().toISOString().slice(0,7);
     return reply(await qualityBoard(db(),u,month));
    }catch(error){return failure(error.message,error.status||503);}
+  }
+  if(route==='/quality/history'&&method==='GET'){
+   try{
+    const params=new URL(request.url).searchParams;
+    return reply(await qualityHistory(db(),u,{kind:params.get('kind'),id:params.get('id')}));
+   }catch(error){return failure(error.message,error.status||400);}
   }
   if(route==='/quality/monitor'&&method==='POST'){
    try{
