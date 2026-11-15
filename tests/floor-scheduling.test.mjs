@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {PGlite} from '@electric-sql/pglite';
 import {distributedBreaks,isSundayInMonth,isRestDay,mondayOf} from '../lib/floor-planning.js';
-import {ROLES,ROLE_LABELS,canManage,daysInMonth,validDate,shiftLength,defaultBreaks,validateBreaks,weekdayOf,validOffWeekday,validRoundInterval,generateMonth,editScheduleDay,editShift,editSchedulePreferences,editSundayChoice,editOperationalRole,getSchedule} from '../lib/floor-scheduling.js';
+import {ROLES,ROLE_LABELS,canManage,daysInMonth,validDate,shiftLength,defaultBreaks,validateBreaks,weekdayOf,validOffWeekday,validRoundInterval,generateMonth,editScheduleDay,editShift,editSchedulePreferences,editSundayChoice,editOperationalRole,getSchedule,editDailyBreaks} from '../lib/floor-scheduling.js';
 
 const newUser=(username,operational_role)=>({id:randomUUID(),username,display_name:username,role:'user',operational_role,active:true});
 async function setup(){
  const pg=new PGlite();
- await pg.exec("CREATE TABLE users(id uuid PRIMARY KEY,username text UNIQUE NOT NULL,display_name text NOT NULL,role text NOT NULL DEFAULT 'user',operational_role text NOT NULL DEFAULT 'attendant',active boolean NOT NULL DEFAULT true);CREATE TABLE audit_log(id uuid PRIMARY KEY,actor_id uuid,action text,target text);CREATE TABLE floor_shift_profiles(user_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,start_time text NOT NULL DEFAULT '08:00',end_time text NOT NULL DEFAULT '14:20',fixed_off_weekday smallint CHECK(fixed_off_weekday BETWEEN 0 AND 6),break_round_minutes smallint NOT NULL DEFAULT 0 CHECK(break_round_minutes IN (0,5,10,15,30)),updated_by uuid REFERENCES users(id),updated_at timestamptz NOT NULL DEFAULT now());CREATE TABLE floor_schedule_entries(user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,day date NOT NULL,is_off boolean NOT NULL DEFAULT false,start_time text NOT NULL DEFAULT '08:00',end_time text NOT NULL DEFAULT '14:20',break_1 text,break_2 text,break_3 text,off_source text NOT NULL DEFAULT 'auto' CHECK(off_source IN ('auto','manual')),break_source text NOT NULL DEFAULT 'auto' CHECK(break_source IN ('auto','manual')),updated_by uuid REFERENCES users(id),updated_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(user_id,day));");
+ await pg.exec("CREATE TABLE users(id uuid PRIMARY KEY,username text UNIQUE NOT NULL,display_name text NOT NULL,role text NOT NULL DEFAULT 'user',operational_role text NOT NULL DEFAULT 'attendant',active boolean NOT NULL DEFAULT true);CREATE TABLE audit_log(id uuid PRIMARY KEY,actor_id uuid,action text,target text);CREATE TABLE floor_shift_profiles(user_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,start_time text NOT NULL DEFAULT '08:00',end_time text NOT NULL DEFAULT '14:20',fixed_off_weekday smallint CHECK(fixed_off_weekday BETWEEN 0 AND 6),break_round_minutes smallint NOT NULL DEFAULT 0 CHECK(break_round_minutes IN (0,5,10,15,30)),fixed_break_1 text,fixed_break_2 text,fixed_break_3 text,updated_by uuid REFERENCES users(id),updated_at timestamptz NOT NULL DEFAULT now());CREATE TABLE floor_schedule_entries(user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,day date NOT NULL,is_off boolean NOT NULL DEFAULT false,start_time text NOT NULL DEFAULT '08:00',end_time text NOT NULL DEFAULT '14:20',break_1 text,break_2 text,break_3 text,off_source text NOT NULL DEFAULT 'auto' CHECK(off_source IN ('auto','manual')),break_source text NOT NULL DEFAULT 'auto' CHECK(break_source IN ('auto','manual')),updated_by uuid REFERENCES users(id),updated_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(user_id,day));");
  await pg.exec("CREATE TABLE floor_sunday_preferences(user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,month date NOT NULL,sunday_date date NOT NULL,updated_by uuid REFERENCES users(id),updated_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(user_id,month))");
  const pool={query:(q,a)=>pg.query(q,a),connect:async()=>({query:(q,a)=>pg.query(q,a),release(){}})};
  const dev=newUser('pm-civil.bandeira','dev'),coordinator=newUser('coord.001','coordinator'),manager=newUser('gestor.001','manager'),attendant=newUser('atendente.001','attendant');
@@ -248,5 +248,25 @@ test('pausas entre colegas são escalonadas no mesmo dia e respeitam o arredonda
   assert.ok([...a,...b].every(t=>Number(t.split(':')[1])%10===0),'minutos redondos');
   const choice=distributedBreaks('18:00','00:20',{roundMinutes:10,personKey:'teste',date:day,occupied:[first]});
   validateBreaks('18:00','00:20',choice);
+ }finally{await pg.close();}
+});
+
+test('pausas fixas são salvas em todos os dias de trabalho e permanecem após gerar novamente o mês',async()=>{
+ const {pg,pool,manager,attendant,dev}=await setup();
+ try{
+  const month='2027-06',fixed=['09:30','11:15','13:05'];
+  await generateMonth(pool,manager,{month,kind:'days',userIds:[attendant.id]});
+  const changed=await editDailyBreaks(pool,manager,{targetId:attendant.id,month,breaks:fixed});
+  assert.ok(changed.updated>15);
+  let all=(await getSchedule(pool,manager,month)).entries.filter(x=>x.user_id===attendant.id&&!x.is_off);
+  assert.ok(all.every(x=>[x.break_1,x.break_2,x.break_3].join()===fixed.join()));
+  await generateMonth(pool,manager,{month,kind:'breaks',userIds:[attendant.id]});
+  all=(await getSchedule(pool,manager,month)).entries.filter(x=>x.user_id===attendant.id&&!x.is_off);
+  assert.ok(all.every(x=>[x.break_1,x.break_2,x.break_3].join()===fixed.join()));
+  await assert.rejects(editScheduleDay(pool,manager,{targetId:attendant.id,date:all[0].day,kind:'breaks',breaks:['10:00','12:00','13:20']}),/pausas fixas diárias/);
+  await assert.rejects(editDailyBreaks(pool,attendant,{targetId:attendant.id,month,breaks:fixed}),e=>e.status===403);
+  await editDailyBreaks(pool,dev,{targetId:attendant.id,month,breaks:null});
+  const after=(await getSchedule(pool,manager,month)).profiles.find(x=>x.user_id===attendant.id);
+  assert.equal(after.fixed_break_1,null);
  }finally{await pg.close();}
 });
