@@ -137,13 +137,13 @@ export default function FloorSchedule(){
   for(const row of liveRows){
    if(row.day!==localTime.day&&row.day!==prior)continue;
    const start=Number(row.start_time.slice(0,2))*60+Number(row.start_time.slice(3,5));
-   const offset=row.day===prior?1440:0;
+
    for(let i=0;i<3;i++){
     const value=row['break_'+(i+1)];if(!value)continue;
     let minute=Number(value.slice(0,2))*60+Number(value.slice(3,5));
     if(minute<start)minute+=1440;
-    minute+=offset;
-    const remaining=minute-(now+1440*(row.day===prior?1:0));
+
+
     // O relógio de hoje é comparado a horários absolutos de ontem e hoje.
     const until=row.day===prior?minute-(now+1440):minute-now;
     const item={id:row.user_id+'-'+row.day+'-'+i,name:row.display_name,time:value,duration:i===1?20:10,label:i===1?'Pausa de 20 min':'Pausa de 10 min',remaining:until};
@@ -226,7 +226,11 @@ export default function FloorSchedule(){
     <button type="button" onClick={load} disabled={loading} title="Atualizar"><span>↻</span> Atualizar</button>
     <button type="button" className="rs-export" onClick={exportCsv} disabled={!entries.length}>↓ CSV</button>
    </div></div>
-   <div className="rs-nav" role="tablist" aria-label="Visões da escala">{[['week','◷','Visão semanal'],['month','▦','Calendário mensal'],['breaks','☕','Escala de pausas'],['team','♧','Equipe e acessos']].map(([key,icon,label])=><button role="tab" key={key} aria-selected={view===key} className={view===key?'active':''} onClick={()=>setView(key)}><span>{icon}</span>{label}</button>)}</div>
+   <section className="rs-live-panel" aria-label="Monitor de pausas programadas"><div className="rs-live-header"><div><span className="rs-live-kicker"><i/> PAUSAS PROGRAMADAS · {localTime.display}</span><h3>Equipe em pausa e próximos intervalos</h3><p>Previsão pela escala cadastrada, não confirmação de presença real. Atualização automática a cada minuto (horário de Brasília).</p></div><button type="button" onClick={()=>setView('breaks')}>Gerenciar pausas</button></div>
+     {liveError&&<p className="rs-live-warning">Não foi possível sincronizar o quadro: {liveError}</p>}
+     <div className="rs-live-columns"><div><h4>Em pausa agora <span>{liveBreaks.current.length}</span></h4><div className="rs-live-list">{liveBreaks.current.length?liveBreaks.current.map(item=><div className="rs-live-person" key={item.id}><span className="rs-live-person-dot"/><div><strong>{item.name}</strong><small>{item.label} · iniciou às {item.time}</small></div><b>{item.remaining} min restantes</b></div>):<p className="rs-live-empty">Nenhum atendente em intervalo neste momento.</p>}</div></div><div><h4>Próximos 30 minutos <span>{liveBreaks.upcoming.length}</span></h4><div className="rs-live-list">{liveBreaks.upcoming.length?liveBreaks.upcoming.map(item=><div className="rs-live-person" key={item.id}><span className="rs-live-person-dot next"/><div><strong>{item.name}</strong><small>{item.label} · início às {item.time}</small></div><b>em {item.remaining} min</b></div>):<p className="rs-live-empty">Nenhuma pausa prevista nos próximos 30 minutos.</p>}</div></div></div>
+    </section>
+    <div className="rs-nav" role="tablist" aria-label="Visões da escala">{[['week','◷','Visão semanal'],['month','▦','Calendário mensal'],['breaks','☕','Escala de pausas'],['team','♧','Equipe e acessos']].map(([key,icon,label])=><button role="tab" key={key} aria-selected={view===key} className={view===key?'active':''} onClick={()=>setView(key)}><span>{icon}</span>{label}</button>)}</div>
    {loading&&!data?<div className="rs-empty">Carregando profissionais e escalas…</div>:<>
    {view==='week'&&<div className="rs-card"><div className="rs-card-head"><div><small>VISÃO OPERACIONAL</small><h3>Escala semanal 6×1</h3><p>Distribuição de turnos e folgas por profissional.</p></div><div className="rs-week-nav"><button onClick={()=>moveWeek(-1)} title="Semana anterior">‹</button><strong>{dateDisplay(weekdayDates[0])} — {dateDisplay(weekdayDates[6])}</strong><button onClick={()=>moveWeek(1)} title="Próxima semana">›</button></div></div>
       <div className="rs-team-filter"><input type="search" aria-label="Buscar profissional" placeholder="⌕ Buscar atendente, gestor ou coordenador…" value={search} onChange={e=>setSearch(e.target.value)}/><select aria-label="Filtrar perfil" value={roleFilter} onChange={e=>setRoleFilter(e.target.value)}><option value="all">Todos os perfis</option>{ROLE_ORDER.map(k=><option key={k} value={k}>{ROLE_LABEL[k]}</option>)}</select></div>
@@ -248,7 +252,7 @@ export default function FloorSchedule(){
         <div className="rs-setting-heading"><span className="rs-setting-icon">☼</span><div><strong>Dia fixo de folga</strong><small>Uma folga por semana · ciclo 6×1</small></div></div>
         <p>Escolha o dia que se repetirá semanalmente para <b>{selected.display_name}</b>. Você pode voltar à distribuição automática a qualquer momento.</p>
         <div className="rs-weekday-choice"><select aria-label="Dia fixo de folga do profissional" disabled={!can(role,selectedCap,'days')||busy} value={offDraft} onChange={e=>setOffDraft(e.target.value)}><option value="random">✧ Automático · distribuir folgas</option>{OFF_DAYS.map(([value,label])=><option key={value} value={value}>{label} · toda semana</option>)}</select>
-        {can(role,selectedCap,'days')&&<button type="button" disabled={busy||(offDraft==='random'?selectedProfile.fixed_off_weekday==null:Number(offDraft)===selectedProfile.fixed_off_weekday)} onClick={saveOffDay}>Salvar e aplicar neste mês</button>}</div>
+        <small className="rs-setting-hint">Selecione também o domingo abaixo e salve tudo em uma única ação.</small></div>
         <div className="rs-setting-note">{selectedProfile.fixed_off_weekday==null?'✧ Preferência atual: folga distribuída automaticamente.':'✓ Preferência atual: toda '+(OFF_DAYS.find(([value])=>Number(value)===selectedProfile.fixed_off_weekday)?.[1]||'semana')+'.'} <span>Alterações manuais de dias específicos continuam preservadas.</span></div>
         <div className="rs-sunday-selector">
          <div className="rs-setting-heading"><span className="rs-setting-icon">☀</span><div><strong>Domingo de folga do mês</strong><small>Um domingo mensal · troca do descanso naquela semana</small></div></div>
@@ -256,10 +260,11 @@ export default function FloorSchedule(){
          {selectedProfile.fixed_off_weekday===0?<div className="rs-setting-note">A folga fixa já é domingo; este profissional descansará todos os domingos.</div>:<div className="rs-weekday-choice"><select aria-label="Selecionar domingo de folga do mês" disabled={!can(role,selectedCap,'days')||busy} value={sundayDraft} onChange={e=>setSundayDraft(e.target.value)}>
           <option value="auto">✧ Escolher domingo automaticamente</option>
           {calendarSundays.map((day,i)=><option key={day} value={day}>{i+1}º domingo · {dateDisplay(day)}</option>)}
-         </select>{can(role,selectedCap,'days')&&<button type="button" disabled={busy||(sundayDraft==='auto'?selectedSunday===null:sundayDraft===selectedSunday)} onClick={saveSunday}>Salvar e aplicar domingo</button>}</div>}
+         </select><small className="rs-setting-hint">A escolha será aplicada junto com a folga semanal.</small></div>}
          <div className="rs-setting-note">{selectedSunday?'✓ Domingo selecionado: '+dateDisplay(selectedSunday):'✧ Domingo automático ao gerar folgas.'} {effectiveSunday?'Calendário atual: '+dateDisplay(effectiveSunday)+'.':''}</div>
         </div>
       </div>
+      {can(role,selectedCap,'days')&&<button type="button" className="rs-primary rs-save-rest" disabled={busy} onClick={saveRestPattern}>✓ Salvar folga semanal e domingo do mês</button>}
       <div className="rs-shift-settings"><small>JORNADA PADRÃO · {selected.display_name}</small><div><label>Entrada<input aria-label="Entrada do turno" type="time" disabled={!can(role,selectedCap,'shift')} value={shiftDraft.start} onChange={e=>setShiftDraft(p=>({...p,start:e.target.value}))}/></label><label>Saída<input aria-label="Saída do turno" type="time" disabled={!can(role,selectedCap,'shift')} value={shiftDraft.end} onChange={e=>setShiftDraft(p=>({...p,end:e.target.value}))}/></label></div>{can(role,selectedCap,'shift')&&<button disabled={busy} onClick={()=>mutate('/shift','PATCH',{targetId:selected.id,month,start:shiftDraft.start,end:shiftDraft.end},'Jornada e pausas do mês sincronizadas.')}>Salvar e atualizar mês</button>}<p>Ao salvar, a jornada e as pausas automáticas de {longMonth(month)} são ajustadas imediatamente, incluindo turnos que atravessam 00h. Pausas manuais válidas são preservadas.</p></div>
      </>}
     </aside>
