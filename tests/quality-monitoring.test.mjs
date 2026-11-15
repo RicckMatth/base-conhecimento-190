@@ -4,7 +4,7 @@ import {randomUUID} from 'node:crypto';
 import {PGlite} from '@electric-sql/pglite';
 import {QUALITY_BLOCKS,QUALITY_CRITICAL,QUALITY_MAX,qualityScore,qualityClass,qualitySignature,qualitySummary} from '../lib/quality-core.js';
 import {prepareQualitySchema} from '../lib/quality-schema.js';
-import {qualityBoard,qualitySaveMonitor,qualitySaveFollowup,qualityAcknowledge} from '../lib/quality-store.js';
+import {qualityBoard,qualitySaveMonitor,qualitySaveFollowup,qualityAcknowledge,qualityHistory} from '../lib/quality-store.js';
 
 const day='2026-11-12',month='2026-11',ratings=()=>Object.fromEntries(QUALITY_BLOCKS.flatMap(b=>b.items).map(x=>[x.id,'yes']));
 const actors=()=>({
@@ -114,5 +114,27 @@ test('acompanhamento mensal consolida histórico, TMA, nota e requer ciência se
   await qualityAcknowledge(pool,attendant,{kind:'followup',id:created.record.id,signature:{name:attendant.display_name,agreed:true}});
   assert.ok((await qualityBoard(pool,attendant,month)).followups[0].acknowledged_at);
   await assert.rejects(qualitySaveFollowup(pool,manager,data,{publish:false}),e=>e.status===403);
+ }finally{await pg.close();}
+});
+
+test('histórico de qualidade: criação, mudança, publicação e ciência não podem ser apagadas',async()=>{
+ const {pg,pool,manager,attendant,colleague}=await setup();
+ try{
+  const created=await qualitySaveMonitor(pool,manager,form(attendant.id),{publish:false});
+  const draftId=created.record.id;
+  await qualitySaveMonitor(pool,manager,form(attendant.id,{id:draftId,improvements:'Reavaliar ponto de referência.'}),{publish:false});
+  await qualitySaveMonitor(pool,manager,auditor(form(attendant.id,{id:draftId,improvements:'Reavaliar ponto de referência.'})),{publish:true});
+  await qualityAcknowledge(pool,attendant,{kind:'monitor',id:draftId,signature:{name:attendant.display_name,agreed:true}});
+  const timeline=(await qualityHistory(pool,manager,{kind:'monitor',id:draftId})).history;
+  assert.deepEqual(timeline.map(x=>x.action),['acknowledged','published','updated','created']);
+  assert.deepEqual(timeline.map(x=>x.revision),[4,3,2,1]);
+  assert.equal(timeline[1].after_snapshot.score,100);
+  assert.equal(timeline[2].after_snapshot.improvements,'Reavaliar ponto de referência.');
+  assert.equal(timeline[0].actor_name,attendant.display_name);
+  assert.ok(timeline.every(x=>!Object.hasOwn(x.after_snapshot,'operator_signature_image')));
+  await assert.rejects(qualityHistory(pool,colleague,{kind:'monitor',id:draftId}),e=>e.status===403);
+  await assert.rejects(pg.query('DELETE FROM quality_change_history WHERE record_id=$1',[draftId]),/permanente|proibida|exclusão/i);
+  await assert.rejects(pg.query('UPDATE quality_change_history SET action=$1 WHERE record_id=$2',['updated',draftId]),/permanente|proibida|exclusão/i);
+  await assert.rejects(pg.query('DELETE FROM quality_monitors WHERE id=$1',[draftId]),/não podem ser excluídos/i);
  }finally{await pg.close();}
 });
