@@ -1,7 +1,7 @@
 import {put,get,del} from '@vercel/blob';
 import {normalizeImage,readLimited,storeAsset,readableAsset,deleteAsset,requireEditor,importExternalImage} from '../../../lib/documentation-assets.js';
 import {saveDocument,saveDraft,uuid} from '../../../lib/documentation-store.js';
-import {getSchedule,editOperationalRole,editShift,editScheduleDay,generateMonth,editSchedulePreferences,editSundayChoice} from '../../../lib/floor-scheduling.js';
+import {getSchedule,editOperationalRole,editShift,editScheduleDay,generateMonth,editSchedulePreferences,editSundayChoice,editDailyBreaks,getLiveBreaks} from '../../../lib/floor-scheduling.js';
 import {qualityBoard,qualitySaveMonitor,qualitySaveFollowup,qualityAcknowledge,qualityHistory} from '../../../lib/quality-store.js';
 import {listDocumentationSpaces,createDocumentationSpace,updateDocumentationSpace} from '../../../lib/documentation-spaces.js';
 import {cleanDocument} from '../../../lib/documentation.js';
@@ -300,6 +300,12 @@ async function gate(request,method,ctx){
       const month=new URL(request.url).searchParams.get('month')||new Date().toISOString().slice(0,7);
       return reply(await getSchedule(db(),u,month));
     }catch(e){return failure(e.message,e.status||400);}
+  }
+  if(route==='/floor/schedules/live'&&method==='GET'){
+    try{return reply(await getLiveBreaks(db(),u));}catch(e){return failure(e.message,e.status||400);}
+  }
+  if(route==='/floor/schedules/daily-breaks'&&method==='PATCH'){
+    try{return reply(await editDailyBreaks(db(),u,await input(request,2400)));}catch(e){return failure(e.message,e.status||400);}
   }
   if(route==='/floor/schedules/roles'&&method==='PATCH'){
     try{return reply(await editOperationalRole(db(),u,await input(request,1800)));}catch(e){return failure(e.message,e.status||400);}
