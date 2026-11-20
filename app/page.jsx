@@ -508,21 +508,20 @@ export default function Home(){
       </div>
     </aside>
     <div className="main">
-      <header className="topbar base190-unified-header"><div><b>{screen==='docs'?'Base de conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='chat'?'Chat 190':screen==='operations'?'Pausas e Folgas':screen==='floor'?'Gestão de piso':screen==='access'?'Acessos e Cargos':screen==='quality'?'Qualidade 190':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
-        <div className="btn-row">
-          <button
-            type="button"
-            className="profile-topbar-pill"
-            onClick={()=>setProfileModalOpen(true)}
-            title={canPreviewRoles?`Alternar visualização de teste (atual: ${activeProfileConfig.name})`:`Cargo atribuído: ${activeProfileConfig.name}`}
-          >
+      <header className="topbar base190-unified-header">
+        <div className="base190-header-location">
+          <span className="base190-header-root">Base 190</span>
+          <span className="base190-header-separator" aria-hidden="true">/</span>
+          <strong>{screen==='docs'?'Conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='chat'?'Chat 190':screen==='operations'?'Pausas e folgas':screen==='floor'?'Gestão de piso':screen==='access'?'Acessos e cargos':screen==='quality'?'Qualidade':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='rules'?'Regras':'Auditoria'}</strong>
+        </div>
+        <div className="base190-header-actions">
+          {screen==='operations'&&<a className="base190-header-icon" href="/copom-190-gestao-operacional.html" target="_blank" rel="noopener noreferrer" aria-label="Abrir pausas e folgas em tela cheia" title="Abrir em tela cheia"><Icon name="external-link" size={17}/></a>}
+          <button type="button" className="base190-header-icon" onClick={theme} aria-label={dark?'Ativar tema claro':'Ativar tema escuro'} title={dark?'Tema claro':'Tema escuro'}><Icon name={dark?'sun':'moon'} size={18}/></button>
+          <button type="button" className="base190-header-profile" onClick={()=>setProfileModalOpen(true)} aria-label={canPreviewRoles?'Alternar perfil para testes':'Ver meu cargo'} title={canPreviewRoles?'Alternar perfil para testes':'Ver meu cargo'}>
             <span className="profile-indicator-dot" style={{backgroundColor:activeProfileConfig.color}}/>
-            <span>{isPreviewing?"Simulando":"Cargo"}: <strong>{activeProfileConfig.name}</strong></span>
-            <span className="profile-pill-badge">{activeProfileConfig.badge}</span>
-            <span className="profile-pill-action">{canPreviewRoles?"Alternar ⇄":"Detalhes"}</span>
+            <span className="base190-header-profile-name">{isPreviewing?'Prévia: ':''}{activeProfileConfig.name}</span>
+            {canPreviewRoles&&<span className="base190-header-chevron" aria-hidden="true">⌄</span>}
           </button>
-          <Btn className="ghost tiny" onClick={()=>go('chat')}>Abrir chat 190</Btn>
-          <Btn className="ghost tiny" onClick={theme}><Icon name={dark?'sun':'moon'} size={17}/>{dark?'Claro':'Escuro'}</Btn>
         </div>
       </header>
       <main className={'content'+(isImmersiveScreen?' quality-content-mode immersive-content-mode':' spaced')} data-current-tab={screen}>
@@ -548,10 +547,6 @@ export default function Home(){
         {docsOpened&&<div key="docs" hidden={screen!=='docs'} className="tab-view-container"><Documentation onExit={()=>go('home')} isAdmin={activeProfileConfig.canEditDocs} active={screen==='docs'}/></div>}
         {screen==='floor'&&<div key="floor" className="tab-view-container"><FloorControl isAdmin={activeProfileConfig.canManageFloorEvents}/></div>}
         {screen==='operations'&&<section key="operations" className="tab-view-container base190-operations-embed" aria-label="Gestão Operacional de Pausas e Folgas">
-          <div className="base190-operations-toolbar">
-            <div><strong style={{display:'block',fontSize:14}}>Gestão Operacional · COPOM 190</strong><small className="muted">Profissionais da Base 190, pausas, folgas e escalas. Os ajustes feitos aqui permanecem neste navegador, sem sincronização entre usuários.</small></div>
-            <a href="/copom-190-gestao-operacional.html" target="_blank" rel="noopener noreferrer" className="btn secondary tiny">Abrir em tela cheia ↗</a>
-          </div>
           <iframe className="base190-operations-frame" title="Gestão Operacional COPOM 190: pausas e folgas" src="/copom-190-gestao-operacional.html" loading="eager" allow="notifications"/>
         </section>}
         {screen==='quality'&&<div key="quality" className="tab-view-container" style={{height:'100%'}}><Quality user={{...user,role:activeProfileConfig.adminTabs.length>0?'admin':'user',operationalRole:activeProfileConfig.id,profileName:activeProfileConfig.name}} activeProfile={activeProfileConfig.id} dark={dark} toggleTheme={theme}/></div>}
@@ -578,7 +573,7 @@ export default function Home(){
           {chatFrameLoading&&<TabLoader tabName="Chat 190 • Inteligência Tática SADE" subtitle="Inicializando motor de triagem local e catálogo de 769 naturezas…" icon="brain"/>}
           <iframe
             className={`sade-embed-frame ${chatFrameLoading?'loading':'ready'}`}
-            src="/copom-sade-190.html?embedded=1"
+            src="/copom-sade-190.html"
             title="Chat 190 — Assistente de Triagem Inteligente SADE"
             sandbox="allow-scripts allow-forms"
             allow="clipboard-write"
