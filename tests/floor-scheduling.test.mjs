@@ -18,7 +18,7 @@ async function setup(){
  return {pg,pool,dev,coordinator,manager,attendant};
 }
 test('permissões por função impedem gestores e coordenadores de alterar escalas erradas',()=>{
- assert.equal(ROLES.length,4);assert.equal(ROLE_LABELS.dev,'Dev');
+ assert.deepEqual(ROLES,['attendant','manager','quality_analyst','coordinator','dev']);assert.equal(ROLE_LABELS.dev,'Dev');assert.equal(ROLE_LABELS.quality_analyst,'Analista de Qualidade');
  assert.equal(canManage('manager','attendant','days'),true);
  assert.equal(canManage('manager','attendant','breaks'),true);
  assert.equal(canManage('manager','manager','days'),false);
