@@ -2022,3 +2022,319 @@ html,body{font-family:Inter,"Segoe UI",system-ui,sans-serif}h1,h2,h3{text-wrap:b
 @media(prefers-reduced-motion:reduce){
   .shell>.sidebar.compact .sidebar-toggle svg{transition:none}
 }
+
+
+/* ============================================================
+   BASE 190 · BIBLIOTECA INTEGRADA AO SHELL
+   Sem tela fixa, segundo menu permanente ou paleta própria.
+   ============================================================ */
+.shell>.main>.content[data-current-tab="docs"]{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:10px;
+  min-width:0;
+  min-height:0;
+  padding:12px clamp(10px,1.5vw,20px);
+  overflow:hidden;
+  scrollbar-gutter:auto;
+}
+.shell>.main>.content[data-current-tab="docs"]>.tab-view-container:not([hidden]){
+  flex:1 1 0;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  width:100%;
+  min-width:0;
+  min-height:0;
+  height:100%;
+  max-height:100%;
+}
+.shell .docs-workspace.library-wide.docs-integrated{
+  position:relative;
+  inset:auto;
+  z-index:1;
+  display:grid;
+  flex:1 1 0;
+  width:100%;
+  height:100%;
+  min-height:0;
+  max-height:100%;
+  max-width:100%;
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:52px minmax(0,1fr);
+  background:var(--panel);
+  color:var(--ink);
+  border:1px solid var(--line);
+  border-radius:var(--base-radius);
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.shell .docs-workspace.docs-integrated>.library-bar{
+  position:relative;
+  z-index:4;
+  grid-column:1;
+  grid-row:1;
+  display:flex;
+  flex-wrap:nowrap;
+  align-items:center;
+  gap:10px;
+  min-height:52px;
+  padding:7px 14px;
+  background:var(--panel);
+  color:var(--ink);
+  border-bottom:1px solid var(--line);
+  box-shadow:none;
+}
+.docs-integrated .library-index-toggle,
+.docs-integrated .library-back-button,
+.docs-integrated .docs-index-close{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  flex:0 0 auto;
+  min-height:34px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  padding:7px 11px;
+  font-size:12px;
+  font-weight:700;
+  background:var(--panel);
+  color:var(--ink);
+  cursor:pointer;
+  transition:background .16s ease,border-color .16s ease;
+}
+.docs-integrated :is(.library-index-toggle,.library-back-button,.docs-index-close):hover,
+.docs-integrated .library-index-toggle[aria-expanded="true"]{
+  background:var(--soft);
+  color:var(--blue);
+  border-color:color-mix(in srgb,var(--blue) 35%,var(--line));
+}
+.docs-integrated .library-bar-title{
+  min-width:0;
+  flex:1 1 auto;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:2px;
+}
+.docs-integrated .library-bar-title strong{
+  font-size:12px;
+  font-weight:750;
+  color:var(--ink);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.docs-integrated .library-bar-title small{
+  font-size:10px;
+  color:var(--muted);
+}
+.docs-integrated .library-index-backdrop{
+  position:absolute;
+  z-index:8;
+  left:0;
+  top:52px;
+  right:0;
+  bottom:0;
+  width:100%;
+  border:0;
+  border-radius:0;
+  background:#091c2b66;
+  padding:0;
+  cursor:pointer;
+}
+.shell .docs-workspace.docs-integrated>.docs-sidebar{
+  display:none;
+  position:absolute;
+  z-index:9;
+  left:0;
+  top:52px;
+  bottom:0;
+  width:min(330px,calc(100% - 45px));
+  height:auto;
+  max-height:none;
+  grid-row:auto;
+  grid-column:auto;
+  overflow-x:hidden;
+  overflow-y:auto;
+  padding:16px 13px;
+  background:var(--panel);
+  color:var(--ink);
+  border:0;
+  border-right:1px solid var(--line);
+  box-shadow:12px 0 24px #071d2d25;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+.shell .docs-workspace.docs-integrated.index-open>.docs-sidebar{
+  display:block;
+}
+.docs-integrated .docs-sidebar-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:10px;
+}
+.docs-integrated .docs-sidebar-top .eyebrow{
+  font-size:9px;
+  letter-spacing:1.2px;
+  color:var(--blue);
+}
+.docs-integrated .docs-sidebar-top h2{
+  font-size:15px;
+  line-height:1.3;
+  margin:4px 0 0;
+  color:var(--ink);
+}
+.docs-integrated .docs-index-close{
+  min-width:32px;
+  min-height:32px;
+  padding:0;
+  font-size:20px;
+}
+.shell .docs-workspace.docs-integrated>.docs-main{
+  grid-column:1;
+  grid-row:2;
+  display:block;
+  width:100%;
+  min-width:0;
+  min-height:0;
+  max-height:100%;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  padding:0;
+  background:var(--bg);
+  color:var(--ink);
+}
+.docs-integrated .docs-empty,
+.docs-integrated .docs-paper{
+  max-width:1250px;
+  margin:0 auto;
+  padding:clamp(18px,2.7vw,36px);
+  color:var(--ink);
+}
+.docs-integrated .docs-paper{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-top:3px solid var(--blue);
+  border-radius:12px;
+  box-shadow:var(--shadow);
+}
+.docs-integrated .docs-paper .tiptap blockquote{
+  border-left:3px solid var(--blue);
+  background:var(--soft);
+}
+.docs-integrated .library-cover{
+  background:linear-gradient(115deg,var(--panel),var(--soft));
+  color:var(--ink);
+  border:1px solid var(--line);
+  border-radius:15px;
+  padding:clamp(21px,3vw,38px);
+  box-shadow:none;
+}
+.docs-integrated .library-cover::after{
+  opacity:.3;
+  background:repeating-radial-gradient(circle at 115% 110%,transparent 0 34px,color-mix(in srgb,var(--blue) 14%,transparent) 35px 36px,transparent 37px 57px);
+}
+.docs-integrated .library-cover :is(h1,p){color:var(--ink)}
+.docs-integrated .library-cover h1{font-size:clamp(25px,3vw,38px)}
+.docs-integrated .library-cover p{color:var(--muted);font-size:13px;line-height:1.6}
+.docs-integrated .library-cover .eyebrow{color:var(--blue)}
+.docs-integrated .library-cover .library-count{
+  background:var(--soft);
+  color:var(--muted);
+  border:1px solid var(--line);
+}
+.docs-integrated .library-search{
+  background:var(--panel);
+  color:var(--ink);
+  border-color:var(--line);
+  box-shadow:none;
+}
+.docs-integrated .library-search input{
+  background:transparent;
+  color:var(--ink);
+}
+.docs-integrated :is(.library-category,.guide-shelf>div>button){
+  background:var(--panel);
+  border-color:var(--line);
+  box-shadow:none;
+}
+.docs-integrated .area-summary{
+  background:var(--soft);
+  border-inline-start:3px solid var(--blue);
+  color:var(--ink);
+}
+.docs-integrated .area-icon{
+  background:var(--blue);
+  color:#fff;
+}
+.docs-integrated .docs-page-link.selected{
+  background:var(--soft);
+  color:var(--blue);
+  font-weight:700;
+}
+.docs-integrated .docs-header,
+.docs-integrated .docs-toolbar{
+  background:var(--panel);
+  border-color:var(--line);
+  color:var(--ink);
+}
+.docs-integrated .docs-header{
+  min-width:0;
+  padding:13px clamp(14px,2vw,28px);
+}
+.docs-integrated .docs-toolbar{
+  position:sticky;
+  top:0;
+  z-index:5;
+  max-width:100%;
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+}
+.docs-integrated :is(.docs-sidebar,.docs-main,.docs-toolbar){
+  scrollbar-width:thin;
+  scrollbar-color:var(--app-scroll-thumb) var(--app-scroll-track);
+}
+.docs-integrated :is(button,input,select):focus-visible{
+  outline:2px solid var(--blue);
+  outline-offset:2px;
+}
+@media(max-width:800px){
+  .shell .docs-workspace.library-wide.docs-integrated{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:52px minmax(0,1fr);
+  }
+  .shell .docs-workspace.docs-integrated>.docs-main{grid-column:1;grid-row:2}
+  .shell .docs-workspace.docs-integrated.index-open>.docs-sidebar{
+    display:block;
+    grid-column:auto;
+    grid-row:auto;
+    max-height:none;
+  }
+}
+@media(max-width:600px){
+  .shell>.main>.content[data-current-tab="docs"]{padding:7px;gap:5px}
+  .shell .docs-workspace.library-wide.docs-integrated{border-radius:10px}
+  .shell .docs-workspace.docs-integrated>.library-bar{
+    flex-wrap:nowrap;
+    gap:6px;
+    padding:7px 9px;
+  }
+  .docs-integrated .library-bar-title small{display:none}
+  .docs-integrated .library-index-toggle,
+  .docs-integrated .library-back-button{
+    min-height:34px;
+    padding:6px 8px;
+  }
+  .docs-integrated .library-index-toggle span{display:none}
+  .docs-integrated .library-back-button span{display:none}
+  .docs-integrated .docs-empty,
+  .docs-integrated .docs-paper{padding:14px}
+  .docs-integrated .library-cover h1{font-size:25px}
+}
