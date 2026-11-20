@@ -546,7 +546,7 @@ export default function Home(){
             <div><strong style={{display:'block',fontSize:14}}>Gestão Operacional · COPOM 190</strong><small className="muted">Pausas, folgas, escalas, grupos e histórico. Nesta versão, os dados ficam neste navegador (não há sincronização entre usuários).</small></div>
             <a href="/copom-190-gestao-operacional.html" target="_blank" rel="noopener noreferrer" className="btn secondary tiny">Abrir em tela cheia ↗</a>
           </div>
-          <iframe title="Gestão Operacional COPOM 190: pausas e folgas" src="/copom-190-gestao-operacional.html" loading="lazy" allow="notifications" style={{display:'block',width:'100%',height:'calc(100dvh - 110px)',minHeight:710,border:'1px solid var(--line)',borderRadius:14,background:'#090B10'}}/>
+          <iframe title="Gestão Operacional COPOM 190: pausas e folgas" src="/copom-190-gestao-operacional.html" loading="eager" allow="notifications" style={{display:'block',width:'100%',height:'calc(100dvh - 110px)',minHeight:710,border:'1px solid var(--line)',borderRadius:14,background:'#090B10'}}/>
         </section>}
         {screen==='quality'&&<div key="quality" className="tab-view-container" style={{height:'100%'}}><Quality user={{...user,role:activeProfileConfig.adminTabs.length>0?'admin':'user',operationalRole:activeProfileConfig.id,profileName:activeProfileConfig.name}} activeProfile={activeProfileConfig.id} dark={dark} toggleTheme={theme}/></div>}
         {screen==='catalog'&&<div key="catalog" className="tab-view-container">
