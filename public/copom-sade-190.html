@@ -2054,6 +2054,48 @@
     *::-webkit-scrollbar-thumb:hover{background:var(--copom-scroll-hover)}
   }
 </style>
+<style id="base190-sade-embedded-theme">
+/* Quando embutido, a Base 190 controla a navegação e a identidade visual. */
+body.base190-embedded{--sade-bg:#f2f5f8;--sade-panel:#fff;--sade-ink:#142c40;--sade-muted:#5e7181;--sade-border:#dce5eb;--sade-accent:#086b83;--sade-soft:#eaf5f7}
+body.base190-embedded.base190-dark{--sade-bg:#09141e;--sade-panel:#101f2c;--sade-ink:#e3edf3;--sade-muted:#9db0bd;--sade-border:#263a48;--sade-accent:#69d0e0;--sade-soft:#173544}
+body.base190-embedded{
+  background:var(--sade-bg)!important;
+  background-image:none!important;
+  color:var(--sade-ink)!important;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif;
+}
+body.base190-embedded>header{display:none!important}
+body.base190-embedded #chatContainer{padding:16px clamp(12px,2vw,24px);background:var(--sade-bg)}
+body.base190-embedded .glass-panel{
+  background:var(--sade-panel)!important;
+  border-color:var(--sade-border)!important;
+  color:var(--sade-ink);
+  box-shadow:0 5px 20px #051f2d09;
+}
+body.base190-embedded footer.glass-panel{border-top:1px solid var(--sade-border)!important;padding:12px 16px}
+body.base190-embedded .glass-panel h1,
+body.base190-embedded .glass-panel h2,
+body.base190-embedded .glass-panel h3,
+body.base190-embedded #chatContainer h2{color:var(--sade-ink)!important}
+body.base190-embedded .glass-panel p,
+body.base190-embedded .glass-panel .text-slate-400,
+body.base190-embedded .glass-panel .text-slate-500{color:var(--sade-muted)!important}
+body.base190-embedded :is(input,textarea,select){
+  background:var(--sade-panel);
+  border-color:var(--sade-border);
+  color:var(--sade-ink);
+  border-radius:10px;
+}
+body.base190-embedded :is(input,textarea,select):focus-visible{outline:2px solid var(--sade-accent);outline-offset:1px}
+body.base190-embedded .text-blue-400{color:var(--sade-accent)!important}
+body.base190-embedded button{border-radius:10px}
+body.base190-embedded #chatContainer,
+body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
+@media(max-width:650px){
+  body.base190-embedded #chatContainer{padding:12px}
+  body.base190-embedded footer.glass-panel{padding:10px}
+}
+</style>
 </head>
 <body class="bg-tech-grid text-slate-100 font-sans antialiased h-screen flex flex-col overflow-hidden selection:bg-blue-500 selection:text-white">
 
@@ -4401,6 +4443,22 @@
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
     }
+    // Tema e cabeçalho são governados pelo shell da Base 190 quando incorporado.
+    const sadeEmbedded = new URLSearchParams(window.location.search).get('embedded') === '1';
+    if (sadeEmbedded) {
+      document.body.classList.add('base190-embedded');
+    }
+    function applyBaseTheme(value) {
+      if (!sadeEmbedded || !['dark','light'].includes(value)) return;
+      document.body.classList.toggle('base190-dark', value === 'dark');
+      document.body.classList.toggle('base190-light', value === 'light');
+      document.documentElement.classList.toggle('dark', value === 'dark');
+      document.documentElement.style.colorScheme=value;
+    }
+    window.addEventListener('message', (event) => {
+      if (event.source !== window.parent || !sadeEmbedded || event.data?.type !== 'base190:theme') return;
+      applyBaseTheme(event.data.theme);
+    });
     // O painel React pode encaminhar um relato manual já digitado na página inicial.
     // A origem da mensagem é restringida à janela que efetivamente hospeda o iframe.
     window.addEventListener('message', (event) => {
