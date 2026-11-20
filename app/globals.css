@@ -1457,3 +1457,224 @@ html,body{font-family:Inter,"Segoe UI",system-ui,sans-serif}h1,h2,h3{text-wrap:b
   .shell>.main>.content.immersive-content-mode,
   .shell.quality-mode>.main>.content{padding:8px}
 }
+
+
+/* =============================================================
+   BASE 190 · ICON RAIL EM TODAS AS ABAS
+   Uma única barra lateral compacta, sem mudança de largura por módulo.
+   ============================================================= */
+:root{--base-sidebar-width:68px}
+.shell,
+.shell.immersive-mode,
+.shell.quality-mode{
+  grid-template-columns:var(--base-sidebar-width) minmax(0,1fr);
+  grid-template-rows:minmax(0,1fr);
+}
+.shell>.sidebar.compact{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  width:var(--base-sidebar-width);
+  max-width:var(--base-sidebar-width);
+  min-width:var(--base-sidebar-width);
+  height:100%;
+  max-height:100%;
+  min-height:0;
+  position:relative;
+  padding:13px 6px 12px;
+  gap:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  scrollbar-width:none;
+  border-right:1px solid #244050;
+  border-bottom:0;
+  background:var(--nav);
+}
+.shell>.sidebar.compact::-webkit-scrollbar{width:0;height:0;display:none}
+.shell>.sidebar.compact .logo{
+  display:flex!important;
+  flex:0 0 auto;
+  justify-content:center;
+  align-items:center;
+  width:100%;
+  height:auto;
+  padding:3px 0 17px;
+  margin:0;
+}
+.shell>.sidebar.compact .logoicon{
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  width:42px;
+  height:42px;
+  min-width:42px;
+  padding:0;
+  font-size:13px;
+  text-align:center;
+  border-radius:11px;
+}
+.shell>.sidebar.compact .logo-text,
+.shell>.sidebar.compact .nav-caption,
+.shell>.sidebar.compact .nav-label,
+.shell>.sidebar.compact .who,
+.shell>.sidebar.compact .profile-switch-info,
+.shell>.sidebar.compact .profile-switch-arrow,
+.shell>.sidebar.compact .profile-switch-eyebrow,
+.shell>.sidebar.compact .profile-switch-title{
+  display:none!important;
+}
+.shell>.sidebar.compact .nav-btn,
+.shell>.sidebar.compact .sidebar-bottom .nav-btn,
+.shell>.sidebar.compact .profile-switch-btn{
+  display:flex;
+  flex:0 0 42px;
+  align-items:center;
+  justify-content:center;
+  width:42px;
+  min-width:42px;
+  max-width:42px;
+  height:42px;
+  min-height:42px;
+  max-height:42px;
+  padding:0;
+  margin:0 auto 5px;
+  gap:0;
+  border-radius:10px;
+  font-size:12px;
+  white-space:normal;
+}
+.shell>.sidebar.compact .nav-btn svg{
+  width:20px;
+  height:20px;
+  min-width:20px;
+  flex:0 0 20px;
+  margin:0;
+}
+.shell>.sidebar.compact .nav-btn.active{
+  background:#143e50;
+  border-color:#286174;
+  color:#b8f4f6;
+  box-shadow:inset 3px 0 #54cbd2;
+}
+.shell>.sidebar.compact .nav-btn:hover:not(:disabled){
+  background:#143444;
+  color:#e9faff;
+}
+.shell>.sidebar.compact .nav-btn:focus-visible{
+  outline:2px solid #76dfe4;
+  outline-offset:2px;
+}
+.shell>.sidebar.compact .sidebar-profile-box{
+  display:flex!important;
+  flex:0 0 auto;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  margin:0;
+  padding:10px 0 3px;
+  border:0;
+}
+.shell>.sidebar.compact .profile-switch-btn .profile-indicator-dot{
+  display:block;
+  width:12px;
+  height:12px;
+  flex:0 0 12px;
+}
+.shell>.sidebar.compact .sidebar-bottom{
+  display:flex!important;
+  flex:0 0 auto;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  width:100%;
+  gap:3px;
+  margin:0;
+  padding:8px 0 0;
+  border-top:1px solid #244050;
+}
+.shell>.sidebar.compact .sidebar-bottom .who{display:none!important}
+.shell>.main{
+  min-width:0;
+  width:100%;
+  max-width:100%;
+}
+.shell>.main>.content,
+.shell>.main>.content.quality-content-mode,
+.shell>.main>.content.immersive-content-mode{
+  width:100%;
+  max-width:none;
+  min-width:0;
+}
+@media(max-width:1050px) and (min-width:651px){
+  :root{--base-sidebar-width:68px}
+  .shell>.sidebar.compact .logo{justify-content:center;padding:3px 0 17px}
+  .shell>.sidebar.compact .nav-btn{justify-content:center;padding:0;gap:0}
+}
+@media(max-width:650px){
+  :root{--base-sidebar-width:56px}
+  .shell,
+  .shell.immersive-mode,
+  .shell.quality-mode{
+    display:grid;
+    grid-template-columns:var(--base-sidebar-width) minmax(0,1fr);
+    grid-template-rows:minmax(0,1fr);
+    height:100dvh;
+  }
+  .shell>.sidebar.compact{
+    display:flex!important;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    width:var(--base-sidebar-width);
+    min-width:var(--base-sidebar-width);
+    max-width:var(--base-sidebar-width);
+    height:100%;
+    min-height:0;
+    max-height:100%;
+    padding:11px 5px 9px;
+    overflow-x:hidden;
+    overflow-y:auto;
+    border-right:1px solid #244050;
+    border-bottom:0;
+    white-space:normal;
+  }
+  .shell>.sidebar.compact .logo{
+    display:flex!important;
+    flex:0 0 auto;
+    padding:2px 0 12px;
+  }
+  .shell>.sidebar.compact .logoicon{
+    width:39px;
+    height:39px;
+    min-width:39px;
+  }
+  .shell>.sidebar.compact .nav-btn,
+  .shell>.sidebar.compact .sidebar-bottom .nav-btn,
+  .shell>.sidebar.compact .profile-switch-btn{
+    display:flex;
+    flex:0 0 40px;
+    width:40px;
+    min-width:40px;
+    max-width:40px;
+    height:40px;
+    min-height:40px;
+    max-height:40px;
+    margin:0 auto 4px;
+    padding:0;
+    gap:0;
+    justify-content:center;
+    white-space:normal;
+  }
+  .shell>.sidebar.compact .nav-label{display:none!important}
+  .shell>.sidebar.compact .sidebar-profile-box,
+  .shell>.sidebar.compact .sidebar-bottom{
+    display:flex!important;
+    flex-direction:column;
+    width:100%;
+    align-items:center;
+    justify-content:flex-start;
+  }
+  .shell>.main{height:100%;min-height:0}
+}
