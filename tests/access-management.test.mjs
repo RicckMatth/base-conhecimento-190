@@ -53,7 +53,9 @@ test('frontend no longer trusts a local switchable operational role',()=>{
   const page=readFileSync(new URL('../app/page.jsx',import.meta.url),'utf8');
   const html=readFileSync(new URL('../public/copom-190-gestao-operacional.html',import.meta.url),'utf8');
   assert.match(page,/user\?\.operationalRole/);
-  assert.doesNotMatch(page,/setActiveProfileId|switchProfile\(/);
+  assert.match(page,/const canPreviewRoles=user\?\.role==='admin'&&user\?\.operationalRole==='dev'/);
+  assert.match(page,/function switchProfile\(targetId\)/);
+  assert.match(page,/if\(!canPreviewRoles\)return/);
   assert.match(page,/['"]access['"],['"]Acessos e Cargos['"]/);
   assert.match(html,/fetch\('\/api\/session'/);
   assert.match(html,/state\.userRole = roleMap\[account\.operationalRole\]/);
