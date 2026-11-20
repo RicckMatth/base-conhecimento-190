@@ -54,11 +54,17 @@ export default function Documentation({isAdmin,active,onExit}){
  const depth=p=>{let n=0,current=p;const seen=new Set();while(current?.parent_id&&!seen.has(current.id)&&n<10){seen.add(current.id);n++;current=pages.find(x=>x.id===current.parent_id);}return n;};
  const filtered=pages.filter(p=>(p.title+' '+p.space+' '+p.content.replace(/<[^>]*>/g,' ')).toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR')));
  const highlights=['SAÍDA COM FILHO APÓS DISCUSSÃO','FALSA CENTRAL BANCÁRIA','INFORMAÇÕES DIVERGENTES'].map(title=>pages.find(item=>item.title===title&&item.status==='published')).filter(Boolean);
- return <section className={'docs-workspace library-wide'+(indexOpen?' index-open':'')}>
-<header className="library-bar"><button className="btn secondary" onClick={onExit}>← Voltar ao painel</button><b>Biblioteca 190</b><button className="btn secondary" onClick={async e=>{const workspace=e.currentTarget.closest('section');try{if(document.fullscreenElement)await document.exitFullscreen();else await workspace.requestFullscreen();}catch{setNotice('Este navegador permite apenas o modo de tela ampliada.');}}}>Tela cheia</button><button className="btn secondary library-index" onClick={()=>setIndexOpen(!indexOpen)} aria-expanded={indexOpen}>Índice</button></header>
-<aside className="docs-sidebar">
-<span className="eyebrow">BIBLIOTECA 190</span>
-<h2>Base de conhecimento</h2>
+ return <section className={'docs-workspace library-wide docs-integrated'+(indexOpen?' index-open':'')} aria-label="Base de conhecimento">
+<header className="library-bar">
+  <button type="button" className="library-index-toggle" onClick={()=>setIndexOpen(open=>!open)} aria-expanded={indexOpen} aria-controls="docs-index" aria-label={indexOpen?'Fechar índice de documentos':'Abrir índice de documentos'} title={indexOpen?'Fechar índice':'Abrir índice'}>
+    <Icon name="book" size={17}/><span>{indexOpen?'Fechar índice':'Índice de documentos'}</span>
+  </button>
+  <div className="library-bar-title"><strong>Biblioteca de conhecimento</strong><small>{pages.length} páginas disponíveis</small></div>
+  <button type="button" className="library-back-button" onClick={onExit} title="Voltar à visão geral"><Icon name="home" size={15}/><span>Início</span></button>
+ </header>
+ {indexOpen&&<button type="button" className="library-index-backdrop" onClick={()=>setIndexOpen(false)} aria-label="Fechar índice de documentos"/>}
+<aside id="docs-index" className="docs-sidebar" aria-label="Índice de documentos" aria-hidden={!indexOpen}>
+<div className="docs-sidebar-top"><div><span className="eyebrow">NAVEGAÇÃO</span><h2>Documentos e áreas</h2></div><button type="button" className="docs-index-close" onClick={()=>setIndexOpen(false)} aria-label="Fechar índice">×</button></div>
 <input aria-label="Pesquisar documentação" placeholder="Pesquisar páginas e conteúdo…" value={query} onChange={e=>setQuery(e.target.value)}/>{isAdmin&&<button className="btn" onClick={()=>open(empty(),true)}>+ Criar página</button>}{[...new Set(filtered.map(p=>p.space))].map(space=>
 <details className="library-category" key={space+Boolean(query.trim())} open={Boolean(query.trim())||page?.space===space}>
 <AreaSummary space={space} count={filtered.filter(p=>p.space===space).length}/>{filtered.filter(p=>p.space===space).map(p=>
