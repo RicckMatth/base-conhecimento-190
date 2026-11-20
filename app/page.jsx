@@ -63,7 +63,7 @@ export const PROFILES=[
     color:'#a855f7',
     icon:'settings',
     desc:'Acesso pleno irrestrito a todos os módulos, regras semânticas, edição de textos, controle de acessos e auditoria.',
-    centralTabs:['home','docs','catalog','chat','floor','quality'],
+    centralTabs:['home','docs','catalog','chat','floor','operations','quality'],
     adminTabs:['editor','access','rules','audit'],
     canEditDocs:true,
     canEditCatalog:true,
@@ -79,7 +79,7 @@ export const PROFILES=[
     color:'#38bdf8',
     icon:'shield',
     desc:'Supervisão geral, aprovação de novos operadores, edição de procedimentos operacionais e auditoria de ações.',
-    centralTabs:['home','docs','catalog','chat','floor','quality'],
+    centralTabs:['home','docs','catalog','chat','floor','operations','quality'],
     adminTabs:['editor','access','audit'],
     canEditDocs:true,
     canEditCatalog:true,
@@ -95,7 +95,7 @@ export const PROFILES=[
     color:'#34d399',
     icon:'users',
     desc:'Gestão de piso e eventos de PAs, resolução de chamados técnicos de TI, acompanhamento de monitorias e auditoria.',
-    centralTabs:['home','docs','catalog','chat','floor','quality'],
+    centralTabs:['home','docs','catalog','chat','floor','operations','quality'],
     adminTabs:['audit'],
     canEditDocs:false,
     canEditCatalog:false,
@@ -111,7 +111,7 @@ export const PROFILES=[
     color:'#fbbf24',
     icon:'audit',
     desc:'Avaliação técnica de atendimentos, cadastramento de novas monitorias, agendamento de feedbacks e acompanhamento pedagógico.',
-    centralTabs:['quality','home','docs','catalog','chat','floor'],
+    centralTabs:['quality','home','docs','catalog','chat','floor','operations'],
     adminTabs:['audit'],
     canEditDocs:false,
     canEditCatalog:false,
@@ -127,7 +127,7 @@ export const PROFILES=[
     color:'#22d3ee',
     icon:'brain',
     desc:'Atendimento de chamadas com Chat 190 (triagem SADE), consulta de naturezas e manuais, e confirmação de ciência de suas monitorias.',
-    centralTabs:['home','chat','catalog','docs','floor','quality'],
+    centralTabs:['home','chat','catalog','docs','floor','operations','quality'],
     adminTabs:[],
     canEditDocs:false,
     canEditCatalog:false,
@@ -482,9 +482,9 @@ export default function Home(){
     </form>
   </section>;
 
-  const links=[['home','Visão geral','home'],['docs','Base de conhecimento','book'],['catalog','Catálogo','book'],['chat','Chat 190','brain'],['floor','Gestão de piso','shield'],['quality','Qualidade','audit']];
+  const links=[['home','Visão geral','home'],['docs','Base de conhecimento','book'],['catalog','Catálogo','book'],['chat','Chat 190','brain'],['floor','Gestão de piso','shield'],['operations','Pausas e Folgas','calendar'],['quality','Qualidade','audit']];
   const adminLinks=[['editor','Editar textos','edit'],['access','Autorizar acessos','users'],['rules','Regras do assistente','settings'],['audit','Auditoria','audit']];
-  const isImmersiveScreen = screen === 'quality' || screen === 'chat';
+  const isImmersiveScreen = screen === 'quality' || screen === 'chat' || screen === 'operations';
   const isQualityScreen = isImmersiveScreen;
   const visibleLinks=links.filter(([id])=>activeProfileConfig.centralTabs.includes(id));
   const visibleAdminLinks=adminLinks.filter(([id])=>activeProfileConfig.adminTabs.includes(id));
@@ -560,6 +560,13 @@ export default function Home(){
 
         {docsOpened&&<div key="docs" hidden={screen!=='docs'} className="tab-view-container"><Documentation onExit={()=>go('home')} isAdmin={activeProfileConfig.canEditDocs} active={screen==='docs'}/></div>}
         {screen==='floor'&&<div key="floor" className="tab-view-container"><FloorControl isAdmin={activeProfileConfig.canManageFloorEvents}/></div>}
+        {screen==='operations'&&<section key="operations" className="tab-view-container" aria-label="Gestão Operacional de Pausas e Folgas" style={{height:'100%',minHeight:0}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',padding:'10px 14px',borderRadius:12,marginBottom:10,border:'1px solid var(--line)',background:'var(--surface)'}}>
+            <div><strong style={{display:'block',fontSize:14}}>Gestão Operacional · COPOM 190</strong><small className="muted">Pausas, folgas, escalas, grupos e histórico. Nesta versão, os dados ficam neste navegador (não há sincronização entre usuários).</small></div>
+            <a href="/copom-190-gestao-operacional.html" target="_blank" rel="noopener noreferrer" className="btn secondary tiny">Abrir em tela cheia ↗</a>
+          </div>
+          <iframe title="Gestão Operacional COPOM 190: pausas e folgas" src="/copom-190-gestao-operacional.html" loading="lazy" allow="notifications" style={{display:'block',width:'100%',height:'calc(100dvh - 110px)',minHeight:710,border:'1px solid var(--line)',borderRadius:14,background:'#090B10'}}/>
+        </section>}
         {screen==='quality'&&<div key="quality" className="tab-view-container" style={{height:'100%'}}><Quality user={{...user,role:activeProfileConfig.adminTabs.length>0?'admin':'user',operationalRole:activeProfileConfig.id,profileName:activeProfileConfig.name}} activeProfile={activeProfileConfig.id} dark={dark} toggleTheme={theme}/></div>}
         {screen==='catalog'&&<div key="catalog" className="tab-view-container">
           <div className="panel-head"><div><span className="eyebrow">BIBLIOTECA OPERACIONAL</span><h1>Catálogo de naturezas</h1><p className="muted">Busque por título, código, resumo, conteúdo ou palavra-chave.</p></div>{activeProfileConfig.canEditCatalog&&<Btn onClick={()=>editEntry(null)}><Icon name="plus" size={18}/> Nova ficha</Btn>}</div>
@@ -726,7 +733,7 @@ export default function Home(){
                       <div className="profile-detail-row">
                         <span className="profile-detail-tag">Abas Central:</span>
                         <span className="profile-detail-val">
-                          {p.centralTabs.map(t=>t==='home'?'Visão Geral':t==='docs'?'Base Docs':t==='catalog'?'Catálogo':t==='chat'?'Chat 190':t==='floor'?'Gestão Piso':'Qualidade').join(', ')}
+                          {p.centralTabs.map(t=>t==='home'?'Visão Geral':t==='docs'?'Base Docs':t==='catalog'?'Catálogo':t==='chat'?'Chat 190':t==='floor'?'Gestão Piso':t==='operations'?'Pausas e Folgas':'Qualidade').join(', ')}
                         </span>
                       </div>
                       <div className="profile-detail-row">
