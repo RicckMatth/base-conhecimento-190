@@ -58,5 +58,7 @@ test('frontend no longer trusts a local switchable operational role',()=>{
   assert.match(page,/if\(!canPreviewRoles\)return/);
   assert.match(page,/['"]access['"],['"]Acessos e Cargos['"]/);
   assert.match(html,/fetch\('\/api\/session'/);
-  assert.match(html,/state\.userRole = roleMap\[account\.operationalRole\]/);
+  assert.match(html,/rolePreviewAllowed = account\.operationalRole === 'dev' && account\.role === 'admin'/);
+  assert.match(html,/state\.userRole = rolePreviewAllowed/);
+  assert.match(html,/roleMap\[account\.operationalRole\]/);
 });
