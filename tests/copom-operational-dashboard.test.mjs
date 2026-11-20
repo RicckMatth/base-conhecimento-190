@@ -31,3 +31,27 @@ test('COPOM operational dashboard is included in every authorized profile naviga
   assert.match(page, /screen==='operations'/);
   assert.match(page, /src="\/copom-190-gestao-operacional\.html"/);
 });
+
+
+test('Operational iframe is allowed only same-origin, unlike other protected routes',async()=>{
+  const {default:config}=await import('../next.config.mjs');
+  const patterns=await config.headers();
+  const common=patterns.find(x=>x.source==='/:path*');
+  const panel=patterns.find(x=>x.source==='/copom-190-gestao-operacional.html');
+  assert.ok(common&&panel,'Expected strict default headers and panel exception');
+  const value=(item,key)=>item.headers.find(x=>x.key===key)?.value;
+  assert.equal(value(common,'X-Frame-Options'),'DENY');
+  assert.equal(value(panel,'X-Frame-Options'),'SAMEORIGIN');
+  assert.match(value(panel,'Content-Security-Policy'),/frame-ancestors 'self'/);
+  assert.match(value(panel,'Content-Security-Policy'),/connect-src 'self'/);
+});
+test('No demonstration users or fabricated initial schedule in operational panel',()=>{
+  assert.doesNotMatch(html,/seedDefaultData\s*\(/);
+  for(const fake of ['Lucas Ferreira','Mariana Costa','Rafael Oliveira','Bruno Almeida','Fernanda Souza','ag_12','de 12 atendentes']){
+    assert.ok(!html.includes(fake),'Unremoved example: '+fake);
+  }
+  assert.match(html,/fetch\('\/api\/floor\/schedules\?month='/);
+  assert.match(html,/data\.users\.filter\(u=>u\?\.operational_role==='attendant'/);
+  assert.match(html,/filter\(\(\[id\]\)=>ids\.has\(id\)\)/);
+  assert.match(page,/src="\/copom-190-gestao-operacional\.html" loading="eager"/);
+});
