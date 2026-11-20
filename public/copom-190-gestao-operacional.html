@@ -879,7 +879,7 @@
     // =========================================================================
     // CONSTANTES E REGRAS FIXAS COPOM 190
     // =========================================================================
-    const STORAGE_KEY = 'copom190_gestao_v5';
+    let STORAGE_KEY = 'copom190_gestao_v5';
     const BREAK_TYPES = {
       'Pausa 10 (1ª)': { duration: 10, order: 1, short: '1ª Pausa 10' },
       'Lanche':        { duration: 20, order: 2, short: 'Lanche' },
@@ -891,7 +891,7 @@
       theme: 'dark',
       roundInterval: 10, // 10, 15 ou 30 min
       simulatedTime: null, // "HH:MM" ou null
-      userRole: 'supervisor', // 'supervisor' | 'coordenador' | 'dev' | 'atendente'
+      userRole: 'atendente', // Definido pela sessao da Base 190 (sem seletor local de privilegios)
       loggedAgentId: null,
       notifications: {
         asked: false,
@@ -1684,28 +1684,8 @@
       if (tab === 'history') renderHistory();
     }
 
-    function setUserRole(role) {
-      state.userRole = role;
-      closeAllPopovers();
-
-      // Ao entrar como atendente, seleciona automaticamente um atendente do turno atual
-      if (role === 'atendente') {
-        const now = getEffectiveNow();
-        const nowMin = now.getHours() * 60 + now.getMinutes();
-        const activeGroup = state.groups.find((g) => isMinuteInsideShift(nowMin, g));
-        if (activeGroup) {
-          const ag = state.agents.find((a) => a.groupId === activeGroup.id);
-          if (ag) state.loggedAgentId = ag.id;
-        }
-        switchTab('overview');
-        if (!state.notifications.asked) {
-          setTimeout(() => openModal('modalNotifPrompt'), 250);
-        }
-      }
-
-      saveState();
-      applyRoleUI();
-      renderAll();
+    function setUserRole() {
+      showToast('O cargo é definido pela administração em Acessos e Cargos.', 'warning');
     }
 
     function changeLoggedAgent(agentId) {
@@ -2836,8 +2816,38 @@
       }
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      // O cargo deve ser consultado no servidor. Nunca confiar em roles do localStorage.
+      let account;
+      try {
+        const response = await fetch('/api/session', {credentials: 'same-origin', cache: 'no-store'});
+        if (!response.ok) throw new Error('Sessao invalida');
+        const payload = await response.json();
+        account = payload.user;
+        if (!account?.id) throw new Error('Conta nao encontrada');
+      } catch {
+        document.body.innerHTML = '<main style="min-height:100vh;display:grid;place-items:center;padding:30px;font:16px system-ui;color:#e5efff;background:#09111d;text-align:center"><div><h1>Acesso restrito</h1><p>Entre na Base 190 com sua conta autorizada para abrir o painel operacional.</p></div></main>';
+        return;
+      }
+      // Preserva o armazenamento legado apenas para a conta principal.
+      const previousKey = STORAGE_KEY;
+      const scopedKey = previousKey + '_' + account.id;
+      if (account.role === 'admin' && !localStorage.getItem(scopedKey)) {
+        const legacy = localStorage.getItem(previousKey);
+        if (legacy) localStorage.setItem(scopedKey, legacy);
+      }
+      STORAGE_KEY = scopedKey;
       loadState();
+      const roleMap = {dev:'dev',coordinator:'coordenador',manager:'supervisor',quality_analyst:'atendente',attendant:'atendente'};
+      state.userRole = roleMap[account.operationalRole] || 'atendente';
+      const selector = document.getElementById('btnRolePopover');
+      if (selector) {
+        selector.disabled = true;
+        selector.removeAttribute('onclick');
+        selector.title = 'Cargo autenticado: alteracoes somente em Acessos e Cargos';
+      }
+      document.getElementById('rolePopover')?.remove();
+
       document.documentElement.classList.toggle('dark', state.theme === 'dark');
       if (state.simulatedTime) {
         document.getElementById('simTimeInput').value = state.simulatedTime;
