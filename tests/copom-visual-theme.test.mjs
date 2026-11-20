@@ -8,7 +8,7 @@ const page=readFileSync(new URL('../app/page.jsx',import.meta.url),'utf8');
 
 test('Operational dashboard shares Base 190 light and dark design tokens',()=>{
   assert.match(html,/id="base190-operations-visual-theme"/);
-  for(const token of ['--ops-bg:#f4f6fb','--ops-panel:#ffffff','--ops-ink:#101b32','--ops-blue:#2662d9','--ops-soft:#edf3ff','--ops-bg:#0a1222','--ops-panel:#131f33','--ops-ink:#eef4ff','--ops-blue:#78a7ff','--ops-cyan:#55d6df']){
+  for(const token of ['--ops-bg:#f2f5f8','--ops-panel:#ffffff','--ops-ink:#142c40','--ops-blue:#086b83','--ops-soft:#eaf5f7','--ops-bg:#09141e','--ops-panel:#101f2c','--ops-ink:#e3edf3','--ops-blue:#69d0e0','--ops-cyan:#55d6df']){
     assert.ok(html.includes(token),'Missing shared theme color '+token);
   }
   for(const outdated of ['#0A84FF','#090B10','#1D1D1F','#11141C','#FF453A']){
@@ -17,6 +17,8 @@ test('Operational dashboard shares Base 190 light and dark design tokens',()=>{
 });
 
 test('Embedded dashboard respects parent theme and keeps standalone theme toggle',()=>{
+  assert.match(html,/id="base190-theme-bootstrap"/);
+  assert.ok(html.indexOf('id="base190-theme-bootstrap"')<html.indexOf('<body'),'Theme needs to be applied before the first paint.');
   assert.match(html,/function inheritBaseTheme\(\)/);
   assert.match(html,/window\.parent\.location\.origin !== window\.location\.origin/);
   assert.match(html,/host\.dataset\.theme === 'dark'/);
