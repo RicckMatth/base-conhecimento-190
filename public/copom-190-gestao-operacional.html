@@ -149,6 +149,102 @@
   body.base190-embedded #btnTheme{display:none!important}
 </style>
 
+<script>
+  try { if (window.self !== window.top && window.parent.location.origin === window.location.origin)
+    document.documentElement.classList.add('base190-inside-shell'); } catch {}
+</script>
+
+<style id="base190-operations-shell-integration">
+/* O módulo integrado não replica o cabeçalho principal da Base 190. */
+.base190-inside-shell body{background:var(--ops-bg);min-height:100%;color:var(--ops-ink)}
+.base190-inside-shell body>header{
+  position:relative!important;
+  top:auto!important;
+  height:auto!important;
+  min-height:55px;
+  z-index:30;
+  background:var(--ops-panel)!important;
+  border-color:var(--ops-border)!important;
+  box-shadow:none;
+}
+.base190-inside-shell body>header>div{
+  width:100%;
+  max-width:none;
+  min-height:55px;
+  height:auto;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:space-between;
+  padding:8px clamp(10px,1.5vw,20px);
+}
+.base190-inside-shell body>header>div>div:first-child{display:none!important}
+.base190-inside-shell #desktopNav{
+  display:flex!important;
+  flex:1 1 0;
+  justify-content:flex-start;
+  align-items:center;
+  gap:4px;
+  padding:4px;
+  min-width:0;
+  overflow-x:auto;
+  scrollbar-width:thin;
+  white-space:nowrap;
+  background:var(--ops-soft)!important;
+  border-color:var(--ops-border)!important;
+}
+.base190-inside-shell #desktopNav .nav-tab{
+  flex:none;
+  white-space:nowrap;
+  border-radius:8px;
+  min-height:33px;
+}
+.base190-inside-shell #desktopNav .nav-tab.font-semibold{
+  background:var(--ops-panel)!important;
+  color:var(--ops-blue)!important;
+  box-shadow:inset 0 -2px var(--ops-blue);
+}
+.base190-inside-shell body>header>div>div:last-child{
+  flex:0 0 auto;
+  gap:5px;
+}
+.base190-inside-shell body>header>div>div:last-child>div,
+.base190-inside-shell body>header>div>div:last-child>button{min-width:0}
+.base190-inside-shell #btnTheme{display:none!important}
+.base190-inside-shell #baseRosterStatus{
+  border-radius:0!important;
+  margin:0!important;
+  max-width:none!important;
+  border-width:0 0 1px!important;
+  border-color:var(--ops-border)!important;
+  background:var(--ops-panel)!important;
+  color:var(--ops-muted)!important;
+  padding:7px 15px!important;
+  box-shadow:none!important;
+}
+.base190-inside-shell body>div.lg\:hidden.sticky{display:none!important}
+.base190-inside-shell body>main{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:16px clamp(12px,2vw,28px)!important;
+}
+.base190-inside-shell .menu-popover{
+  background:var(--ops-panel)!important;
+  color:var(--ops-ink)!important;
+  border-color:var(--ops-border)!important;
+  box-shadow:0 14px 38px #041b2d24;
+}
+.base190-inside-shell .tab-section{max-width:100%;min-width:0}
+.base190-inside-shell .tab-section>.grid{max-width:100%}
+.base190-inside-shell #groupsGrid>div{background:var(--ops-panel)!important;border-color:var(--ops-border)!important}
+@media(max-width:680px){
+  .base190-inside-shell body>header>div{align-items:stretch;flex-direction:column;gap:7px}
+  .base190-inside-shell #desktopNav{width:100%;flex:auto}
+  .base190-inside-shell body>header>div>div:last-child{justify-content:flex-end}
+  .base190-inside-shell #desktopNav .nav-tab{font-size:11px;padding:7px 9px}
+}
+</style>
 </head>
 <body class="bg-[#F4F6FB] dark:bg-[#0A1222] text-[#101B32] dark:text-[#F4F6FB] font-sans min-h-screen selection:bg-[#2662D9]/25">
 <!-- ===================================================================== -->
@@ -1675,6 +1771,14 @@
           const mode = host.dataset.theme === 'dark' ? 'dark' : 'light';
           state.theme = mode;
           document.documentElement.classList.toggle('dark', mode === 'dark');
+          const parentStyle=window.parent.getComputedStyle(host);
+          const tokens={'--ops-bg':'--bg','--ops-panel':'--panel','--ops-ink':'--ink',
+            '--ops-muted':'--muted','--ops-border':'--line','--ops-blue':'--blue',
+            '--ops-soft':'--soft','--ops-nav':'--nav','--ops-shadow':'--shadow'};
+          for (const [childToken,parentToken] of Object.entries(tokens)) {
+            const value=parentStyle.getPropertyValue(parentToken).trim();
+            if (value) document.documentElement.style.setProperty(childToken,value);
+          }
         };
         apply();
         document.body.classList.add('base190-embedded');
