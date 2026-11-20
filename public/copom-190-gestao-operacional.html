@@ -3,22 +3,6 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>COPOM 190 · Gestão Operacional de Pausas &amp; Folgas</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'sans-serif'],
-          },
-        },
-      },
-    };
-  </script>
 <style>
     * {
       -webkit-font-smoothing: antialiased;
@@ -209,6 +193,7 @@
 </div>
 </div>
 </header>
+<div id="baseRosterStatus" style="max-width:1440px;margin:12px auto;padding:9px 16px;border:1px solid rgba(10,132,255,.25);border-radius:12px;color:#8bbded;background:rgba(10,132,255,.06);font:500 12px Inter,system-ui">Consultando equipe cadastrada na Base 190…</div>
 <!-- Navegação Mobile -->
 <div class="lg:hidden sticky top-16 z-30 bg-[#F5F5F7]/90 dark:bg-[#090B10]/90 backdrop-blur-lg border-b border-black/[0.06] dark:border-white/[0.08] px-4 py-2 overflow-x-auto">
 <div class="flex items-center gap-1 min-w-max">
@@ -2827,6 +2812,17 @@
       }
       STORAGE_KEY = scopedKey;
       loadState();
+      try {
+        const response=await fetch('/api/floor/schedules?month='+encodeURIComponent(formatMonthKey(new Date())),{
+          credentials:'same-origin',cache:'no-store'
+        });
+        if(!response.ok)throw Error('Falha ao consultar cadastro de escalas');
+        syncOfficialRoster(await response.json(),account);
+      } catch(error){
+        console.error('Falha de sincronização da equipe COPOM 190:',error);
+        document.body.innerHTML='<main style="min-height:100vh;background:#090B10;color:#e5efff;display:grid;place-items:center;padding:30px;font:15px system-ui;text-align:center"><div><h2>Não foi possível carregar a equipe da Base 190</h2><p>Verifique a conexão com o banco de dados e recarregue a página. Nenhum usuário fictício será exibido.</p></div></main>';
+        return;
+      }
       const roleMap = {dev:'dev',coordinator:'coordenador',manager:'supervisor',quality_analyst:'atendente',attendant:'atendente'};
       rolePreviewAllowed = account.operationalRole === 'dev' && account.role === 'admin';
       const savedRole = state.userRole;
