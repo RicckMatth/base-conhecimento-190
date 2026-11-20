@@ -542,11 +542,11 @@ export default function Home(){
         {docsOpened&&<div key="docs" hidden={screen!=='docs'} className="tab-view-container"><Documentation onExit={()=>go('home')} isAdmin={activeProfileConfig.canEditDocs} active={screen==='docs'}/></div>}
         {screen==='floor'&&<div key="floor" className="tab-view-container"><FloorControl isAdmin={activeProfileConfig.canManageFloorEvents}/></div>}
         {screen==='operations'&&<section key="operations" className="tab-view-container" aria-label="Gestão Operacional de Pausas e Folgas" style={{height:'100%',minHeight:0}}>
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',padding:'10px 14px',borderRadius:12,marginBottom:10,border:'1px solid var(--line)',background:'var(--surface)'}}>
-            <div><strong style={{display:'block',fontSize:14}}>Gestão Operacional · COPOM 190</strong><small className="muted">Pausas, folgas, escalas, grupos e histórico. Nesta versão, os dados ficam neste navegador (não há sincronização entre usuários).</small></div>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',padding:'10px 14px',borderRadius:12,marginBottom:10,border:'1px solid var(--line)',background:'var(--panel)',boxShadow:'var(--shadow)'}}>
+            <div><strong style={{display:'block',fontSize:14}}>Gestão Operacional · COPOM 190</strong><small className="muted">Profissionais da Base 190, pausas, folgas e escalas. Os ajustes feitos aqui permanecem neste navegador, sem sincronização entre usuários.</small></div>
             <a href="/copom-190-gestao-operacional.html" target="_blank" rel="noopener noreferrer" className="btn secondary tiny">Abrir em tela cheia ↗</a>
           </div>
-          <iframe title="Gestão Operacional COPOM 190: pausas e folgas" src="/copom-190-gestao-operacional.html" loading="eager" allow="notifications" style={{display:'block',width:'100%',height:'calc(100dvh - 110px)',minHeight:710,border:'1px solid var(--line)',borderRadius:14,background:'#090B10'}}/>
+          <iframe title="Gestão Operacional COPOM 190: pausas e folgas" src="/copom-190-gestao-operacional.html" loading="eager" allow="notifications" style={{display:'block',width:'100%',height:'calc(100dvh - 110px)',minHeight:710,border:'1px solid var(--line)',borderRadius:14,background:'var(--bg)',boxShadow:'var(--shadow)'}}/>
         </section>}
         {screen==='quality'&&<div key="quality" className="tab-view-container" style={{height:'100%'}}><Quality user={{...user,role:activeProfileConfig.adminTabs.length>0?'admin':'user',operationalRole:activeProfileConfig.id,profileName:activeProfileConfig.name}} activeProfile={activeProfileConfig.id} dark={dark} toggleTheme={theme}/></div>}
         {screen==='catalog'&&<div key="catalog" className="tab-view-container">
