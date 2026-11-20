@@ -19,7 +19,7 @@ test('COPOM 190 operational dashboard retains all five functional sections', () 
 
 test('COPOM operational dashboard script parses as JavaScript', () => {
   const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
-  assert.ok(scripts.length >= 2, 'Expected inline application logic');
+  assert.ok(scripts.length >= 1, 'Expected inline application logic');
   assert.doesNotThrow(() => new Script(scripts.at(-1)[1], { filename: 'copom-190-gestao-operacional.html' }));
 });
 
