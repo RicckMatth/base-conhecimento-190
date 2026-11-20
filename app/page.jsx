@@ -7,6 +7,7 @@ import WritingReview from './writing-review.jsx';
 import StartupScreen from './startup-screen.jsx';
 import FloorControl from './floor-control.jsx';
 import Quality from './quality.jsx';
+import AccessControl from './access-control.jsx';
 import { Icon, categoryIcon } from './icons.jsx';
 import { useEffect,useMemo,useRef,useState } from 'react';
 
@@ -63,8 +64,8 @@ export const PROFILES=[
     color:'#a855f7',
     icon:'settings',
     desc:'Acesso pleno irrestrito a todos os módulos, regras semânticas, edição de textos, controle de acessos e auditoria.',
-    centralTabs:['home','docs','catalog','chat','floor','operations','quality'],
-    adminTabs:['editor','access','rules','audit'],
+    centralTabs:['home','docs','catalog','chat','floor','operations','quality','access'],
+    adminTabs:['editor','rules','audit'],
     canEditDocs:true,
     canEditCatalog:true,
     canManageFloorEvents:true,
@@ -79,8 +80,8 @@ export const PROFILES=[
     color:'#38bdf8',
     icon:'shield',
     desc:'Supervisão geral, aprovação de novos operadores, edição de procedimentos operacionais e auditoria de ações.',
-    centralTabs:['home','docs','catalog','chat','floor','operations','quality'],
-    adminTabs:['editor','access','audit'],
+    centralTabs:['home','docs','catalog','chat','floor','operations','quality','access'],
+    adminTabs:['editor','audit'],
     canEditDocs:true,
     canEditCatalog:true,
     canManageFloorEvents:true,
@@ -141,9 +142,9 @@ export default function Home(){
   const [loadingPhase,setLoadingPhase]=useState('session');
   const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
   const [user,setUser]=useState(null),[dark,setDark]=useState(false);
-  const [activeProfileId,setActiveProfileId]=useState('dev');
   const [profileModalOpen,setProfileModalOpen]=useState(false);
-  const activeProfileConfig=useMemo(()=>PROFILES.find(p=>p.id===activeProfileId)||PROFILES[0],[activeProfileId]);
+  // O cargo da conta vem da sessao autenticada, nunca do navegador.
+  const activeProfileConfig=useMemo(()=>PROFILES.find(p=>p.id===(user?.operationalRole||'attendant'))||PROFILES.find(p=>p.id==='attendant'),[user?.operationalRole]);
   const [notice,setNotice]=useState(''),[success,setSuccess]=useState('');
   const [catalogIssue,setCatalogIssue]=useState(''),[catalogDegraded,setCatalogDegraded]=useState(false),[catalogRefreshing,setCatalogRefreshing]=useState(false);
   const [docsOpened,setDocsOpened]=useState(false);
@@ -167,11 +168,9 @@ export default function Home(){
   const [relato,setRelato]=useState(''),[analysis,setAnalysis]=useState(null);
   const [pendingSadeReport,setPendingSadeReport]=useState('');
   const [ai,setAI]=useState(null),[aiTesting,setAITesting]=useState(false),[aiTestResult,setAITestResult]=useState('');
-  const [adminRequests,setAdminRequests]=useState([]),[adminUsers,setAdminUsers]=useState([]),[events,setEvents]=useState([]);
-  const [credential,setCredential]=useState(null);
+  const [events,setEvents]=useState([]);
   const [editor,setEditor]=useState(emptyEntry()),[ruleDraft,setRuleDraft]=useState({code:'',officialNature:'',category:'Proteção',priority:'Média',group1:'',group2:'',explanation:''});
   const [revisionHistory,setRevisionHistory]=useState([]);
-  const isAdmin=user?.role==='admin';
 
   function ok(message){setSuccess(message);setNotice('');}
   function err(error){setNotice(error?.message||String(error));setSuccess('');}
@@ -194,18 +193,10 @@ export default function Home(){
       return !errors.length&&!degraded.length;
     }finally{setCatalogRefreshing(false);}
   }
-  async function refreshAdmin(){
-    const [a,b]=await Promise.all([call('/admin/requests'),call('/admin/users')]);
-    setAdminRequests(a.requests);setAdminUsers(b.users);
-  }
   useEffect(()=>{
     const stored=localStorage.getItem('base190_theme');
     const preferDark=stored==='dark';
     document.documentElement.dataset.theme=preferDark?'dark':'light';setDark(preferDark);
-    try{
-      const storedProfile=localStorage.getItem('base190_active_profile');
-      if(storedProfile&&PROFILES.some(p=>p.id===storedProfile))setActiveProfileId(storedProfile);
-    }catch{}
     let live=true;
     (async()=>{try{
       const a=await call('/session');
@@ -256,7 +247,7 @@ export default function Home(){
   async function logout(){
     const waits=[];window.dispatchEvent(new CustomEvent('base190:flush-editors',{detail:{waits}}));const drafts=await Promise.all(waits);if(drafts.some(result=>result!==true)&&!confirm('Não foi possível salvar a recuperação. Sair mesmo assim pode perder alterações. Continuar?'))return;
     setBusy(true);try{await call('/auth/logout',{method:'POST',body:'{}'});}catch(e){err(e);}
-    setDocsOpened(false);setUser(null);setScreen('home');setEntries([]);setBrainRules({base:[],extras:[],custom:[]});setBusy(false);setCredential(null);
+    setDocsOpened(false);setUser(null);setScreen('home');setEntries([]);setBrainRules({base:[],extras:[],custom:[]});setBusy(false);
   }
   useEffect(()=>{
     if(!profileModalOpen)return;
@@ -264,19 +255,6 @@ export default function Home(){
     window.addEventListener('keydown',onKey);
     return ()=>window.removeEventListener('keydown',onKey);
   },[profileModalOpen]);
-
-  function switchProfile(targetId){
-    const target=PROFILES.find(p=>p.id===targetId);
-    if(!target)return;
-    setActiveProfileId(targetId);
-    try{localStorage.setItem('base190_active_profile',targetId);}catch{}
-    setProfileModalOpen(false);
-    ok(`Perfil ativo alterado para ${target.name}. Limites operacionais aplicados.`);
-    const allowed=[...target.centralTabs,...target.adminTabs];
-    if(!allowed.includes(screen)){
-      go(target.centralTabs[0]||'home');
-    }
-  }
 
   async function go(next){
     if(!window.dispatchEvent(new Event('base190:before-navigation',{cancelable:true})))return;
@@ -290,14 +268,12 @@ export default function Home(){
     if(next==='chat')setChatFrameLoading(true);
     clear();
     setScreen(next);
-    setCredential(null);
 
     setTabLoading(true);
     setLoadingTabKey(next);
 
     try{
-      if(next==='access'){await refreshAdmin();}
-      else if(next==='audit'){const x=await call('/admin/audit');setEvents(x.events||[]);}
+      if(next==='audit'){const x=await call('/admin/audit');setEvents(x.events||[]);}
       else if(next==='rules'){const x=await call('/rules');setBrainRules(x||{});}
     }catch(e){
       err(e);
@@ -349,26 +325,6 @@ export default function Home(){
   async function loadHistory(){
     try{const d=await call('/admin/entries/revisions?id='+encodeURIComponent(editor.id));setRevisionHistory(d.revisions);}
     catch(e){err(e);}
-  }
-  async function manageRequest(id,action){
-    clear();setBusy(true);
-    try{
-      const x=await call('/admin/requests',{method:'POST',body:body({id,action})});
-      if(x.temporaryPassword){const r=adminRequests.find(a=>a.id===id);
-        setCredential({user:r?.username||'',pass:x.temporaryPassword});}
-      ok(x.message);await refreshAdmin();
-    }catch(e){err(e);}finally{setBusy(false);}
-  }
-  async function setAccount(id,active){
-    clear();setBusy(true);
-    try{const x=await call('/admin/users',{method:'PATCH',body:body({id,active})});ok(x.message);await refreshAdmin();}
-    catch(e){err(e);}finally{setBusy(false);}
-  }
-  async function resetPassword(id,username){
-    clear();setBusy(true);
-    try{const x=await call('/admin/users/reset',{method:'POST',body:body({id})});
-      setCredential({user:username,pass:x.temporaryPassword});ok('Senha temporária criada; sessões anteriores revogadas.');}
-    catch(e){err(e);}finally{setBusy(false);}
   }
   async function createRule(e){
     e.preventDefault();clear();setBusy(true);
@@ -482,7 +438,7 @@ export default function Home(){
     </form>
   </section>;
 
-  const links=[['home','Visão geral','home'],['docs','Base de conhecimento','book'],['catalog','Catálogo','book'],['chat','Chat 190','brain'],['floor','Gestão de piso','shield'],['operations','Pausas e Folgas','calendar'],['quality','Qualidade','audit']];
+  const links=[['home','Visão geral','home'],['docs','Base de conhecimento','book'],['catalog','Catálogo','book'],['chat','Chat 190','brain'],['floor','Gestão de piso','shield'],['operations','Pausas e Folgas','calendar'],['quality','Qualidade','audit'],['access','Acessos e Cargos','users']];
   const adminLinks=[['editor','Editar textos','edit'],['access','Autorizar acessos','users'],['rules','Regras do assistente','settings'],['audit','Auditoria','audit']];
   const isImmersiveScreen = screen === 'quality' || screen === 'chat' || screen === 'operations';
   const isQualityScreen = isImmersiveScreen;
@@ -500,7 +456,7 @@ export default function Home(){
           type="button"
           className="nav-btn profile-switch-btn"
           onClick={()=>setProfileModalOpen(true)}
-          title={`Perfil ativo: ${activeProfileConfig.name}. Clique para alternar.`}
+          title={`Cargo atual: ${activeProfileConfig.name}. O cargo é definido pela administração.`}
           aria-haspopup="dialog"
         >
           <span className="profile-indicator-dot" style={{backgroundColor:activeProfileConfig.color}}/>
@@ -508,7 +464,7 @@ export default function Home(){
             <small className="profile-switch-eyebrow">Perfil ativo</small>
             <strong className="profile-switch-title">{activeProfileConfig.name}</strong>
           </span>
-          <span className="nav-label profile-switch-arrow" aria-hidden="true">⇄</span>
+          <span className="nav-label profile-switch-arrow" aria-hidden="true">ⓘ</span>
         </button>
       </div>
       <div className="sidebar-bottom">
@@ -521,18 +477,18 @@ export default function Home(){
       </div>
     </aside>
     <div className="main">
-      {!isImmersiveScreen&&<header className="topbar"><div><b>{screen==='docs'?'Base de conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='chat'?'Chat 190':screen==='floor'?'Gestão de piso':screen==='quality'?'Qualidade 190':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
+      {!isImmersiveScreen&&<header className="topbar"><div><b>{screen==='docs'?'Base de conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='chat'?'Chat 190':screen==='floor'?'Gestão de piso':screen==='access'?'Acessos e Cargos':screen==='quality'?'Qualidade 190':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
         <div className="btn-row">
           <button
             type="button"
             className="profile-topbar-pill"
             onClick={()=>setProfileModalOpen(true)}
-            title={`Perfil ativo: ${activeProfileConfig.name}. Clique para alternar perfil.`}
+            title={`Cargo atual: ${activeProfileConfig.name}. O cargo é definido pela administração.`}
           >
             <span className="profile-indicator-dot" style={{backgroundColor:activeProfileConfig.color}}/>
-            <span>Perfil: <strong>{activeProfileConfig.name}</strong></span>
+            <span>Cargo: <strong>{activeProfileConfig.name}</strong></span>
             <span className="profile-pill-badge">{activeProfileConfig.badge}</span>
-            <span className="profile-pill-action">Alternar ⇄</span>
+            <span className="profile-pill-action">Detalhes</span>
           </button>
           <Btn className="ghost tiny" onClick={()=>go('chat')}>Abrir chat 190</Btn>
           <Btn className="ghost tiny" onClick={theme}><Icon name={dark?'sun':'moon'} size={17}/>{dark?'Claro':'Escuro'}</Btn>
@@ -628,35 +584,7 @@ export default function Home(){
           {!!revisionHistory.length&&<div className="card"><h3>Versões anteriores (somente leitura)</h3><div className="stack" style={{marginTop:12}}>{revisionHistory.map((x,i)=><details key={i}><summary>Revisão {x.revision} • {formatDate(x.created_at)}</summary><pre className="record-detail">{x.snapshot.body}</pre></details>)}</div></div>}
         </div>}
 
-        {activeProfileConfig.adminTabs.includes('access')&&screen==='access'&&<div key="access" className="tab-view-container">
-          {tabLoading ? (
-            <TabLoader tabName="Autorização de Acessos" subtitle="Consultando solicitações de operadores e credenciais…" icon="users"/>
-          ) : (
-            <>
-              <div><span className="eyebrow">CONTROLE EXCLUSIVO DE ACESSOS</span><h1>Solicitações e usuários</h1><p className="muted">Aprovação cria somente usuários simples. A conta principal não pode ser rebaixada ou desativada por esta interface.</p></div>
-              {credential&&<div className="card spaced" style={{borderColor:'var(--blue)'}}>
-                <h3>Credencial provisória — exibição única</h3><p>Usuário: <b>{credential.user}</b></p><div className="secret">{credential.pass}</div>
-                <div className="btn-row"><Btn onClick={()=>navigator.clipboard?.writeText(credential.user+'\n'+credential.pass)}>Copiar credencial</Btn><Btn className="secondary" onClick={()=>setCredential(null)}>Ocultar senha</Btn></div>
-                <div className="helpnote">Entregue essa credencial ao usuário por canal seguro. Ela não será exibida novamente. Solicite a troca de senha por procedimento administrativo.</div>
-              </div>}
-              <div className="card"><div className="panel-head"><h2>Solicitações de acesso</h2><span className="badge">{adminRequests.filter(x=>x.status==='pending').length} pendente(s)</span></div>
-                <div className="table-scroll"><table><thead><tr><th>Solicitante</th><th>Justificativa</th><th>Data / Situação</th><th>Decisão</th></tr></thead><tbody>
-                  {adminRequests.map(x=><tr key={x.id}><td><b>{x.display_name}</b><br/><small>{x.username}</small></td><td>{x.reason||'—'}</td><td><small>{formatDate(x.created_at)}</small><br/><span className="badge">{x.status}</span></td><td>{x.status==='pending'?<div className="btn-row"><Btn className="tiny" disabled={busy} onClick={()=>manageRequest(x.id,'approve')}>Aprovar</Btn><Btn className="secondary tiny" disabled={busy} onClick={()=>manageRequest(x.id,'reject')}>Recusar</Btn></div>:'Resolvida'}</td></tr>)}
-                </tbody></table></div>
-                {!adminRequests.length&&<p className="muted">Nenhuma solicitação até o momento.</p>}
-              </div>
-              <div className="card"><div className="panel-head"><h2>Contas autorizadas</h2><span className="badge">{adminUsers.length} contas</span></div>
-                <div className="table-scroll"><table><thead><tr><th>Usuário</th><th>Perfil</th><th>Estado</th><th>Ações</th></tr></thead><tbody>
-                  {adminUsers.map(x=><tr key={x.id}><td><b>{x.display_name}</b><br/><small>{x.username}</small></td><td>{x.role==='admin'?'Administrador principal':'Consulta'}</td><td><span className="badge">{x.active?'Ativo':'Bloqueado'}</span></td><td>{x.role==='admin'?'Conta protegida':<div className="btn-row">
-                    <Btn className="secondary tiny" disabled={busy} onClick={()=>setAccount(x.id,!x.active)}>{x.active?'Bloquear':'Reativar'}</Btn>
-                    <Btn className="ghost tiny" disabled={busy} onClick={()=>resetPassword(x.id,x.username)}>Redefinir senha</Btn>
-                  </div>}</td></tr>)}
-                </tbody></table></div>
-              </div>
-            </>
-          )}
-        </div>}
-
+        {screen==='access'&&['dev','coordinator'].includes(activeProfileConfig.id)&&<div key="access" className="tab-view-container"><AccessControl currentUser={user}/></div>}
         {activeProfileConfig.adminTabs.includes('rules')&&screen==='rules'&&<div key="rules" className="tab-view-container">
           {tabLoading ? (
             <TabLoader tabName="Matriz de Regras" subtitle="Sincronizando 769 regras contextuais e cenários do assistente…" icon="settings"/>
@@ -698,79 +626,17 @@ export default function Home(){
         <footer className="footer-note">Base de Conhecimento 190 • Uso controlado • Classificação automática assistiva, sujeita à revisão e homologação</footer>
 
         {profileModalOpen&&<div className="profile-modal-backdrop" onClick={()=>setProfileModalOpen(false)}>
-          <div className="profile-modal-card" onClick={e=>e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="pm-modal-title">
-            <div className="profile-modal-header">
-              <div>
-                <span className="badge" style={{background:'rgba(84,203,210,0.15)',color:'var(--blue)'}}>CONTROLE DE ACESSO OPERACIONAL</span>
-                <h2 id="pm-modal-title" style={{fontSize:22,margin:'6px 0 2px'}}>Alternar Perfil do Sistema</h2>
-                <p className="muted" style={{fontSize:13,margin:0}}>Selecione um perfil para simular sua visão e aplicar os limites de uso e visualização em cada aba.</p>
-              </div>
-              <button type="button" className="profile-modal-close" onClick={()=>setProfileModalOpen(false)} aria-label="Fechar janela">×</button>
+          <div className="profile-modal-card" style={{maxWidth:560}} onClick={e=>e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="pm-modal-title">
+            <div className="profile-modal-header"><div>
+              <span className="badge">CARGO AUTENTICADO</span>
+              <h2 id="pm-modal-title" style={{fontSize:22,margin:'7px 0'}}>Meu cargo: {activeProfileConfig.name}</h2>
+              <p className="muted">Seu cargo é definido pela administração e está vinculado à sua conta. Não é possível alterá-lo pelo navegador.</p>
             </div>
-
-            <div className="profile-modal-grid">
-              {PROFILES.map(p=>{
-                const isCurrent=p.id===activeProfileConfig.id;
-                return (
-                  <div key={p.id} className={'profile-choice-card'+(isCurrent?' active':'')} onClick={()=>switchProfile(p.id)}>
-                    <div className="profile-choice-head">
-                      <span className="profile-choice-icon" style={{background:p.color+'22',color:p.color,borderColor:p.color+'55'}}>
-                        <Icon name={p.icon} size={20}/>
-                      </span>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-                          <strong style={{fontSize:16,color:isCurrent?'var(--blue)':'inherit'}}>{p.name}</strong>
-                          <span className="badge" style={{background:p.color+'22',color:p.color,borderColor:p.color+'55'}}>{p.badge}</span>
-                          {isCurrent&&<span className="badge" style={{background:'#10b98122',color:'#10b981',borderColor:'#10b98155'}}>● Perfil Ativo</span>}
-                        </div>
-                        <small className="muted" style={{display:'block',marginTop:2,fontSize:11}}>{p.roleTitle}</small>
-                      </div>
-                    </div>
-
-                    <p style={{fontSize:12,lineHeight:1.5,margin:'10px 0 12px',color:'var(--ink)',opacity:0.88}}>{p.desc}</p>
-
-                    <div className="profile-choice-details">
-                      <div className="profile-detail-row">
-                        <span className="profile-detail-tag">Abas Central:</span>
-                        <span className="profile-detail-val">
-                          {p.centralTabs.map(t=>t==='home'?'Visão Geral':t==='docs'?'Base Docs':t==='catalog'?'Catálogo':t==='chat'?'Chat 190':t==='floor'?'Gestão Piso':t==='operations'?'Pausas e Folgas':'Qualidade').join(', ')}
-                        </span>
-                      </div>
-                      <div className="profile-detail-row">
-                        <span className="profile-detail-tag">Administração:</span>
-                        <span className="profile-detail-val">
-                          {p.adminTabs.length>0?p.adminTabs.map(t=>t==='editor'?'Editar Textos':t==='access'?'Autorizar Acessos':t==='rules'?'Regras Assistente':'Auditoria').join(', '):'Nenhuma (oculta)'}
-                        </span>
-                      </div>
-                      <div className="profile-detail-row">
-                        <span className="profile-detail-tag">Limites / Uso:</span>
-                        <span className="profile-detail-val highlight">
-                          {p.id==='dev'&&'Acesso pleno irrestrito a todas as ferramentas e configurações de sistema.'}
-                          {p.id==='coordinator'&&'Coordenação operacional, edição de POPs/fichas e aprovação de novos operadores.'}
-                          {p.id==='manager'&&'Gestão de eventos no piso (resolver chamados e reportes) e acompanhamento de monitorias.'}
-                          {p.id==='quality_analyst'&&'Acesso total na Qualidade (cadastrar, encaminhar e monitorar). No piso: somente consulta.'}
-                          {p.id==='attendant'&&'Foco no atendimento (Chat 190, Catálogo, Docs). Na Qualidade: somente visualização de notas e ciência.'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div style={{marginTop:14,display:'flex',justifyContent:'flex-end'}}>
-                      <button
-                        type="button"
-                        className={'btn tiny '+(isCurrent?'secondary':'')}
-                        onClick={e=>{e.stopPropagation();switchProfile(p.id);}}
-                      >
-                        {isCurrent?'Perfil Atual Selecionado':'Ativar este perfil →'}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="profile-modal-footer">
-              <small className="muted">As restrições de cada perfil são aplicadas instantaneamente em toda a navegação, subabas e botões de ação.</small>
-              <button type="button" className="btn secondary tiny" onClick={()=>setProfileModalOpen(false)}>Fechar</button>
+            <button type="button" className="profile-modal-close" onClick={()=>setProfileModalOpen(false)} aria-label="Fechar janela">×</button></div>
+            <div className="card" style={{marginTop:15}}><strong>{activeProfileConfig.roleTitle}</strong><p className="muted" style={{fontSize:13,marginTop:8}}>{activeProfileConfig.desc}</p></div>
+            <div className="profile-modal-footer" style={{marginTop:17,display:'flex',justifyContent:'flex-end',gap:9,flexWrap:'wrap'}}>
+              {['dev','coordinator'].includes(activeProfileConfig.id)&&<button type="button" className="btn" onClick={()=>{setProfileModalOpen(false);go('access');}}>Gerenciar acessos e cargos</button>}
+              <button type="button" className="btn secondary" onClick={()=>setProfileModalOpen(false)}>Fechar</button>
             </div>
           </div>
         </div>}
