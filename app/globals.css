@@ -1,6 +1,5 @@
 
-:root{--bg:#f4f6fb;--panel:#fff;--ink:#101b32;--muted:#65748a;--line:#e5eaf1;--blue:#2662d9;--soft:#edf3ff;--nav:#111c32;--shadow:0 9px 32px #1324490c}
-:root[data-theme="dark"]{--bg:#0a1222;--panel:#131f33;--ink:#eef4ff;--muted:#98aac5;--line:#283751;--blue:#78a7ff;--soft:#1c3155;--nav:#080e1a;--shadow:0 9px 32px #0004}
+/* Single source of theme tokens: Command workspace below. */
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-size:14px;color:var(--ink);background:var(--bg)}
 button,input,textarea,select{font:inherit}button{cursor:pointer;transition:background .16s,border-color .16s,transform .16s}button:disabled{opacity:.55;cursor:not-allowed}input,textarea,select{background:var(--panel);border:1px solid var(--line);border-radius:11px;color:var(--ink);padding:12px 13px;width:100%;outline:0}input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #4d8aff1c}textarea{resize:vertical;min-height:92px}label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin:0 0 7px}
 h1,h2,h3,p{margin:0}h1{font-size:clamp(26px,3vw,39px);letter-spacing:-1px;line-height:1.16}h2{font-size:22px;letter-spacing:-.5px}h3{font-size:16px}p{line-height:1.65}small{font-size:12px;color:var(--muted)}
@@ -226,103 +225,7 @@ html,body{font-family:Inter,"Segoe UI",system-ui,sans-serif}h1,h2,h3{text-wrap:b
 }
 @media(max-width:760px){.sade-integrated-notice{font-size:11px;padding:9px 11px}.sade-embed-frame{height:calc(100dvh - 210px);min-height:560px;border-radius:13px}}
 
-/* =====================================================================
- * MODO COMPACTO DA BARRA LATERAL (QUALIDADE E CHAT 190 EM TELA CHEIA)
- * ===================================================================== */
-@media(min-width:651px){
-  .shell.quality-mode,
-  .shell.immersive-mode{
-    grid-template-columns:68px minmax(0,1fr);
-    transition:grid-template-columns .2s cubic-bezier(.16,1,.3,1);
-  }
-}
-.sidebar.compact{
-  width:68px;
-  padding:20px 6px;
-  align-items:center;
-  transition:width .2s cubic-bezier(.16,1,.3,1),padding .2s ease;
-  overflow-x:hidden;
-}
-.sidebar.compact .logo{
-  padding:2px 0 22px;
-  justify-content:center;
-  width:100%;
-}
-.sidebar.compact .logoicon{
-  padding:9px 8px;
-  font-size:13px;
-  border-radius:10px;
-  text-align:center;
-}
-.sidebar.compact .logo-text,
-.sidebar.compact .nav-caption,
-.sidebar.compact .who,
-.sidebar.compact .nav-label{
-  display:none!important;
-}
-.sidebar.compact .nav-btn{
-  justify-content:center;
-  padding:0;
-  width:44px;
-  height:44px;
-  min-height:44px;
-  margin:0 auto 6px;
-  border-radius:10px;
-  gap:0;
-  position:relative;
-}
-.sidebar.compact .nav-btn svg{
-  margin:0;
-  width:20px;
-  height:20px;
-}
-.sidebar.compact .nav-btn.active{
-  box-shadow:0 0 0 2px #54cbd266,inset 0 0 12px rgba(84,203,210,.25);
-  background:#143e50;
-  color:#b8f4f6;
-}
-.sidebar.compact .sidebar-bottom{
-  padding:14px 0 0;
-  width:100%;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-}
-.sidebar.compact .sidebar-bottom .nav-btn{
-  margin:0 auto;
-}
-
-/* Área de conteúdo expandida em tela cheia na Qualidade e no Chat */
-body > div.shell.quality-mode > div > header,
-body > div.shell.immersive-mode > div > header,
-.shell.quality-mode > .main > .topbar,
-.shell.immersive-mode > .main > .topbar,
-.shell.quality-mode .topbar,
-.shell.immersive-mode .topbar{
-  display:none!important;
-}
-.shell.quality-mode .content.quality-content-mode,
-.shell.immersive-mode .content.immersive-content-mode{
-  max-width:100%;
-  width:100%;
-  padding:0;
-  margin:0;
-  min-height:100vh;
-  height:100%;
-}
-.shell.quality-mode .quality-content-mode .qm-shell{
-  min-height:100vh;
-  border-radius:0;
-  border:none;
-  box-shadow:none;
-}
-.shell.quality-mode .quality-content-mode .qm-sidebar{
-  position:sticky;
-  top:0;
-  height:100vh;
-  max-height:100vh;
-  overflow-y:auto;
-}
+/* A navegação principal permanece estável; todos os módulos seguem o shell unificado. */
 
 /* =====================================================================
  * ANIMAÇÕES DE TRANSIÇÃO E LOADERS DE ABAS COPOM 190
@@ -959,4 +862,446 @@ body > div.shell.immersive-mode > div > header,
   :where(html,body,.main,.sidebar,.qm-content-wrap,.qm-nav,.qm-table-scroll,.table-scroll,.docs-sidebar,.docs-main,.chat-stream,.chat-rewrite,.ac-table-scroll,.ac-tabbar,.profile-modal-grid,.qm-modal-body,.qm-modal-backdrop,.qm-sidebar,textarea)::-webkit-scrollbar-thumb:hover{
     background:var(--app-scroll-hover);
   }
+}
+
+
+/* =============================================================
+   BASE 190 · APP SHELL UNIFICADO
+   Único cabeçalho e uma navegação, com subabas consistentes.
+   ============================================================= */
+:root{--base-topbar-height:72px;--base-sidebar-width:244px;--base-radius:14px}
+.shell,
+.shell.immersive-mode,
+.shell.quality-mode{
+  display:grid;
+  grid-template-columns:var(--base-sidebar-width) minmax(0,1fr);
+  grid-template-rows:minmax(0,1fr);
+  width:100%;
+  max-width:100%;
+  height:100dvh;
+  min-height:0;
+  overflow:hidden;
+  background:var(--bg);
+}
+.shell>.sidebar,
+.shell>.sidebar.compact{
+  position:relative;
+  top:auto;
+  height:100%;
+  min-height:0;
+  max-height:100%;
+  width:100%;
+  padding:18px 12px;
+  align-items:stretch;
+  overflow-y:auto;
+  overflow-x:hidden;
+  background:var(--nav);
+  border-right:1px solid var(--line);
+  overscroll-behavior:contain;
+}
+.shell>.sidebar .logo{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  padding:4px 10px 18px;
+}
+.shell>.sidebar .logo-text,
+.shell>.sidebar .nav-caption,
+.shell>.sidebar .who,
+.shell>.sidebar .nav-label{display:initial!important}
+.shell>.sidebar .nav-btn,
+.shell>.sidebar.compact .nav-btn{
+  width:100%;
+  height:auto;
+  min-height:42px;
+  padding:10px 12px;
+  margin:0 0 3px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:11px;
+  border-radius:10px;
+  white-space:normal;
+  font-size:12px;
+  transition:background .16s ease,border-color .16s ease,color .16s ease;
+}
+.shell>.sidebar .nav-btn:hover{background:color-mix(in srgb,var(--blue) 14%,var(--nav))}
+.shell>.sidebar .nav-btn.active{
+  background:color-mix(in srgb,var(--blue) 15%,var(--nav));
+  border:1px solid color-mix(in srgb,var(--blue) 44%,transparent);
+  box-shadow:inset 3px 0 var(--blue);
+  color:#eafaff;
+}
+.shell>.sidebar .nav-btn svg{flex:0 0 18px;width:18px;height:18px}
+.shell>.sidebar .sidebar-profile-box{width:100%}
+.shell>.sidebar .sidebar-bottom{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  width:100%;
+}
+.shell>.main{
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  min-height:0;
+  width:100%;
+  height:100%;
+  max-height:100%;
+  overflow:hidden!important;
+  background:var(--bg);
+}
+.shell>.main>.topbar,
+.shell.immersive-mode>.main>.topbar,
+.shell.quality-mode>.main>.topbar{
+  position:relative;
+  display:flex!important;
+  flex:0 0 var(--base-topbar-height);
+  height:var(--base-topbar-height);
+  min-height:var(--base-topbar-height);
+  max-height:var(--base-topbar-height);
+  width:100%;
+  min-width:0;
+  padding:10px 24px;
+  gap:12px;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:nowrap;
+  z-index:10;
+  background:var(--panel);
+  color:var(--ink);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 2px 10px #071b2507;
+}
+.shell>.main>.topbar>div:first-child{min-width:0;flex:0 1 auto}
+.shell>.main>.topbar b{display:block;font-size:15px;line-height:1.3}
+.shell>.main>.topbar p{font-size:11px;line-height:1.5}
+.shell>.main>.topbar>.btn-row{
+  flex:0 1 auto;
+  min-width:0;
+  justify-content:flex-end;
+  flex-wrap:nowrap;
+  gap:8px;
+}
+.shell>.main>.topbar .btn.tiny{white-space:nowrap}
+.shell>.main>.content,
+.shell>.main>.content.quality-content-mode,
+.shell>.main>.content.immersive-content-mode{
+  flex:1 1 0;
+  min-width:0;
+  min-height:0;
+  height:auto;
+  max-height:none;
+  max-width:none;
+  width:100%;
+  margin:0;
+  padding:20px clamp(14px,2vw,28px);
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  background:var(--bg);
+}
+.shell>.main>.content.spaced{
+  display:grid;
+  align-content:start;
+  grid-auto-rows:min-content;
+  gap:18px;
+}
+.shell>.main>.content.immersive-content-mode{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+}
+.shell>.main>.content .tab-view-container{
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  margin:0;
+  animation:none;
+  transform:none;
+  will-change:auto;
+}
+.shell .tab-view-container[hidden]{display:none!important}
+/* Qualidade: conteúdo com scroll próprio, navegação secundária horizontal. */
+.shell.quality-mode>.main>.content{
+  overflow:hidden;
+  padding:16px clamp(12px,1.7vw,24px);
+  scrollbar-gutter:auto;
+}
+.shell.quality-mode .tab-view-container,
+.shell.quality-mode .quality-module,
+.shell.quality-mode .qm-shell{
+  flex:1 1 auto;
+  min-height:0;
+  height:100%;
+  max-height:100%;
+  width:100%;
+  overflow:hidden;
+}
+.shell.quality-mode .qm-shell{
+  display:flex;
+  flex-direction:column;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--base-radius);
+  box-shadow:var(--shadow);
+}
+.shell.quality-mode .qm-sidebar{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  z-index:2;
+  height:auto!important;
+  max-height:none;
+  flex:0 0 auto;
+  width:100%;
+  min-width:0;
+  padding:8px 10px;
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  gap:12px;
+  overflow:hidden;
+  background:var(--panel);
+  border-right:none;
+  border-bottom:1px solid var(--line);
+  color:var(--ink);
+  box-shadow:none;
+}
+.shell.quality-mode .qm-sidebar-header,
+.shell.quality-mode .qm-role-pill-wrap,
+.shell.quality-mode .qm-user-profile,
+.shell.quality-mode .qm-sidebar-theme-btn,
+.shell.quality-mode .qm-mobile-topbar,
+.shell.quality-mode .qm-mobile-overlay{
+  display:none!important;
+}
+.shell.quality-mode .qm-nav{
+  flex:1 1 auto;
+  min-width:0;
+  min-height:0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  overscroll-behavior-x:contain;
+  padding:2px;
+  display:flex;
+  align-items:center;
+  flex-direction:row;
+  gap:7px;
+}
+.shell.quality-mode .qm-nav-label{display:none!important}
+.shell.quality-mode .qm-nav-btn{
+  width:auto;
+  flex:0 0 auto;
+  min-height:37px;
+  padding:8px 13px;
+  gap:8px;
+  white-space:nowrap;
+  border-radius:9px;
+  background:transparent;
+  border:1px solid transparent;
+  color:var(--muted);
+  font-weight:650;
+  font-size:12px;
+}
+.shell.quality-mode .qm-nav-btn:hover{
+  background:var(--soft);
+  border-color:var(--line);
+  color:var(--ink);
+}
+.shell.quality-mode .qm-nav-btn.active{
+  background:var(--soft);
+  border-color:color-mix(in srgb,var(--blue) 35%,var(--line));
+  color:var(--blue);
+  box-shadow:inset 0 -2px var(--blue);
+}
+.shell.quality-mode .qm-nav-btn svg{width:17px;height:17px}
+.shell.quality-mode .qm-sidebar-footer{
+  flex:0 0 auto;
+  margin:0;
+  padding:0 3px;
+  border:none;
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  background:transparent;
+}
+.shell.quality-mode .qm-role-selector-label{display:none}
+.shell.quality-mode .qm-role-toggle{display:flex;gap:5px;grid-template-columns:none}
+.shell.quality-mode .qm-role-toggle-btn{
+  width:auto;
+  padding:7px 11px;
+  min-height:34px;
+  font-size:11px;
+  border-radius:8px;
+}
+.shell.quality-mode .qm-content-wrap{
+  flex:1 1 0;
+  min-height:0;
+  min-width:0;
+  max-height:100%;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  background:var(--bg);
+}
+.shell.quality-mode .qm-main{
+  width:100%;
+  min-width:0;
+  max-width:1600px;
+  margin:0 auto;
+  padding:22px clamp(14px,2vw,28px);
+}
+.shell.quality-mode .qm-section-header{margin-bottom:18px;padding-bottom:14px;gap:12px}
+.shell.quality-mode .qm-section-title{font-size:clamp(20px,2.2vw,27px)}
+/* Chat and operational iframe belong inside a single app canvas. */
+.shell .sade-workspace.sade-fullscreen{
+  flex:1 1 0;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  height:auto;
+  padding:0;
+  margin:0;
+  border:1px solid var(--line);
+  border-radius:var(--base-radius);
+  background:var(--panel);
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.shell .sade-workspace.sade-fullscreen .sade-integrated-notice{
+  flex:0 0 auto;
+  border:0;
+  border-radius:0;
+  border-bottom:1px solid var(--line);
+  background:var(--panel);
+  color:var(--muted);
+  padding:11px 16px;
+}
+.shell .sade-workspace.sade-fullscreen .sade-embed-frame{
+  display:block;
+  flex:1 1 0;
+  min-height:0;
+  width:100%;
+  height:100%!important;
+  max-height:100%;
+  border:0;
+  border-radius:0;
+  background:var(--bg);
+  box-shadow:none;
+}
+.shell .sade-workspace.sade-fullscreen .tab-loader-container.chat-loading-overlay{
+  min-height:0;
+  border-radius:var(--base-radius);
+}
+.shell .base190-operations-embed{
+  flex:1 1 0;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  height:100%;
+  gap:10px;
+}
+.shell .base190-operations-toolbar{
+  display:flex;
+  flex:0 0 auto;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+  padding:11px 15px;
+  border:1px solid var(--line);
+  border-radius:var(--base-radius);
+  background:var(--panel);
+  box-shadow:var(--shadow);
+}
+.shell .base190-operations-toolbar strong{color:var(--ink);font-size:13px}
+.shell .base190-operations-toolbar small{display:block;margin-top:3px;line-height:1.5}
+.shell .base190-operations-frame{
+  display:block;
+  flex:1 1 0;
+  width:100%;
+  min-width:0;
+  min-height:0;
+  height:100%;
+  border:1px solid var(--line);
+  border-radius:var(--base-radius);
+  background:var(--panel);
+  box-shadow:var(--shadow);
+}
+/* Responsive: one header and one nav at every breakpoint. */
+@media(max-width:1050px) and (min-width:651px){
+  :root{--base-sidebar-width:76px}
+  .shell>.sidebar .logo{justify-content:center;padding:4px 2px 17px}
+  .shell>.sidebar .logo-text,
+  .shell>.sidebar .nav-caption,
+  .shell>.sidebar .who,
+  .shell>.sidebar .nav-label{display:none!important}
+  .shell>.sidebar .nav-btn{padding:10px;justify-content:center;gap:0}
+  .shell>.sidebar .sidebar-profile-box{padding:6px 0}
+  .shell>.sidebar .sidebar-bottom{padding:6px 0}
+  .shell>.main>.topbar{padding:10px 16px}
+  .shell>.main>.topbar .profile-pill-badge,
+  .shell>.main>.topbar .profile-pill-action{display:none}
+  .shell.quality-mode .qm-sidebar-footer{display:none}
+}
+@media(max-width:650px){
+  .shell,.shell.immersive-mode,.shell.quality-mode{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:58px minmax(0,1fr);
+    height:100dvh;
+  }
+  .shell>.sidebar,.shell>.sidebar.compact{
+    height:58px;
+    max-height:58px;
+    min-height:58px;
+    width:100%;
+    padding:6px 9px;
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    gap:5px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    white-space:nowrap;
+    border-right:0;
+    border-bottom:1px solid var(--line);
+  }
+  .shell>.sidebar .logo,
+  .shell>.sidebar .nav-caption,
+  .shell>.sidebar .sidebar-profile-box,
+  .shell>.sidebar .sidebar-bottom{display:none!important}
+  .shell>.sidebar .nav-btn,
+  .shell>.sidebar.compact .nav-btn{
+    width:auto;
+    min-width:max-content;
+    min-height:38px;
+    flex:0 0 auto;
+    padding:8px 11px;
+    margin:0;
+    border-radius:9px;
+    gap:6px;
+    white-space:nowrap;
+  }
+  .shell>.sidebar .nav-btn .nav-label{display:inline!important;font-size:11px}
+  .shell>.main>.topbar{
+    height:64px;
+    min-height:64px;
+    max-height:64px;
+    flex-basis:64px;
+    padding:8px 13px;
+  }
+  .shell>.main>.topbar p,
+  .shell>.main>.topbar .profile-topbar-pill,
+  .shell>.main>.topbar .btn-row>.btn:not(:last-child){display:none}
+  .shell>.main>.topbar b{font-size:14px}
+  .shell>.main>.content,
+  .shell>.main>.content.immersive-content-mode,
+  .shell>.main>.content.quality-content-mode{padding:12px}
+  .shell.quality-mode .qm-sidebar{padding:7px}
+  .shell.quality-mode .qm-sidebar-footer{display:none}
+  .shell.quality-mode .qm-content-wrap{scrollbar-gutter:auto}
 }
