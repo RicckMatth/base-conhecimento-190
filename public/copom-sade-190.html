@@ -4444,7 +4444,7 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
         .replace(/'/g, '&#039;');
     }
     // Tema e cabeçalho são governados pelo shell da Base 190 quando incorporado.
-    const sadeEmbedded = new URLSearchParams(window.location.search).get('embedded') === '1';
+    const sadeEmbedded = Boolean(window.self && window.self !== window.top);
     if (sadeEmbedded) {
       document.body.classList.add('base190-embedded');
     }
