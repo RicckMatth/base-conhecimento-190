@@ -31,7 +31,10 @@ test('Embedded dashboard respects parent theme and keeps standalone theme toggle
 test('Parent operations tab uses Base 190 palette rather than undefined surface and old dark hardcode',()=>{
   const block=page.match(/\{screen==='operations'&&<section[\s\S]*?<\/section>\}/)?.[0];
   assert.ok(block,'Missing parent operations section');
-  assert.match(block,/background:'var\(--panel\)'/);
-  assert.match(block,/background:'var\(--bg\)'/);
+  assert.match(block,/className="tab-view-container base190-operations-embed"/);
+  assert.match(block,/className="base190-operations-frame"/);
+  const css=readFileSync(new URL('../app/globals.css',import.meta.url),'utf8');
+  assert.match(css,/\.shell \.base190-operations-frame\{/);
+  assert.match(css,/background:var\(--panel\)/);
   assert.doesNotMatch(block,/var\(--surface\)|#090B10/);
 });
