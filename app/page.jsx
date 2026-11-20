@@ -143,8 +143,13 @@ export default function Home(){
   const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
   const [user,setUser]=useState(null),[dark,setDark]=useState(false);
   const [profileModalOpen,setProfileModalOpen]=useState(false);
-  // O cargo da conta vem da sessao autenticada, nunca do navegador.
-  const activeProfileConfig=useMemo(()=>PROFILES.find(p=>p.id===(user?.operationalRole||'attendant'))||PROFILES.find(p=>p.id==='attendant'),[user?.operationalRole]);
+  const [previewProfile,setPreviewProfile]=useState({userId:null,role:null});
+  // A prévia Dev troca somente a apresentação. O servidor continua validando o cargo real.
+  const canPreviewRoles=user?.role==='admin'&&user?.operationalRole==='dev';
+  const effectiveProfileId=canPreviewRoles&&previewProfile.userId===user?.id&&PROFILES.some(p=>p.id===previewProfile.role)
+    ?previewProfile.role:(user?.operationalRole||'attendant');
+  const activeProfileConfig=useMemo(()=>PROFILES.find(p=>p.id===effectiveProfileId)||PROFILES.find(p=>p.id==='attendant'),[effectiveProfileId]);
+  const isPreviewing=canPreviewRoles&&effectiveProfileId!==user?.operationalRole;
   const [notice,setNotice]=useState(''),[success,setSuccess]=useState('');
   const [catalogIssue,setCatalogIssue]=useState(''),[catalogDegraded,setCatalogDegraded]=useState(false),[catalogRefreshing,setCatalogRefreshing]=useState(false);
   const [docsOpened,setDocsOpened]=useState(false);
@@ -249,6 +254,26 @@ export default function Home(){
     setBusy(true);try{await call('/auth/logout',{method:'POST',body:'{}'});}catch(e){err(e);}
     setDocsOpened(false);setUser(null);setScreen('home');setEntries([]);setBrainRules({base:[],extras:[],custom:[]});setBusy(false);
   }
+  useEffect(()=>{
+    if(!canPreviewRoles||!user?.id)return;
+    try{
+      const saved=localStorage.getItem('base190_preview_'+user.id);
+      if(saved&&PROFILES.some(profile=>profile.id===saved))setPreviewProfile({userId:user.id,role:saved});
+    }catch{}
+  },[canPreviewRoles,user?.id]);
+
+  function switchProfile(targetId){
+    if(!canPreviewRoles)return;
+    const target=PROFILES.find(p=>p.id===targetId);
+    if(!target)return;
+    setPreviewProfile({userId:user.id,role:targetId});
+    try{localStorage.setItem('base190_preview_'+user.id,targetId);}catch{}
+    setProfileModalOpen(false);
+    const allowed=[...target.centralTabs,...target.adminTabs];
+    if(!allowed.includes(screen))setScreen(target.centralTabs[0]||'home');
+    ok(targetId===user.operationalRole?'Prévia encerrada: visualização do cargo real restaurada.':`Prévia de ${target.name} ativada. As permissões reais não foram alteradas.`);
+  }
+
   useEffect(()=>{
     if(!profileModalOpen)return;
     const onKey=(e)=>{if(e.key==='Escape')setProfileModalOpen(false);};
@@ -444,7 +469,7 @@ export default function Home(){
   const isQualityScreen = isImmersiveScreen;
   const visibleLinks=links.filter(([id])=>activeProfileConfig.centralTabs.includes(id));
   const visibleAdminLinks=adminLinks.filter(([id])=>activeProfileConfig.adminTabs.includes(id));
-  return <div className={'shell'+(isImmersiveScreen?' quality-mode immersive-mode':'')}>
+  return <div className={'shell'+(isImmersiveScreen?' immersive-mode':'')+(screen==='quality'?' quality-mode':'')}>
     {tabLoading && <div className="tab-top-progress-bar"><div className="tab-top-progress-bar-fill"/></div>}
     <aside className={'sidebar'+(isImmersiveScreen?' compact':'')} aria-label="Navegação principal">
       <div className="logo"><div className="logoicon" title="Base 190">190</div><div className="logo-text"><strong>Base 190</strong><small>CONHECIMENTO OPERACIONAL</small></div></div>
@@ -456,15 +481,15 @@ export default function Home(){
           type="button"
           className="nav-btn profile-switch-btn"
           onClick={()=>setProfileModalOpen(true)}
-          title={`Cargo atual: ${activeProfileConfig.name}. O cargo é definido pela administração.`}
+          title={canPreviewRoles?`Alternar visualização de teste (atual: ${activeProfileConfig.name})`:`Cargo atribuído: ${activeProfileConfig.name}`}
           aria-haspopup="dialog"
         >
           <span className="profile-indicator-dot" style={{backgroundColor:activeProfileConfig.color}}/>
           <span className="nav-label profile-switch-info">
-            <small className="profile-switch-eyebrow">Perfil ativo</small>
+            <small className="profile-switch-eyebrow">{isPreviewing?"Prévia de cargo":"Perfil ativo"}</small>
             <strong className="profile-switch-title">{activeProfileConfig.name}</strong>
           </span>
-          <span className="nav-label profile-switch-arrow" aria-hidden="true">ⓘ</span>
+          <span className="nav-label profile-switch-arrow" aria-hidden="true">{canPreviewRoles?"⇄":"ⓘ"}</span>
         </button>
       </div>
       <div className="sidebar-bottom">
@@ -483,12 +508,12 @@ export default function Home(){
             type="button"
             className="profile-topbar-pill"
             onClick={()=>setProfileModalOpen(true)}
-            title={`Cargo atual: ${activeProfileConfig.name}. O cargo é definido pela administração.`}
+            title={canPreviewRoles?`Alternar visualização de teste (atual: ${activeProfileConfig.name})`:`Cargo atribuído: ${activeProfileConfig.name}`}
           >
             <span className="profile-indicator-dot" style={{backgroundColor:activeProfileConfig.color}}/>
-            <span>Cargo: <strong>{activeProfileConfig.name}</strong></span>
+            <span>{isPreviewing?"Simulando":"Cargo"}: <strong>{activeProfileConfig.name}</strong></span>
             <span className="profile-pill-badge">{activeProfileConfig.badge}</span>
-            <span className="profile-pill-action">Detalhes</span>
+            <span className="profile-pill-action">{canPreviewRoles?"Alternar ⇄":"Detalhes"}</span>
           </button>
           <Btn className="ghost tiny" onClick={()=>go('chat')}>Abrir chat 190</Btn>
           <Btn className="ghost tiny" onClick={theme}><Icon name={dark?'sun':'moon'} size={17}/>{dark?'Claro':'Escuro'}</Btn>
@@ -625,18 +650,51 @@ export default function Home(){
         </div>}
         <footer className="footer-note">Base de Conhecimento 190 • Uso controlado • Classificação automática assistiva, sujeita à revisão e homologação</footer>
 
+
         {profileModalOpen&&<div className="profile-modal-backdrop" onClick={()=>setProfileModalOpen(false)}>
-          <div className="profile-modal-card" style={{maxWidth:560}} onClick={e=>e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="pm-modal-title">
-            <div className="profile-modal-header"><div>
-              <span className="badge">CARGO AUTENTICADO</span>
-              <h2 id="pm-modal-title" style={{fontSize:22,margin:'7px 0'}}>Meu cargo: {activeProfileConfig.name}</h2>
-              <p className="muted">Seu cargo é definido pela administração e está vinculado à sua conta. Não é possível alterá-lo pelo navegador.</p>
+          <div className="profile-modal-card" onClick={e=>e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="pm-modal-title">
+            <div className="profile-modal-header">
+              <div>
+                <span className="badge">{canPreviewRoles?'MODO DE TESTE · PRÉVIA VISUAL':'CARGO AUTENTICADO'}</span>
+                <h2 id="pm-modal-title" style={{fontSize:22,margin:'7px 0'}}>
+                  {canPreviewRoles?'Alternar Perfil do Sistema':`Seu cargo: ${activeProfileConfig.name}`}
+                </h2>
+                <p className="muted" style={{fontSize:13}}>
+                  {canPreviewRoles?'Escolha um perfil para testar as telas e os limites visuais, como antes. O acesso real aos dados e ações continua protegido pelo servidor.':'Seu cargo é definido pela coordenação ou Dev, e não pode ser alterado nesta interface.'}
+                </p>
+              </div>
+              <button type="button" className="profile-modal-close" onClick={()=>setProfileModalOpen(false)} aria-label="Fechar janela">×</button>
             </div>
-            <button type="button" className="profile-modal-close" onClick={()=>setProfileModalOpen(false)} aria-label="Fechar janela">×</button></div>
-            <div className="card" style={{marginTop:15}}><strong>{activeProfileConfig.roleTitle}</strong><p className="muted" style={{fontSize:13,marginTop:8}}>{activeProfileConfig.desc}</p></div>
-            <div className="profile-modal-footer" style={{marginTop:17,display:'flex',justifyContent:'flex-end',gap:9,flexWrap:'wrap'}}>
-              {['dev','coordinator'].includes(activeProfileConfig.id)&&<button type="button" className="btn" onClick={()=>{setProfileModalOpen(false);go('access');}}>Gerenciar acessos e cargos</button>}
-              <button type="button" className="btn secondary" onClick={()=>setProfileModalOpen(false)}>Fechar</button>
+            {canPreviewRoles?<div className="profile-modal-grid">
+              {PROFILES.map(p=>{
+                const selected=p.id===activeProfileConfig.id;
+                return <div className={'profile-choice-card'+(selected?' active':'')} key={p.id}>
+                  <div className="profile-choice-head">
+                    <span className="profile-choice-icon" style={{background:p.color+'22',color:p.color,borderColor:p.color+'55'}}><Icon name={p.icon} size={20}/></span>
+                    <div style={{minWidth:0,flex:1}}>
+                      <strong>{p.name}</strong>
+                      <small className="muted" style={{display:'block',marginTop:4}}>{p.roleTitle}</small>
+                    </div>
+                    {selected&&<span className="badge">Em uso</span>}
+                  </div>
+                  <p style={{fontSize:12,lineHeight:1.5,margin:'10px 0'}}>{p.desc}</p>
+                  <div className="profile-choice-details">
+                    <div className="profile-detail-row"><span className="profile-detail-tag">Abas:</span><span className="profile-detail-val">{p.centralTabs.length} disponíveis na prévia</span></div>
+                    <div className="profile-detail-row"><span className="profile-detail-tag">Acesso real:</span><span className="profile-detail-val">Permanece Dev</span></div>
+                  </div>
+                  <button type="button" className={'btn tiny '+(selected?'secondary':'')} style={{marginTop:14,alignSelf:'flex-end'}} onClick={()=>switchProfile(p.id)}>
+                    {selected?'Perfil selecionado':'Ativar este perfil →'}
+                  </button>
+                </div>;
+              })}
+            </div>:<div className="card" style={{margin:20}}><strong>{activeProfileConfig.roleTitle}</strong><p className="muted" style={{marginTop:7}}>{activeProfileConfig.desc}</p></div>}
+            <div className="profile-modal-footer">
+              <small className="muted">{canPreviewRoles?'A simulação é individual deste navegador e não altera seu cargo no banco.': 'Solicite mudanças de cargo à coordenação ou à administração.'}</small>
+              <div className="btn-row">
+                {canPreviewRoles&&<button type="button" className="btn secondary tiny" onClick={()=>switchProfile(user.operationalRole)}>Voltar ao Dev</button>}
+                {['dev','coordinator'].includes(user?.operationalRole)&&<button type="button" className="btn tiny" onClick={()=>{setProfileModalOpen(false);setScreen('access');}}>Acessos e Cargos</button>}
+                <button type="button" className="btn secondary tiny" onClick={()=>setProfileModalOpen(false)}>Fechar</button>
+              </div>
             </div>
           </div>
         </div>}
