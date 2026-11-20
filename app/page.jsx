@@ -157,6 +157,13 @@ export default function Home(){
   const [tabLoading,setTabLoading]=useState(false);
   const [loadingTabKey,setLoadingTabKey]=useState('');
   const [chatFrameLoading,setChatFrameLoading]=useState(true);
+  // Sincroniza o tema do Chat SADE sem permitir ao iframe controlar a sessão.
+  useEffect(()=>{
+    if(screen!=='chat')return;
+    document.querySelector('.sade-embed-frame')?.contentWindow?.postMessage(
+      {type:'base190:theme',theme:dark?'dark':'light'},'*'
+    );
+  },[dark,screen]);
   const loadingTimerRef=useRef(null);
   useEffect(()=>{
     return ()=>{
@@ -578,6 +585,7 @@ export default function Home(){
             referrerPolicy="no-referrer"
             onLoad={(event)=>{
               setChatFrameLoading(false);
+              event.currentTarget.contentWindow?.postMessage({type:'base190:theme',theme:dark?'dark':'light'},'*');
               if(!pendingSadeReport)return;
               event.currentTarget.contentWindow?.postMessage({type:'base190:sade-report',text:pendingSadeReport},'*');
               setPendingSadeReport('');
