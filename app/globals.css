@@ -934,6 +934,13 @@ html,body{font-family:Inter,"Segoe UI",system-ui,sans-serif}h1,h2,h3{text-wrap:b
   color:#eafaff;
 }
 .shell>.sidebar .nav-btn svg{flex:0 0 18px;width:18px;height:18px}
+.shell>.sidebar .nav-caption{display:block!important}
+.shell>.sidebar .logo-text,.shell>.sidebar .who{display:block!important}
+.shell>.sidebar .profile-switch-info{display:flex!important;min-width:0;flex:1;flex-direction:column}
+.shell>.sidebar .profile-switch-info .profile-switch-eyebrow{display:block!important}
+.shell>.sidebar .profile-switch-info .profile-switch-title{display:block!important}
+.shell>.sidebar .profile-switch-arrow{display:inline-block!important;margin-left:auto}
+
 .shell>.sidebar .sidebar-profile-box{width:100%}
 .shell>.sidebar .sidebar-bottom{
   display:flex;
@@ -1078,6 +1085,9 @@ html,body{font-family:Inter,"Segoe UI",system-ui,sans-serif}h1,h2,h3{text-wrap:b
 .shell.quality-mode .qm-mobile-overlay{
   display:none!important;
 }
+.shell.quality-mode .qm-theme-btn{display:none!important}
+.shell.quality-mode .qm-header-actions:empty{display:none}
+
 .shell.quality-mode .qm-nav{
   flex:1 1 auto;
   min-width:0;
