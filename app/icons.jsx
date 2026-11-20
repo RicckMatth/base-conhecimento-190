@@ -10,6 +10,7 @@ const paths={
  users:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-4M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8m8 0a4 4 0 0 1 0 8',
  settings:'M4 7h16M4 17h16M8 4v6m8 4v6',
  audit:'M9 4H5v17h14V4h-4M9 2h6v5H9ZM8 12h8m-8 4h5',
+ calendar:'M4 5h16v16H4Zm0 5h16M8 3v4m8-4v4M8 14h3m3 0h3M8 18h3',
  logout:'M9 3H3v18h6m5-14 5 5-5 5m-7-5h14',
  shield:'m12 3 9 4v5c0 5-9 10-9 10S3 17 3 12V7Zm-4 9 3 3 5-6',
  sun:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1 1m12 12 1 1M5 19l1-1M18 6l1-1',
