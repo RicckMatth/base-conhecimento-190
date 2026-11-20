@@ -16,12 +16,18 @@ const nextConfig = {
         {key:'Content-Security-Policy',value:`default-src 'self'; ${scriptSrc} style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests`}
       ]
     },{
-      // Apenas a tela SADE pode ser incorporada no Chat 190 do mesmo domínio.
-      // Mantemos a política DENY estrita nas demais páginas.
+      // Os painéis HTML de mesmo domínio exigem exceções explícitas para a incorporação.
+      // Demais páginas continuam com X-Frame-Options DENY e frame-ancestors 'none'.
       source:'/copom-sade-190.html',
       headers:[
         {key:'X-Frame-Options',value:'SAMEORIGIN'},
         {key:'Content-Security-Policy',value:"default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; font-src 'none'; frame-ancestors 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"}
+      ]
+    },{
+      source:'/copom-190-gestao-operacional.html',
+      headers:[
+        {key:'X-Frame-Options',value:'SAMEORIGIN'},
+        {key:'Content-Security-Policy',value:"default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'self'; font-src 'none'; worker-src blob:; frame-ancestors 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"}
       ]
     }];
   }
