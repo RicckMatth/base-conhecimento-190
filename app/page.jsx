@@ -466,12 +466,11 @@ export default function Home(){
   const links=[['home','Visão geral','home'],['docs','Base de conhecimento','book'],['catalog','Catálogo','book'],['chat','Chat 190','brain'],['floor','Gestão de piso','shield'],['operations','Pausas e Folgas','calendar'],['quality','Qualidade','audit'],['access','Acessos e Cargos','users']];
   const adminLinks=[['editor','Editar textos','edit'],['access','Autorizar acessos','users'],['rules','Regras do assistente','settings'],['audit','Auditoria','audit']];
   const isImmersiveScreen = screen === 'quality' || screen === 'chat' || screen === 'operations';
-  const isQualityScreen = isImmersiveScreen;
   const visibleLinks=links.filter(([id])=>activeProfileConfig.centralTabs.includes(id));
   const visibleAdminLinks=adminLinks.filter(([id])=>activeProfileConfig.adminTabs.includes(id));
   return <div className={'shell'+(isImmersiveScreen?' immersive-mode':'')+(screen==='quality'?' quality-mode':'')}>
     {tabLoading && <div className="tab-top-progress-bar"><div className="tab-top-progress-bar-fill"/></div>}
-    <aside className={'sidebar'+(isImmersiveScreen?' compact':'')} aria-label="Navegação principal">
+    <aside className="sidebar" aria-label="Navegação principal">
       <div className="logo"><div className="logoicon" title="Base 190">190</div><div className="logo-text"><strong>Base 190</strong><small>CONHECIMENTO OPERACIONAL</small></div></div>
       <span className="nav-caption">CENTRAL</span>
       {visibleLinks.map(([id,label,icon])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>go(id)} aria-current={screen===id?'page':undefined} title={label}><Icon name={icon}/><span className="nav-label">{label}</span></button>)}
@@ -502,7 +501,7 @@ export default function Home(){
       </div>
     </aside>
     <div className="main">
-      {!isImmersiveScreen&&<header className="topbar"><div><b>{screen==='docs'?'Base de conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='chat'?'Chat 190':screen==='floor'?'Gestão de piso':screen==='access'?'Acessos e Cargos':screen==='quality'?'Qualidade 190':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
+      <header className="topbar base190-unified-header"><div><b>{screen==='docs'?'Base de conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='chat'?'Chat 190':screen==='operations'?'Pausas e Folgas':screen==='floor'?'Gestão de piso':screen==='access'?'Acessos e Cargos':screen==='quality'?'Qualidade 190':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
         <div className="btn-row">
           <button
             type="button"
@@ -518,8 +517,8 @@ export default function Home(){
           <Btn className="ghost tiny" onClick={()=>go('chat')}>Abrir chat 190</Btn>
           <Btn className="ghost tiny" onClick={theme}><Icon name={dark?'sun':'moon'} size={17}/>{dark?'Claro':'Escuro'}</Btn>
         </div>
-      </header>}
-      <main className={'content'+(isImmersiveScreen?' quality-content-mode immersive-content-mode':' spaced')}>
+      </header>
+      <main className={'content'+(isImmersiveScreen?' quality-content-mode immersive-content-mode':' spaced')} data-current-tab={screen}>
         {notice&&<div className="notice" role="alert">{notice}</div>}{success&&<div className="notice success" role="status">{success}</div>}
         {catalogIssue&&<div className="notice" role="alert" style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
           <span>{catalogIssue}{catalogDegraded?' Consulta em modo de contingência: não é confirmação de que as alterações do banco estejam sincronizadas.':''}</span>
@@ -541,12 +540,12 @@ export default function Home(){
 
         {docsOpened&&<div key="docs" hidden={screen!=='docs'} className="tab-view-container"><Documentation onExit={()=>go('home')} isAdmin={activeProfileConfig.canEditDocs} active={screen==='docs'}/></div>}
         {screen==='floor'&&<div key="floor" className="tab-view-container"><FloorControl isAdmin={activeProfileConfig.canManageFloorEvents}/></div>}
-        {screen==='operations'&&<section key="operations" className="tab-view-container" aria-label="Gestão Operacional de Pausas e Folgas" style={{height:'100%',minHeight:0}}>
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',padding:'10px 14px',borderRadius:12,marginBottom:10,border:'1px solid var(--line)',background:'var(--panel)',boxShadow:'var(--shadow)'}}>
+        {screen==='operations'&&<section key="operations" className="tab-view-container base190-operations-embed" aria-label="Gestão Operacional de Pausas e Folgas">
+          <div className="base190-operations-toolbar">
             <div><strong style={{display:'block',fontSize:14}}>Gestão Operacional · COPOM 190</strong><small className="muted">Profissionais da Base 190, pausas, folgas e escalas. Os ajustes feitos aqui permanecem neste navegador, sem sincronização entre usuários.</small></div>
             <a href="/copom-190-gestao-operacional.html" target="_blank" rel="noopener noreferrer" className="btn secondary tiny">Abrir em tela cheia ↗</a>
           </div>
-          <iframe title="Gestão Operacional COPOM 190: pausas e folgas" src="/copom-190-gestao-operacional.html" loading="eager" allow="notifications" style={{display:'block',width:'100%',height:'calc(100dvh - 110px)',minHeight:710,border:'1px solid var(--line)',borderRadius:14,background:'var(--bg)',boxShadow:'var(--shadow)'}}/>
+          <iframe className="base190-operations-frame" title="Gestão Operacional COPOM 190: pausas e folgas" src="/copom-190-gestao-operacional.html" loading="eager" allow="notifications"/>
         </section>}
         {screen==='quality'&&<div key="quality" className="tab-view-container" style={{height:'100%'}}><Quality user={{...user,role:activeProfileConfig.adminTabs.length>0?'admin':'user',operationalRole:activeProfileConfig.id,profileName:activeProfileConfig.name}} activeProfile={activeProfileConfig.id} dark={dark} toggleTheme={theme}/></div>}
         {screen==='catalog'&&<div key="catalog" className="tab-view-container">
@@ -572,7 +571,7 @@ export default function Home(){
           {chatFrameLoading&&<TabLoader tabName="Chat 190 • Inteligência Tática SADE" subtitle="Inicializando motor de triagem local e catálogo de 769 naturezas…" icon="brain"/>}
           <iframe
             className={`sade-embed-frame ${chatFrameLoading?'loading':'ready'}`}
-            src="/copom-sade-190.html"
+            src="/copom-sade-190.html?embedded=1"
             title="Chat 190 — Assistente de Triagem Inteligente SADE"
             sandbox="allow-scripts allow-forms"
             allow="clipboard-write"
