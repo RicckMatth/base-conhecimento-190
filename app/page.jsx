@@ -143,6 +143,17 @@ export default function Home(){
   const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
   const [user,setUser]=useState(null),[dark,setDark]=useState(false);
   const [profileModalOpen,setProfileModalOpen]=useState(false);
+  const [sidebarExpanded,setSidebarExpanded]=useState(false);
+  useEffect(()=>{
+    if(!user?.id)return;
+    try{setSidebarExpanded(localStorage.getItem('base190_sidebar_expanded_'+user.id)==='1');}
+    catch{setSidebarExpanded(false);}
+  },[user?.id]);
+  function toggleSidebar(){
+    const next=!sidebarExpanded;
+    setSidebarExpanded(next);
+    try{if(user?.id)localStorage.setItem('base190_sidebar_expanded_'+user.id,next?'1':'0');}catch{}
+  }
   const [previewProfile,setPreviewProfile]=useState({userId:null,role:null});
   // A prévia Dev troca somente a apresentação. O servidor continua validando o cargo real.
   const canPreviewRoles=user?.role==='admin'&&user?.operationalRole==='dev';
@@ -475,10 +486,17 @@ export default function Home(){
   const isImmersiveScreen = screen === 'quality' || screen === 'chat' || screen === 'operations';
   const visibleLinks=links.filter(([id])=>activeProfileConfig.centralTabs.includes(id));
   const visibleAdminLinks=adminLinks.filter(([id])=>activeProfileConfig.adminTabs.includes(id));
-  return <div className={'shell'+(isImmersiveScreen?' immersive-mode':'')+(screen==='quality'?' quality-mode':'')}>
+  const headerIconName=({home:'home',docs:'book',catalog:'book',chat:'brain',floor:'shield',operations:'calendar',quality:'audit',access:'users',editor:'edit',rules:'settings',audit:'audit',detail:'book',brain:'brain'})[screen]||'shield';
+  return <div className={'shell'+(isImmersiveScreen?' immersive-mode':'')+(screen==='quality'?' quality-mode':'')+(sidebarExpanded?' sidebar-expanded':'')}>
     {tabLoading && <div className="tab-top-progress-bar"><div className="tab-top-progress-bar-fill"/></div>}
-    <aside className="sidebar compact" aria-label="Navegação principal — ícones">
+    <aside id="base190-sidebar" className="sidebar compact" aria-label="Navegação principal" data-expanded={sidebarExpanded?'true':'false'}>
       <div className="logo"><div className="logoicon" title="Base 190">190</div><div className="logo-text"><strong>Base 190</strong><small>CONHECIMENTO OPERACIONAL</small></div></div>
+      <button type="button" className="sidebar-toggle" onClick={toggleSidebar}
+        aria-label={sidebarExpanded?'Recolher barra lateral':'Expandir barra lateral'}
+        title={sidebarExpanded?'Recolher barra lateral':'Expandir barra lateral'}
+        aria-expanded={sidebarExpanded} aria-controls="base190-sidebar">
+        <Icon name="arrow" size={19}/><span className="sidebar-toggle-label">{sidebarExpanded?'Recolher menu':'Expandir menu'}</span>
+      </button>
       <span className="nav-caption">CENTRAL</span>
       {visibleLinks.map(([id,label,icon])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>go(id)} aria-label={label} aria-current={screen===id?'page':undefined} title={label}><Icon name={icon}/><span className="nav-label">{label}</span></button>)}
       {visibleAdminLinks.length>0&&<><span className="nav-caption">ADMINISTRAÇÃO</span>{visibleAdminLinks.map(([id,label,icon])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>id==='editor'?editEntry(null):go(id)} aria-label={label} aria-current={screen===id?'page':undefined} title={label}><Icon name={icon}/><span className="nav-label">{label}</span></button>)}</>}
@@ -508,9 +526,11 @@ export default function Home(){
         <button className="nav-btn" onClick={logout} disabled={busy} aria-label="Encerrar sessão" title="Encerrar sessão"><Icon name="logout"/><span className="nav-label">Sair</span></button>
       </div>
     </aside>
+    {sidebarExpanded&&<button type="button" className="sidebar-overlay" onClick={toggleSidebar} aria-label="Fechar menu lateral"/>}
     <div className="main">
       <header className="topbar base190-unified-header">
         <div className="base190-header-location">
+          <span className="base190-header-symbol" aria-hidden="true"><Icon name={headerIconName} size={16}/></span>
           <span className="base190-header-root">Base 190</span>
           <span className="base190-header-separator" aria-hidden="true">/</span>
           <strong>{screen==='docs'?'Conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='chat'?'Chat 190':screen==='operations'?'Pausas e folgas':screen==='floor'?'Gestão de piso':screen==='access'?'Acessos e cargos':screen==='quality'?'Qualidade':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='rules'?'Regras':'Auditoria'}</strong>
