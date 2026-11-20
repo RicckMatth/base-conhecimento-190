@@ -1,9 +1,9 @@
 'use client';
 import {useCallback,useEffect,useMemo,useState} from 'react';
 
-const ROLE_LABEL={attendant:'Atendente',manager:'Gestor · Supervisor',coordinator:'Coordenador',dev:'Dev'};
-const ROLE_MARK={attendant:'◉',manager:'◆',coordinator:'✦',dev:'⌘'};
-const ROLE_ORDER=['attendant','manager','coordinator','dev'];
+const ROLE_LABEL={attendant:'Atendente',manager:'Gestor · Supervisor',quality_analyst:'Analista de Qualidade',coordinator:'Coordenador',dev:'Dev'};
+const ROLE_MARK={attendant:'◉',manager:'◆',quality_analyst:'✧',coordinator:'✦',dev:'⌘'};
+const ROLE_ORDER=['attendant','manager','quality_analyst','coordinator','dev'];
 const WEEKDAYS=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
 const OFF_DAYS=[['1','Segunda-feira'],['2','Terça-feira'],['3','Quarta-feira'],['4','Quinta-feira'],['5','Sexta-feira'],['6','Sábado'],['0','Domingo']];
 const ROUND_OPTIONS=[['0','Livre · qualquer minuto'],['5','De 5 em 5 minutos'],['10','De 10 em 10 minutos'],['15','De 15 em 15 minutos'],['30','De 30 em 30 minutos']];
@@ -85,7 +85,6 @@ export default function FloorSchedule(){
  const [sundayDraft,setSundayDraft]=useState('auto');
  const [roundDraft,setRoundDraft]=useState('0');
  const [roundSelection,setRoundSelection]=useState('profile');
- const [rolePending,setRolePending]=useState('');
  const load=useCallback(async()=>{
   setLoading(true);
   try{const next=await api('?month='+month);setData(next);setMessage(null);}
@@ -207,7 +206,6 @@ export default function FloorSchedule(){
   const blob=new Blob(['\ufeff'+rows.map(x=>x.map(csvText).join(';')).join('\r\n')],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='escalas-'+month+'.csv';a.click();URL.revokeObjectURL(url);
  }
- const updateRole=async(person,next)=>{setRolePending(person.id);await mutate('/roles','PATCH',{targetId:person.id,role:next},'Perfil atualizado.');setRolePending('');};
  return <div className="rs-wrap">
    <header className="rs-hero">
      <div className="rs-hero-orb a"/><div className="rs-hero-orb b"/>
@@ -293,9 +291,9 @@ export default function FloorSchedule(){
       <div className="rs-break-reminder"><strong>Regras da sequência</strong><p>Os intervalos devem permanecer dentro do turno, na ordem 10–20–10, sem sobreposição. Jornadas noturnas também são aceitas.</p></div>
      </>}</aside>
    </div>}
-   {view==='team'&&<div className="rs-card"><div className="rs-card-head"><div><small>ESTRUTURA OPERACIONAL</small><h3>Equipe e níveis de acesso</h3><p>Perfis definidos no banco de dados. A atribuição de funções é restrita ao Dev.</p></div><span className="rs-detail-symbol">♧</span></div>
+   {view==='team'&&<div className="rs-card"><div className="rs-card-head"><div><small>ESTRUTURA OPERACIONAL</small><h3>Equipe e níveis de acesso</h3><p>Perfis definidos no banco de dados. Para conceder acessos e alterar cargos, utilize o painel Acessos e Cargos (Coordenador ou Dev).</p></div><span className="rs-detail-symbol">♧</span></div>
     <div className="rs-role-key">{ROLE_ORDER.map(k=><div key={k}><span className={'rs-role-icon '+k}>{ROLE_MARK[k]}</span><strong>{ROLE_LABEL[k]}</strong><small>{people.filter(p=>p.operational_role===k).length} membro(s)</small></div>)}</div>
-    <div className="rs-team-list">{people.map(p=><div className="rs-team-member" key={p.id}><EmployeeAvatar person={p} size="large"/><div><strong>{p.display_name}</strong><small>{p.username}</small></div><UserPill person={p}/>{role==='dev'&&p.operational_role!=='dev'?<select aria-label={'Alterar perfil de '+p.display_name} disabled={busy||rolePending===p.id} value={p.operational_role} onChange={e=>{const next=e.target.value;if(window.confirm('Alterar o perfil operacional de '+p.display_name+' para '+ROLE_LABEL[next]+'?'))void updateRole(p,next);}}>{ROLE_ORDER.filter(k=>k!=='dev').map(k=><option key={k} value={k}>{ROLE_LABEL[k]}</option>)}</select>:<span className="rs-readonly">{p.operational_role==='dev'?'🔒 Conta Dev protegida':'Somente leitura'}</span>}</div>)}</div>
+    <div className="rs-team-list">{people.map(p=><div className="rs-team-member" key={p.id}><EmployeeAvatar person={p} size="large"/><div><strong>{p.display_name}</strong><small>{p.username}</small></div><UserPill person={p}/><span className="rs-readonly">Alterações no painel central</span></div>)}</div>
     <div className="rs-access-info"><strong>🔐 Permissões da escala</strong><p><b>Atendente:</b> consulta todas as escalas. <b>Gestor/Supervisor:</b> edita folgas, jornadas e pausas de atendentes. <b>Coordenador:</b> edita folgas e jornadas de gestores. <b>Dev:</b> administra os perfis e pode corrigir escalas conforme necessário. Todas as alterações são verificadas no servidor e auditadas.</p></div>
    </div>}
    {(role==='manager'||role==='coordinator'||role==='dev')&&<section className="rs-automation"><div className="rs-automation-icon">✧</div><div className="rs-automation-text"><small>PLANEJAMENTO ASSISTIDO</small><h3>Gerador de escalas mensais</h3><p>Respeita os dias fixos de folga de cada profissional e permite pausas com horários redondos. Preserva todas as alterações manuais.</p><div className="rs-automation-target"><label htmlFor="rs-role-group">Gerar para</label><select id="rs-role-group" value={selectedGroup} onChange={e=>setSelectedGroup(e.target.value)}>{ROLE_ORDER.filter(k=>people.some(p=>p.operational_role===k)&&can(role,k,'days')).map(k=><option key={k} value={k}>{ROLE_LABEL[k]}</option>)}</select><span>{eligible.length} profissional(is)</span></div></div><div className="rs-automation-buttons"><label className="rs-generation-round"><strong>Arredondar pausas</strong><select aria-label="Arredondamento para esta geração" value={roundSelection} onChange={e=>setRoundSelection(e.target.value)}><option value="profile">Usar preferência individual</option>{ROUND_OPTIONS.map(([value,label])=><option value={value} key={value}>{label}</option>)}</select><span>Escolha só para esta geração; não substitui a preferência salva de cada profissional.</span></label><button disabled={busy||!eligible.length} className="rs-primary" onClick={()=>generate('days')}>☼ Gerar folgas 6×1</button><button disabled={busy||!eligible.length||!can(role,selectedGroup,'breaks')} onClick={()=>generate('breaks')}>☕ Gerar pausas 10–20–10</button><small>{busy?'Processando…':'Cada geração é salva no banco e registrada na auditoria.'}</small></div></section>}
