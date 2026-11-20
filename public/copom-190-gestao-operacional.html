@@ -1045,6 +1045,12 @@
     function syncOfficialRoster(data,account){
       if(!Array.isArray(data?.users)||!Array.isArray(data?.profiles))throw Error('Cadastro oficial indisponível.');
       baseScheduleSnapshot=data;baseSignedUser=account;
+      // Apaga o histórico de demonstração oriundo das doze contas e quatro turnos antigos.
+      if(state.agents.some(a=>/^ag_\d+$/.test(String(a.id||'')))||
+         state.groups.some(g=>/^grp_[a-d]$/.test(String(g.id||'')))){
+        state.history=[];
+        if(state.notifications)state.notifications.notifiedKeys={};
+      }
       const customGroups=state.groups.filter(g=>g&&/^grp_\d{10,}$/.test(String(g.id||'')));
       const previous=new Map((state.agents||[]).map(a=>[a.id,a]));
       const profileById=new Map(data.profiles.map(p=>[p.user_id,p]));
@@ -1607,6 +1613,11 @@
     }
 
     function changeLoggedAgent(agentId) {
+      if(!rolePreviewAllowed && agentId!==baseSignedUser?.id){
+        showToast('Você só pode visualizar as pausas vinculadas à sua conta.', 'warning');
+        return;
+      }
+      if(!getAgentById(agentId))return;
       state.loggedAgentId = agentId;
       saveState();
       renderAgentSelfDashboard();
@@ -1851,7 +1862,9 @@
 
       // Popula seletor de atendente
       const sel = document.getElementById('loggedAgentSelect');
-      sel.innerHTML = state.agents.map((a) => {
+      const visibleAgents=rolePreviewAllowed?state.agents:state.agents.filter(a=>a.id===baseSignedUser?.id);
+      sel.disabled=!rolePreviewAllowed;
+      sel.innerHTML = visibleAgents.map((a) => {
         const g = getGroupById(a.groupId);
         return `<option value="${a.id}" ${a.id === ag.id ? 'selected' : ''}>${a.rank} ${a.name} (${a.pa} · ${g ? g.start + '–' + g.end : ''})</option>`;
       }).join('');
@@ -2499,35 +2512,11 @@
 
     function submitAddAgent(e) {
       e.preventDefault();
-      showToast('Os profissionais são cadastrados em Acessos e Cargos na Base 190.','warning');
-      return;
-      const rank = document.getElementById('naRank').value;
-      const name = document.getElementById('naName').value.trim();
-      const pa = document.getElementById('naPA').value.trim().toUpperCase();
-      const groupId = document.getElementById('naGroup').value;
-      if (!name || !pa) return;
-
-      const id = `ag_${Date.now()}`;
-      state.agents.push({ id, rank, name, pa, groupId });
-      document.getElementById('naName').value = '';
-      document.getElementById('naPA').value = '';
-      saveState();
-      closeModal('modalAddAgent');
-      renderAll();
-      showToast(`${rank} ${name} (${pa}) adicionado à equipe.`);
+      showToast('Cadastre profissionais em Acessos e Cargos na Base 190.', 'warning');
     }
 
-    function deleteAgent(agentId) {
-      showToast('A exclusão de contas é gerenciada em Acessos e Cargos na Base 190.','warning');
-      return;
-      const ag = getAgentById(agentId);
-      state.agents = state.agents.filter((a) => a.id !== agentId);
-      if (state.loggedAgentId === agentId && state.agents.length) {
-        state.loggedAgentId = state.agents[0].id;
-      }
-      saveState();
-      renderAll();
-      showToast(`${ag ? ag.name : 'Atendente'} removido da escala.`, 'warning');
+    function deleteAgent() {
+      showToast('Os profissionais são gerenciados pelo cadastro oficial da Base 190.', 'warning');
     }
 
     function openGroupModal(groupId = null) {
