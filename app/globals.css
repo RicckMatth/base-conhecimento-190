@@ -792,3 +792,171 @@ body > div.shell.immersive-mode > div > header,
     align-items: flex-start;
   }
 }
+
+
+/* === Scroll containment across Base 190 ===
+   Only the working area scrolls vertically; navigation stays in its own column. */
+:root{
+  --app-scroll-track:#e4eef2;
+  --app-scroll-thumb:#79a0ad;
+  --app-scroll-hover:#397a8b;
+}
+:root[data-theme="dark"]{
+  --app-scroll-track:#0b202e;
+  --app-scroll-thumb:#36596c;
+  --app-scroll-hover:#61aebf;
+}
+.shell{
+  width:100%;
+  max-width:100%;
+  height:100dvh;
+  min-height:0;
+  overflow:hidden;
+}
+.shell>.sidebar{
+  position:relative;
+  top:auto;
+  height:100%;
+  max-height:100%;
+  min-height:0;
+  min-width:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+}
+.shell>.main{
+  height:100%;
+  max-height:100%;
+  min-height:0;
+  min-width:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior-y:contain;
+  scrollbar-gutter:stable;
+}
+.shell>.main>.content,.shell .tab-view-container{min-width:0;max-width:100%;}
+.shell .table-scroll,.shell .qm-table-scroll,.shell .ac-table-scroll{
+  max-width:100%;
+  min-width:0;
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+}
+/* Quality owns its scroll inside the work panel; the app shell must not scroll too. */
+.shell.quality-mode>.main{overflow:hidden;scrollbar-gutter:auto;}
+.shell.quality-mode>.main>.content{
+  min-height:0;
+  height:100%;
+  max-height:100%;
+  overflow:hidden;
+}
+.shell.quality-mode .tab-view-container{
+  height:100%;
+  min-height:0;
+  max-height:100%;
+  overflow:hidden;
+  animation:none;
+  transform:none;
+  will-change:auto;
+}
+.shell.quality-mode .quality-module,
+.shell.quality-mode .qm-shell{
+  min-height:0;
+  height:100%;
+  max-height:100%;
+  overflow:hidden;
+}
+.shell.quality-mode .qm-sidebar{
+  height:100%;
+  max-height:100%;
+  min-height:0;
+  overflow:hidden;
+}
+.shell.quality-mode .qm-sidebar .qm-nav{
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+.shell.quality-mode .qm-content-wrap{
+  min-height:0;
+  min-width:0;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior-y:contain;
+  scrollbar-gutter:stable;
+}
+.shell.quality-mode .qm-main{min-width:0;max-width:100%;}
+.shell.quality-mode .qm-table-scroll{
+  width:100%;
+  max-width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+}
+@media(max-width:650px){
+  .shell{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto minmax(0,1fr);
+  }
+  .shell>.sidebar,.shell>.sidebar.compact{
+    position:relative;
+    width:100%;
+    max-width:100%;
+    height:auto;
+    max-height:72px;
+    padding:6px;
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    justify-content:flex-start;
+    overflow-x:auto;
+    overflow-y:hidden;
+    flex-wrap:nowrap;
+    overscroll-behavior-x:contain;
+  }
+  .shell>.sidebar .nav-btn,.shell>.sidebar.compact .nav-btn{
+    width:auto;
+    min-width:43px;
+    flex:none;
+    margin:0 2px;
+  }
+  .shell>.sidebar.compact .sidebar-profile-box{
+    width:auto;
+    padding:0;
+    border:0;
+    flex:none;
+  }
+  .shell>.sidebar.compact .sidebar-bottom{
+    width:auto;
+    flex-direction:row;
+    align-items:center;
+    padding:0;
+    border:0;
+  }
+  .shell>.main{
+    min-height:0;
+    height:100%;
+  }
+  .shell.quality-mode .qm-content-wrap{scrollbar-gutter:auto;}
+}
+:where(html,body,.main,.sidebar,.qm-content-wrap,.qm-nav,.qm-table-scroll,.table-scroll,.docs-sidebar,.docs-main,.chat-stream,.chat-rewrite,.ac-table-scroll,.ac-tabbar,.profile-modal-grid,.qm-modal-body,.qm-modal-backdrop,.qm-sidebar,textarea){
+  scrollbar-width:thin;
+  scrollbar-color:var(--app-scroll-thumb) var(--app-scroll-track);
+}
+@supports selector(::-webkit-scrollbar){
+  :where(html,body,.main,.sidebar,.qm-content-wrap,.qm-nav,.qm-table-scroll,.table-scroll,.docs-sidebar,.docs-main,.chat-stream,.chat-rewrite,.ac-table-scroll,.ac-tabbar,.profile-modal-grid,.qm-modal-body,.qm-modal-backdrop,.qm-sidebar,textarea)::-webkit-scrollbar{
+    width:9px;
+    height:9px;
+  }
+  :where(html,body,.main,.sidebar,.qm-content-wrap,.qm-nav,.qm-table-scroll,.table-scroll,.docs-sidebar,.docs-main,.chat-stream,.chat-rewrite,.ac-table-scroll,.ac-tabbar,.profile-modal-grid,.qm-modal-body,.qm-modal-backdrop,.qm-sidebar,textarea)::-webkit-scrollbar-track{
+    background:var(--app-scroll-track);
+    border-radius:12px;
+  }
+  :where(html,body,.main,.sidebar,.qm-content-wrap,.qm-nav,.qm-table-scroll,.table-scroll,.docs-sidebar,.docs-main,.chat-stream,.chat-rewrite,.ac-table-scroll,.ac-tabbar,.profile-modal-grid,.qm-modal-body,.qm-modal-backdrop,.qm-sidebar,textarea)::-webkit-scrollbar-thumb{
+    background:var(--app-scroll-thumb);
+    border:2px solid var(--app-scroll-track);
+    border-radius:12px;
+  }
+  :where(html,body,.main,.sidebar,.qm-content-wrap,.qm-nav,.qm-table-scroll,.table-scroll,.docs-sidebar,.docs-main,.chat-stream,.chat-rewrite,.ac-table-scroll,.ac-tabbar,.profile-modal-grid,.qm-modal-body,.qm-modal-backdrop,.qm-sidebar,textarea)::-webkit-scrollbar-thumb:hover{
+    background:var(--app-scroll-hover);
+  }
+}
