@@ -3,6 +3,7 @@ import {normalizeImage,readLimited,storeAsset,readableAsset,deleteAsset,requireE
 import {saveDocument,saveDraft,uuid} from '../../../lib/documentation-store.js';
 import {getSchedule,editOperationalRole,editShift,editScheduleDay,generateMonth,editSchedulePreferences,editSundayChoice,editDailyBreaks,getLiveBreaks} from '../../../lib/floor-scheduling.js';
 import {qualityBoard,qualitySaveMonitor,qualitySaveFollowup,qualityAcknowledge,qualityHistory} from '../../../lib/quality-store.js';
+import {listAccess,decideRequest,createAccount,updateAccount} from '../../../lib/access-management.js';
 import {listDocumentationSpaces,createDocumentationSpace,updateDocumentationSpace} from '../../../lib/documentation-spaces.js';
 import {cleanDocument} from '../../../lib/documentation.js';
 import { readFeedbackTicket,learnableQuestions } from '../../../lib/question-feedback.js';
@@ -372,6 +373,24 @@ async function gate(request,method,ctx){
     if(!result.rowCount)return failure('Registro inexistente ou já concluído.',404);
     await log(u.id,'floor_event_status',result.rows[0].protocol+': '+status);
     return reply({message:'Estado do evento atualizado.'});
+  }
+
+  // Painel central: a identidade operacional vem da sessão, nunca do seletor da interface.
+  if(route==='/management/access'&&method==='GET'){
+    try{return reply(await listAccess(db(),u));}
+    catch(e){return failure(e.message,e.status||400);}
+  }
+  if(route==='/management/access/requests'&&method==='POST'){
+    try{return reply(await decideRequest(db(),u,await input(request,2000)));}
+    catch(e){return failure(e.code==='23505'?'Usuário já cadastrado.':e.message,e.code==='23505'?409:(e.status||400));}
+  }
+  if(route==='/management/access/users'&&method==='POST'){
+    try{return reply(await createAccount(db(),u,await input(request,2500)),201);}
+    catch(e){return failure(e.code==='23505'?'Nome de usuário já cadastrado.':e.message,e.code==='23505'?409:(e.status||400));}
+  }
+  if(route==='/management/access/users'&&method==='PATCH'){
+    try{return reply(await updateAccount(db(),u,await input(request,2000)));}
+    catch(e){return failure(e.message,e.status||400);}
   }
 
   const denied=requireRole(u,true);if(denied) return denied;
