@@ -515,7 +515,7 @@ export default function Home(){
           <strong>{screen==='docs'?'Conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='chat'?'Chat 190':screen==='operations'?'Pausas e folgas':screen==='floor'?'Gestão de piso':screen==='access'?'Acessos e cargos':screen==='quality'?'Qualidade':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='rules'?'Regras':'Auditoria'}</strong>
         </div>
         <div className="base190-header-actions">
-          {screen==='operations'&&<a className="base190-header-icon" href="/copom-190-gestao-operacional.html" target="_blank" rel="noopener noreferrer" aria-label="Abrir pausas e folgas em tela cheia" title="Abrir em tela cheia"><Icon name="external-link" size={17}/></a>}
+          {screen==='operations'&&<a className="base190-header-icon" href="/copom-190-gestao-operacional.html" target="_blank" rel="noopener noreferrer" aria-label="Abrir pausas e folgas em tela cheia" title="Abrir em tela cheia"><Icon name="link" size={17}/></a>}
           <button type="button" className="base190-header-icon" onClick={theme} aria-label={dark?'Ativar tema claro':'Ativar tema escuro'} title={dark?'Tema claro':'Tema escuro'}><Icon name={dark?'sun':'moon'} size={18}/></button>
           <button type="button" className="base190-header-profile" onClick={()=>setProfileModalOpen(true)} aria-label={canPreviewRoles?'Alternar perfil para testes':'Ver meu cargo'} title={canPreviewRoles?'Alternar perfil para testes':'Ver meu cargo'}>
             <span className="profile-indicator-dot" style={{backgroundColor:activeProfileConfig.color}}/>
