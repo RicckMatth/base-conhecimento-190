@@ -692,7 +692,7 @@ export default function Home(){
               <small className="muted">{canPreviewRoles?'A simulação é individual deste navegador e não altera seu cargo no banco.': 'Solicite mudanças de cargo à coordenação ou à administração.'}</small>
               <div className="btn-row">
                 {canPreviewRoles&&<button type="button" className="btn secondary tiny" onClick={()=>switchProfile(user.operationalRole)}>Voltar ao Dev</button>}
-                {['dev','coordinator'].includes(user?.operationalRole)&&<button type="button" className="btn tiny" onClick={()=>{setProfileModalOpen(false);setScreen('access');}}>Acessos e Cargos</button>}
+                {['dev','coordinator'].includes(user?.operationalRole)&&<button type="button" className="btn tiny" onClick={()=>{if(canPreviewRoles)switchProfile(user.operationalRole);setProfileModalOpen(false);setScreen('access');}}>Acessos e Cargos</button>}
                 <button type="button" className="btn secondary tiny" onClick={()=>setProfileModalOpen(false)}>Fechar</button>
               </div>
             </div>
