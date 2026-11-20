@@ -1659,9 +1659,33 @@
     }
 
     function toggleTheme() {
+      // Em tela cheia, o painel mantém o controle próprio. Incorporado, segue a Base.
+      if (document.body.classList.contains('base190-embedded')) return;
       state.theme = state.theme === 'dark' ? 'light' : 'dark';
       document.documentElement.classList.toggle('dark', state.theme === 'dark');
       saveState();
+    }
+
+    function inheritBaseTheme() {
+      try {
+        if (window.self === window.top) return false;
+        if (window.parent.location.origin !== window.location.origin) return false;
+        const host = window.parent.document.documentElement;
+        const apply = () => {
+          const mode = host.dataset.theme === 'dark' ? 'dark' : 'light';
+          state.theme = mode;
+          document.documentElement.classList.toggle('dark', mode === 'dark');
+        };
+        apply();
+        document.body.classList.add('base190-embedded');
+        const watcher = new MutationObserver(apply);
+        watcher.observe(host, {attributes:true,attributeFilter:['data-theme']});
+        window.addEventListener('pagehide', () => watcher.disconnect(), {once:true});
+        return true;
+      } catch (error) {
+        console.warn('Não foi possível herdar o tema da Base 190.', error);
+        return false;
+      }
     }
 
     function switchTab(tab) {
@@ -2872,7 +2896,7 @@
       }
       if (!rolePreviewAllowed) document.getElementById('rolePopover')?.remove();
 
-      document.documentElement.classList.toggle('dark', state.theme === 'dark');
+      if (!inheritBaseTheme()) document.documentElement.classList.toggle('dark', state.theme === 'dark');
       if (state.simulatedTime) {
         document.getElementById('simTimeInput').value = state.simulatedTime;
       }
