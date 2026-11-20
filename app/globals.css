@@ -182,9 +182,613 @@ html,body{font-family:Inter,"Segoe UI",system-ui,sans-serif}h1,h2,h3{text-wrap:b
 .writing-review-info{color:var(--muted);background:var(--soft);border:1px solid var(--line)}
 
 
-/* Chat 190 SADE v7 integrado, sem conflito com os estilos globais */
+/* Chat 190 SADE v7 integrado, com suporte a tela cheia imersiva */
 .sade-workspace{display:flex;flex-direction:column;min-width:0;width:100%;gap:12px}
+.sade-workspace.sade-fullscreen{
+  position:relative;
+  width:100%;
+  height:100vh;
+  min-height:100vh;
+  margin:0;
+  padding:0;
+  gap:0;
+  background:#060a12;
+  overflow:hidden;
+}
 .sade-integrated-notice{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:var(--soft);border:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.45}
 .sade-integrated-notice svg{flex:none;color:var(--blue)}
 .sade-embed-frame{display:block;width:100%;height:calc(100dvh - 205px);min-height:660px;border:1px solid var(--line);border-radius:20px;background:#060a12;box-shadow:var(--shadow);overflow:hidden}
+.sade-workspace.sade-fullscreen .sade-integrated-notice{
+  border-radius:0;
+  border-left:none;
+  border-right:none;
+  border-top:none;
+  margin:0;
+  padding:7px 16px;
+  background:#09131d;
+  font-size:11px;
+  border-bottom:1px solid #142838;
+}
+.sade-workspace.sade-fullscreen .sade-embed-frame{
+  width:100%;
+  height:calc(100vh - 35px);
+  min-height:calc(100vh - 35px);
+  border:none;
+  border-radius:0;
+  box-shadow:none;
+  display:block;
+  opacity:1;
+  transition:opacity .25s ease;
+}
+.sade-workspace.sade-fullscreen .sade-embed-frame.loading{
+  opacity:0;
+  pointer-events:none;
+}
 @media(max-width:760px){.sade-integrated-notice{font-size:11px;padding:9px 11px}.sade-embed-frame{height:calc(100dvh - 210px);min-height:560px;border-radius:13px}}
+
+/* =====================================================================
+ * MODO COMPACTO DA BARRA LATERAL (QUALIDADE E CHAT 190 EM TELA CHEIA)
+ * ===================================================================== */
+@media(min-width:651px){
+  .shell.quality-mode,
+  .shell.immersive-mode{
+    grid-template-columns:68px minmax(0,1fr);
+    transition:grid-template-columns .2s cubic-bezier(.16,1,.3,1);
+  }
+}
+.sidebar.compact{
+  width:68px;
+  padding:20px 6px;
+  align-items:center;
+  transition:width .2s cubic-bezier(.16,1,.3,1),padding .2s ease;
+  overflow-x:hidden;
+}
+.sidebar.compact .logo{
+  padding:2px 0 22px;
+  justify-content:center;
+  width:100%;
+}
+.sidebar.compact .logoicon{
+  padding:9px 8px;
+  font-size:13px;
+  border-radius:10px;
+  text-align:center;
+}
+.sidebar.compact .logo-text,
+.sidebar.compact .nav-caption,
+.sidebar.compact .who,
+.sidebar.compact .nav-label{
+  display:none!important;
+}
+.sidebar.compact .nav-btn{
+  justify-content:center;
+  padding:0;
+  width:44px;
+  height:44px;
+  min-height:44px;
+  margin:0 auto 6px;
+  border-radius:10px;
+  gap:0;
+  position:relative;
+}
+.sidebar.compact .nav-btn svg{
+  margin:0;
+  width:20px;
+  height:20px;
+}
+.sidebar.compact .nav-btn.active{
+  box-shadow:0 0 0 2px #54cbd266,inset 0 0 12px rgba(84,203,210,.25);
+  background:#143e50;
+  color:#b8f4f6;
+}
+.sidebar.compact .sidebar-bottom{
+  padding:14px 0 0;
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.sidebar.compact .sidebar-bottom .nav-btn{
+  margin:0 auto;
+}
+
+/* Área de conteúdo expandida em tela cheia na Qualidade e no Chat */
+body > div.shell.quality-mode > div > header,
+body > div.shell.immersive-mode > div > header,
+.shell.quality-mode > .main > .topbar,
+.shell.immersive-mode > .main > .topbar,
+.shell.quality-mode .topbar,
+.shell.immersive-mode .topbar{
+  display:none!important;
+}
+.shell.quality-mode .content.quality-content-mode,
+.shell.immersive-mode .content.immersive-content-mode{
+  max-width:100%;
+  width:100%;
+  padding:0;
+  margin:0;
+  min-height:100vh;
+  height:100%;
+}
+.shell.quality-mode .quality-content-mode .qm-shell{
+  min-height:100vh;
+  border-radius:0;
+  border:none;
+  box-shadow:none;
+}
+.shell.quality-mode .quality-content-mode .qm-sidebar{
+  position:sticky;
+  top:0;
+  height:100vh;
+  max-height:100vh;
+  overflow-y:auto;
+}
+
+/* =====================================================================
+ * ANIMAÇÕES DE TRANSIÇÃO E LOADERS DE ABAS COPOM 190
+ * ===================================================================== */
+.tab-top-progress-bar{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:3px;
+  z-index:99999;
+  background:rgba(56,189,248,0.12);
+  overflow:hidden;
+  pointer-events:none;
+}
+.tab-top-progress-bar-fill{
+  height:100%;
+  width:100%;
+  background:linear-gradient(90deg,#0284c7,#38bdf8,#2dd4bf,#0284c7);
+  background-size:200% 100%;
+  animation:tabTopBarSlide 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
+  box-shadow:0 0 10px rgba(56,189,248,0.7);
+}
+@keyframes tabTopBarSlide{
+  0%{transform:translateX(-100%)}
+  50%{transform:translateX(0%)}
+  100%{transform:translateX(100%)}
+}
+
+/* Animação suave de entrada das abas */
+.tab-view-container{
+  width:100%;
+  animation:tabViewEnter .28s cubic-bezier(0.16,1,0.3,1) forwards;
+  will-change:opacity,transform;
+}
+@keyframes tabViewEnter{
+  0%{opacity:0;transform:translateY(8px)}
+  100%{opacity:1;transform:translateY(0)}
+}
+
+/* Componente TabLoader Moderno */
+.tab-loader-container{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:380px;
+  width:100%;
+  padding:48px 20px;
+  animation:tabViewEnter .25s ease forwards;
+}
+.tab-loader-container.chat-loading-overlay{
+  position:absolute;
+  inset:0;
+  z-index:30;
+  background:#060a12;
+  min-height:100vh;
+  margin:0;
+  border-radius:0;
+}
+.tab-loader-card{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  max-width:440px;
+  width:100%;
+  padding:34px 28px;
+  border-radius:20px;
+  background:var(--soft,#0d1522);
+  border:1px solid var(--line,#1e293b);
+  box-shadow:0 20px 40px -15px rgba(0,0,0,0.4),0 0 0 1px rgba(56,189,248,0.08);
+}
+.tab-loader-orb{
+  position:relative;
+  width:72px;
+  height:72px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:20px;
+}
+.tab-loader-ring{
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  border:2.5px solid transparent;
+  border-top-color:#38bdf8;
+  border-right-color:#2dd4bf;
+  animation:tabSpin 1s cubic-bezier(0.5,0,0.5,1) infinite;
+}
+.tab-loader-ring.inner{
+  inset:6px;
+  border:2px solid transparent;
+  border-bottom-color:#0284c7;
+  border-left-color:#38bdf8;
+  animation:tabSpinReverse 1.4s linear infinite;
+}
+.tab-loader-icon{
+  color:#38bdf8;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  filter:drop-shadow(0 0 8px rgba(56,189,248,0.6));
+  animation:tabPulse 2s ease-in-out infinite;
+}
+.tab-loader-badge{
+  display:inline-block;
+  font-size:10px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.8px;
+  color:#38bdf8;
+  background:rgba(56,189,248,0.1);
+  border:1px solid rgba(56,189,248,0.25);
+  padding:3px 10px;
+  border-radius:20px;
+  margin-bottom:12px;
+}
+.tab-loader-title{
+  margin:0 0 6px;
+  font-size:17px;
+  font-weight:700;
+  color:var(--text,#f0f6fc);
+}
+.tab-loader-sub{
+  margin:0 0 20px;
+  font-size:12px;
+  color:var(--muted,#8b949e);
+  line-height:1.45;
+}
+.tab-loader-bar-wrap{
+  width:100%;
+  height:4px;
+  border-radius:4px;
+  background:rgba(255,255,255,0.08);
+  overflow:hidden;
+  position:relative;
+}
+.tab-loader-bar{
+  position:absolute;
+  top:0;
+  left:0;
+  height:100%;
+  width:50%;
+  border-radius:4px;
+  background:linear-gradient(90deg,#0284c7,#38bdf8,#2dd4bf);
+  animation:tabIndeterminate 1.3s infinite ease-in-out;
+}
+@keyframes tabSpin{
+  100%{transform:rotate(360deg)}
+}
+@keyframes tabSpinReverse{
+  100%{transform:rotate(-360deg)}
+}
+@keyframes tabPulse{
+  0%,100%{transform:scale(1);opacity:0.9}
+  50%{transform:scale(1.08);opacity:1}
+}
+@keyframes tabIndeterminate{
+  0%{left:-40%;width:40%}
+  50%{left:20%;width:60%}
+  100%{left:100%;width:40%}
+}
+
+/* ========================================================================== */
+/* SELETOR E MODAL DE ALTERNÂNCIA DE PERFIS (GESTOR, COORD., ATEND., QUAL., DEV)*/
+/* ========================================================================== */
+
+.sidebar-profile-box {
+  padding: 12px 0 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 8px;
+}
+
+.profile-switch-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9px;
+  padding: 8px 10px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.profile-switch-btn:hover {
+  background: rgba(84, 203, 210, 0.12);
+  border-color: rgba(84, 203, 210, 0.35);
+}
+
+.profile-indicator-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.profile-switch-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.profile-switch-eyebrow {
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #8da4b4;
+  line-height: 1.2;
+}
+
+.profile-switch-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #eaf5f7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.profile-switch-arrow {
+  color: #8da4b4;
+  font-size: 13px;
+  opacity: 0.8;
+  margin-left: auto;
+}
+
+/* Modo Compacto da Sidebar (Aba Qualidade) */
+.sidebar.compact .sidebar-profile-box {
+  padding: 10px 0 4px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.sidebar.compact .profile-switch-btn {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+}
+
+.sidebar.compact .profile-switch-btn .profile-indicator-dot {
+  width: 12px;
+  height: 12px;
+}
+
+/* Topbar Pill para alternância rápida */
+.profile-topbar-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile-topbar-pill:hover {
+  border-color: var(--blue);
+  background: color-mix(in srgb, var(--soft) 80%, var(--blue));
+}
+
+.profile-topbar-pill .profile-indicator-dot {
+  width: 8px;
+  height: 8px;
+}
+
+.profile-pill-badge {
+  background: rgba(84, 203, 210, 0.16);
+  color: var(--blue);
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.profile-pill-action {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* Modal de Troca de Perfil */
+.profile-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(5, 15, 23, 0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: pmFadeIn 0.2s ease-out;
+}
+
+@keyframes pmFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.profile-modal-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 920px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: pmScaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes pmScaleUp {
+  from { transform: scale(0.96) translateY(10px); }
+  to { transform: scale(1) translateY(0); }
+}
+
+.profile-modal-header {
+  padding: 22px 26px 18px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.profile-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.profile-modal-close:hover {
+  background: var(--soft);
+  color: var(--ink);
+}
+
+.profile-modal-grid {
+  padding: 20px 26px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 16px;
+  overflow-y: auto;
+  max-height: calc(90vh - 160px);
+}
+
+.profile-choice-card {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.profile-choice-card:hover {
+  border-color: var(--blue);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.profile-choice-card.active {
+  border-color: var(--blue);
+  background: color-mix(in srgb, var(--panel) 92%, var(--blue));
+  box-shadow: 0 0 0 2px rgba(84, 203, 210, 0.35);
+}
+
+.profile-choice-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-choice-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.profile-choice-details {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profile-detail-row {
+  display: flex;
+  font-size: 11px;
+  line-height: 1.4;
+  gap: 6px;
+}
+
+.profile-detail-tag {
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 88px;
+  flex-shrink: 0;
+}
+
+.profile-detail-val {
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.profile-detail-val.highlight {
+  color: var(--blue);
+  font-weight: 550;
+}
+
+.profile-modal-footer {
+  padding: 14px 26px;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+@media (max-width: 760px) {
+  .profile-modal-grid {
+    grid-template-columns: 1fr;
+    padding: 14px;
+  }
+  .profile-modal-header {
+    padding: 16px;
+  }
+  .profile-modal-footer {
+    padding: 12px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

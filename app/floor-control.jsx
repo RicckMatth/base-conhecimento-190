@@ -1,6 +1,5 @@
 'use client';
 import {useCallback,useEffect,useMemo,useState} from 'react';
-import FloorSchedule from './floor-schedule.jsx';
 
 const DESKS=Array.from({length:32},(_,i)=>i+1);
 const CELL_OPTIONS=[
@@ -111,7 +110,6 @@ export default function FloorControl({isAdmin=false}){
     <div className="fc-tabs" role="tablist" aria-label="Seções do painel operacional">
       <button role="tab" aria-selected={tab==='reports'} className={tab==='reports'?'active':''} onClick={()=>setTab('reports')}>Central de reportes</button>
       <button role="tab" aria-selected={tab==='map'} className={tab==='map'?'active':''} onClick={()=>setTab('map')}>Mapa de PAs</button>
-      <button role="tab" aria-selected={tab==='schedules'} className={tab==='schedules'?'active':''} onClick={()=>setTab('schedules')}>◷ Escalas e pausas <span className="fc-tab-new">NOVO</span></button>
       {isAdmin&&<button role="tab" aria-selected={tab==='events'} className={tab==='events'?'active':''} onClick={()=>setTab('events')}>Gestão de eventos {summary.open>0?'('+summary.open+')':''}</button>}
     </div>
     {feedback&&<div role={feedback.type==='error'?'alert':'status'} className={'fc-feedback '+feedback.type}>{feedback.text}<button type="button" onClick={()=>setFeedback(null)} aria-label="Fechar aviso">×</button></div>}
@@ -120,8 +118,7 @@ export default function FloorControl({isAdmin=false}){
       <div className="fc-stat"><span>Chamados de TI abertos</span><strong className="sky">{summary.computador}</strong><small>Inclui em atendimento</small></div>
       <div className="fc-stat"><span>Eventos em aberto</span><strong>{summary.open}</strong><small>Atualiza automaticamente a cada 20s</small></div>
     </div>}
-    {tab==='schedules'&&<FloorSchedule/>}
-    {tab==='reports'&&<>
+    {tab==='reports'&&<div key="reports" className="tab-view-container">
       <div className="fc-forms">
         <article className="fc-panel">
           <div className="fc-panel-head cell"><span className="fc-symbol">◈</span><div><small>COMPLIANCE OPERACIONAL</small><h2>Reportar uso de celular</h2><p>Registre apenas fatos observados, sem nomes ou julgamentos.</p></div></div>
@@ -150,8 +147,8 @@ export default function FloorControl({isAdmin=false}){
         </article>
       </div>
       <div className="fc-info"><b>Fluxo de operação</b><p>Escolha uma PA, selecione a categoria e envie. O servidor gera um protocolo persistente. Supervisores com perfil administrativo podem acompanhar e atualizar o estado do evento. Para uma equipe real, configure previamente a política de acesso e a retenção dos dados.</p></div>
-    </>}
-    {tab==='map'&&<>
+    </div>}
+    {tab==='map'&&<div key="map" className="tab-view-container">
       <div className="fc-map-header"><div><h2>Mapa visual das estações</h2><p>Mapa ilustrativo com 32 posições; a numeração digitada pode ir até PA-999.</p></div><div className="fc-legend"><span><i className="clear"/>Normal / sem estado exposto</span>{isAdmin&&<><span><i className="cell"/>Reporte pendente</span><span><i className="pc"/>Chamado TI</span></>}</div></div>
       <div className="fc-map-grid">{DESKS.map(n=><button key={n} type="button" onClick={()=>chooseDesk(n)}
         aria-pressed={selectedDesk===n} className={'fc-map-desk '+(isAdmin?statusFor(n):'clear')+(selectedDesk===n?' selected':'')}>
@@ -159,8 +156,8 @@ export default function FloorControl({isAdmin=false}){
       <div className="fc-selected"><div><strong>{formatDesk(selectedDesk)} selecionada</strong>
         <p>{isAdmin?(selectedEvents.length?selectedEvents.length+' registro(s) ainda aberto(s) para esta PA.':'Nenhum registro aberto para esta PA.'):'Selecione uma PA para preencher os formulários de reporte.'}</p></div>
         <button type="button" onClick={()=>{chooseDesk(selectedDesk);setTab('reports');}}>Abrir formulário para esta PA</button></div>
-    </>}
-    {isAdmin&&tab==='events'&&<>
+    </div>}
+    {isAdmin&&tab==='events'&&<div key="events" className="tab-view-container">
       <div className="fc-events-toolbar"><div><h2>Central de ocorrências</h2><p>Registros pendentes de verificação. Não representam comprovação de infração.</p>{lastUpdate&&<small>Última consulta: {lastUpdate.toLocaleTimeString('pt-BR')}</small>}</div>
         <div className="fc-toolbar-actions"><select aria-label="Filtrar eventos" value={filter} onChange={e=>setFilter(e.target.value)}><option value="all">Todos</option><option value="celular">Conformidade</option><option value="computador">Suporte TI</option></select>
           <button type="button" onClick={refresh}>Atualizar</button><button type="button" disabled={!filtered.length} onClick={exportCsv}>Exportar CSV</button></div>
@@ -173,7 +170,7 @@ export default function FloorControl({isAdmin=false}){
             {e.status!=='Resolvido'&&<button type="button" disabled={!!updating} onClick={()=>updateStatus(e.id,'Resolvido')}>Concluir após verificação</button>}</div></div>
       </article>):<div className="fc-empty">Nenhum registro encontrado para o filtro selecionado.</div>}</div>
       <p className="fc-disclaimer">Acesso exclusivo do administrador. Os registros contêm alegações ainda não verificadas e precisam de procedimento de tratamento definido pela instituição.</p>
-    </>}
+    </div>}
     <details className="fc-overview"><summary>Sobre o painel e sua integração</summary>
       <p>Este módulo reproduz a proposta do Portal Operacional Indra Minsait dentro do Centro de Inteligência Jurídica 190. O banco de dados é compartilhado com a Base 190, mas os eventos de piso ficam isolados da biblioteca jurídica, das regras de classificação e do Gemini. O mapa é ilustrativo e não indica a planta real nem o estado de ocupação das posições.</p>
     </details>

@@ -1,6 +1,5 @@
 'use client';
 import dynamic from 'next/dynamic';
-const Documentation=dynamic(()=>import('./nexus-documentation.jsx'),{loading:()=> <p role="status">Carregando Nexus Docs…</p>,ssr:false});
 import AnalysisFeedback from './analysis-feedback.jsx';
 import GeminiInsights from './gemini-insights.jsx';
 import LegalReference from './legal-reference.jsx';
@@ -10,6 +9,35 @@ import FloorControl from './floor-control.jsx';
 import Quality from './quality.jsx';
 import { Icon, categoryIcon } from './icons.jsx';
 import { useEffect,useMemo,useRef,useState } from 'react';
+
+function TabLoader({ tabName = 'Módulo 190', subtitle = 'Carregando dados e sincronizando interface…', icon = 'shield' }) {
+  return (
+    <div className="tab-loader-container" role="status" aria-live="polite">
+      <div className="tab-loader-card">
+        <div className="tab-loader-orb">
+          <span className="tab-loader-ring" />
+          <span className="tab-loader-ring inner" />
+          <div className="tab-loader-icon">
+            <Icon name={icon} size={28} />
+          </div>
+        </div>
+        <div className="tab-loader-info">
+          <span className="tab-loader-badge">Base 190 • Conhecimento Operacional</span>
+          <h3 className="tab-loader-title">{tabName}</h3>
+          <p className="tab-loader-sub">{subtitle}</p>
+        </div>
+        <div className="tab-loader-bar-wrap">
+          <div className="tab-loader-bar" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const Documentation=dynamic(()=>import('./nexus-documentation.jsx'),{
+  loading:()=> <TabLoader tabName="Base de Conhecimento" subtitle="Carregando biblioteca institucional, pastas e artigos…" icon="book"/>,
+  ssr:false
+});
 
 async function call(path,options={}) {
   const response=await fetch('/api'+path,{credentials:'same-origin',cache:'no-store',...options,
@@ -26,14 +54,109 @@ const formatDate=(v)=>v?new Date(v).toLocaleString('pt-BR'):'—';
 const Btn=({children,onClick,className='',disabled=false,type='button'})=><button type={type} className={'btn '+className} disabled={disabled} onClick={onClick}>{children}</button>;
 const Tag=({priority})=><span className={'badge '+(priority==='Crítica'?'crit':priority==='Alta'?'high':'')}>{priority||'Média'}</span>;
 
+export const PROFILES=[
+  {
+    id:'dev',
+    name:'Dev',
+    roleTitle:'Desenvolvedor / Administrador de Sistema',
+    badge:'Acesso Irrestrito',
+    color:'#a855f7',
+    icon:'settings',
+    desc:'Acesso pleno irrestrito a todos os módulos, regras semânticas, edição de textos, controle de acessos e auditoria.',
+    centralTabs:['home','docs','catalog','chat','floor','quality'],
+    adminTabs:['editor','access','rules','audit'],
+    canEditDocs:true,
+    canEditCatalog:true,
+    canManageFloorEvents:true,
+    isQualitySupervisor:true,
+    accessLabel:'Dev (Admin)'
+  },
+  {
+    id:'coordinator',
+    name:'Coordenador',
+    roleTitle:'Coordenação Operacional COPOM',
+    badge:'Coordenação',
+    color:'#38bdf8',
+    icon:'shield',
+    desc:'Supervisão geral, aprovação de novos operadores, edição de procedimentos operacionais e auditoria de ações.',
+    centralTabs:['home','docs','catalog','chat','floor','quality'],
+    adminTabs:['editor','access','audit'],
+    canEditDocs:true,
+    canEditCatalog:true,
+    canManageFloorEvents:true,
+    isQualitySupervisor:true,
+    accessLabel:'Coordenador'
+  },
+  {
+    id:'manager',
+    name:'Gestor',
+    roleTitle:'Gestor / Supervisor de Piso',
+    badge:'Gestor de Piso',
+    color:'#34d399',
+    icon:'users',
+    desc:'Gestão de piso e eventos de PAs, resolução de chamados técnicos de TI, acompanhamento de monitorias e auditoria.',
+    centralTabs:['home','docs','catalog','chat','floor','quality'],
+    adminTabs:['audit'],
+    canEditDocs:false,
+    canEditCatalog:false,
+    canManageFloorEvents:true,
+    isQualitySupervisor:true,
+    accessLabel:'Gestor de Piso'
+  },
+  {
+    id:'quality_analyst',
+    name:'Analista de Qualidade',
+    roleTitle:'Analista de Monitoria & Qualidade POP',
+    badge:'Analista Qualidade',
+    color:'#fbbf24',
+    icon:'audit',
+    desc:'Avaliação técnica de atendimentos, cadastramento de novas monitorias, agendamento de feedbacks e acompanhamento pedagógico.',
+    centralTabs:['quality','home','docs','catalog','chat','floor'],
+    adminTabs:['audit'],
+    canEditDocs:false,
+    canEditCatalog:false,
+    canManageFloorEvents:false,
+    isQualitySupervisor:true,
+    accessLabel:'Analista de Qualidade'
+  },
+  {
+    id:'attendant',
+    name:'Atendente',
+    roleTitle:'Operador de Atendimento 190',
+    badge:'Atendente Operacional',
+    color:'#22d3ee',
+    icon:'brain',
+    desc:'Atendimento de chamadas com Chat 190 (triagem SADE), consulta de naturezas e manuais, e confirmação de ciência de suas monitorias.',
+    centralTabs:['home','chat','catalog','docs','floor','quality'],
+    adminTabs:[],
+    canEditDocs:false,
+    canEditCatalog:false,
+    canManageFloorEvents:false,
+    isQualitySupervisor:false,
+    accessLabel:'Atendente'
+  }
+];
+
 export default function Home(){
   const [loadingPhase,setLoadingPhase]=useState('session');
   const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
   const [user,setUser]=useState(null),[dark,setDark]=useState(false);
+  const [activeProfileId,setActiveProfileId]=useState('dev');
+  const [profileModalOpen,setProfileModalOpen]=useState(false);
+  const activeProfileConfig=useMemo(()=>PROFILES.find(p=>p.id===activeProfileId)||PROFILES[0],[activeProfileId]);
   const [notice,setNotice]=useState(''),[success,setSuccess]=useState('');
   const [catalogIssue,setCatalogIssue]=useState(''),[catalogDegraded,setCatalogDegraded]=useState(false),[catalogRefreshing,setCatalogRefreshing]=useState(false);
   const [docsOpened,setDocsOpened]=useState(false);
   const [screen,setScreen]=useState('home'),[requestMode,setRequestMode]=useState(false);
+  const [tabLoading,setTabLoading]=useState(false);
+  const [loadingTabKey,setLoadingTabKey]=useState('');
+  const [chatFrameLoading,setChatFrameLoading]=useState(true);
+  const loadingTimerRef=useRef(null);
+  useEffect(()=>{
+    return ()=>{
+      if(loadingTimerRef.current)clearTimeout(loadingTimerRef.current);
+    };
+  },[]);
   const [login,setLogin]=useState({username:'',password:''});
   const [passwordForm,setPasswordForm]=useState({current:'',next:'',confirm:''});
   const [request,setRequest]=useState({username:'',name:'',reason:''});
@@ -79,6 +202,10 @@ export default function Home(){
     const stored=localStorage.getItem('base190_theme');
     const preferDark=stored==='dark';
     document.documentElement.dataset.theme=preferDark?'dark':'light';setDark(preferDark);
+    try{
+      const storedProfile=localStorage.getItem('base190_active_profile');
+      if(storedProfile&&PROFILES.some(p=>p.id===storedProfile))setActiveProfileId(storedProfile);
+    }catch{}
     let live=true;
     (async()=>{try{
       const a=await call('/session');
@@ -131,19 +258,77 @@ export default function Home(){
     setBusy(true);try{await call('/auth/logout',{method:'POST',body:'{}'});}catch(e){err(e);}
     setDocsOpened(false);setUser(null);setScreen('home');setEntries([]);setBrainRules({base:[],extras:[],custom:[]});setBusy(false);setCredential(null);
   }
+  useEffect(()=>{
+    if(!profileModalOpen)return;
+    const onKey=(e)=>{if(e.key==='Escape')setProfileModalOpen(false);};
+    window.addEventListener('keydown',onKey);
+    return ()=>window.removeEventListener('keydown',onKey);
+  },[profileModalOpen]);
+
+  function switchProfile(targetId){
+    const target=PROFILES.find(p=>p.id===targetId);
+    if(!target)return;
+    setActiveProfileId(targetId);
+    try{localStorage.setItem('base190_active_profile',targetId);}catch{}
+    setProfileModalOpen(false);
+    ok(`Perfil ativo alterado para ${target.name}. Limites operacionais aplicados.`);
+    const allowed=[...target.centralTabs,...target.adminTabs];
+    if(!allowed.includes(screen)){
+      go(target.centralTabs[0]||'home');
+    }
+  }
+
   async function go(next){
     if(!window.dispatchEvent(new Event('base190:before-navigation',{cancelable:true})))return;
     if(next==='brain')next='chat';
+    const allowed=[...activeProfileConfig.centralTabs,...activeProfileConfig.adminTabs];
+    if(!allowed.includes(next)){
+      setNotice(`Acesso restrito: a aba solicitada não está disponível para o perfil ${activeProfileConfig.name}.`);
+      next=activeProfileConfig.centralTabs[0]||'home';
+    }
     if(next==='docs')setDocsOpened(true);
-    clear();setScreen(next);setCredential(null);
-    if(next==='access'){try{await refreshAdmin();}catch(e){err(e);}}
-    if(next==='audit'){try{const x=await call('/admin/audit');setEvents(x.events);}catch(e){err(e);}}
-    if(next==='rules'){try{const x=await call('/rules');setBrainRules(x);}catch(e){err(e);}}
+    if(next==='chat')setChatFrameLoading(true);
+    clear();
+    setScreen(next);
+    setCredential(null);
+
+    setTabLoading(true);
+    setLoadingTabKey(next);
+
+    try{
+      if(next==='access'){await refreshAdmin();}
+      else if(next==='audit'){const x=await call('/admin/audit');setEvents(x.events||[]);}
+      else if(next==='rules'){const x=await call('/rules');setBrainRules(x||{});}
+    }catch(e){
+      err(e);
+    }finally{
+      if(typeof globalThis!=='undefined'&&globalThis.window){
+        if(loadingTimerRef.current)clearTimeout(loadingTimerRef.current);
+        loadingTimerRef.current=setTimeout(()=>{
+          try{
+            if(typeof globalThis!=='undefined'&&globalThis.window){
+              setTabLoading(false);
+            }
+          }catch{}
+        },150);
+      }else{
+        setTabLoading(false);
+      }
+    }
   }
   async function analyze(e){
     e?.preventDefault?.();clear();const text=relato.trim();if(text.length<3)return err(new Error('Informe o relato ou a dúvida para análise.'));
-    setRelato('');setPendingSadeReport(text);setScreen('chat');
+    setRelato('');setPendingSadeReport(text);go('chat');
   }
+  useEffect(() => {
+    if (screen === 'chat' && pendingSadeReport && !chatFrameLoading) {
+      const iframe = document.querySelector('.sade-embed-frame');
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage({ type: 'base190:sade-report', text: pendingSadeReport }, '*');
+        setPendingSadeReport('');
+      }
+    }
+  }, [screen, pendingSadeReport, chatFrameLoading]);
   function openEntry(id){setSelectedId(id);go('detail');}
   const selected=entries.find(e=>e.id===selectedId);
   const categories=useMemo(()=>['Todas',...new Set(entries.map(e=>e.category))], [entries]);
@@ -199,7 +384,7 @@ export default function Home(){
     clear();try{await call('/admin/rules',{method:'DELETE',body:body({id})});setBrainRules(await call('/rules'));ok('Regra excluída.');}
     catch(e){err(e);}
   }
-  function entryGrid(items){return <div className="cards">{items.map(a=><button key={a.id} className="record-card" onClick={()=>openEntry(a.id)}>
+  function entryGrid(items){return <div className="cards">{items.map((a,i)=><button key={a.id||a.code||i} className="record-card" onClick={()=>openEntry(a.id)}>
     <div className="toolbar"><span className="badge">{a.code}</span><Tag priority={a.priority}/></div>
     <div className="record-symbol"><Icon name={categoryIcon(a.category)} size={23}/><span>{a.category}</span></div><h3>{a.title}</h3><p>{a.summary}</p>
     <div className="end"><small>{a.category}</small><b style={{color:'var(--blue)'}}>Consultar <Icon name="arrow" size={15}/></b></div>
@@ -299,85 +484,129 @@ export default function Home(){
 
   const links=[['home','Visão geral','home'],['docs','Base de conhecimento','book'],['catalog','Catálogo','book'],['chat','Chat 190','brain'],['floor','Gestão de piso','shield'],['quality','Qualidade','audit']];
   const adminLinks=[['editor','Editar textos','edit'],['access','Autorizar acessos','users'],['rules','Regras do assistente','settings'],['audit','Auditoria','audit']];
-  return <div className="shell">
-    <aside className="sidebar">
-      <div className="logo"><div className="logoicon">190</div><div><strong>Base 190</strong><small>CONHECIMENTO OPERACIONAL</small></div></div>
+  const isImmersiveScreen = screen === 'quality' || screen === 'chat';
+  const isQualityScreen = isImmersiveScreen;
+  const visibleLinks=links.filter(([id])=>activeProfileConfig.centralTabs.includes(id));
+  const visibleAdminLinks=adminLinks.filter(([id])=>activeProfileConfig.adminTabs.includes(id));
+  return <div className={'shell'+(isImmersiveScreen?' quality-mode immersive-mode':'')}>
+    {tabLoading && <div className="tab-top-progress-bar"><div className="tab-top-progress-bar-fill"/></div>}
+    <aside className={'sidebar'+(isImmersiveScreen?' compact':'')} aria-label="Navegação principal">
+      <div className="logo"><div className="logoicon" title="Base 190">190</div><div className="logo-text"><strong>Base 190</strong><small>CONHECIMENTO OPERACIONAL</small></div></div>
       <span className="nav-caption">CENTRAL</span>
-      {links.map(([id,label,icon])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>go(id)} aria-current={screen===id?'page':undefined}><Icon name={icon}/>{label}</button>)}
-      {isAdmin&&<><span className="nav-caption">ADMINISTRAÇÃO</span>{adminLinks.map(([id,label,icon])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>id==='editor'?editEntry(null):go(id)} aria-current={screen===id?'page':undefined}><Icon name={icon}/>{label}</button>)}</>}
-      <div className="sidebar-bottom"><p className="who">{user.name}<br/><small>{user.username} • {isAdmin?'Admin':'Consulta'}</small></p><button className="nav-btn" onClick={logout} disabled={busy}><Icon name="logout"/> Sair</button></div>
+      {visibleLinks.map(([id,label,icon])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>go(id)} aria-current={screen===id?'page':undefined} title={label}><Icon name={icon}/><span className="nav-label">{label}</span></button>)}
+      {visibleAdminLinks.length>0&&<><span className="nav-caption">ADMINISTRAÇÃO</span>{visibleAdminLinks.map(([id,label,icon])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>id==='editor'?editEntry(null):go(id)} aria-current={screen===id?'page':undefined} title={label}><Icon name={icon}/><span className="nav-label">{label}</span></button>)}</>}
+      <div className="sidebar-profile-box">
+        <button
+          type="button"
+          className="nav-btn profile-switch-btn"
+          onClick={()=>setProfileModalOpen(true)}
+          title={`Perfil ativo: ${activeProfileConfig.name}. Clique para alternar.`}
+          aria-haspopup="dialog"
+        >
+          <span className="profile-indicator-dot" style={{backgroundColor:activeProfileConfig.color}}/>
+          <span className="nav-label profile-switch-info">
+            <small className="profile-switch-eyebrow">Perfil ativo</small>
+            <strong className="profile-switch-title">{activeProfileConfig.name}</strong>
+          </span>
+          <span className="nav-label profile-switch-arrow" aria-hidden="true">⇄</span>
+        </button>
+      </div>
+      <div className="sidebar-bottom">
+        <button className="nav-btn theme-toggle-btn" onClick={theme} title={dark?'Tema Claro':'Tema Escuro'}>
+          <Icon name={dark?'sun':'moon'} size={18}/>
+          <span className="nav-label">{dark?'Modo Claro':'Modo Escuro'}</span>
+        </button>
+        <p className="who">{user.name}<br/><small>{user.username} • {activeProfileConfig.accessLabel}</small></p>
+        <button className="nav-btn" onClick={logout} disabled={busy} title="Encerrar sessão"><Icon name="logout"/><span className="nav-label">Sair</span></button>
+      </div>
     </aside>
     <div className="main">
-      <header className="topbar"><div><b>{screen==='docs'?'Base de conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='chat'?'Chat 190':screen==='floor'?'Gestão de piso':screen==='quality'?'Qualidade 190':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
-        <div className="btn-row"><Btn className="ghost tiny" onClick={()=>go('chat')}>Abrir chat 190</Btn><span className="badge">{isAdmin?'Administrador':'Usuário de consulta'}</span><Btn className="ghost tiny" onClick={theme}><Icon name={dark?'sun':'moon'} size={17}/>{dark?'Claro':'Escuro'}</Btn></div>
-      </header>
-      <main className="content spaced">
+      {!isImmersiveScreen&&<header className="topbar"><div><b>{screen==='docs'?'Base de conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='chat'?'Chat 190':screen==='floor'?'Gestão de piso':screen==='quality'?'Qualidade 190':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='access'?'Controle de acesso':screen==='rules'?'Matriz de regras':'Auditoria'}</b><p className="muted">Base de Conhecimento • Ambiente autenticado</p></div>
+        <div className="btn-row">
+          <button
+            type="button"
+            className="profile-topbar-pill"
+            onClick={()=>setProfileModalOpen(true)}
+            title={`Perfil ativo: ${activeProfileConfig.name}. Clique para alternar perfil.`}
+          >
+            <span className="profile-indicator-dot" style={{backgroundColor:activeProfileConfig.color}}/>
+            <span>Perfil: <strong>{activeProfileConfig.name}</strong></span>
+            <span className="profile-pill-badge">{activeProfileConfig.badge}</span>
+            <span className="profile-pill-action">Alternar ⇄</span>
+          </button>
+          <Btn className="ghost tiny" onClick={()=>go('chat')}>Abrir chat 190</Btn>
+          <Btn className="ghost tiny" onClick={theme}><Icon name={dark?'sun':'moon'} size={17}/>{dark?'Claro':'Escuro'}</Btn>
+        </div>
+      </header>}
+      <main className={'content'+(isImmersiveScreen?' quality-content-mode immersive-content-mode':' spaced')}>
         {notice&&<div className="notice" role="alert">{notice}</div>}{success&&<div className="notice success" role="status">{success}</div>}
         {catalogIssue&&<div className="notice" role="alert" style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
           <span>{catalogIssue}{catalogDegraded?' Consulta em modo de contingência: não é confirmação de que as alterações do banco estejam sincronizadas.':''}</span>
           <Btn className="secondary tiny" disabled={catalogRefreshing} onClick={()=>{refreshCatalog().catch(err);}}>{catalogRefreshing?'Verificando…':'Tentar novamente'}</Btn>
         </div>}
 
-        {screen==='home'&&<>
+        {screen==='home'&&<div key="home" className="tab-view-container">
           <section className="hero"><div className="hero-orbit" aria-hidden="true"><Icon name="shield" size={114}/></div><span className="eyebrow">CHAT 190 • ASSISTENTE UNIFICADO</span><h1>Clareza para cada atendimento.</h1>
             <p>Descreva uma ocorrência ou faça uma pergunta sobre uma natureza. O Chat 190 consulta o catálogo, explica quando usar cada ficha e sinaliza o que precisa ser confirmado.</p>
             <form className="search-row" onSubmit={analyze}><input value={relato} onChange={e=>setRelato(e.target.value)} aria-label="Relato ou dúvida para análise" placeholder="Ex.: quando usar a natureza de roubo?"/><Btn type="submit" disabled={busy}>Consultar no Chat 190 →</Btn></form>
           </section>
           <div className="grid3"><div className="card stat"><small><Icon name="book"/> Fichas no catálogo</small><strong>{catalogIssue&&!entries.length?'—':entries.length}</strong><span className="badge">{catalogDegraded?'Contingência · somente leitura':'Conhecimento'}</span></div>
             <div className="card stat"><small><Icon name="brain"/> Regras de classificação</small><strong>{catalogIssue&&!totalRules?'—':totalRules}</strong><span className="badge">{catalogDegraded?'Regras locais':'Chat 190'}</span></div>
-            <div className="card stat"><small><Icon name="shield"/> Nível de acesso</small><strong style={{fontSize:21}}>{isAdmin?'Administrador':'Consulta'}</strong><span className="badge">Sessão autenticada</span></div></div>
+            <div className="card stat"><small><Icon name="shield"/> Nível de acesso</small><strong style={{fontSize:21}}>{activeProfileConfig.name}</strong><span className="badge">{activeProfileConfig.badge}</span></div></div>
           <section className="domain-section"><div className="panel-head"><div><span className="eyebrow">CONSULTA POR ÁREA</span><h2>Encontre o contexto do atendimento</h2></div><span className="badge">{categories.length-1} áreas</span></div><div className="domain-grid">{categories.filter(c=>c!=='Todas').map(c=><button className="domain-card" key={c} onClick={()=>{setCat(c);setSearch('');setPriorityFilter('Todas');go('catalog');}}><Icon name={categoryIcon(c)} size={24}/><b>{c}</b><small>{entries.filter(e=>e.category===c).length} fichas</small><Icon name="arrow" size={16}/></button>)}</div></section>
           <section><div className="panel-head"><div><h2>Naturezas em destaque</h2><p className="muted">Consulte fichas e orientações existentes</p></div><Btn className="secondary" onClick={()=>go('catalog')}>Ver catálogo →</Btn></div>{entryGrid(entries.slice(0,6))}</section>
           <div className="helpnote">Os exemplos da base não constituem códigos ou protocolos oficiais homologados. É proibido utilizar a ferramenta para inserir dados sigilosos sem autorização institucional.</div>
-        </>}
+        </div>}
 
-        {docsOpened&&<div hidden={screen!=='docs'}><Documentation onExit={()=>go('home')} isAdmin={isAdmin} active={screen==='docs'}/></div>}
-        {screen==='floor'&&<FloorControl isAdmin={isAdmin}/>}
-        {screen==='quality'&&<Quality user={user}/>}
-        {screen==='catalog'&&<>
-          <div className="panel-head"><div><span className="eyebrow">BIBLIOTECA OPERACIONAL</span><h1>Catálogo de naturezas</h1><p className="muted">Busque por título, código, resumo, conteúdo ou palavra-chave.</p></div>{isAdmin&&<Btn onClick={()=>editEntry(null)}><Icon name="plus" size={18}/> Nova ficha</Btn>}</div>
+        {docsOpened&&<div key="docs" hidden={screen!=='docs'} className="tab-view-container"><Documentation onExit={()=>go('home')} isAdmin={activeProfileConfig.canEditDocs} active={screen==='docs'}/></div>}
+        {screen==='floor'&&<div key="floor" className="tab-view-container"><FloorControl isAdmin={activeProfileConfig.canManageFloorEvents}/></div>}
+        {screen==='quality'&&<div key="quality" className="tab-view-container" style={{height:'100%'}}><Quality user={{...user,role:activeProfileConfig.adminTabs.length>0?'admin':'user',operationalRole:activeProfileConfig.id,profileName:activeProfileConfig.name}} activeProfile={activeProfileConfig.id} dark={dark} toggleTheme={theme}/></div>}
+        {screen==='catalog'&&<div key="catalog" className="tab-view-container">
+          <div className="panel-head"><div><span className="eyebrow">BIBLIOTECA OPERACIONAL</span><h1>Catálogo de naturezas</h1><p className="muted">Busque por título, código, resumo, conteúdo ou palavra-chave.</p></div>{activeProfileConfig.canEditCatalog&&<Btn onClick={()=>editEntry(null)}><Icon name="plus" size={18}/> Nova ficha</Btn>}</div>
           <div className="card catalog-filters"><div><label htmlFor="search">Pesquisa</label><input id="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Código, natureza, palavra-chave…"/></div><div><label htmlFor="category">Categoria</label><select id="category" value={cat} onChange={e=>setCat(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</select></div><div><label htmlFor="priority-filter">Prioridade sugerida</label><select id="priority-filter" value={priorityFilter} onChange={e=>setPriorityFilter(e.target.value)}>{['Todas','Crítica','Alta','Média','Consulta'].map(v=><option key={v}>{v}</option>)}</select></div></div>
           <p className="catalog-note"><Icon name="shield" size={16}/> Relação COPOM corrigida: 769 naturezas importadas do CSV recebido. IDs NAT são códigos internos desta plataforma; as descrições foram acrescentadas para consulta e dependem de validação institucional.</p><div className="toolbar"><p className="muted">{filtered.length} resultado(s)</p><Btn className="ghost tiny" onClick={()=>{setSearch('');setCat('Todas');setPriorityFilter('Todas');}}>Limpar filtros</Btn></div>
           {filtered.length?<>{entryGrid(filtered.slice(0,catalogLimit))}{filtered.length>catalogLimit&&<div className="toolbar" style={{justifyContent:'center',padding:'18px 0'}}><Btn className="secondary" onClick={()=>setCatalogLimit(v=>v+60)}>Ver mais naturezas ({Math.min(filtered.length-catalogLimit,60)} próximas)</Btn></div>}</>:<div className="card empty-state"><Icon name="search" size={36}/><h2>Nenhuma ficha encontrada</h2><p className="muted">Tente outro termo ou remova os filtros de categoria e prioridade.</p></div>}
-        </>}
+        </div>}
 
-        {screen==='detail'&&selected&&<section className="card spaced">
-          <div className="toolbar"><Btn className="secondary tiny" onClick={()=>go('catalog')}>← Voltar</Btn>{isAdmin&&<Btn onClick={()=>editEntry(selected)}><Icon name="edit" size={17}/> Editar ficha</Btn>}</div>
+        {screen==='detail'&&selected&&<div key="detail" className="tab-view-container"><section className="card spaced">
+          <div className="toolbar"><Btn className="secondary tiny" onClick={()=>go('catalog')}>← Voltar</Btn>{activeProfileConfig.canEditCatalog&&<Btn onClick={()=>editEntry(selected)}><Icon name="edit" size={17}/> Editar ficha</Btn>}</div>
           <div><div className="btn-row"><span className="badge">{selected.code}</span><Tag priority={selected.priority}/><span className="muted">{selected.category}</span></div><h1 style={{marginTop:12}}>{selected.title}</h1></div>
           <p className="muted">{selected.summary}</p><LegalReference legal={selected.legal}/>{!!selected.triageQuestions?.length&&<details className="triage-panel"><summary>Roteiro completo de triagem ({selected.triageQuestions.length} perguntas)</summary><ul>{selected.triageQuestions.map(q=><li key={q}>{q}</li>)}</ul><small>Na análise de um relato, as perguntas já respondidas são ocultadas automaticamente.</small></details>}<div className="divider"/><pre className="record-detail">{selected.body}</pre>
           <div className="btn-row">{(selected.tags||[]).map(t=><span key={t} className="badge">#{t}</span>)}</div>
           <small>Revisão {selected.revision} • Atualizado em {formatDate(selected.updated_at)} • Validar legislação, código e procedimento antes do uso.</small>
-        </section>}
+        </section></div>}
 
-        {screen==='chat'&&<section className="sade-workspace" aria-label="Chat 190 — Inteligência Tática SADE">
+        {screen==='chat'&&<section className="sade-workspace sade-fullscreen" aria-label="Chat 190 — Inteligência Tática SADE">
           <div className="sade-integrated-notice">
             <Icon name="shield" size={16}/>
             <span>Motor SADE integrado • Triagem local, sem envio a serviços de IA. Utilize somente relatos fictícios ou anonimizados e confirme as sugestões pelo protocolo institucional.</span>
           </div>
+          {chatFrameLoading&&<TabLoader tabName="Chat 190 • Inteligência Tática SADE" subtitle="Inicializando motor de triagem local e catálogo de 769 naturezas…" icon="brain"/>}
           <iframe
-            className="sade-embed-frame"
+            className={`sade-embed-frame ${chatFrameLoading?'loading':'ready'}`}
             src="/copom-sade-190.html"
             title="Chat 190 — Assistente de Triagem Inteligente SADE"
             sandbox="allow-scripts allow-forms"
             allow="clipboard-write"
             referrerPolicy="no-referrer"
             onLoad={(event)=>{
+              setChatFrameLoading(false);
               if(!pendingSadeReport)return;
               event.currentTarget.contentWindow?.postMessage({type:'base190:sade-report',text:pendingSadeReport},'*');
               setPendingSadeReport('');
             }}
           />
         </section>}
-        {screen==='brain'&&<>{busy&&<div className="analysis-loading" role="status" aria-live="polite"><span className="analysis-spinner"/><div><strong>Analisando o relato…</strong><p>Reconhecendo fatos, papéis e naturezas diretamente pelo catálogo local. Nenhuma chamada ao Gemini.</p></div></div>}<div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Motor SADE offline com reconhecimento de papéis, negações, armas e sugestões do catálogo. Gemini é opcional e exclusivo para aprimorar o texto.</p></div><span className="badge">{totalRules} regras</span></div>
+        {screen==='brain'&&<div key="brain" className="tab-view-container">{busy&&<div className="analysis-loading" role="status" aria-live="polite"><span className="analysis-spinner"/><div><strong>Analisando o relato…</strong><p>Reconhecendo fatos, papéis e naturezas diretamente pelo catálogo local. Nenhuma chamada ao Gemini.</p></div></div>}<div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Motor SADE offline com reconhecimento de papéis, negações, armas e sugestões do catálogo. Gemini é opcional e exclusivo para aprimorar o texto.</p></div><span className="badge">{totalRules} regras</span></div>
           <form className="card spaced" onSubmit={analyze}><div><label htmlFor="brain-input">Relato de teste (sem dados pessoais)</label><textarea id="brain-input" rows={5} value={relato} onChange={e=>setRelato(e.target.value)} placeholder="Descreva o fato observado ou relatado, sem nomes e endereços…"/></div>
             <div className="btn-row"><Btn type="submit" disabled={busy}><Icon name="brain" size={18}/>{busy?'Analisando…':'Analisar relato'}</Btn><Btn className="secondary" onClick={()=>{setRelato('');setAnalysis(null);}}>Limpar</Btn></div></form>
           {resultView()}
           <div className="card"><h3>Exemplos fictícios para teste</h3><div className="btn-row" style={{marginTop:12}}>
             {['Uma mulher está sendo agredida pelo ex-companheiro.','Duas pessoas anunciaram assalto com uma pistola e levaram o celular.','Um indivíduo enviou um falso comprovante de PIX para aplicar um golpe.','Há fumaça e chamas saindo de um apartamento.'].map((t,i)=><Btn className="secondary tiny" key={i} onClick={()=>{setRelato(t);setAnalysis(null);}}>{'Cenário '+(i+1)}</Btn>)}
           </div></div>
-        </>}
+        </div>}
 
-        {isAdmin&&screen==='editor'&&<>
+        {activeProfileConfig.adminTabs.includes('editor')&&screen==='editor'&&<div key="editor" className="tab-view-container">
           <div className="panel-head"><div><span className="eyebrow">ÁREA RESTRITA</span><h1>{editor.id?'Editar ficha':'Publicar nova ficha'}</h1><p className="muted">Somente o administrador principal pode publicar ou alterar conteúdo.</p></div><Btn className="secondary" onClick={()=>go('catalog')}>Ir ao catálogo</Btn></div>
           <div className="card"><label htmlFor="choose-entry">Editar uma ficha já cadastrada</label><select id="choose-entry" value={editor.id||''} onChange={e=>{const item=entries.find(x=>x.id===e.target.value);setEditor(item?{...item}:emptyEntry());setRevisionHistory([]);}}>
             <option value="">— Criar ficha nova —</option>{entries.map(a=><option value={a.id} key={a.id}>{a.code} · {a.title}</option>)}</select></div>
@@ -390,55 +619,154 @@ export default function Home(){
             <div className="btn-row"><Btn type="submit" disabled={busy}>{busy?'Salvando…':'Salvar publicação'}</Btn>{editor.id&&<Btn className="secondary" onClick={loadHistory}>Ver histórico de revisões</Btn>}</div>
           </form>
           {!!revisionHistory.length&&<div className="card"><h3>Versões anteriores (somente leitura)</h3><div className="stack" style={{marginTop:12}}>{revisionHistory.map((x,i)=><details key={i}><summary>Revisão {x.revision} • {formatDate(x.created_at)}</summary><pre className="record-detail">{x.snapshot.body}</pre></details>)}</div></div>}
-        </>}
+        </div>}
 
-        {isAdmin&&screen==='access'&&<>
-          <div><span className="eyebrow">CONTROLE EXCLUSIVO DE ACESSOS</span><h1>Solicitações e usuários</h1><p className="muted">Aprovação cria somente usuários simples. A conta principal não pode ser rebaixada ou desativada por esta interface.</p></div>
-          {credential&&<div className="card spaced" style={{borderColor:'var(--blue)'}}>
-            <h3>Credencial provisória — exibição única</h3><p>Usuário: <b>{credential.user}</b></p><div className="secret">{credential.pass}</div>
-            <div className="btn-row"><Btn onClick={()=>navigator.clipboard?.writeText(credential.user+'\n'+credential.pass)}>Copiar credencial</Btn><Btn className="secondary" onClick={()=>setCredential(null)}>Ocultar senha</Btn></div>
-            <div className="helpnote">Entregue essa credencial ao usuário por canal seguro. Ela não será exibida novamente. Solicite a troca de senha por procedimento administrativo.</div>
-          </div>}
-          <div className="card"><div className="panel-head"><h2>Solicitações de acesso</h2><span className="badge">{adminRequests.filter(x=>x.status==='pending').length} pendente(s)</span></div>
-            <div className="table-scroll"><table><thead><tr><th>Solicitante</th><th>Justificativa</th><th>Data / Situação</th><th>Decisão</th></tr></thead><tbody>
-              {adminRequests.map(x=><tr key={x.id}><td><b>{x.display_name}</b><br/><small>{x.username}</small></td><td>{x.reason||'—'}</td><td><small>{formatDate(x.created_at)}</small><br/><span className="badge">{x.status}</span></td><td>{x.status==='pending'?<div className="btn-row"><Btn className="tiny" disabled={busy} onClick={()=>manageRequest(x.id,'approve')}>Aprovar</Btn><Btn className="secondary tiny" disabled={busy} onClick={()=>manageRequest(x.id,'reject')}>Recusar</Btn></div>:'Resolvida'}</td></tr>)}
-            </tbody></table></div>
-            {!adminRequests.length&&<p className="muted">Nenhuma solicitação até o momento.</p>}
-          </div>
-          <div className="card"><div className="panel-head"><h2>Contas autorizadas</h2><span className="badge">{adminUsers.length} contas</span></div>
-            <div className="table-scroll"><table><thead><tr><th>Usuário</th><th>Perfil</th><th>Estado</th><th>Ações</th></tr></thead><tbody>
-              {adminUsers.map(x=><tr key={x.id}><td><b>{x.display_name}</b><br/><small>{x.username}</small></td><td>{x.role==='admin'?'Administrador principal':'Consulta'}</td><td><span className="badge">{x.active?'Ativo':'Bloqueado'}</span></td><td>{x.role==='admin'?'Conta protegida':<div className="btn-row">
-                <Btn className="secondary tiny" disabled={busy} onClick={()=>setAccount(x.id,!x.active)}>{x.active?'Bloquear':'Reativar'}</Btn>
-                <Btn className="ghost tiny" disabled={busy} onClick={()=>resetPassword(x.id,x.username)}>Redefinir senha</Btn>
-              </div>}</td></tr>)}
-            </tbody></table></div>
-          </div>
-        </>}
+        {activeProfileConfig.adminTabs.includes('access')&&screen==='access'&&<div key="access" className="tab-view-container">
+          {tabLoading ? (
+            <TabLoader tabName="Autorização de Acessos" subtitle="Consultando solicitações de operadores e credenciais…" icon="users"/>
+          ) : (
+            <>
+              <div><span className="eyebrow">CONTROLE EXCLUSIVO DE ACESSOS</span><h1>Solicitações e usuários</h1><p className="muted">Aprovação cria somente usuários simples. A conta principal não pode ser rebaixada ou desativada por esta interface.</p></div>
+              {credential&&<div className="card spaced" style={{borderColor:'var(--blue)'}}>
+                <h3>Credencial provisória — exibição única</h3><p>Usuário: <b>{credential.user}</b></p><div className="secret">{credential.pass}</div>
+                <div className="btn-row"><Btn onClick={()=>navigator.clipboard?.writeText(credential.user+'\n'+credential.pass)}>Copiar credencial</Btn><Btn className="secondary" onClick={()=>setCredential(null)}>Ocultar senha</Btn></div>
+                <div className="helpnote">Entregue essa credencial ao usuário por canal seguro. Ela não será exibida novamente. Solicite a troca de senha por procedimento administrativo.</div>
+              </div>}
+              <div className="card"><div className="panel-head"><h2>Solicitações de acesso</h2><span className="badge">{adminRequests.filter(x=>x.status==='pending').length} pendente(s)</span></div>
+                <div className="table-scroll"><table><thead><tr><th>Solicitante</th><th>Justificativa</th><th>Data / Situação</th><th>Decisão</th></tr></thead><tbody>
+                  {adminRequests.map(x=><tr key={x.id}><td><b>{x.display_name}</b><br/><small>{x.username}</small></td><td>{x.reason||'—'}</td><td><small>{formatDate(x.created_at)}</small><br/><span className="badge">{x.status}</span></td><td>{x.status==='pending'?<div className="btn-row"><Btn className="tiny" disabled={busy} onClick={()=>manageRequest(x.id,'approve')}>Aprovar</Btn><Btn className="secondary tiny" disabled={busy} onClick={()=>manageRequest(x.id,'reject')}>Recusar</Btn></div>:'Resolvida'}</td></tr>)}
+                </tbody></table></div>
+                {!adminRequests.length&&<p className="muted">Nenhuma solicitação até o momento.</p>}
+              </div>
+              <div className="card"><div className="panel-head"><h2>Contas autorizadas</h2><span className="badge">{adminUsers.length} contas</span></div>
+                <div className="table-scroll"><table><thead><tr><th>Usuário</th><th>Perfil</th><th>Estado</th><th>Ações</th></tr></thead><tbody>
+                  {adminUsers.map(x=><tr key={x.id}><td><b>{x.display_name}</b><br/><small>{x.username}</small></td><td>{x.role==='admin'?'Administrador principal':'Consulta'}</td><td><span className="badge">{x.active?'Ativo':'Bloqueado'}</span></td><td>{x.role==='admin'?'Conta protegida':<div className="btn-row">
+                    <Btn className="secondary tiny" disabled={busy} onClick={()=>setAccount(x.id,!x.active)}>{x.active?'Bloquear':'Reativar'}</Btn>
+                    <Btn className="ghost tiny" disabled={busy} onClick={()=>resetPassword(x.id,x.username)}>Redefinir senha</Btn>
+                  </div>}</td></tr>)}
+                </tbody></table></div>
+              </div>
+            </>
+          )}
+        </div>}
 
-        {isAdmin&&screen==='rules'&&<>
-          <div><span className="eyebrow">MATRIZ SEMÂNTICA</span><h1>Naturezas e regras do assistente</h1><p className="muted">Catálogo de 769 naturezas importadas do CSV. As fichas servem de consulta; o Chat 190 usa correspondências suficientemente claras e respostas programadas. Regras personalizadas continuam sob controle administrativo.</p></div>
-          <form className="card spaced" onSubmit={createRule}>
-            <h2>Adicionar natureza personalizada</h2>
-            <div className="grid2"><div><label>Código da regra</label><input required value={ruleDraft.code} onChange={e=>setRuleDraft({...ruleDraft,code:e.target.value})} placeholder="EX.: TRI-101"/></div>
-              <div><label>Nome da natureza</label><input required value={ruleDraft.officialNature} onChange={e=>setRuleDraft({...ruleDraft,officialNature:e.target.value})}/></div></div>
-            <div className="grid2"><div><label>Categoria</label><input value={ruleDraft.category} onChange={e=>setRuleDraft({...ruleDraft,category:e.target.value})}/></div>
-              <div><label>Prioridade</label><select value={ruleDraft.priority} onChange={e=>setRuleDraft({...ruleDraft,priority:e.target.value})}>{['Crítica','Alta','Média','Baixa'].map(x=><option key={x}>{x}</option>)}</select></div></div>
-            <div><label>Grupo de gatilhos obrigatórios (separar por vírgulas)</label><input required value={ruleDraft.group1} onChange={e=>setRuleDraft({...ruleDraft,group1:e.target.value})} placeholder="fraude, golpe, falso"/></div>
-            <div><label>Segundo grupo combinado (opcional)</label><input value={ruleDraft.group2} onChange={e=>setRuleDraft({...ruleDraft,group2:e.target.value})} placeholder="pix, banco, transferência"/></div>
-            <div><label>Explicação para o operador</label><textarea value={ruleDraft.explanation} onChange={e=>setRuleDraft({...ruleDraft,explanation:e.target.value})}/></div>
-            <Btn type="submit" disabled={busy}>＋ Salvar regra no banco</Btn>
-          </form>
-          <div className="card spaced"><div className="panel-head"><h2>Catálogo e regras visíveis ({totalRules})</h2><span className="badge">{brainRules.custom?.length||0} personalizadas</span></div>
-            {brainRules.custom?.map(x=><div key={x.id} className="record-item"><div><b>{x.definition.officialNature}</b><p>{x.definition.code} • {x.definition.category} • Personalizada</p></div><Btn className="danger tiny" onClick={()=>deleteRule(x.id)}>Excluir</Btn></div>)}
-            {brainRules.extras?.concat(brainRules.base||[]).slice(0,120).map((x,i)=><div key={x.id||i} className="record-item"><div><b>{x.officialNature}</b><p>{x.code} • {x.category} • Natureza importada</p></div><Tag priority={x.priority}/></div>)}{(brainRules.base?.length||0)>120&&<p className="muted">Exibindo as primeiras 120 naturezas nesta visão. Para consultar todas as 769 com descrição, use o Catálogo.</p>}
-          </div>
-        </>}
+        {activeProfileConfig.adminTabs.includes('rules')&&screen==='rules'&&<div key="rules" className="tab-view-container">
+          {tabLoading ? (
+            <TabLoader tabName="Matriz de Regras" subtitle="Sincronizando 769 regras contextuais e cenários do assistente…" icon="settings"/>
+          ) : (
+            <>
+              <div><span className="eyebrow">MATRIZ SEMÂNTICA</span><h1>Naturezas e regras do assistente</h1><p className="muted">Catálogo de 769 naturezas importadas do CSV. As fichas servem de consulta; o Chat 190 usa correspondências suficientemente claras e respostas programadas. Regras personalizadas continuam sob controle administrativo.</p></div>
+              <form className="card spaced" onSubmit={createRule}>
+                <h2>Adicionar natureza personalizada</h2>
+                <div className="grid2"><div><label>Código da regra</label><input required value={ruleDraft.code} onChange={e=>setRuleDraft({...ruleDraft,code:e.target.value})} placeholder="EX.: TRI-101"/></div>
+                  <div><label>Nome da natureza</label><input required value={ruleDraft.officialNature} onChange={e=>setRuleDraft({...ruleDraft,officialNature:e.target.value})}/></div></div>
+                <div className="grid2"><div><label>Categoria</label><input value={ruleDraft.category} onChange={e=>setRuleDraft({...ruleDraft,category:e.target.value})}/></div>
+                  <div><label>Prioridade</label><select value={ruleDraft.priority} onChange={e=>setRuleDraft({...ruleDraft,priority:e.target.value})}>{['Crítica','Alta','Média','Baixa'].map(x=><option key={x}>{x}</option>)}</select></div></div>
+                <div><label>Grupo de gatilhos obrigatórios (separar por vírgulas)</label><input required value={ruleDraft.group1} onChange={e=>setRuleDraft({...ruleDraft,group1:e.target.value})} placeholder="fraude, golpe, falso"/></div>
+                <div><label>Segundo grupo combinado (opcional)</label><input value={ruleDraft.group2} onChange={e=>setRuleDraft({...ruleDraft,group2:e.target.value})} placeholder="pix, banco, transferência"/></div>
+                <div><label>Explicação para o operador</label><textarea value={ruleDraft.explanation} onChange={e=>setRuleDraft({...ruleDraft,explanation:e.target.value})}/></div>
+                <Btn type="submit" disabled={busy}>＋ Salvar regra no banco</Btn>
+              </form>
+              <div className="card spaced"><div className="panel-head"><h2>Catálogo e regras visíveis ({totalRules})</h2><span className="badge">{brainRules.custom?.length||0} personalizadas</span></div>
+                {brainRules.custom?.map(x=><div key={x.id} className="record-item"><div><b>{x.definition.officialNature}</b><p>{x.definition.code} • {x.definition.category} • Personalizada</p></div><Btn className="danger tiny" onClick={()=>deleteRule(x.id)}>Excluir</Btn></div>)}
+                {brainRules.extras?.concat(brainRules.base||[]).slice(0,120).map((x,i)=><div key={x.id||i} className="record-item"><div><b>{x.officialNature}</b><p>{x.code} • {x.category} • Natureza importada</p></div><Tag priority={x.priority}/></div>)}{(brainRules.base?.length||0)>120&&<p className="muted">Exibindo as primeiras 120 naturezas nesta visão. Para consultar todas as 769 com descrição, use o Catálogo.</p>}
+              </div>
+            </>
+          )}
+        </div>}
 
-        {isAdmin&&screen==='audit'&&<><div><span className="eyebrow">RASTREABILIDADE</span><h1>Registro de auditoria</h1><p className="muted">Log básico das ações de gestão e autenticação.</p></div><div className="card table-scroll">
-          <table><thead><tr><th>Data</th><th>Operador</th><th>Ação</th><th>Alvo</th></tr></thead><tbody>{events.map((a,i)=><tr key={i}><td>{formatDate(a.at)}</td><td>{a.username||'—'}</td><td>{a.action}</td><td>{a.target||'—'}</td></tr>)}</tbody></table>
-          {!events.length&&<p className="muted">Nenhum evento registrado.</p>}
-        </div></>}
+        {activeProfileConfig.adminTabs.includes('audit')&&screen==='audit'&&<div key="audit" className="tab-view-container">
+          {tabLoading ? (
+            <TabLoader tabName="Registro de Auditoria" subtitle="Carregando histórico de rastreabilidade e ações de gestão…" icon="audit"/>
+          ) : (
+            <>
+              <div><span className="eyebrow">RASTREABILIDADE</span><h1>Registro de auditoria</h1><p className="muted">Log básico das ações de gestão e autenticação.</p></div>
+              <div className="card table-scroll">
+                <table><thead><tr><th>Data</th><th>Operador</th><th>Ação</th><th>Alvo</th></tr></thead><tbody>{events.map((a,i)=><tr key={i}><td>{formatDate(a.at)}</td><td>{a.username||'—'}</td><td>{a.action}</td><td>{a.target||'—'}</td></tr>)}</tbody></table>
+                {!events.length&&<p className="muted">Nenhum evento registrado.</p>}
+              </div>
+            </>
+          )}
+        </div>}
         <footer className="footer-note">Base de Conhecimento 190 • Uso controlado • Classificação automática assistiva, sujeita à revisão e homologação</footer>
+
+        {profileModalOpen&&<div className="profile-modal-backdrop" onClick={()=>setProfileModalOpen(false)}>
+          <div className="profile-modal-card" onClick={e=>e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="pm-modal-title">
+            <div className="profile-modal-header">
+              <div>
+                <span className="badge" style={{background:'rgba(84,203,210,0.15)',color:'var(--blue)'}}>CONTROLE DE ACESSO OPERACIONAL</span>
+                <h2 id="pm-modal-title" style={{fontSize:22,margin:'6px 0 2px'}}>Alternar Perfil do Sistema</h2>
+                <p className="muted" style={{fontSize:13,margin:0}}>Selecione um perfil para simular sua visão e aplicar os limites de uso e visualização em cada aba.</p>
+              </div>
+              <button type="button" className="profile-modal-close" onClick={()=>setProfileModalOpen(false)} aria-label="Fechar janela">×</button>
+            </div>
+
+            <div className="profile-modal-grid">
+              {PROFILES.map(p=>{
+                const isCurrent=p.id===activeProfileConfig.id;
+                return (
+                  <div key={p.id} className={'profile-choice-card'+(isCurrent?' active':'')} onClick={()=>switchProfile(p.id)}>
+                    <div className="profile-choice-head">
+                      <span className="profile-choice-icon" style={{background:p.color+'22',color:p.color,borderColor:p.color+'55'}}>
+                        <Icon name={p.icon} size={20}/>
+                      </span>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+                          <strong style={{fontSize:16,color:isCurrent?'var(--blue)':'inherit'}}>{p.name}</strong>
+                          <span className="badge" style={{background:p.color+'22',color:p.color,borderColor:p.color+'55'}}>{p.badge}</span>
+                          {isCurrent&&<span className="badge" style={{background:'#10b98122',color:'#10b981',borderColor:'#10b98155'}}>● Perfil Ativo</span>}
+                        </div>
+                        <small className="muted" style={{display:'block',marginTop:2,fontSize:11}}>{p.roleTitle}</small>
+                      </div>
+                    </div>
+
+                    <p style={{fontSize:12,lineHeight:1.5,margin:'10px 0 12px',color:'var(--ink)',opacity:0.88}}>{p.desc}</p>
+
+                    <div className="profile-choice-details">
+                      <div className="profile-detail-row">
+                        <span className="profile-detail-tag">Abas Central:</span>
+                        <span className="profile-detail-val">
+                          {p.centralTabs.map(t=>t==='home'?'Visão Geral':t==='docs'?'Base Docs':t==='catalog'?'Catálogo':t==='chat'?'Chat 190':t==='floor'?'Gestão Piso':'Qualidade').join(', ')}
+                        </span>
+                      </div>
+                      <div className="profile-detail-row">
+                        <span className="profile-detail-tag">Administração:</span>
+                        <span className="profile-detail-val">
+                          {p.adminTabs.length>0?p.adminTabs.map(t=>t==='editor'?'Editar Textos':t==='access'?'Autorizar Acessos':t==='rules'?'Regras Assistente':'Auditoria').join(', '):'Nenhuma (oculta)'}
+                        </span>
+                      </div>
+                      <div className="profile-detail-row">
+                        <span className="profile-detail-tag">Limites / Uso:</span>
+                        <span className="profile-detail-val highlight">
+                          {p.id==='dev'&&'Acesso pleno irrestrito a todas as ferramentas e configurações de sistema.'}
+                          {p.id==='coordinator'&&'Coordenação operacional, edição de POPs/fichas e aprovação de novos operadores.'}
+                          {p.id==='manager'&&'Gestão de eventos no piso (resolver chamados e reportes) e acompanhamento de monitorias.'}
+                          {p.id==='quality_analyst'&&'Acesso total na Qualidade (cadastrar, encaminhar e monitorar). No piso: somente consulta.'}
+                          {p.id==='attendant'&&'Foco no atendimento (Chat 190, Catálogo, Docs). Na Qualidade: somente visualização de notas e ciência.'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div style={{marginTop:14,display:'flex',justifyContent:'flex-end'}}>
+                      <button
+                        type="button"
+                        className={'btn tiny '+(isCurrent?'secondary':'')}
+                        onClick={e=>{e.stopPropagation();switchProfile(p.id);}}
+                      >
+                        {isCurrent?'Perfil Atual Selecionado':'Ativar este perfil →'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="profile-modal-footer">
+              <small className="muted">As restrições de cada perfil são aplicadas instantaneamente em toda a navegação, subabas e botões de ação.</small>
+              <button type="button" className="btn secondary tiny" onClick={()=>setProfileModalOpen(false)}>Fechar</button>
+            </div>
+          </div>
+        </div>}
       </main>
     </div>
   </div>;
