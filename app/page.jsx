@@ -477,16 +477,17 @@ export default function Home(){
   const visibleAdminLinks=adminLinks.filter(([id])=>activeProfileConfig.adminTabs.includes(id));
   return <div className={'shell'+(isImmersiveScreen?' immersive-mode':'')+(screen==='quality'?' quality-mode':'')}>
     {tabLoading && <div className="tab-top-progress-bar"><div className="tab-top-progress-bar-fill"/></div>}
-    <aside className="sidebar" aria-label="Navegação principal">
+    <aside className="sidebar compact" aria-label="Navegação principal — ícones">
       <div className="logo"><div className="logoicon" title="Base 190">190</div><div className="logo-text"><strong>Base 190</strong><small>CONHECIMENTO OPERACIONAL</small></div></div>
       <span className="nav-caption">CENTRAL</span>
-      {visibleLinks.map(([id,label,icon])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>go(id)} aria-current={screen===id?'page':undefined} title={label}><Icon name={icon}/><span className="nav-label">{label}</span></button>)}
-      {visibleAdminLinks.length>0&&<><span className="nav-caption">ADMINISTRAÇÃO</span>{visibleAdminLinks.map(([id,label,icon])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>id==='editor'?editEntry(null):go(id)} aria-current={screen===id?'page':undefined} title={label}><Icon name={icon}/><span className="nav-label">{label}</span></button>)}</>}
+      {visibleLinks.map(([id,label,icon])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>go(id)} aria-label={label} aria-current={screen===id?'page':undefined} title={label}><Icon name={icon}/><span className="nav-label">{label}</span></button>)}
+      {visibleAdminLinks.length>0&&<><span className="nav-caption">ADMINISTRAÇÃO</span>{visibleAdminLinks.map(([id,label,icon])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>id==='editor'?editEntry(null):go(id)} aria-label={label} aria-current={screen===id?'page':undefined} title={label}><Icon name={icon}/><span className="nav-label">{label}</span></button>)}</>}
       <div className="sidebar-profile-box">
         <button
           type="button"
           className="nav-btn profile-switch-btn"
           onClick={()=>setProfileModalOpen(true)}
+          aria-label={canPreviewRoles?'Alternar perfil para testes':'Ver perfil ativo'}
           title={canPreviewRoles?`Alternar visualização de teste (atual: ${activeProfileConfig.name})`:`Cargo atribuído: ${activeProfileConfig.name}`}
           aria-haspopup="dialog"
         >
@@ -499,12 +500,12 @@ export default function Home(){
         </button>
       </div>
       <div className="sidebar-bottom">
-        <button className="nav-btn theme-toggle-btn" onClick={theme} title={dark?'Tema Claro':'Tema Escuro'}>
+        <button className="nav-btn theme-toggle-btn" onClick={theme} aria-label={dark?'Ativar tema claro':'Ativar tema escuro'} title={dark?'Tema Claro':'Tema Escuro'}>
           <Icon name={dark?'sun':'moon'} size={18}/>
           <span className="nav-label">{dark?'Modo Claro':'Modo Escuro'}</span>
         </button>
         <p className="who">{user.name}<br/><small>{user.username} • {activeProfileConfig.accessLabel}</small></p>
-        <button className="nav-btn" onClick={logout} disabled={busy} title="Encerrar sessão"><Icon name="logout"/><span className="nav-label">Sair</span></button>
+        <button className="nav-btn" onClick={logout} disabled={busy} aria-label="Encerrar sessão" title="Encerrar sessão"><Icon name="logout"/><span className="nav-label">Sair</span></button>
       </div>
     </aside>
     <div className="main">
