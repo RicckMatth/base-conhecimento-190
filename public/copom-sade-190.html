@@ -2043,6 +2043,17 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
+<style id="base190-consistent-scrollbars">
+  :root{--copom-scroll-track:#e5eef3;--copom-scroll-thumb:#7e9fae;--copom-scroll-hover:#397c90}
+  :root.dark{--copom-scroll-track:#111d2d;--copom-scroll-thumb:#3f6077;--copom-scroll-hover:#76b7c8}
+  *{scrollbar-width:thin;scrollbar-color:var(--copom-scroll-thumb) var(--copom-scroll-track)}
+  @supports selector(::-webkit-scrollbar){
+    *::-webkit-scrollbar{width:9px;height:9px}
+    *::-webkit-scrollbar-track{background:var(--copom-scroll-track);border-radius:12px}
+    *::-webkit-scrollbar-thumb{background:var(--copom-scroll-thumb);border:2px solid var(--copom-scroll-track);border-radius:12px}
+    *::-webkit-scrollbar-thumb:hover{background:var(--copom-scroll-hover)}
+  }
+</style>
 </head>
 <body class="bg-tech-grid text-slate-100 font-sans antialiased h-screen flex flex-col overflow-hidden selection:bg-blue-500 selection:text-white">
 
