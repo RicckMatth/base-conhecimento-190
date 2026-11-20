@@ -869,7 +869,7 @@ html,body{font-family:Inter,"Segoe UI",system-ui,sans-serif}h1,h2,h3{text-wrap:b
    BASE 190 · APP SHELL UNIFICADO
    Único cabeçalho e uma navegação, com subabas consistentes.
    ============================================================= */
-:root{--base-topbar-height:72px;--base-sidebar-width:244px;--base-radius:14px}
+:root{--base-topbar-height:54px;--base-sidebar-width:244px;--base-radius:13px}
 .shell,
 .shell.immersive-mode,
 .shell.quality-mode{
@@ -1314,4 +1314,146 @@ html,body{font-family:Inter,"Segoe UI",system-ui,sans-serif}h1,h2,h3{text-wrap:b
   .shell.quality-mode .qm-sidebar{padding:7px}
   .shell.quality-mode .qm-sidebar-footer{display:none}
   .shell.quality-mode .qm-content-wrap{scrollbar-gutter:auto}
+}
+
+
+/* Header v2: compact, calm and visually subordinate to each page's content. */
+.shell>.main>.base190-unified-header{
+  height:var(--base-topbar-height);
+  min-height:var(--base-topbar-height);
+  max-height:var(--base-topbar-height);
+  flex-basis:var(--base-topbar-height);
+  padding:0 clamp(14px,2vw,26px);
+  background:var(--panel);
+  border-bottom:1px solid var(--line);
+  box-shadow:none;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+}
+.base190-unified-header .base190-header-location{
+  display:flex;
+  align-items:center;
+  flex:1 1 0;
+  min-width:0;
+  gap:9px;
+  line-height:1.2;
+  white-space:nowrap;
+  overflow:hidden;
+}
+.base190-unified-header .base190-header-root{
+  color:var(--muted);
+  font-size:12px;
+  font-weight:550;
+}
+.base190-unified-header .base190-header-separator{
+  color:var(--muted);
+  opacity:.55;
+  font-size:13px;
+  line-height:1;
+}
+.base190-unified-header .base190-header-location strong{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:13px;
+  font-weight:720;
+  letter-spacing:-.1px;
+  color:var(--ink);
+}
+.base190-unified-header .base190-header-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  flex:0 0 auto;
+  min-width:0;
+  gap:7px;
+}
+.base190-unified-header .base190-header-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:33px;
+  height:33px;
+  min-width:33px;
+  border-radius:9px;
+  border:1px solid transparent;
+  background:transparent;
+  color:var(--muted);
+  padding:0;
+  text-decoration:none;
+}
+.base190-unified-header .base190-header-icon:hover,
+.base190-unified-header .base190-header-profile:hover{
+  background:var(--soft);
+  color:var(--ink);
+  border-color:var(--line);
+}
+.base190-unified-header .base190-header-profile{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  height:33px;
+  min-height:33px;
+  min-width:0;
+  padding:0 10px;
+  border-radius:9px;
+  background:var(--soft);
+  color:var(--ink);
+  border:1px solid var(--line);
+  font-size:11px;
+  font-weight:650;
+  max-width:185px;
+}
+.base190-unified-header .base190-header-profile-name{
+  max-width:135px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.base190-unified-header .base190-header-profile .profile-indicator-dot{
+  width:7px;
+  height:7px;
+  box-shadow:none;
+}
+.base190-unified-header .base190-header-chevron{
+  font-size:14px;
+  line-height:1;
+  opacity:.65;
+}
+.shell .base190-operations-embed{gap:0}
+.shell .base190-operations-frame{
+  border-radius:var(--base-radius);
+}
+.shell>.main>.content.immersive-content-mode{
+  padding:12px clamp(12px,1.5vw,20px);
+}
+.shell.quality-mode>.main>.content{
+  padding:12px clamp(12px,1.5vw,20px);
+}
+.shell .sade-workspace.sade-fullscreen{border-radius:var(--base-radius)}
+@media(max-width:650px){
+  .shell>.main>.base190-unified-header{
+    height:51px;
+    min-height:51px;
+    max-height:51px;
+    flex-basis:51px;
+    padding:0 12px;
+    gap:7px;
+  }
+  .base190-unified-header .base190-header-root{display:none}
+  .base190-unified-header .base190-header-separator{display:none}
+  .base190-unified-header .base190-header-location strong{font-size:12px}
+  .base190-unified-header .base190-header-actions{gap:3px}
+  .base190-unified-header .base190-header-profile{
+    width:32px;
+    min-width:32px;
+    padding:0;
+    background:transparent;
+  }
+  .base190-unified-header .base190-header-profile-name,
+  .base190-unified-header .base190-header-chevron{display:none}
+  .shell>.main>.content.immersive-content-mode,
+  .shell.quality-mode>.main>.content{padding:8px}
 }
