@@ -1684,8 +1684,29 @@
       if (tab === 'history') renderHistory();
     }
 
-    function setUserRole() {
-      showToast('O cargo é definido pela administração em Acessos e Cargos.', 'warning');
+    // Apenas a conta Dev pode alternar a prévia local para testar as visões.
+    let rolePreviewAllowed = false;
+    function setUserRole(role) {
+      if (!rolePreviewAllowed || !['supervisor','coordenador','dev','atendente'].includes(role)) {
+        showToast('Apenas Dev pode testar outros perfis. O cargo real é definido no painel central.', 'warning');
+        return;
+      }
+      state.userRole = role;
+      closeAllPopovers();
+      if (role === 'atendente') {
+        const now = getEffectiveNow();
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+        const activeGroup = state.groups.find(g => isMinuteInsideShift(nowMin, g));
+        if (activeGroup) {
+          const agent = state.agents.find(a => a.groupId === activeGroup.id);
+          if (agent) state.loggedAgentId = agent.id;
+        }
+        switchTab('overview');
+      }
+      saveState();
+      applyRoleUI();
+      renderAll();
+      showToast('Prévia de '+role+' ativada. Sua permissão real continua sendo Dev.', 'info');
     }
 
     function changeLoggedAgent(agentId) {
@@ -2839,14 +2860,18 @@
       STORAGE_KEY = scopedKey;
       loadState();
       const roleMap = {dev:'dev',coordinator:'coordenador',manager:'supervisor',quality_analyst:'atendente',attendant:'atendente'};
-      state.userRole = roleMap[account.operationalRole] || 'atendente';
+      rolePreviewAllowed = account.operationalRole === 'dev' && account.role === 'admin';
+      const savedRole = state.userRole;
+      state.userRole = rolePreviewAllowed && ['dev','coordenador','supervisor','atendente'].includes(savedRole)
+        ? savedRole : (roleMap[account.operationalRole] || 'atendente');
       const selector = document.getElementById('btnRolePopover');
       if (selector) {
-        selector.disabled = true;
-        selector.removeAttribute('onclick');
-        selector.title = 'Cargo autenticado: alteracoes somente em Acessos e Cargos';
+        selector.disabled = !rolePreviewAllowed;
+        selector.title = rolePreviewAllowed
+          ? 'Simular cargo para testes (nenhuma permissão real é alterada)'
+          : 'Cargo autenticado: alterações só pela administração';
       }
-      document.getElementById('rolePopover')?.remove();
+      if (!rolePreviewAllowed) document.getElementById('rolePopover')?.remove();
 
       document.documentElement.classList.toggle('dark', state.theme === 'dark');
       if (state.simulatedTime) {
