@@ -1,0 +1,2865 @@
+<!DOCTYPE html>\n<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>COPOM 190 · Gestão Operacional de Pausas &amp; Folgas</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+<style>
+    * {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+    /* Scrollbar discreta estilo macOS */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(128, 128, 138, 0.28);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(128, 128, 138, 0.48);
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.85); }
+    }
+    .live-dot {
+      animation: pulseDot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeSlideIn 0.22s ease-out forwards;
+    }
+  </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:Inter, -apple-system, BlinkMacSystemFont, SF Pro Display, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.pointer-events-auto{pointer-events:auto}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0px}.bottom-5{bottom:1.25rem}.left-3{left:0.75rem}.right-0{right:0px}.right-5{right:1.25rem}.top-0{top:0px}.top-1\/2{top:50%}.top-16{top:4rem}.z-30{z-index:30}.z-40{z-index:40}.z-50{z-index:50}.z-\[60\]{z-index:60}.col-span-2{grid-column:span 2 / span 2}.mx-auto{margin-left:auto;margin-right:auto}.my-1\.5{margin-top:0.375rem;margin-bottom:0.375rem}.mb-1{margin-bottom:0.25rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-1\.5{margin-top:0.375rem}.mt-2{margin-top:0.5rem}.mt-3{margin-top:0.75rem}.block{display:block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-1\.5{height:0.375rem}.h-10{height:2.5rem}.h-12{height:3rem}.h-16{height:4rem}.h-2{height:0.5rem}.h-2\.5{height:0.625rem}.h-3{height:0.75rem}.h-3\.5{height:0.875rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-6{height:1.5rem}.h-8{height:2rem}.h-9{height:2.25rem}.h-full{height:100%}.max-h-72{max-height:18rem}.min-h-screen{min-height:100vh}.w-1\.5{width:0.375rem}.w-10{width:2.5rem}.w-12{width:3rem}.w-2{width:0.5rem}.w-2\.5{width:0.625rem}.w-3{width:0.75rem}.w-3\.5{width:0.875rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-6{width:1.5rem}.w-64{width:16rem}.w-72{width:18rem}.w-8{width:2rem}.w-9{width:2.25rem}.w-full{width:100%}.min-w-\[920px\]{min-width:920px}.min-w-max{min-width:max-content}.min-w-0{min-width:0px}.max-w-\[1440px\]{max-width:1440px}.max-w-md{max-width:28rem}.max-w-sm{max-width:24rem}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.border-collapse{border-collapse:collapse}.-translate-y-1\/2{--tw-translate-y:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.items-baseline{align-items:baseline}.items-stretch{align-items:stretch}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-3\.5{gap:0.875rem}.gap-4{gap:1rem}.space-y-1\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.375rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-2\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.625rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-3\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.875rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.875rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.divide-y > :not([hidden]) ~ :not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.divide-black\/\[0\.05\] > :not([hidden]) ~ :not([hidden]){border-color:rgb(0 0 0 / 0.05)}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-dashed{border-style:dashed}.border-\[\#0A84FF\]\/20{border-color:rgb(10 132 255 / 0.2)}.border-\[\#0A84FF\]\/25{border-color:rgb(10 132 255 / 0.25)}.border-\[\#0A84FF\]\/30{border-color:rgb(10 132 255 / 0.3)}.border-black\/\[0\.04\]{border-color:rgb(0 0 0 / 0.04)}.border-black\/\[0\.05\]{border-color:rgb(0 0 0 / 0.05)}.border-black\/\[0\.06\]{border-color:rgb(0 0 0 / 0.06)}.border-black\/\[0\.08\]{border-color:rgb(0 0 0 / 0.08)}.border-\[\#FF9F0A\]\/40{border-color:rgb(255 159 10 / 0.4)}.border-\[\#0A84FF\]\/40{border-color:rgb(10 132 255 / 0.4)}.bg-\[\#0A84FF\]{--tw-bg-opacity:1;background-color:rgb(10 132 255 / var(--tw-bg-opacity, 1))}.bg-\[\#0A84FF\]\/10{background-color:rgb(10 132 255 / 0.1)}.bg-\[\#0A84FF\]\/15{background-color:rgb(10 132 255 / 0.15)}.bg-\[\#30D158\]{--tw-bg-opacity:1;background-color:rgb(48 209 88 / var(--tw-bg-opacity, 1))}.bg-\[\#30D158\]\/15{background-color:rgb(48 209 88 / 0.15)}.bg-\[\#F5F5F7\]{--tw-bg-opacity:1;background-color:rgb(245 245 247 / var(--tw-bg-opacity, 1))}.bg-\[\#F5F5F7\]\/90{background-color:rgb(245 245 247 / 0.9)}.bg-\[\#FF453A\]{--tw-bg-opacity:1;background-color:rgb(255 69 58 / var(--tw-bg-opacity, 1))}.bg-\[\#FF453A\]\/10{background-color:rgb(255 69 58 / 0.1)}.bg-\[\#FF9F0A\]{--tw-bg-opacity:1;background-color:rgb(255 159 10 / var(--tw-bg-opacity, 1))}.bg-\[\#FF9F0A\]\/15{background-color:rgb(255 159 10 / 0.15)}.bg-black\/60{background-color:rgb(0 0 0 / 0.6)}.bg-black\/\[0\.02\]{background-color:rgb(0 0 0 / 0.02)}.bg-black\/\[0\.04\]{background-color:rgb(0 0 0 / 0.04)}.bg-black\/\[0\.05\]{background-color:rgb(0 0 0 / 0.05)}.bg-neutral-400{--tw-bg-opacity:1;background-color:rgb(163 163 163 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/80{background-color:rgb(255 255 255 / 0.8)}.bg-black\/\[0\.025\]{background-color:rgb(0 0 0 / 0.025)}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-\[\#0A84FF\]\/20{--tw-gradient-from:rgb(10 132 255 / 0.2) var(--tw-gradient-from-position);--tw-gradient-to:rgb(10 132 255 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.to-\[\#0A84FF\]\/5{--tw-gradient-to:rgb(10 132 255 / 0.05) var(--tw-gradient-to-position)}.to-transparent{--tw-gradient-to:transparent var(--tw-gradient-to-position)}.p-1{padding:0.25rem}.p-2{padding:0.5rem}.p-3\.5{padding:0.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3\.5{padding-top:0.875rem;padding-bottom:0.875rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.py-10{padding-top:2.5rem;padding-bottom:2.5rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.pl-9{padding-left:2.25rem}.pr-3{padding-right:0.75rem}.pt-1{padding-top:0.25rem}.pt-2{padding-top:0.5rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.font-sans{font-family:Inter, -apple-system, BlinkMacSystemFont, SF Pro Display, sans-serif}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.font-normal{font-weight:400}.uppercase{text-transform:uppercase}.tabular-nums{--tw-numeric-spacing:tabular-nums;font-variant-numeric:var(--tw-ordinal) var(--tw-slashed-zero) var(--tw-numeric-figure) var(--tw-numeric-spacing) var(--tw-numeric-fraction)}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.leading-snug{line-height:1.375}.tracking-tight{letter-spacing:-0.025em}.tracking-wide{letter-spacing:0.025em}.tracking-wider{letter-spacing:0.05em}.text-\[\#0A84FF\]{--tw-text-opacity:1;color:rgb(10 132 255 / var(--tw-text-opacity, 1))}.text-\[\#1D1D1F\]{--tw-text-opacity:1;color:rgb(29 29 31 / var(--tw-text-opacity, 1))}.text-\[\#30D158\]{--tw-text-opacity:1;color:rgb(48 209 88 / var(--tw-text-opacity, 1))}.text-\[\#30D158\]\/80{color:rgb(48 209 88 / 0.8)}.text-\[\#6E6E73\]{--tw-text-opacity:1;color:rgb(110 110 115 / var(--tw-text-opacity, 1))}.text-\[\#FF453A\]{--tw-text-opacity:1;color:rgb(255 69 58 / var(--tw-text-opacity, 1))}.text-\[\#FF9F0A\]{--tw-text-opacity:1;color:rgb(255 159 10 / var(--tw-text-opacity, 1))}.text-black{--tw-text-opacity:1;color:rgb(0 0 0 / var(--tw-text-opacity, 1))}.text-neutral-300{--tw-text-opacity:1;color:rgb(212 212 212 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.opacity-60{opacity:0.6}.opacity-80{opacity:0.8}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[\#0A84FF\]\/25{--tw-shadow-color:rgb(10 132 255 / 0.25);--tw-shadow:var(--tw-shadow-colored)}.backdrop-blur-lg{--tw-backdrop-blur:blur(16px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-xl{--tw-backdrop-blur:blur(24px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.selection\:bg-\[\#0A84FF\]\/25 *::selection{background-color:rgb(10 132 255 / 0.25)}.selection\:bg-\[\#0A84FF\]\/25::selection{background-color:rgb(10 132 255 / 0.25)}.hover\:bg-\[\#0071E3\]:hover{--tw-bg-opacity:1;background-color:rgb(0 113 227 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#0A84FF\]\/10:hover{background-color:rgb(10 132 255 / 0.1)}.hover\:bg-\[\#28B84C\]:hover{--tw-bg-opacity:1;background-color:rgb(40 184 76 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#30D158\]\/10:hover{background-color:rgb(48 209 88 / 0.1)}.hover\:bg-\[\#E0352B\]:hover{--tw-bg-opacity:1;background-color:rgb(224 53 43 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#FF453A\]\/10:hover{background-color:rgb(255 69 58 / 0.1)}.hover\:bg-\[\#FF9F0A\]\/25:hover{background-color:rgb(255 159 10 / 0.25)}.hover\:bg-black\/\[0\.03\]:hover{background-color:rgb(0 0 0 / 0.03)}.hover\:bg-black\/\[0\.04\]:hover{background-color:rgb(0 0 0 / 0.04)}.hover\:bg-black\/\[0\.05\]:hover{background-color:rgb(0 0 0 / 0.05)}.hover\:bg-black\/\[0\.08\]:hover{background-color:rgb(0 0 0 / 0.08)}.hover\:bg-black\/\[0\.1\]:hover{background-color:rgb(0 0 0 / 0.1)}.hover\:text-\[\#1D1D1F\]:hover{--tw-text-opacity:1;color:rgb(29 29 31 / var(--tw-text-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-\[\#0A84FF\]:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(10 132 255 / var(--tw-ring-opacity, 1))}.dark\:block:is(.dark *){display:block}.dark\:hidden:is(.dark *){display:none}.dark\:divide-white\/\[0\.06\]:is(.dark *) > :not([hidden]) ~ :not([hidden]){border-color:rgb(255 255 255 / 0.06)}.dark\:border-white\/\[0\.06\]:is(.dark *){border-color:rgb(255 255 255 / 0.06)}.dark\:border-white\/\[0\.07\]:is(.dark *){border-color:rgb(255 255 255 / 0.07)}.dark\:border-white\/\[0\.08\]:is(.dark *){border-color:rgb(255 255 255 / 0.08)}.dark\:border-white\/\[0\.1\]:is(.dark *){border-color:rgb(255 255 255 / 0.1)}.dark\:bg-\[\#090B10\]:is(.dark *){--tw-bg-opacity:1;background-color:rgb(9 11 16 / var(--tw-bg-opacity, 1))}.dark\:bg-\[\#090B10\]\/80:is(.dark *){background-color:rgb(9 11 16 / 0.8)}.dark\:bg-\[\#090B10\]\/90:is(.dark *){background-color:rgb(9 11 16 / 0.9)}.dark\:bg-\[\#11141C\]:is(.dark *){--tw-bg-opacity:1;background-color:rgb(17 20 28 / var(--tw-bg-opacity, 1))}.dark\:bg-\[\#141822\]:is(.dark *){--tw-bg-opacity:1;background-color:rgb(20 24 34 / var(--tw-bg-opacity, 1))}.dark\:bg-white\/\[0\.02\]:is(.dark *){background-color:rgb(255 255 255 / 0.02)}.dark\:bg-white\/\[0\.05\]:is(.dark *){background-color:rgb(255 255 255 / 0.05)}.dark\:bg-white\/\[0\.06\]:is(.dark *){background-color:rgb(255 255 255 / 0.06)}.dark\:bg-white\/\[0\.08\]:is(.dark *){background-color:rgb(255 255 255 / 0.08)}.dark\:bg-\[\#1C212E\]:is(.dark *){--tw-bg-opacity:1;background-color:rgb(28 33 46 / var(--tw-bg-opacity, 1))}.dark\:bg-white\/\[0\.03\]:is(.dark *){background-color:rgb(255 255 255 / 0.03)}.dark\:bg-\[\#161B26\]:is(.dark *){--tw-bg-opacity:1;background-color:rgb(22 27 38 / var(--tw-bg-opacity, 1))}.dark\:text-\[\#F5F5F7\]:is(.dark *){--tw-text-opacity:1;color:rgb(245 245 247 / var(--tw-text-opacity, 1))}.dark\:text-neutral-200:is(.dark *){--tw-text-opacity:1;color:rgb(229 229 229 / var(--tw-text-opacity, 1))}.dark\:text-neutral-300:is(.dark *){--tw-text-opacity:1;color:rgb(212 212 212 / var(--tw-text-opacity, 1))}.dark\:text-neutral-400:is(.dark *){--tw-text-opacity:1;color:rgb(163 163 163 / var(--tw-text-opacity, 1))}.dark\:text-neutral-500:is(.dark *){--tw-text-opacity:1;color:rgb(115 115 115 / var(--tw-text-opacity, 1))}.dark\:text-white:is(.dark *){--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.dark\:hover\:bg-white\/\[0\.06\]:hover:is(.dark *){background-color:rgb(255 255 255 / 0.06)}.dark\:hover\:bg-white\/\[0\.08\]:hover:is(.dark *){background-color:rgb(255 255 255 / 0.08)}.dark\:hover\:bg-white\/\[0\.14\]:hover:is(.dark *){background-color:rgb(255 255 255 / 0.14)}.dark\:hover\:bg-white\/\[0\.1\]:hover:is(.dark *){background-color:rgb(255 255 255 / 0.1)}.dark\:hover\:text-white:hover:is(.dark *){--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}@media (min-width: 640px){.sm\:inline-block{display:inline-block}.sm\:inline{display:inline}.sm\:flex-row{flex-direction:row}.sm\:items-end{align-items:flex-end}.sm\:items-center{align-items:center}.sm\:p-6{padding:1.5rem}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}.sm\:py-8{padding-top:2rem;padding-bottom:2rem}.sm\:text-right{text-align:right}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}}@media (min-width: 768px){.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.md\:flex-row{flex-direction:row}.md\:items-end{align-items:flex-end}}@media (min-width: 1024px){.lg\:flex{display:flex}.lg\:hidden{display:none}.lg\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.lg\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}}</style></head>
+<body class="bg-[#F5F5F7] dark:bg-[#090B10] text-[#1D1D1F] dark:text-[#F5F5F7] font-sans min-h-screen selection:bg-[#0A84FF]/25">
+<!-- ===================================================================== -->
+<!-- CABEÇALHO FIXO 64PX (ESTILO APPLE PRO + IDENTIDADE COPOM 190)          -->
+<!-- ===================================================================== -->
+<header class="sticky top-0 z-40 h-16 bg-white/80 dark:bg-[#090B10]/80 backdrop-blur-xl border-b border-black/[0.06] dark:border-white/[0.08]">
+<div class="max-w-[1440px] mx-auto h-full px-4 sm:px-6 flex items-center justify-between gap-3">
+<!-- Esquerda: Emblema COPOM 190 -->
+<div class="flex items-center gap-3 shrink-0">
+<div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0A84FF]/20 to-[#0A84FF]/5 border border-[#0A84FF]/30 flex items-center justify-center shadow-sm">
+<svg class="w-5 h-5 text-[#0A84FF]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+<path d="m9 12 2 2 4-4"></path>
+</svg>
+</div>
+<div class="leading-tight">
+<div class="flex items-center gap-1.5">
+<span class="text-sm font-semibold tracking-tight">COPOM 190</span>
+<span class="hidden sm:inline-block text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-[#0A84FF]/10 text-[#0A84FF] border border-[#0A84FF]/20">CENTRAL</span>
+</div>
+<p class="text-[11px] text-[#6E6E73] dark:text-neutral-400">Gestão Operacional</p>
+</div>
+</div>
+<!-- Centro: Controle Segmentado (Desktop) -->
+<nav class="hidden lg:flex items-center p-1 rounded-xl bg-black/[0.04] dark:bg-white/[0.05] border border-black/[0.04] dark:border-white/[0.06]" id="desktopNav">
+<button class="nav-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-[#1C212E] text-[#1D1D1F] dark:text-white shadow-sm transition" data-tab="overview" onclick="switchTab('overview')">Visão Geral</button>
+<button class="nav-tab px-3.5 py-1.5 rounded-lg text-xs font-medium text-[#6E6E73] dark:text-neutral-400 hover:text-[#1D1D1F] dark:hover:text-white transition" data-tab="breaks" onclick="switchTab('breaks')">Planilha de Pausas</button>
+<button class="nav-tab px-3.5 py-1.5 rounded-lg text-xs font-medium text-[#6E6E73] dark:text-neutral-400 hover:text-[#1D1D1F] dark:hover:text-white transition" data-tab="schedule" onclick="switchTab('schedule')">Escala Mensal</button>
+<button class="nav-tab px-3.5 py-1.5 rounded-lg text-xs font-medium text-[#6E6E73] dark:text-neutral-400 hover:text-[#1D1D1F] dark:hover:text-white transition" data-tab="groups" onclick="switchTab('groups')">Grupos</button>
+<button class="nav-tab px-3.5 py-1.5 rounded-lg text-xs font-medium text-[#6E6E73] dark:text-neutral-400 hover:text-[#1D1D1F] dark:hover:text-white transition manager-only" data-tab="history" onclick="switchTab('history')" type="button">Histórico</button></nav>
+<!-- Direita: Relógio/Simulador, Automação, Perfil e Tema -->
+<div class="flex items-center gap-2">
+<!-- Botão Relógio + Popover Simulador -->
+<div class="relative">
+<button class="h-9 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] border border-black/[0.05] dark:border-white/[0.08] flex items-center gap-2 text-xs font-medium transition" id="btnClockPopover" onclick="toggleMenuPopover('clockPopover')" type="button">
+<span class="w-2 h-2 rounded-full bg-[#30D158] live-dot" id="clockLiveDot"></span>
+<span class="tabular-nums font-semibold" id="headerClock">11:37:05</span>
+</button>
+<!-- Popover Simulador de Horário -->
+<div class="menu-popover hidden absolute right-0 mt-2 w-72 rounded-2xl bg-white dark:bg-[#141822] border border-black/[0.08] dark:border-white/[0.1] shadow-2xl p-4 z-50" id="clockPopover">
+<div class="flex items-center justify-between mb-3">
+<span class="text-xs font-semibold">Relógio &amp; Simulador</span>
+<span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#30D158]/15 text-[#30D158]" id="simStatusBadge">Tempo Real</span>
+</div>
+<p class="text-[11px] text-[#6E6E73] dark:text-neutral-400 mb-3">Simule qualquer horário para testar turnos da madrugada, alertas e pausas.</p>
+<div class="space-y-2.5">
+<div>
+<label class="block text-[11px] font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Horário Simulado</label>
+<input class="w-full h-9 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs tabular-nums focus:outline-none focus:ring-2 focus:ring-[#0A84FF]" id="simTimeInput" type="time"/>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 h-8 rounded-xl bg-[#0A84FF] hover:bg-[#0071E3] text-white text-xs font-medium transition" onclick="applySimulatedTime()" type="button">Aplicar</button>
+<button class="h-8 px-3 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] hover:bg-black/[0.1] dark:hover:bg-white/[0.14] text-xs font-medium transition" onclick="resetSimulatedTime()" type="button">Tempo Real</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Botão Automação (Visível apenas para Gestores) -->
+<div class="relative hidden" id="automationMenuWrap">
+<button class="h-9 px-3.5 rounded-xl bg-[#0A84FF] hover:bg-[#0071E3] text-white text-xs font-medium flex items-center gap-1.5 shadow-sm shadow-[#0A84FF]/25 transition" id="btnAutoPopover" onclick="toggleMenuPopover('autoPopover')" type="button">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 3v3m6.36-.36-2.12 2.12M21 12h-3m.36 6.36-2.12-2.12M12 21v-3m-6.36.36 2.12-2.12M3 12h3m-.36-6.36 2.12 2.12"></path>
+</svg>
+<span class="hidden sm:inline">Automação</span>
+<svg class="w-3 h-3 opacity-80" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg>
+</button>
+<div class="menu-popover absolute right-0 mt-2 w-72 rounded-2xl bg-white dark:bg-[#141822] border border-black/[0.08] dark:border-white/[0.1] shadow-2xl p-2 z-50 hidden" id="autoPopover">
+<button class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-black/[0.04] dark:hover:bg-white/[0.06] flex items-start gap-3 transition" onclick="closeAllPopovers(); openModal('modalAutoBreaks')" type="button">
+<div class="w-8 h-8 rounded-lg bg-[#0A84FF]/15 text-[#0A84FF] flex items-center justify-center shrink-0 mt-0.5">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+</div>
+<div>
+<p class="text-xs font-semibold">Gerar Pausas do Mês</p>
+<p class="text-[11px] text-[#6E6E73] dark:text-neutral-400">10m → Lanche 20m → 10m em horários redondos</p>
+</div>
+</button>
+<button class="w-full text-left px-3 py-2.5 rounded-xl hover:bg-black/[0.04] dark:hover:bg-white/[0.06] flex items-start gap-3 transition" onclick="closeAllPopovers(); openModal('modalAutoDaysOff')" type="button">
+<div class="w-8 h-8 rounded-lg bg-[#30D158]/15 text-[#30D158] flex items-center justify-center shrink-0 mt-0.5">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><rect height="18" rx="2" width="18" x="3" y="4"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
+</div>
+<div>
+<p class="text-xs font-semibold">Gerar Folgas Mensais</p>
+<p class="text-[11px] text-[#6E6E73] dark:text-neutral-400">Escalas automáticas 6x1, 5x2 ou 12x36</p>
+</div>
+</button>
+<div class="my-1.5 border-t border-black/[0.06] dark:border-white/[0.08]"></div>
+<button class="w-full text-left px-3 py-2 rounded-xl hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-xs font-medium flex items-center gap-2.5 transition" onclick="closeAllPopovers(); openModal('modalAddAgent')" type="button">
+<svg class="w-4 h-4 text-[#6E6E73] dark:text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" x2="20" y1="8" y2="14"></line><line x1="23" x2="17" y1="11" y2="11"></line></svg>
+              Novo Atendente
+            </button>
+<button class="w-full text-left px-3 py-2 rounded-xl hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-xs font-medium flex items-center gap-2.5 transition" onclick="closeAllPopovers(); openGroupModal()" type="button">
+<svg class="w-4 h-4 text-[#6E6E73] dark:text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              Novo Grupo / Horário
+            </button>
+<button class="w-full text-left px-3 py-2 rounded-xl hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-xs font-medium flex items-center gap-2.5 transition" onclick="closeAllPopovers(); exportCSV()" type="button">
+<svg class="w-4 h-4 text-[#6E6E73] dark:text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
+              Exportar Planilha CSV (Excel)
+            </button>
+<div class="my-1.5 border-t border-black/[0.06] dark:border-white/[0.08]"></div>
+<button class="w-full text-left px-3 py-2 rounded-xl hover:bg-[#FF453A]/10 text-[#FF453A] text-xs font-medium flex items-center gap-2.5 transition" onclick="closeAllPopovers(); openModal('modalResetConfirm')" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+              Restaurar Dados Padrão
+            </button>
+</div>
+</div>
+<!-- Seletor de Perfil (Supervisor / Coordenador / Dev / Atendente) -->
+<div class="relative">
+<button class="h-9 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] border border-black/[0.05] dark:border-white/[0.08] flex items-center gap-2 text-xs font-medium transition" id="btnRolePopover" onclick="toggleMenuPopover('rolePopover')" type="button">
+<span class="w-2 h-2 rounded-full bg-[#30D158]" id="roleIndicatorDot"></span>
+<span id="headerRoleLabel">Atendente</span>
+<svg class="w-3 h-3 opacity-60" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg>
+</button>
+<div class="menu-popover absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-[#141822] border border-black/[0.08] dark:border-white/[0.1] shadow-2xl p-2 z-50 hidden" id="rolePopover">
+<div class="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#6E6E73] dark:text-neutral-500">Perfil de Acesso</div>
+<button class="role-opt w-full text-left px-3 py-2 rounded-xl hover:bg-black/[0.04] dark:hover:bg-white/[0.06] flex items-center justify-between text-xs transition" data-role="supervisor" onclick="setUserRole('supervisor')" type="button">
+<span class="font-medium">Supervisor</span>
+<span class="text-[10px] text-[#6E6E73] dark:text-neutral-400">Gestão</span>
+</button>
+<button class="role-opt w-full text-left px-3 py-2 rounded-xl hover:bg-black/[0.04] dark:hover:bg-white/[0.06] flex items-center justify-between text-xs transition" data-role="coordenador" onclick="setUserRole('coordenador')" type="button">
+<span class="font-medium">Coordenador</span>
+<span class="text-[10px] text-[#6E6E73] dark:text-neutral-400">Gestão</span>
+</button>
+<button class="role-opt w-full text-left px-3 py-2 rounded-xl hover:bg-black/[0.04] dark:hover:bg-white/[0.06] flex items-center justify-between text-xs transition" data-role="dev" onclick="setUserRole('dev')" type="button">
+<span class="font-medium">Dev</span>
+<span class="text-[10px] text-[#6E6E73] dark:text-neutral-400">Total</span>
+</button>
+<div class="my-1.5 border-t border-black/[0.06] dark:border-white/[0.08]"></div>
+<button class="role-opt w-full text-left px-3 py-2 rounded-xl hover:bg-[#30D158]/10 flex items-center justify-between text-xs transition" data-role="atendente" onclick="setUserRole('atendente')" type="button">
+<span class="font-semibold text-[#30D158]">Atendente</span>
+<span class="text-[10px] text-[#30D158]/80">Minhas Pausas</span>
+</button>
+</div>
+</div>
+<!-- Botão Alternar Tema -->
+<button class="w-9 h-9 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] border border-black/[0.05] dark:border-white/[0.08] flex items-center justify-center transition" id="btnTheme" onclick="toggleTheme()" title="Alternar tema" type="button">
+<svg class="w-4 h-4 hidden dark:block text-neutral-300" fill="none" id="iconSun" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" x2="12" y1="1" y2="3"></line><line x1="12" x2="12" y1="21" y2="23"></line><line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line><line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line><line x1="1" x2="3" y1="12" y2="12"></line><line x1="21" x2="23" y1="12" y2="12"></line><line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line><line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line></svg>
+<svg class="w-4 h-4 block dark:hidden text-[#1D1D1F]" fill="none" id="iconMoon" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+</button>
+</div>
+</div>
+</header>
+<!-- Navegação Mobile -->
+<div class="lg:hidden sticky top-16 z-30 bg-[#F5F5F7]/90 dark:bg-[#090B10]/90 backdrop-blur-lg border-b border-black/[0.06] dark:border-white/[0.08] px-4 py-2 overflow-x-auto">
+<div class="flex items-center gap-1 min-w-max">
+<button class="nav-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-[#1C212E] text-[#1D1D1F] dark:text-white shadow-sm transition" data-tab="overview" onclick="switchTab('overview')">Visão Geral</button>
+<button class="nav-tab px-3.5 py-1.5 rounded-lg text-xs font-medium text-[#6E6E73] dark:text-neutral-400 hover:text-[#1D1D1F] dark:hover:text-white transition" data-tab="breaks" onclick="switchTab('breaks')">Planilha de Pausas</button>
+<button class="nav-tab px-3.5 py-1.5 rounded-lg text-xs font-medium text-[#6E6E73] dark:text-neutral-400 hover:text-[#1D1D1F] dark:hover:text-white transition" data-tab="schedule" onclick="switchTab('schedule')">Escala Mensal</button>
+<button class="nav-tab px-3.5 py-1.5 rounded-lg text-xs font-medium text-[#6E6E73] dark:text-neutral-400 hover:text-[#1D1D1F] dark:hover:text-white transition" data-tab="groups" onclick="switchTab('groups')">Grupos</button><button class="nav-tab px-3 py-1.5 rounded-xl text-xs font-medium transition manager-only" data-tab="history" onclick="switchTab('history')" type="button">Histórico</button>
+</div>
+</div>
+<!-- ===================================================================== -->
+<!-- CONTEÚDO PRINCIPAL                                                    -->
+<!-- ===================================================================== -->
+<main class="max-w-[1440px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
+<!-- =================================================================== -->
+<!-- ABA 1: VISÃO GERAL (DINÂMICA: GESTOR vs ATENDENTE)                  -->
+<!-- =================================================================== -->
+<section class="tab-section space-y-6 animate-fade-in" id="tab-overview">
+<!-- VISÃO GESTOR (Supervisor / Coordenador / Dev) -->
+<div class="space-y-6 hidden" id="managerOverview">
+<!-- Cabeçalho da Seção -->
+<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+<div class="space-y-1.5">
+<div class="flex flex-wrap items-center gap-2 text-[11px] font-medium text-[#6E6E73] dark:text-neutral-400">
+<span class="inline-flex items-center gap-1.5 text-[#FF453A] font-semibold tracking-wide uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-[#FF453A] live-dot"></span>
+                Ao Vivo
+              </span>
+<span>·</span>
+<span id="overviewDateLabel">Sexta-feira, 20 de novembro</span>
+<span>·</span>
+<span id="overviewRoundLabel">Pausas de 10 em 10 min</span>
+</div>
+<h1 class="text-2xl sm:text-3xl font-semibold tracking-tight leading-tight">Painel Operacional</h1>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<button class="h-9 px-3.5 rounded-xl bg-white dark:bg-[#141822] hover:bg-black/[0.03] dark:hover:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs font-medium flex items-center gap-1.5 shadow-sm transition" onclick="openManualBreakModal()" type="button">
+<span class="text-[#0A84FF] font-bold text-sm leading-none">+</span>
+              Pausa Manual
+            </button>
+<button class="h-9 px-3.5 rounded-xl bg-white dark:bg-[#141822] hover:bg-black/[0.03] dark:hover:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs font-medium flex items-center gap-1.5 shadow-sm transition" onclick="openManualDayOffModal()" type="button">
+<svg class="w-3.5 h-3.5 text-[#30D158]" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><rect height="18" rx="2" width="18" x="3" y="4"></rect><line x1="3" x2="21" y1="10" y2="10"></line></svg>
+              Folga Manual
+            </button>
+</div>
+</div>
+<!-- 4 KPIs Limpos -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+<div class="rounded-2xl bg-white dark:bg-[#11141C] border border-black/[0.06] dark:border-white/[0.07] p-5 shadow-sm">
+<div class="flex items-center gap-2 text-xs font-medium text-[#6E6E73] dark:text-neutral-400">
+<span class="w-2 h-2 rounded-full bg-[#30D158]"></span>
+              Efetivo no Turno
+            </div>
+<div class="mt-3 flex items-baseline justify-between gap-2">
+<span class="text-3xl font-semibold tracking-tight tabular-nums" id="kpiOnDuty">3</span>
+<span class="text-[11px] text-[#6E6E73] dark:text-neutral-500 truncate" id="kpiActiveShiftName">Turno A · Manhã</span>
+</div>
+</div>
+<div class="rounded-2xl bg-white dark:bg-[#11141C] border border-black/[0.06] dark:border-white/[0.07] p-5 shadow-sm">
+<div class="flex items-center gap-2 text-xs font-medium text-[#6E6E73] dark:text-neutral-400">
+<span class="w-2 h-2 rounded-full bg-[#0A84FF]"></span>
+              Em Pausa Agora
+            </div>
+<div class="mt-3 flex items-baseline justify-between gap-2">
+<span class="text-3xl font-semibold tracking-tight tabular-nums" id="kpiOnBreak">0</span>
+<span class="text-[11px] text-[#6E6E73] dark:text-neutral-500">em andamento</span>
+</div>
+</div>
+<div class="rounded-2xl bg-white dark:bg-[#11141C] border border-black/[0.06] dark:border-white/[0.07] p-5 shadow-sm">
+<div class="flex items-center gap-2 text-xs font-medium text-[#6E6E73] dark:text-neutral-400">
+<span class="w-2 h-2 rounded-full bg-[#FF9F0A]"></span>
+              Próximos 30 min
+            </div>
+<div class="mt-3 flex items-baseline justify-between gap-2">
+<span class="text-3xl font-semibold tracking-tight tabular-nums" id="kpiUpcoming">3</span>
+<span class="text-[11px] text-[#6E6E73] dark:text-neutral-500">agendadas</span>
+</div>
+</div>
+<div class="rounded-2xl bg-white dark:bg-[#11141C] border border-black/[0.06] dark:border-white/[0.07] p-5 shadow-sm">
+<div class="flex items-center gap-2 text-xs font-medium text-[#6E6E73] dark:text-neutral-400">
+<span class="w-2 h-2 rounded-full bg-neutral-400"></span>
+              Folgas Hoje
+            </div>
+<div class="mt-3 flex items-baseline justify-between gap-2">
+<span class="text-3xl font-semibold tracking-tight tabular-nums" id="kpiDaysOff">1</span>
+<span class="text-[11px] text-[#6E6E73] dark:text-neutral-500" id="kpiTotalAgents">de 12 atendentes</span>
+</div>
+</div>
+</div>
+<!-- Painéis Ao Vivo: Em Pausa Agora & Próximas Pausas (30 min) -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+<!-- Em Pausa Agora -->
+<div class="rounded-2xl bg-white dark:bg-[#11141C] border border-black/[0.06] dark:border-white/[0.07] p-5 sm:p-6 shadow-sm flex flex-col">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-[#0A84FF] live-dot"></span>
+<h2 class="text-sm font-semibold tracking-tight">Em Pausa Agora</h2>
+</div>
+<span class="text-xs font-medium text-[#6E6E73] dark:text-neutral-400" id="onBreakCountLabel">0 ativos</span>
+</div>
+<div class="space-y-3 flex-1" id="onBreakList">
+<div class="rounded-xl border border-dashed border-black/[0.08] dark:border-white/[0.08] py-10 text-center">
+<p class="text-xs font-medium text-[#6E6E73] dark:text-neutral-400">Nenhum atendente em pausa neste momento.</p>
+</div></div>
+</div>
+<!-- Próximas Pausas (Próx. 30 min) -->
+<div class="rounded-2xl bg-white dark:bg-[#11141C] border border-black/[0.06] dark:border-white/[0.07] p-5 sm:p-6 shadow-sm flex flex-col">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-[#FF9F0A]"></span>
+<h2 class="text-sm font-semibold tracking-tight">Próximas Pausas</h2>
+<span class="text-[11px] text-[#6E6E73] dark:text-neutral-500">Próx. 30 min</span>
+</div>
+<span class="text-xs font-medium text-[#6E6E73] dark:text-neutral-400" id="upcomingCountLabel">3 agendadas</span>
+</div>
+<div class="space-y-3 flex-1" id="upcomingList">
+<div class="rounded-xl bg-black/[0.025] dark:bg-white/[0.03] border border-black/[0.05] dark:border-white/[0.06] p-3.5 flex items-center justify-between gap-3">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-xl bg-[#FF9F0A]/15 text-[#FF9F0A] text-xs font-semibold flex items-center justify-center shrink-0">
+                  LF
+                </div>
+<div class="min-w-0">
+<p class="text-xs font-semibold truncate">Sd. Lucas Ferreira</p>
+<p class="text-[11px] text-[#6E6E73] dark:text-neutral-400 truncate">
+                    PA-01 · <span class="text-[#FF9F0A] font-medium">Pausa 10 (2ª) (10m)</span> · Turno A · Manhã
+                  </p>
+</div>
+</div>
+<div class="text-right shrink-0">
+<p class="text-xs font-semibold text-[#FF9F0A] tabular-nums">em 4 min</p>
+<p class="text-[11px] text-[#6E6E73] dark:text-neutral-400 tabular-nums">11:40 – 11:50</p>
+</div>
+</div>
+<div class="rounded-xl bg-black/[0.025] dark:bg-white/[0.03] border border-black/[0.05] dark:border-white/[0.06] p-3.5 flex items-center justify-between gap-3">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-xl bg-[#FF9F0A]/15 text-[#FF9F0A] text-xs font-semibold flex items-center justify-center shrink-0">
+                  MC
+                </div>
+<div class="min-w-0">
+<p class="text-xs font-semibold truncate">Cb. Mariana Costa</p>
+<p class="text-[11px] text-[#6E6E73] dark:text-neutral-400 truncate">
+                    PA-02 · <span class="text-[#FF9F0A] font-medium">Pausa 10 (2ª) (10m)</span> · Turno A · Manhã
+                  </p>
+</div>
+</div>
+<div class="text-right shrink-0">
+<p class="text-xs font-semibold text-[#FF9F0A] tabular-nums">em 4 min</p>
+<p class="text-[11px] text-[#6E6E73] dark:text-neutral-400 tabular-nums">11:40 – 11:50</p>
+</div>
+</div>
+<div class="rounded-xl bg-black/[0.025] dark:bg-white/[0.03] border border-black/[0.05] dark:border-white/[0.06] p-3.5 flex items-center justify-between gap-3">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-xl bg-[#FF9F0A]/15 text-[#FF9F0A] text-xs font-semibold flex items-center justify-center shrink-0">
+                  RO
+                </div>
+<div class="min-w-0">
+<p class="text-xs font-semibold truncate">Sd. Rafael Oliveira</p>
+<p class="text-[11px] text-[#6E6E73] dark:text-neutral-400 truncate">
+                    PA-03 · <span class="text-[#FF9F0A] font-medium">Pausa 10 (2ª) (10m)</span> · Turno A · Manhã
+                  </p>
+</div>
+</div>
+<div class="text-right shrink-0">
+<p class="text-xs font-semibold text-[#FF9F0A] tabular-nums">em 4 min</p>
+<p class="text-[11px] text-[#6E6E73] dark:text-neutral-400 tabular-nums">11:40 – 11:50</p>
+</div>
+</div></div>
+</div>
+</div>
+</div>
+<!-- VISÃO EXCLUSIVA DO ATENDENTE (quando logado como Atendente) -->
+<div class="space-y-6" id="agentSelfOverview">
+<!-- Cabeçalho Pessoal do Atendente -->
+<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+<div class="space-y-1.5">
+<div class="flex flex-wrap items-center gap-2 text-[11px] font-medium text-[#6E6E73] dark:text-neutral-400">
+<span class="inline-flex items-center gap-1.5 text-[#30D158] font-semibold uppercase tracking-wide">
+<span class="w-1.5 h-1.5 rounded-full bg-[#30D158] live-dot"></span>
+                Meu Turno
+              </span>
+<span>·</span>
+<span id="agentSelfDate">Sexta-feira, 20 de novembro</span>
+</div>
+<h1 class="text-2xl sm:text-3xl font-semibold tracking-tight leading-tight" id="agentSelfGreeting">Olá, Sd. Lucas Ferreira</h1>
+<p class="text-xs text-[#6E6E73] dark:text-neutral-400" id="agentSelfShiftInfo">PA-01 · Turno A · Manhã (06:00 – 12:00)</p>
+</div>
+<!-- Seletor de Atendente Logado (para facilitar uso/teste) -->
+<div class="flex items-center gap-2">
+<label class="text-xs text-[#6E6E73] dark:text-neutral-400" for="loggedAgentSelect">Logado como:</label>
+<select class="h-9 px-3 rounded-xl bg-white dark:bg-[#141822] border border-black/[0.08] dark:border-white/[0.1] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0A84FF]" id="loggedAgentSelect" onchange="changeLoggedAgent(this.value)"><option selected="" value="ag_1">Sd. Lucas Ferreira (PA-01 · 06:00–12:00)</option><option value="ag_2">Cb. Mariana Costa (PA-02 · 06:00–12:00)</option><option value="ag_3">Sd. Rafael Oliveira (PA-03 · 06:00–12:00)</option><option value="ag_4">3º Sgt. Bruno Almeida (PA-04 · 12:00–18:00)</option><option value="ag_5">Sd. Camila Rocha (PA-05 · 12:00–18:00)</option><option value="ag_6">Cb. Diego Martins (PA-06 · 12:00–18:00)</option><option value="ag_7">Sd. Juliana Ribeiro (PA-07 · 18:00–00:00)</option><option value="ag_8">Cb. Thiago Mendes (PA-08 · 18:00–00:00)</option><option value="ag_9">Sd. Patrícia Lima (PA-09 · 18:00–00:00)</option><option value="ag_10">3º Sgt. Carlos Eduardo (PA-10 · 00:00–06:00)</option><option value="ag_11">Sd. Fernanda Souza (PA-11 · 00:00–06:00)</option><option value="ag_12">Cb. André Carvalho (PA-12 · 00:00–06:00)</option></select>
+</div>
+</div>
+<!-- Banner de Pergunta de Notificação (quando ainda não respondeu) -->
+<div class="rounded-2xl bg-gradient-to-r from-[#0A84FF]/12 via-[#0A84FF]/6 to-transparent border border-[#0A84FF]/25 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hidden" id="notifPromptBanner">
+<div class="flex items-start gap-3.5">
+<div class="w-10 h-10 rounded-xl bg-[#0A84FF]/15 text-[#0A84FF] flex items-center justify-center shrink-0">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+</div>
+<div>
+<h3 class="text-sm font-semibold">Deseja receber notificação na área de trabalho?</h3>
+<p class="text-xs text-[#6E6E73] dark:text-neutral-400 mt-0.5">O sistema avisa 5 minutos antes e na hora exata de iniciar sua pausa, mesmo com a janela minimizada.</p>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="h-9 px-4 rounded-xl bg-[#0A84FF] hover:bg-[#0071E3] text-white text-xs font-medium transition" onclick="requestDesktopNotifications()" type="button">Sim, ativar alertas</button>
+<button class="h-9 px-3.5 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] hover:bg-black/[0.1] text-xs font-medium transition" onclick="dismissNotificationPrompt()" type="button">Agora não</button>
+</div>
+</div>
+<!-- Barra Discreta de Controle de Notificações (quando já respondeu) -->
+<div class="rounded-2xl bg-white dark:bg-[#11141C] border border-black/[0.06] dark:border-white/[0.07] px-5 py-3.5 flex flex-wrap items-center justify-between gap-3" id="notifStatusBar">
+<div class="flex items-center gap-2.5 text-xs">
+<span class="w-2 h-2 rounded-full bg-[#FF9F0A] shrink-0" id="notifStatusDot"></span>
+<span class="font-medium text-[#1D1D1F] dark:text-neutral-200" id="notifStatusText">Avisos ativos na aba · O Preview bloqueia pop-ups do sistema — baixe o .html para receber na área de trabalho</span>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<button class="h-8 px-3 rounded-lg text-xs font-medium bg-[#FF9F0A]/15 text-[#FF9F0A] hover:bg-[#FF9F0A]/25 transition" id="btnDownloadStandalone" onclick="downloadStandaloneHtml()" type="button">
+              Baixar .html (Área de Trabalho)
+            </button>
+<button class="h-8 px-3 rounded-lg text-xs font-medium bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] text-[#1D1D1F] dark:text-neutral-200 transition" id="btnTestNotif" onclick="testDesktopNotification()" type="button">
+              Testar aviso
+            </button>
+<button class="h-8 px-3 rounded-lg text-xs font-medium text-[#0A84FF] hover:bg-[#0A84FF]/10 transition" id="btnToggleNotif" onclick="toggleDesktopNotifications()" type="button">Desativar</button>
+</div>
+</div>
+<!-- Card Principal de Status Ao Vivo do Atendente -->
+<div class="rounded-2xl bg-white dark:bg-[#11141C] border border-black/[0.06] dark:border-white/[0.07] p-6 shadow-sm" id="agentHeroCard">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div>
+<span class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#30D158]">● Em Serviço · Próxima pausa agendada</span>
+<h2 class="text-2xl font-semibold mt-1">Pausa 10 (2ª) às <span class="tabular-nums">11:40</span></h2>
+<p class="text-xs text-[#6E6E73] dark:text-neutral-400 mt-1">Duração de 10 minutos (retorno às 11:50).</p>
+</div>
+<div class="text-left sm:text-right">
+<p class="text-[11px] uppercase tracking-wider text-[#6E6E73] dark:text-neutral-400">Faltam</p>
+<p class="text-3xl font-semibold text-[#FF9F0A] tabular-nums mt-0.5">3 min</p>
+</div>
+</div></div>
+<!-- Grade das Minhas Pausas de Hoje -->
+<div>
+<div class="flex items-center justify-between mb-3">
+<h2 class="text-sm font-semibold tracking-tight">Meus Horários de Pausa Hoje</h2>
+<span class="text-xs text-[#6E6E73] dark:text-neutral-400" id="agentTotalBreakMin">40 min programados</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="agentBreaksGrid">
+<div class="rounded-2xl bg-white dark:bg-[#11141C] border border-black/[0.06] dark:border-white/[0.07] p-5 shadow-sm">
+<div class="flex items-center justify-between gap-2 mb-3">
+<span class="text-xs font-semibold">Pausa 10 (1ª)</span>
+<span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-black/[0.05] dark:bg-white/[0.08] text-[#6E6E73] dark:text-neutral-400">Concluída</span>
+</div>
+<p class="text-2xl font-semibold tracking-tight tabular-nums">10:00 <span class="text-sm font-normal text-[#6E6E73] dark:text-neutral-500">– 10:10</span></p>
+<p class="text-[11px] text-[#6E6E73] dark:text-neutral-400 mt-1.5">Duração fixa: 10 minutos</p>
+</div>
+<div class="rounded-2xl bg-white dark:bg-[#11141C] border border-black/[0.06] dark:border-white/[0.07] p-5 shadow-sm">
+<div class="flex items-center justify-between gap-2 mb-3">
+<span class="text-xs font-semibold">Lanche</span>
+<span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-black/[0.05] dark:bg-white/[0.08] text-[#6E6E73] dark:text-neutral-400">Concluída</span>
+</div>
+<p class="text-2xl font-semibold tracking-tight tabular-nums">11:00 <span class="text-sm font-normal text-[#6E6E73] dark:text-neutral-500">– 11:20</span></p>
+<p class="text-[11px] text-[#6E6E73] dark:text-neutral-400 mt-1.5">Duração fixa: 20 minutos</p>
+</div>
+<div class="rounded-2xl bg-white dark:bg-[#11141C] border border-black/[0.06] dark:border-white/[0.07] p-5 shadow-sm">
+<div class="flex items-center justify-between gap-2 mb-3">
+<span class="text-xs font-semibold">Pausa 10 (2ª)</span>
+<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#FF9F0A]/15 text-[#FF9F0A]">Agendada</span>
+</div>
+<p class="text-2xl font-semibold tracking-tight tabular-nums">11:40 <span class="text-sm font-normal text-[#6E6E73] dark:text-neutral-500">– 11:50</span></p>
+<p class="text-[11px] text-[#6E6E73] dark:text-neutral-400 mt-1.5">Duração fixa: 10 minutos</p>
+</div></div>
+</div>
+<!-- Minhas Folgas no Mês -->
+<div class="rounded-2xl bg-white dark:bg-[#11141C] border border-black/[0.06] dark:border-white/[0.07] p-5 shadow-sm">
+<div class="flex items-center justify-between mb-3">
+<h2 class="text-sm font-semibold tracking-tight">Minhas Folgas Neste Mês</h2>
+<span class="text-xs text-[#6E6E73] dark:text-neutral-400" id="agentMonthOffCount">4 dias</span>
+</div>
+<div class="flex flex-wrap gap-2" id="agentMonthOffChips"><span class="px-3 py-1 rounded-xl bg-[#30D158]/15 text-[#30D158] text-xs font-semibold tabular-nums">07/11</span><span class="px-3 py-1 rounded-xl bg-[#30D158]/15 text-[#30D158] text-xs font-semibold tabular-nums">14/11</span><span class="px-3 py-1 rounded-xl bg-[#30D158]/15 text-[#30D158] text-xs font-semibold tabular-nums">21/11</span><span class="px-3 py-1 rounded-xl bg-[#30D158]/15 text-[#30D158] text-xs font-semibold tabular-nums">28/11</span></div>
+</div>
+</div>
+</section>
+<!-- =================================================================== -->
+<!-- ABA 2: PLANILHA DE PAUSAS                                           -->
+<!-- =================================================================== -->
+<section class="tab-section hidden space-y-5 animate-fade-in" id="tab-breaks">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<p class="text-[11px] font-medium uppercase tracking-wider text-[#6E6E73] dark:text-neutral-400">Detalhamento Diário</p>
+<h1 class="text-2xl font-semibold tracking-tight mt-0.5">Planilha de Pausas</h1>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<input class="h-9 px-3 rounded-xl bg-white dark:bg-[#141822] border border-black/[0.08] dark:border-white/[0.1] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0A84FF]" id="breaksDateInput" onchange="renderBreaksTable()" type="date"/>
+<select class="h-9 px-3 rounded-xl bg-white dark:bg-[#141822] border border-black/[0.08] dark:border-white/[0.1] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0A84FF]" id="breaksRoundSelect" onchange="changeRoundInterval(this.value)" title="Intervalo de horário redondo">
+<option value="10">Redondo: 10 em 10 min</option>
+<option value="15">Redondo: 15 em 15 min</option>
+<option value="30">Redondo: 30 em 30 min</option>
+</select>
+<button class="manager-only h-9 px-3.5 rounded-xl bg-[#0A84FF] hover:bg-[#0071E3] text-white text-xs font-medium transition hidden" onclick="openManualBreakModal()" type="button">+ Pausa Manual</button>
+</div>
+</div>
+<!-- Filtros -->
+<div class="rounded-2xl bg-white dark:bg-[#11141C] border border-black/[0.06] dark:border-white/[0.07] p-3.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+<div class="relative flex-1">
+<svg class="w-4 h-4 text-[#6E6E73] dark:text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" x2="16.65" y1="21" y2="16.65"></line></svg>
+<input class="w-full h-9 pl-9 pr-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.05] text-xs focus:outline-none focus:ring-2 focus:ring-[#0A84FF]" id="breaksSearch" oninput="renderBreaksTable()" placeholder="Buscar por nome, graduação ou P.A..." type="text"/>
+</div>
+<select class="h-9 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.05] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0A84FF]" id="breaksGroupFilter" onchange="renderBreaksTable()">
+<option value="all">Todos os Grupos</option>
+</select>
+<select class="h-9 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.05] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0A84FF]" id="breaksStatusFilter" onchange="renderBreaksTable()">
+<option value="all">Todos os Status</option>
+<option value="on_break">Em Pausa</option>
+<option value="working">Em Serviço</option>
+<option value="off_shift">Fora do Turno</option>
+<option value="day_off">De Folga</option>
+</select>
+</div>
+<!-- Tabela Responsiva -->
+<div class="rounded-2xl bg-white dark:bg-[#11141C] border border-black/[0.06] dark:border-white/[0.07] shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[920px]">
+<thead>
+<tr class="border-b border-black/[0.06] dark:border-white/[0.08] text-[11px] font-semibold uppercase tracking-wider text-[#6E6E73] dark:text-neutral-400 bg-black/[0.02] dark:bg-white/[0.02]">
+<th class="py-3.5 px-4">Atendente / P.A.</th>
+<th class="py-3.5 px-4">Grupo / Expediente</th>
+<th class="py-3.5 px-4">Status</th>
+<th class="py-3.5 px-4">1ª Pausa 10 (10m)</th>
+<th class="py-3.5 px-4">Lanche (20m)</th>
+<th class="py-3.5 px-4">2ª Pausa 10 (10m)</th>
+<th class="py-3.5 px-4 text-center">Total</th>
+<th class="py-3.5 px-4 text-center">Folgas Mês</th>
+<th class="py-3.5 px-4 text-right manager-only hidden">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-black/[0.05] dark:divide-white/[0.06] text-xs" id="breaksTableBody"></tbody>
+</table>
+</div>
+</div>
+</section>
+<!-- =================================================================== -->
+<!-- ABA 3: ESCALA MENSAL DE FOLGAS (1 A 31)                             -->
+<!-- =================================================================== -->
+<section class="tab-section hidden space-y-5 animate-fade-in" id="tab-schedule">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<p class="text-[11px] font-medium uppercase tracking-wider text-[#6E6E73] dark:text-neutral-400">Grade Interativa (Clique na célula para alternar T / F)</p>
+<h1 class="text-2xl font-semibold tracking-tight mt-0.5">Escala Mensal de Folgas</h1>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<input class="h-9 px-3 rounded-xl bg-white dark:bg-[#141822] border border-black/[0.08] dark:border-white/[0.1] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0A84FF]" id="scheduleMonthInput" onchange="renderScheduleTable()" type="month"/>
+<select class="h-9 px-3 rounded-xl bg-white dark:bg-[#141822] border border-black/[0.08] dark:border-white/[0.1] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0A84FF]" id="scheduleGroupFilter" onchange="renderScheduleTable()">
+<option value="all">Todos os Grupos</option>
+</select>
+<button class="manager-only h-9 px-3.5 rounded-xl bg-[#30D158] hover:bg-[#28B84C] text-black font-semibold text-xs transition hidden" onclick="openModal('modalAutoDaysOff')" type="button">Gerar Folgas Automáticas</button>
+</div>
+</div>
+<div class="rounded-2xl bg-white dark:bg-[#11141C] border border-black/[0.06] dark:border-white/[0.07] shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-center border-collapse text-xs" id="scheduleTable"></table>
+</div>
+</div>
+</section>
+<!-- =================================================================== -->
+<!-- ABA 4: GRUPOS & HORÁRIOS DE TRABALHO                                -->
+<!-- =================================================================== -->
+<section class="tab-section hidden space-y-5 animate-fade-in" id="tab-groups">
+<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+<div>
+<p class="text-[11px] font-medium uppercase tracking-wider text-[#6E6E73] dark:text-neutral-400">Turnos &amp; Expedientes (Suporte a Virada de Meia-Noite)</p>
+<h1 class="text-2xl font-semibold tracking-tight mt-0.5">Grupos de Trabalho</h1>
+</div>
+<button class="manager-only h-9 px-4 rounded-xl bg-[#0A84FF] hover:bg-[#0071E3] text-white text-xs font-medium transition hidden" onclick="openGroupModal()" type="button">+ Novo Grupo</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="groupsGrid"></div>
+</section>
+<section class="tab-section hidden space-y-5 animate-in" id="tab-history">
+<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+<div class="space-y-1">
+<p class="text-[11px] font-semibold uppercase tracking-wider text-[#6E6E73] dark:text-neutral-400">Auditoria &amp; Rastreabilidade</p>
+<h1 class="text-2xl sm:text-3xl font-semibold tracking-tight">Histórico de Modificações</h1>
+<p class="text-xs text-[#6E6E73] dark:text-neutral-400">Registro local das alterações feitas neste navegador.</p>
+</div>
+<div class="flex items-center gap-2">
+<button class="h-9 px-3.5 rounded-xl bg-white dark:bg-[#141822] hover:bg-black/[0.03] dark:hover:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs font-medium transition" onclick="exportHistoryCSV()" type="button">Exportar CSV</button>
+<button class="h-9 px-3.5 rounded-xl bg-[#FF453A]/10 hover:bg-[#FF453A]/20 text-[#FF453A] text-xs font-medium transition" onclick="clearHistory()" type="button">Limpar Histórico</button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+<div class="p-4 rounded-2xl bg-white dark:bg-[#11151E] border border-black/[0.06] dark:border-white/[0.08]"><p class="text-[11px] text-[#6E6E73] dark:text-neutral-400">Registros</p><p class="text-2xl font-semibold tabular-nums" id="historyTotal">0</p></div>
+<div class="p-4 rounded-2xl bg-white dark:bg-[#11151E] border border-black/[0.06] dark:border-white/[0.08]"><p class="text-[11px] text-[#6E6E73] dark:text-neutral-400">Última alteração</p><p class="text-sm font-semibold" id="historyLast">—</p></div>
+<div class="p-4 rounded-2xl bg-white dark:bg-[#11151E] border border-black/[0.06] dark:border-white/[0.08]"><p class="text-[11px] text-[#6E6E73] dark:text-neutral-400">Armazenamento</p><p class="text-sm font-semibold">Neste dispositivo</p></div>
+</div>
+<div class="rounded-2xl bg-white dark:bg-[#11151E] border border-black/[0.06] dark:border-white/[0.08] overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[640px]">
+<thead><tr class="border-b border-black/[0.06] dark:border-white/[0.08] text-[10px] font-semibold uppercase tracking-wider text-[#6E6E73] dark:text-neutral-400"><th class="py-3.5 px-5">Data e hora</th><th class="py-3.5 px-4">Perfil</th><th class="py-3.5 px-4">Categoria</th><th class="py-3.5 px-5">Descrição</th></tr></thead>
+<tbody class="divide-y divide-black/[0.05] dark:divide-white/[0.06] text-xs" id="historyTableBody"></tbody>
+</table>
+</div>
+</div>
+</section></main>
+<!-- ===================================================================== -->
+<!-- MODAIS                                                                -->
+<!-- ===================================================================== -->
+<!-- Modal: Pergunta Automática de Notificação (Atendente) -->
+<div class="modal-backdrop fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden" id="modalNotifPrompt">
+<div class="w-full max-w-md rounded-3xl bg-white dark:bg-[#141822] border border-black/[0.08] dark:border-white/[0.1] p-6 shadow-2xl space-y-4">
+<div class="w-12 h-12 rounded-2xl bg-[#0A84FF]/15 text-[#0A84FF] flex items-center justify-center">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+</div>
+<div>
+<h3 class="text-lg font-semibold tracking-tight">Receber avisos na área de trabalho?</h3>
+<p class="text-xs text-[#6E6E73] dark:text-neutral-400 mt-1.5 leading-relaxed">
+          Podemos enviar uma notificação direto na sua área de trabalho <strong>5 minutos antes</strong> e na <strong>hora exata</strong> de iniciar cada pausa do seu turno.
+        </p>
+</div>
+<div class="flex flex-col sm:flex-row gap-2 pt-2">
+<button class="flex-1 h-10 rounded-xl bg-[#0A84FF] hover:bg-[#0071E3] text-white text-xs font-semibold transition" onclick="requestDesktopNotifications()" type="button">Sim, quero ser avisado</button>
+<button class="h-10 px-4 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] hover:bg-black/[0.1] text-xs font-medium transition" onclick="dismissNotificationPrompt()" type="button">Agora não</button>
+</div>
+</div>
+</div>
+<!-- Modal: Inserir Pausa Manual -->
+<div class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" id="modalManualBreak">
+<div class="w-full max-w-md rounded-3xl bg-white dark:bg-[#141822] border border-black/[0.08] dark:border-white/[0.1] p-6 shadow-2xl">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-base font-semibold">Inserir Pausa Manual</h3>
+<button class="w-8 h-8 rounded-full hover:bg-black/[0.05] dark:hover:bg-white/[0.08] flex items-center justify-center text-sm" onclick="closeModal('modalManualBreak')" type="button">✕</button>
+</div>
+<form class="space-y-3.5" id="formManualBreak" onsubmit="submitManualBreak(event)">
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Atendente</label>
+<select class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs" id="mbAgent" onchange="refreshManualBreakSlots()" required=""></select>
+<p class="text-[11px] text-[#0A84FF] mt-1" id="mbShiftHint"></p>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Data</label>
+<input class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs" id="mbDate" onchange="refreshManualBreakSlots()" required="" type="date"/>
+</div>
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Tipo &amp; Duração Fixa</label>
+<select class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs" id="mbType" onchange="refreshManualBreakSlots()" required="">
+<option value="Pausa 10 (1ª)">1ª Pausa 10 · 10 min</option>
+<option value="Lanche">Lanche · 20 min</option>
+<option value="Pausa 10 (2ª)">2ª Pausa 10 · 10 min</option>
+</select>
+</div>
+</div>
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Horário Redondo de Início (Dentro do Expediente)</label>
+<select class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs tabular-nums" id="mbStart" required=""></select>
+</div>
+<div class="hidden text-[11px] text-[#FF453A] bg-[#FF453A]/10 px-3 py-2 rounded-xl" id="mbValidationMsg"></div>
+<div class="flex justify-end gap-2 pt-2">
+<button class="h-9 px-4 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] text-xs font-medium" onclick="closeModal('modalManualBreak')" type="button">Cancelar</button>
+<button class="h-9 px-4 rounded-xl bg-[#0A84FF] hover:bg-[#0071E3] text-white text-xs font-medium" type="submit">Salvar Pausa</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Modal: Inserir Folga Manual -->
+<div class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" id="modalManualDayOff">
+<div class="w-full max-w-md rounded-3xl bg-white dark:bg-[#141822] border border-black/[0.08] dark:border-white/[0.1] p-6 shadow-2xl">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-base font-semibold">Inserir Folga Manual</h3>
+<button class="w-8 h-8 rounded-full hover:bg-black/[0.05] dark:hover:bg-white/[0.08] flex items-center justify-center text-sm" onclick="closeModal('modalManualDayOff')" type="button">✕</button>
+</div>
+<form class="space-y-3.5" onsubmit="submitManualDayOff(event)">
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Atendente</label>
+<select class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs" id="mdAgent" required=""></select>
+</div>
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Data da Folga</label>
+<input class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs" id="mdDate" required="" type="date"/>
+</div>
+<div class="flex justify-end gap-2 pt-2">
+<button class="h-9 px-4 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] text-xs font-medium" onclick="closeModal('modalManualDayOff')" type="button">Cancelar</button>
+<button class="h-9 px-4 rounded-xl bg-[#30D158] hover:bg-[#28B84C] text-black font-semibold text-xs" type="submit">Registrar Folga</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Modal: Gerar Pausas Mensais Automáticas -->
+<div class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" id="modalAutoBreaks">
+<div class="w-full max-w-md rounded-3xl bg-white dark:bg-[#141822] border border-black/[0.08] dark:border-white/[0.1] p-6 shadow-2xl">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-base font-semibold">Gerar Pausas Automáticas (Mês)</h3>
+<button class="w-8 h-8 rounded-full hover:bg-black/[0.05] dark:hover:bg-white/[0.08] flex items-center justify-center text-sm" onclick="closeModal('modalAutoBreaks')" type="button">✕</button>
+</div>
+<p class="text-xs text-[#6E6E73] dark:text-neutral-400 mb-4 leading-relaxed">
+        Distribui automaticamente a sequência <strong>1ª Pausa 10 (10m) → Lanche (20m) → 2ª Pausa 10 (10m)</strong> em horários redondos dentro do expediente de cada grupo, escalonando os atendentes e pulando dias de folga.
+      </p>
+<form class="space-y-3.5" onsubmit="submitAutoBreaks(event)">
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Mês</label>
+<input class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs" id="abMonth" required="" type="month"/>
+</div>
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Horário Redondo</label>
+<select class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs" id="abRound">
+<option value="10">10 em 10 min</option>
+<option value="15">15 em 15 min</option>
+<option value="30">30 em 30 min</option>
+</select>
+</div>
+</div>
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Aplicar em</label>
+<select class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs" id="abGroup">
+<option value="all">Todos os Grupos</option>
+</select>
+</div>
+<div class="flex justify-end gap-2 pt-2">
+<button class="h-9 px-4 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] text-xs font-medium" onclick="closeModal('modalAutoBreaks')" type="button">Cancelar</button>
+<button class="h-9 px-4 rounded-xl bg-[#0A84FF] hover:bg-[#0071E3] text-white text-xs font-medium" type="submit">Gerar Mês Inteiro</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Modal: Gerar Folgas Mensais Automáticas -->
+<div class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" id="modalAutoDaysOff">
+<div class="w-full max-w-md rounded-3xl bg-white dark:bg-[#141822] border border-black/[0.08] dark:border-white/[0.1] p-6 shadow-2xl">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-base font-semibold">Gerar Folgas Mensais Automáticas</h3>
+<button class="w-8 h-8 rounded-full hover:bg-black/[0.05] dark:hover:bg-white/[0.08] flex items-center justify-center text-sm" onclick="closeModal('modalAutoDaysOff')" type="button">✕</button>
+</div>
+<form class="space-y-3.5" onsubmit="submitAutoDaysOff(event)">
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Mês</label>
+<input class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs" id="adMonth" required="" type="month"/>
+</div>
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Regime de Escala</label>
+<select class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs" id="adRegime">
+<option value="6x1">Escala 6x1 (1 folga/sem)</option>
+<option value="5x2">Escala 5x2 (2 folgas/sem)</option>
+<option value="12x36">Escala 12x36 (Dia sim/não)</option>
+</select>
+</div>
+</div>
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Grupo</label>
+<select class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs" id="adGroup">
+<option value="all">Todos os Grupos</option>
+</select>
+</div>
+<div class="flex justify-end gap-2 pt-2">
+<button class="h-9 px-4 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] text-xs font-medium" onclick="closeModal('modalAutoDaysOff')" type="button">Cancelar</button>
+<button class="h-9 px-4 rounded-xl bg-[#30D158] hover:bg-[#28B84C] text-black font-semibold text-xs" type="submit">Gerar Escala</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Modal: Novo Atendente -->
+<div class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" id="modalAddAgent">
+<div class="w-full max-w-md rounded-3xl bg-white dark:bg-[#141822] border border-black/[0.08] dark:border-white/[0.1] p-6 shadow-2xl">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-base font-semibold">Novo Atendente COPOM 190</h3>
+<button class="w-8 h-8 rounded-full hover:bg-black/[0.05] dark:hover:bg-white/[0.08] flex items-center justify-center text-sm" onclick="closeModal('modalAddAgent')" type="button">✕</button>
+</div>
+<form class="space-y-3.5" onsubmit="submitAddAgent(event)">
+<div class="grid grid-cols-3 gap-3">
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Posto/Grad.</label>
+<select class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs" id="naRank">
+<option value="Sd.">Sd.</option>
+<option value="Cb.">Cb.</option>
+<option value="3º Sgt.">3º Sgt.</option>
+<option value="2º Sgt.">2º Sgt.</option>
+<option value="Op.">Op.</option>
+</select>
+</div>
+<div class="col-span-2">
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Nome de Guerra</label>
+<input class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs" id="naName" placeholder="Ex: Silva Neto" required="" type="text"/>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Posição (P.A.)</label>
+<input class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs uppercase" id="naPA" placeholder="Ex: PA-13" required="" type="text"/>
+</div>
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Grupo / Turno</label>
+<select class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs" id="naGroup" required=""></select>
+</div>
+</div>
+<div class="flex justify-end gap-2 pt-2">
+<button class="h-9 px-4 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] text-xs font-medium" onclick="closeModal('modalAddAgent')" type="button">Cancelar</button>
+<button class="h-9 px-4 rounded-xl bg-[#0A84FF] hover:bg-[#0071E3] text-white text-xs font-medium" type="submit">Adicionar</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Modal: Criar / Editar Grupo & Horário de Trabalho -->
+<div class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" id="modalGroup">
+<div class="w-full max-w-md rounded-3xl bg-white dark:bg-[#141822] border border-black/[0.08] dark:border-white/[0.1] p-6 shadow-2xl">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-base font-semibold" id="modalGroupTitle">Novo Grupo &amp; Expediente</h3>
+<button class="w-8 h-8 rounded-full hover:bg-black/[0.05] dark:hover:bg-white/[0.08] flex items-center justify-center text-sm" onclick="closeModal('modalGroup')" type="button">✕</button>
+</div>
+<form class="space-y-3.5" onsubmit="submitGroup(event)">
+<input id="grId" type="hidden"/>
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Nome do Grupo</label>
+<input class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs" id="grName" placeholder="Ex: Turno A · Manhã" required="" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Início do Expediente</label>
+<input class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs tabular-nums" id="grStart" required="" type="time"/>
+</div>
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Fim do Expediente</label>
+<input class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs tabular-nums" id="grEnd" required="" type="time"/>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Máx. Pausas Simultâneas</label>
+<input class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs" id="grMaxSimult" max="10" min="1" required="" type="number" value="2"/>
+</div>
+<div>
+<label class="block text-xs font-medium text-[#6E6E73] dark:text-neutral-400 mb-1">Cor de Identificação</label>
+<select class="w-full h-10 px-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.08] dark:border-white/[0.1] text-xs" id="grColor">
+<option value="#0A84FF">Azul COPOM</option>
+<option value="#30D158">Verde Tático</option>
+<option value="#FF9F0A">Âmbar</option>
+<option value="#BF5AF2">Roxo Noturno</option>
+<option value="#64D2FF">Ciano</option>
+</select>
+</div>
+</div>
+<label class="hidden flex items-center gap-2 text-xs text-[#6E6E73] dark:text-neutral-300 pt-1" id="grRecalcWrap">
+<input checked="" class="rounded" id="grRecalc" type="checkbox"/>
+          Reajustar automaticamente as pausas deste mês para o novo expediente
+        </label>
+<div class="flex justify-end gap-2 pt-2">
+<button class="h-9 px-4 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] text-xs font-medium" onclick="closeModal('modalGroup')" type="button">Cancelar</button>
+<button class="h-9 px-4 rounded-xl bg-[#0A84FF] hover:bg-[#0071E3] text-white text-xs font-medium" type="submit">Salvar Grupo</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Modal: Gerenciar Pausas do Dia do Atendente -->
+<div class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" id="modalAgentBreaks">
+<div class="w-full max-w-md rounded-3xl bg-white dark:bg-[#141822] border border-black/[0.08] dark:border-white/[0.1] p-6 shadow-2xl space-y-4">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="text-base font-semibold" id="mabTitle">Pausas do Dia</h3>
+<p class="text-xs text-[#6E6E73] dark:text-neutral-400" id="mabSubtitle"></p>
+</div>
+<button class="w-8 h-8 rounded-full hover:bg-black/[0.05] dark:hover:bg-white/[0.08] flex items-center justify-center text-sm" onclick="closeModal('modalAgentBreaks')" type="button">✕</button>
+</div>
+<div class="space-y-2 max-h-72 overflow-y-auto" id="mabList"></div>
+<div class="flex justify-end gap-2 pt-1">
+<button class="h-9 px-4 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] text-xs font-medium" onclick="closeModal('modalAgentBreaks')" type="button">Fechar</button>
+</div>
+</div>
+</div>
+<!-- Modal: Confirmar Restauração -->
+<div class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" id="modalResetConfirm">
+<div class="w-full max-w-sm rounded-3xl bg-white dark:bg-[#141822] border border-black/[0.08] dark:border-white/[0.1] p-6 shadow-2xl space-y-4">
+<h3 class="text-base font-semibold">Restaurar dados padrão?</h3>
+<p class="text-xs text-[#6E6E73] dark:text-neutral-400">Todas as alterações manuais serão substituídas pelos 4 grupos e 12 atendentes padrão com pausas ativas no horário atual.</p>
+<div class="flex justify-end gap-2">
+<button class="h-9 px-4 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] text-xs font-medium" onclick="closeModal('modalResetConfirm')" type="button">Cancelar</button>
+<button class="h-9 px-4 rounded-xl bg-[#FF453A] hover:bg-[#E0352B] text-white text-xs font-medium" onclick="resetToDefaultData()" type="button">Restaurar</button>
+</div>
+</div>
+</div>
+<!-- Container de Toasts -->
+<div class="fixed bottom-5 right-5 z-[60] flex flex-col gap-2 max-w-sm w-full pointer-events-none" id="toastContainer"></div>
+<!-- ===================================================================== -->
+<!-- LÓGICA COMPLETA DO SISTEMA                                            -->
+<!-- ===================================================================== -->
+<script>
+    // =========================================================================
+    // CONSTANTES E REGRAS FIXAS COPOM 190
+    // =========================================================================
+    const STORAGE_KEY = 'copom190_gestao_v5';
+    const BREAK_TYPES = {
+      'Pausa 10 (1ª)': { duration: 10, order: 1, short: '1ª Pausa 10' },
+      'Lanche':        { duration: 20, order: 2, short: 'Lanche' },
+      'Pausa 10 (2ª)': { duration: 10, order: 3, short: '2ª Pausa 10' },
+    };
+
+    const state = {
+      activeTab: 'overview',
+      theme: 'dark',
+      roundInterval: 10, // 10, 15 ou 30 min
+      simulatedTime: null, // "HH:MM" ou null
+      userRole: 'supervisor', // 'supervisor' | 'coordenador' | 'dev' | 'atendente'
+      loggedAgentId: null,
+      notifications: {
+        asked: false,
+        enabled: false,
+        notifiedKeys: {},
+      },
+      groups: [],
+      agents: [],
+      breaks: {},  // { "YYYY-MM-DD": { agentId: [ { id, type, start, end } ] } }
+      daysOff: {}, // { "YYYY-MM-DD": { agentId: true } }
+      history: [],
+    };
+
+    let lastAuditSnapshot = null;
+    let scheduleDraft = null;
+
+    function createAuditSnapshot() {
+      return {
+        agents: JSON.stringify(state.agents),
+        groups: JSON.stringify(state.groups),
+        breaks: JSON.stringify(state.breaks),
+        daysOff: JSON.stringify(state.daysOff),
+        settings: JSON.stringify({
+          userRole: state.userRole,
+          roundInterval: state.roundInterval,
+          simulatedTime: state.simulatedTime,
+          theme: state.theme,
+        }),
+      };
+    }
+
+    function saveAuditEntry(category, description) {
+      if (!Array.isArray(state.history)) state.history = [];
+      state.history.unshift({
+        id: `hist_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        timestamp: new Date().toISOString(),
+        role: state.userRole || 'sistema',
+        category,
+        description,
+      });
+      state.history = state.history.slice(0, 500);
+    }
+
+    function detectAuditChanges(previous, current) {
+      if (!previous) return;
+      const labels = {
+        agents: ['Equipe', 'Cadastro ou composição da equipe atualizado.'],
+        groups: ['Grupos', 'Grupos ou expedientes atualizados.'],
+        breaks: ['Pausas', 'Horários de pausa adicionados, alterados ou removidos.'],
+        daysOff: ['Folgas', 'Registros de folga atualizados.'],
+        settings: ['Configurações', 'Preferências operacionais atualizadas.'],
+      };
+      Object.keys(labels).forEach((key) => {
+        if (previous[key] !== current[key]) {
+          saveAuditEntry(labels[key][0], labels[key][1]);
+        }
+      });
+    }
+
+    // =========================================================================
+    // UTILITÁRIOS DE DATA, HORA E EXPEDIENTE (COM VIRADA DE MEIA-NOITE)
+    // =========================================================================
+    function pad2(n) {
+      return String(n).padStart(2, '0');
+    }
+
+    function formatDateKey(d) {
+      return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    }
+
+    function formatMonthKey(d) {
+      return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
+    }
+
+    function formatDatePtBR(d) {
+      return d.toLocaleDateString('pt-BR', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+      }).replace(/^\w/, (c) => c.toUpperCase());
+    }
+
+    function timeToMinutes(hhmm) {
+      const [h, m] = (hhmm || '00:00').split(':').map(Number);
+      return ((h % 24) * 60) + (m % 60);
+    }
+
+    function minutesToTime(totalMin) {
+      const norm = ((totalMin % 1440) + 1440) % 1440;
+      const h = Math.floor(norm / 60);
+      const m = norm % 60;
+      return `${pad2(h)}:${pad2(m)}`;
+    }
+
+    function getShiftDurationMinutes(group) {
+      if (!group) return 360;
+      const s = timeToMinutes(group.start);
+      const e = timeToMinutes(group.end);
+      return e > s ? (e - s) : (1440 - s + e);
+    }
+
+    // Converte um minuto do dia (0..1439) para offset relativo ao início do turno
+    function toShiftOffset(minuteOfDay, shiftStartMin) {
+      let off = minuteOfDay - shiftStartMin;
+      if (off < 0) off += 1440;
+      return off;
+    }
+
+    function isMinuteInsideShift(minuteOfDay, group) {
+      if (!group) return true;
+      const s = timeToMinutes(group.start);
+      const dur = getShiftDurationMinutes(group);
+      const off = toShiftOffset(minuteOfDay, s);
+      return off >= 0 && off < dur;
+    }
+
+    function isBreakInsideShift(startHHMM, durationMin, group) {
+      if (!group) return true;
+      const s = timeToMinutes(group.start);
+      const shiftDur = getShiftDurationMinutes(group);
+      const bStartOff = toShiftOffset(timeToMinutes(startHHMM), s);
+      return bStartOff >= 0 && (bStartOff + durationMin) <= shiftDur;
+    }
+
+    function getBreakDuration(br) {
+      if (BREAK_TYPES[br.type]) return BREAK_TYPES[br.type].duration;
+      const s = timeToMinutes(br.start);
+      let e = timeToMinutes(br.end);
+      if (e <= s) e += 1440;
+      return e - s;
+    }
+
+    function sortBreaksInShift(list, group) {
+      const gStart = group ? timeToMinutes(group.start) : 0;
+      return [...list].sort((a, b) => {
+        const oa = toShiftOffset(timeToMinutes(a.start), gStart);
+        const ob = toShiftOffset(timeToMinutes(b.start), gStart);
+        return oa - ob;
+      });
+    }
+
+    function getEffectiveNow() {
+      const real = new Date();
+      if (!state.simulatedTime) return real;
+      const [h, m] = state.simulatedTime.split(':').map(Number);
+      const sim = new Date(real.getTime());
+      sim.setHours(h, m, real.getSeconds(), 0);
+      return sim;
+    }
+
+    function getGroupById(id) {
+      return state.groups.find((g) => g.id === id) || null;
+    }
+
+    function getAgentById(id) {
+      return state.agents.find((a) => a.id === id) || null;
+    }
+
+    function getInitials(name) {
+      return name.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
+    }
+
+    function isManagerRole() {
+      return state.userRole !== 'atendente';
+    }
+
+    function getLoggedAgent() {
+      return getAgentById(state.loggedAgentId) || state.agents[0] || null;
+    }
+
+    // =========================================================================
+    // PERSISTÊNCIA & DADOS INICIAIS INTELIGENTES
+    // =========================================================================
+    function saveState() {
+      try {
+        const snapshot = createAuditSnapshot();
+        detectAuditChanges(lastAuditSnapshot, snapshot);
+        lastAuditSnapshot = snapshot;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (err) {
+        console.warn('Não foi possível salvar os dados:', err);
+        showToast('Não foi possível salvar. Verifique o espaço disponível no navegador.', 'warning');
+      }
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+          seedDefaultData();
+          state.history = [];
+          lastAuditSnapshot = createAuditSnapshot();
+          return;
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed || !Array.isArray(parsed.groups) || !parsed.groups.length) {
+          seedDefaultData();
+          state.history = [];
+          lastAuditSnapshot = createAuditSnapshot();
+          return;
+        }
+        Object.assign(state, parsed);
+        if (!state.notifications) {
+          state.notifications = { asked: false, enabled: false, notifiedKeys: {} };
+        }
+        if (!Array.isArray(state.history)) state.history = [];
+        lastAuditSnapshot = createAuditSnapshot();
+        if (!state.loggedAgentId && state.agents.length) {
+          state.loggedAgentId = state.agents[0].id;
+        }
+      } catch (err) {
+        console.warn('Erro ao carregar dados salvos, restaurando padrão:', err);
+        seedDefaultData();
+        state.history = [];
+        lastAuditSnapshot = createAuditSnapshot();
+      }
+    }
+
+    function seedDefaultData() {
+      state.roundInterval = 10;
+      state.simulatedTime = null;
+      state.groups = [
+        { id: 'grp_a', name: 'Turno A · Manhã',     start: '06:00', end: '12:00', maxSimultaneous: 2, color: '#0A84FF' },
+        { id: 'grp_b', name: 'Turno B · Tarde',     start: '12:00', end: '18:00', maxSimultaneous: 2, color: '#30D158' },
+        { id: 'grp_c', name: 'Turno C · Noite',     start: '18:00', end: '00:00', maxSimultaneous: 2, color: '#FF9F0A' },
+        { id: 'grp_d', name: 'Turno D · Madrugada', start: '00:00', end: '06:00', maxSimultaneous: 2, color: '#BF5AF2' },
+      ];
+
+      state.agents = [
+        { id: 'ag_1',  rank: 'Sd.',     name: 'Lucas Ferreira',   pa: 'PA-01', groupId: 'grp_a' },
+        { id: 'ag_2',  rank: 'Cb.',     name: 'Mariana Costa',    pa: 'PA-02', groupId: 'grp_a' },
+        { id: 'ag_3',  rank: 'Sd.',     name: 'Rafael Oliveira',  pa: 'PA-03', groupId: 'grp_a' },
+        { id: 'ag_4',  rank: '3º Sgt.', name: 'Bruno Almeida',    pa: 'PA-04', groupId: 'grp_b' },
+        { id: 'ag_5',  rank: 'Sd.',     name: 'Camila Rocha',     pa: 'PA-05', groupId: 'grp_b' },
+        { id: 'ag_6',  rank: 'Cb.',     name: 'Diego Martins',    pa: 'PA-06', groupId: 'grp_b' },
+        { id: 'ag_7',  rank: 'Sd.',     name: 'Juliana Ribeiro',  pa: 'PA-07', groupId: 'grp_c' },
+        { id: 'ag_8',  rank: 'Cb.',     name: 'Thiago Mendes',    pa: 'PA-08', groupId: 'grp_c' },
+        { id: 'ag_9',  rank: 'Sd.',     name: 'Patrícia Lima',    pa: 'PA-09', groupId: 'grp_c' },
+        { id: 'ag_10', rank: '3º Sgt.', name: 'Carlos Eduardo',   pa: 'PA-10', groupId: 'grp_d' },
+        { id: 'ag_11', rank: 'Sd.',     name: 'Fernanda Souza',   pa: 'PA-11', groupId: 'grp_d' },
+        { id: 'ag_12', rank: 'Cb.',     name: 'André Carvalho',   pa: 'PA-12', groupId: 'grp_d' },
+      ];
+
+      state.breaks = {};
+      state.daysOff = {};
+
+      const now = new Date();
+      const monthKey = formatMonthKey(now);
+      const todayKey = formatDateKey(now);
+
+      // Gera folgas 6x1 para o mês atual e pausas redondas para todo o mês
+      generateMonthlyDaysOff(monthKey, '6x1', 'all', true);
+      generateMonthlyBreaks(monthKey, 10, 'all', true);
+
+      // Ajusta as pausas de hoje no turno ativo para mostrar atividade ao vivo imediatamente
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+      const activeGroup = state.groups.find((g) => isMinuteInsideShift(nowMin, g)) || state.groups[0];
+      const activeAgents = state.agents.filter((a) => a.groupId === activeGroup.id);
+
+      // Garante que os agentes do turno ativo estejam escalados hoje
+      activeAgents.forEach((ag) => {
+        if (state.daysOff[todayKey]) delete state.daysOff[todayKey][ag.id];
+      });
+
+      const gStart = timeToMinutes(activeGroup.start);
+      const shiftDur = getShiftDurationMinutes(activeGroup);
+      const roundFloor = Math.floor(nowMin / 10) * 10;
+      const roundNext10 = roundFloor + 10;
+
+      if (!state.breaks[todayKey]) state.breaks[todayKey] = {};
+
+      // Monta 3 pausas válidas (10m → Lanche 20m → 10m) ancoradas perto do horário atual
+      const buildAnchoredBreaks = (anchorStartMin, anchorType) => {
+        const anchorOff = toShiftOffset(anchorStartMin, gStart);
+        let p1Off, lOff, p2Off;
+        if (anchorType === 'Lanche') {
+          lOff = Math.min(Math.max(anchorOff, 40), shiftDur - 60);
+          p1Off = Math.max(20, lOff - 60);
+          p2Off = Math.min(shiftDur - 20, lOff + 60);
+        } else if (anchorType === 'Pausa 10 (1ª)') {
+          p1Off = Math.min(Math.max(anchorOff, 10), shiftDur - 100);
+          lOff = Math.min(shiftDur - 50, p1Off + 60);
+          p2Off = Math.min(shiftDur - 20, lOff + 60);
+        } else {
+          p2Off = Math.min(Math.max(anchorOff, 110), shiftDur - 10);
+          lOff = Math.max(50, p2Off - 60);
+          p1Off = Math.max(10, lOff - 60);
+        }
+        // Garante horários redondos de 10 em 10 min
+        p1Off = Math.round(p1Off / 10) * 10;
+        lOff = Math.round(lOff / 10) * 10;
+        p2Off = Math.round(p2Off / 10) * 10;
+
+        return [
+          { id: `b_${Date.now()}_${Math.random()}`, type: 'Pausa 10 (1ª)', start: minutesToTime(gStart + p1Off), end: minutesToTime(gStart + p1Off + 10) },
+          { id: `b_${Date.now()}_${Math.random()}`, type: 'Lanche',        start: minutesToTime(gStart + lOff),  end: minutesToTime(gStart + lOff + 20) },
+          { id: `b_${Date.now()}_${Math.random()}`, type: 'Pausa 10 (2ª)', start: minutesToTime(gStart + p2Off), end: minutesToTime(gStart + p2Off + 10) },
+        ];
+      };
+
+      if (activeAgents[0]) {
+        // Em pausa agora (Lanche 20m)
+        state.breaks[todayKey][activeAgents[0].id] = buildAnchoredBreaks(roundFloor, 'Lanche');
+      }
+      if (activeAgents[1]) {
+        // Em pausa agora (Pausa 10)
+        state.breaks[todayKey][activeAgents[1].id] = buildAnchoredBreaks(roundFloor, 'Pausa 10 (1ª)');
+      }
+      if (activeAgents[2]) {
+        // Próxima pausa em até 10 min
+        state.breaks[todayKey][activeAgents[2].id] = buildAnchoredBreaks(roundNext10, 'Lanche');
+      }
+
+      state.loggedAgentId = activeAgents[0] ? activeAgents[0].id : state.agents[0].id;
+      saveState();
+    }
+
+    function resetToDefaultData() {
+      closeModal('modalResetConfirm');
+      localStorage.removeItem(STORAGE_KEY);
+      seedDefaultData();
+      renderAll();
+      showToast('Dados padrão do COPOM 190 restaurados com sucesso.');
+    }
+
+    // =========================================================================
+    // MOTOR DE AUTOMAÇÃO MENSAL (PAUSAS REDONDAS & FOLGAS)
+    // =========================================================================
+    function generateMonthlyBreaks(monthKey, roundStep, groupFilter = 'all', silent = false) {
+      const [year, month] = monthKey.split('-').map(Number);
+      const daysInMonth = new Date(year, month, 0).getDate();
+      const step = Number(roundStep) || 10;
+      state.roundInterval = step;
+
+      const targetGroups = groupFilter === 'all'
+        ? state.groups
+        : state.groups.filter((g) => g.id === groupFilter);
+
+      let generatedCount = 0;
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateKey = `${year}-${pad2(month)}-${pad2(day)}`;
+        if (!state.breaks[dateKey]) state.breaks[dateKey] = {};
+
+        targetGroups.forEach((group) => {
+          const gStart = timeToMinutes(group.start);
+          const shiftDur = getShiftDurationMinutes(group);
+          const groupAgents = state.agents.filter((a) => a.groupId === group.id);
+          const maxSim = Math.max(1, Number(group.maxSimultaneous) || 2);
+
+          // Janelas base dentro do expediente (em minutos a partir do início do turno)
+          const baseP1 = Math.max(step, Math.round((shiftDur * 0.20) / step) * step);
+          const baseL  = Math.max(baseP1 + 30, Math.round((shiftDur * 0.48) / step) * step);
+          const baseP2 = Math.max(baseL + 40, Math.round((shiftDur * 0.78) / step) * step);
+
+          let activeIndex = 0;
+          groupAgents.forEach((ag) => {
+            if (state.daysOff[dateKey]?.[ag.id]) {
+              state.breaks[dateKey][ag.id] = [];
+              return;
+            }
+
+            // Escalonamento inteligente em ondas conforme limite simultâneo
+            const wave = Math.floor(activeIndex / maxSim);
+            const stagger = wave * step;
+            activeIndex++;
+
+            let p1Off = baseP1 + stagger;
+            let lOff  = baseL + (wave * Math.max(step, 20));
+            let p2Off = baseP2 + stagger;
+
+            // Garante que todas caibam dentro do expediente e respeitem a ordem Pausa 10 → Lanche → Pausa 10
+            if (p2Off + 10 > shiftDur) p2Off = Math.floor((shiftDur - 10) / step) * step;
+            if (lOff + 20 > p2Off)     lOff  = Math.floor((p2Off - 20) / step) * step;
+            if (p1Off + 10 > lOff)     p1Off = Math.floor((lOff - 10) / step) * step;
+            if (p1Off < 0) p1Off = 0;
+
+            // Arredondamento final garantindo múltiplos exatos de `step` no relógio
+            const snapToClock = (offsetMin, durMin, minOff, maxOff) => {
+              let clockMin = (gStart + offsetMin) % 1440;
+              clockMin = Math.round(clockMin / step) * step;
+              let snappedOff = toShiftOffset(clockMin, gStart);
+              while (snappedOff < minOff) snappedOff += step;
+              while (snappedOff + durMin > maxOff && snappedOff >= step) snappedOff -= step;
+              return Math.max(0, snappedOff);
+            };
+
+            const sP1 = snapToClock(p1Off, 10, 0, shiftDur - 40);
+            const sL  = snapToClock(lOff,  20, sP1 + 10, shiftDur - 30);
+            const sP2 = snapToClock(p2Off, 10, sL + 20, shiftDur);
+
+            state.breaks[dateKey][ag.id] = [
+              { id: `b_${dateKey}_${ag.id}_1`, type: 'Pausa 10 (1ª)', start: minutesToTime(gStart + sP1), end: minutesToTime(gStart + sP1 + 10) },
+              { id: `b_${dateKey}_${ag.id}_2`, type: 'Lanche',        start: minutesToTime(gStart + sL),  end: minutesToTime(gStart + sL + 20) },
+              { id: `b_${dateKey}_${ag.id}_3`, type: 'Pausa 10 (2ª)', start: minutesToTime(gStart + sP2), end: minutesToTime(gStart + sP2 + 10) },
+            ];
+            generatedCount++;
+          });
+        });
+      }
+
+      if (!silent) {
+        saveState();
+        renderAll();
+        showToast(`Pausas mensais geradas (${generatedCount} escalas diárias · intervalo de ${step}m).`);
+      }
+    }
+
+    function generateMonthlyDaysOff(monthKey, regime, groupFilter = 'all', silent = false) {
+      const [year, month] = monthKey.split('-').map(Number);
+      const daysInMonth = new Date(year, month, 0).getDate();
+
+      const targetAgents = groupFilter === 'all'
+        ? state.agents
+        : state.agents.filter((a) => a.groupId === groupFilter);
+
+      // Limpa folgas do mês apenas para os atendentes selecionados
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateKey = `${year}-${pad2(month)}-${pad2(day)}`;
+        if (!state.daysOff[dateKey]) state.daysOff[dateKey] = {};
+        targetAgents.forEach((ag) => {
+          delete state.daysOff[dateKey][ag.id];
+        });
+      }
+
+      targetAgents.forEach((ag, idx) => {
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dateKey = `${year}-${pad2(month)}-${pad2(day)}`;
+          let isOff = false;
+
+          if (regime === '6x1') {
+            isOff = ((day + idx) % 7) === 0;
+          } else if (regime === '5x2') {
+            const mod = (day + idx * 2) % 7;
+            isOff = mod === 0 || mod === 6;
+          } else if (regime === '12x36') {
+            isOff = ((day + idx) % 2) === 0;
+          }
+
+          if (isOff) {
+            state.daysOff[dateKey][ag.id] = true;
+            if (state.breaks[dateKey]) {
+              state.breaks[dateKey][ag.id] = [];
+            }
+          }
+        }
+      });
+
+      if (!silent) {
+        saveState();
+        renderAll();
+        showToast(`Escala mensal de folgas (${regime}) gerada para ${monthKey}.`);
+      }
+    }
+
+    // =========================================================================
+    // NOTIFICAÇÕES NA ÁREA DE TRABALHO (PERFIL ATENDENTE)
+    // =========================================================================
+    const ORIGINAL_DOC_TITLE = document.title;
+    let titleBlinkTimer = null;
+
+    function isRunningInIframe() {
+      try {
+        return window.self !== window.top;
+      } catch (err) {
+        return true;
+      }
+    }
+
+    function getNativeNotifState() {
+      if (!('Notification' in window)) return 'unsupported';
+      if (Notification.permission === 'granted') return 'granted';
+      if (Notification.permission === 'denied') return isRunningInIframe() ? 'iframe_blocked' : 'denied';
+      return isRunningInIframe() ? 'iframe_default' : 'default';
+    }
+
+    function stopTitleBlink() {
+      if (titleBlinkTimer) {
+        clearInterval(titleBlinkTimer);
+        titleBlinkTimer = null;
+      }
+      document.title = ORIGINAL_DOC_TITLE;
+    }
+
+    function startTitleBlink(alertText) {
+      stopTitleBlink();
+      if (!document.hidden) return;
+      let toggle = false;
+      titleBlinkTimer = setInterval(() => {
+        document.title = toggle ? ORIGINAL_DOC_TITLE : `🔔 ${alertText}`;
+        toggle = !toggle;
+      }, 1000);
+    }
+
+    function playNotificationChime() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now);
+        osc.frequency.exponentialRampToValueAtTime(1174.66, now + 0.14);
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.exponentialRampToValueAtTime(0.11, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.52);
+      } catch (err) {
+        // Ignora caso áudio esteja bloqueado antes de interação
+      }
+    }
+
+    function sendDesktopNotification(title, body, tag = 'copom190-pausa') {
+      playNotificationChime();
+      showToast(`${title} — ${body}`, 'info');
+      startTitleBlink(title);
+
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+          const notif = new Notification(title, {
+            body,
+            tag,
+            renotify: true,
+            requireInteraction: true,
+            silent: false,
+          });
+          notif.onclick = () => {
+            window.focus();
+            stopTitleBlink();
+            notif.close();
+          };
+          return true;
+        } catch (err) {
+          console.warn('Falha ao exibir notificação nativa da área de trabalho:', err);
+        }
+      }
+      return false;
+    }
+
+    async function requestDesktopNotifications() {
+      state.notifications.asked = true;
+      closeModal('modalNotifPrompt');
+
+      if ('Notification' in window) {
+        try {
+          let perm = Notification.permission;
+          if (perm === 'default') {
+            perm = await new Promise((resolve) => {
+              const maybePromise = Notification.requestPermission(resolve);
+              if (maybePromise && typeof maybePromise.then === 'function') {
+                maybePromise.then(resolve).catch(() => resolve('denied'));
+              }
+            });
+          }
+
+          if (perm === 'granted') {
+            state.notifications.enabled = true;
+            saveState();
+            renderAgentSelfDashboard();
+            sendDesktopNotification(
+              'COPOM 190 · Alertas Ativados',
+              'Você receberá avisos direto na área de trabalho quando chegar a hora da sua pausa.',
+              'copom190-setup'
+            );
+            return;
+          }
+
+          state.notifications.enabled = true;
+          saveState();
+          renderAgentSelfDashboard();
+          if (isRunningInIframe()) {
+            showToast('O Preview embutido bloqueia pop-ups do Windows/Mac. Baixe o .html para receber na área de trabalho.', 'warning');
+          } else {
+            showToast('Permissão bloqueada no navegador. Libere as notificações no cadeado da barra de endereço.', 'warning');
+          }
+          return;
+        } catch (err) {
+          console.warn('Erro ao solicitar permissão de notificação:', err);
+        }
+      }
+
+      state.notifications.enabled = true;
+      saveState();
+      renderAgentSelfDashboard();
+      showToast('Alertas visuais e sonoros ativados nesta aba.', 'warning');
+    }
+
+    function downloadStandaloneHtml() {
+      const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'copom_190_gestao.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Arquivo copom_190_gestao.html baixado! Abra-o no navegador para receber notificações na área de trabalho.');
+    }
+
+    function dismissNotificationPrompt() {
+      state.notifications.asked = true;
+      state.notifications.enabled = false;
+      closeModal('modalNotifPrompt');
+      saveState();
+      renderAgentSelfDashboard();
+    }
+
+    function toggleDesktopNotifications() {
+      if (state.notifications.enabled) {
+        state.notifications.enabled = false;
+        saveState();
+        renderAgentSelfDashboard();
+        showToast('Notificações de pausa desativadas.');
+      } else {
+        requestDesktopNotifications();
+      }
+    }
+
+    function testDesktopNotification() {
+      const ag = getLoggedAgent();
+      const nome = ag ? `${ag.rank} ${ag.name}` : 'Atendente';
+      const sentNative = sendDesktopNotification(
+        'COPOM 190 · Teste de Notificação',
+        `Olá ${nome}, seus avisos de pausa na área de trabalho estão funcionando!`,
+        `copom190-test-${Date.now()}`
+      );
+      if (!sentNative && isRunningInIframe()) {
+        showToast('Aviso exibido na página. Para aparecer na área de trabalho do sistema, abra o .html fora do Preview.', 'warning');
+      } else if (!sentNative) {
+        showToast('Permita notificações nas configurações do navegador para exibir fora da página.', 'warning');
+      }
+    }
+
+    function checkAgentBreakNotifications() {
+      if (isManagerRole() || !state.notifications.enabled) return;
+      const ag = getLoggedAgent();
+      if (!ag) return;
+
+      const now = getEffectiveNow();
+      const todayKey = formatDateKey(now);
+      if (state.daysOff[todayKey]?.[ag.id]) return;
+
+      const group = getGroupById(ag.groupId);
+      const list = sortBreaksInShift(state.breaks[todayKey]?.[ag.id] || [], group);
+      if (!list.length) return;
+
+      const gStart = group ? timeToMinutes(group.start) : 0;
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+      const nowOff = toShiftOffset(nowMin, gStart);
+
+      list.forEach((br) => {
+        const bStartOff = toShiftOffset(timeToMinutes(br.start), gStart);
+        const durMin = getBreakDuration(br);
+        const diff = bStartOff - nowOff;
+
+        // Aviso prévio (entre 1 e 5 minutos antes)
+        if (diff > 0 && diff <= 5) {
+          const key = `${todayKey}_${ag.id}_${br.id}_5m`;
+          if (!state.notifications.notifiedKeys[key]) {
+            state.notifications.notifiedKeys[key] = true;
+            sendDesktopNotification(
+              `COPOM 190 · Pausa em ${diff} min`,
+              `${br.type} programada para ${br.start} – ${br.end} (${durMin} min).`,
+              key
+            );
+          }
+        }
+        // Aviso na hora exata (janela de 2 min para resistir a suspensão da aba)
+        else if (diff <= 0 && diff >= -2) {
+          const key = `${todayKey}_${ag.id}_${br.id}_0m`;
+          if (!state.notifications.notifiedKeys[key]) {
+            state.notifications.notifiedKeys[key] = true;
+            sendDesktopNotification(
+              'COPOM 190 · Hora da sua pausa!',
+              `Inicie sua ${br.type} agora (${br.start} – ${br.end} · ${durMin} min).`,
+              key
+            );
+          }
+        }
+      });
+    }
+
+    // Temporizador via Web Worker (não congela quando a aba está minimizada)
+    function startReliableTicker(callback) {
+      try {
+        const workerCode = 'setInterval(() => postMessage("tick"), 1000);';
+        const blob = new Blob([workerCode], { type: 'application/javascript' });
+        const worker = new Worker(URL.createObjectURL(blob));
+        worker.onmessage = callback;
+        return;
+      } catch (err) {
+        // Fallback padrão
+      }
+      setInterval(callback, 1000);
+    }
+
+    // =========================================================================
+    // CONTROLES DE UI, POPOVERS, MODAIS E PERFIL
+    // =========================================================================
+    function toggleMenuPopover(id) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const wasHidden = target.classList.contains('hidden');
+      closeAllPopovers();
+      if (wasHidden) {
+        target.classList.remove('hidden');
+      }
+    }
+
+    function closeAllPopovers() {
+      document.querySelectorAll('.menu-popover').forEach((el) => el.classList.add('hidden'));
+    }
+
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (id === 'modalAutoBreaks') {
+        document.getElementById('abMonth').value = formatMonthKey(getEffectiveNow());
+        document.getElementById('abRound').value = String(state.roundInterval);
+        populateGroupSelect('abGroup', true);
+      } else if (id === 'modalAutoDaysOff') {
+        document.getElementById('adMonth').value = formatMonthKey(getEffectiveNow());
+        populateGroupSelect('adGroup', true);
+      } else if (id === 'modalAddAgent') {
+        populateGroupSelect('naGroup', false);
+      }
+      el.classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const colors = {
+        success: 'border-[#30D158]/30 bg-white dark:bg-[#161B26] text-[#1D1D1F] dark:text-white',
+        info:    'border-[#0A84FF]/40 bg-white dark:bg-[#161B26] text-[#1D1D1F] dark:text-white',
+        warning: 'border-[#FF9F0A]/40 bg-white dark:bg-[#161B26] text-[#1D1D1F] dark:text-white',
+        error:   'border-[#FF453A]/40 bg-white dark:bg-[#161B26] text-[#1D1D1F] dark:text-white',
+      };
+      const dotColors = {
+        success: 'bg-[#30D158]',
+        info:    'bg-[#0A84FF]',
+        warning: 'bg-[#FF9F0A]',
+        error:   'bg-[#FF453A]',
+      };
+      toast.className = `pointer-events-auto rounded-2xl border ${colors[type] || colors.success} px-4 py-3 shadow-2xl flex items-center gap-3 text-xs font-medium animate-fade-in`;
+      toast.innerHTML = `<span class="w-2 h-2 rounded-full ${dotColors[type] || dotColors.success} shrink-0"></span><span class="leading-snug">${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.25s ease';
+        setTimeout(() => toast.remove(), 260);
+      }, 4200);
+    }
+
+    function toggleTheme() {
+      state.theme = state.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.classList.toggle('dark', state.theme === 'dark');
+      saveState();
+    }
+
+    function switchTab(tab) {
+      state.activeTab = tab;
+      document.querySelectorAll('.tab-section').forEach((sec) => sec.classList.add('hidden'));
+      const activeSec = document.getElementById(`tab-${tab}`);
+      if (activeSec) activeSec.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-tab').forEach((btn) => {
+        const isActive = btn.dataset.tab === tab;
+        btn.className = isActive
+          ? 'nav-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-[#1C212E] text-[#1D1D1F] dark:text-white shadow-sm transition'
+          : 'nav-tab px-3.5 py-1.5 rounded-lg text-xs font-medium text-[#6E6E73] dark:text-neutral-400 hover:text-[#1D1D1F] dark:hover:text-white transition';
+      });
+
+      if (tab === 'overview') renderOverview();
+      if (tab === 'breaks') renderBreaksTable();
+      if (tab === 'schedule') renderScheduleTable();
+      if (tab === 'groups') renderGroups();
+      if (tab === 'history') renderHistory();
+    }
+
+    function setUserRole(role) {
+      state.userRole = role;
+      closeAllPopovers();
+
+      // Ao entrar como atendente, seleciona automaticamente um atendente do turno atual
+      if (role === 'atendente') {
+        const now = getEffectiveNow();
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+        const activeGroup = state.groups.find((g) => isMinuteInsideShift(nowMin, g));
+        if (activeGroup) {
+          const ag = state.agents.find((a) => a.groupId === activeGroup.id);
+          if (ag) state.loggedAgentId = ag.id;
+        }
+        switchTab('overview');
+        if (!state.notifications.asked) {
+          setTimeout(() => openModal('modalNotifPrompt'), 250);
+        }
+      }
+
+      saveState();
+      applyRoleUI();
+      renderAll();
+    }
+
+    function changeLoggedAgent(agentId) {
+      state.loggedAgentId = agentId;
+      saveState();
+      renderAgentSelfDashboard();
+    }
+
+    function applyRoleUI() {
+      const labels = {
+        supervisor: 'Supervisor',
+        coordenador: 'Coordenador',
+        dev: 'Dev',
+        atendente: 'Atendente',
+      };
+      document.getElementById('headerRoleLabel').textContent = labels[state.userRole] || 'Supervisor';
+      document.getElementById('roleIndicatorDot').className = state.userRole === 'atendente'
+        ? 'w-2 h-2 rounded-full bg-[#30D158]'
+        : 'w-2 h-2 rounded-full bg-[#0A84FF]';
+
+      const manager = isManagerRole();
+      document.getElementById('automationMenuWrap').classList.toggle('hidden', !manager);
+      document.querySelectorAll('.manager-only').forEach((el) => {
+        el.classList.toggle('hidden', !manager);
+      });
+
+      document.getElementById('managerOverview').classList.toggle('hidden', !manager);
+      document.getElementById('agentSelfOverview').classList.toggle('hidden', manager);
+    }
+
+    function applySimulatedTime() {
+      const val = document.getElementById('simTimeInput').value;
+      if (!val) return;
+      state.simulatedTime = val;
+      closeAllPopovers();
+      saveState();
+      updateClockDisplay();
+      renderAll();
+      showToast(`Horário simulado definido para ${val}.`, 'info');
+    }
+
+    function resetSimulatedTime() {
+      state.simulatedTime = null;
+      document.getElementById('simTimeInput').value = '';
+      closeAllPopovers();
+      saveState();
+      updateClockDisplay();
+      renderAll();
+      showToast('Relógio restaurado para o horário real.');
+    }
+
+    function updateClockDisplay() {
+      const now = getEffectiveNow();
+      document.getElementById('headerClock').textContent = `${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
+      const badge = document.getElementById('simStatusBadge');
+      const dot = document.getElementById('clockLiveDot');
+      if (state.simulatedTime) {
+        badge.textContent = 'Simulado';
+        badge.className = 'text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#FF9F0A]/15 text-[#FF9F0A]';
+        dot.className = 'w-2 h-2 rounded-full bg-[#FF9F0A]';
+      } else {
+        badge.textContent = 'Tempo Real';
+        badge.className = 'text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#30D158]/15 text-[#30D158]';
+        dot.className = 'w-2 h-2 rounded-full bg-[#30D158] live-dot';
+      }
+    }
+
+    function changeRoundInterval(val) {
+      state.roundInterval = Number(val) || 10;
+      saveState();
+      renderOverview();
+      showToast(`Intervalo de horário redondo alterado para ${state.roundInterval} em ${state.roundInterval} min.`);
+    }
+
+    // =========================================================================
+    // RENDERIZAÇÃO: VISÃO GERAL (GESTOR & ATENDENTE)
+    // =========================================================================
+    function getAgentLiveStatus(agent, now, dateKey) {
+      const group = getGroupById(agent.groupId);
+      if (state.daysOff[dateKey]?.[agent.id]) {
+        return { code: 'day_off', label: 'De Folga', activeBreak: null, nextBreak: null };
+      }
+
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+      const nowSec = now.getSeconds();
+      const gStart = group ? timeToMinutes(group.start) : 0;
+      const inShift = isMinuteInsideShift(nowMin, group);
+      const list = sortBreaksInShift(state.breaks[dateKey]?.[agent.id] || [], group);
+      const nowOffSec = toShiftOffset(nowMin, gStart) * 60 + nowSec;
+
+      let activeBreak = null;
+      let nextBreak = null;
+
+      for (const br of list) {
+        const bStartOffSec = toShiftOffset(timeToMinutes(br.start), gStart) * 60;
+        const durSec = getBreakDuration(br) * 60;
+        const bEndOffSec = bStartOffSec + durSec;
+
+        if (nowOffSec >= bStartOffSec && nowOffSec < bEndOffSec) {
+          activeBreak = {
+            ...br,
+            remainingSec: bEndOffSec - nowOffSec,
+            elapsedSec: nowOffSec - bStartOffSec,
+            totalSec: durSec,
+          };
+        } else if (bStartOffSec > nowOffSec && !nextBreak) {
+          nextBreak = {
+            ...br,
+            minutesUntil: Math.ceil((bStartOffSec - nowOffSec) / 60),
+          };
+        }
+      }
+
+      if (activeBreak) {
+        return { code: 'on_break', label: 'Em Pausa', activeBreak, nextBreak };
+      }
+      if (!inShift) {
+        return { code: 'off_shift', label: 'Fora do Turno', activeBreak: null, nextBreak };
+      }
+      return { code: 'working', label: 'Em Serviço', activeBreak: null, nextBreak };
+    }
+
+    function renderOverview() {
+      if (!isManagerRole()) {
+        renderAgentSelfDashboard();
+        return;
+      }
+
+      const now = getEffectiveNow();
+      const todayKey = formatDateKey(now);
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+
+      document.getElementById('overviewDateLabel').textContent = formatDatePtBR(now);
+      document.getElementById('overviewRoundLabel').textContent = `Pausas de ${state.roundInterval} em ${state.roundInterval} min`;
+
+      const activeGroup = state.groups.find((g) => isMinuteInsideShift(nowMin, g));
+      document.getElementById('kpiActiveShiftName').textContent = activeGroup ? activeGroup.name : 'Sem turno ativo';
+
+      let onDutyCount = 0;
+      let daysOffCount = 0;
+      const onBreakItems = [];
+      const upcomingItems = [];
+
+      state.agents.forEach((ag) => {
+        const st = getAgentLiveStatus(ag, now, todayKey);
+        const group = getGroupById(ag.groupId);
+        if (st.code === 'day_off') {
+          daysOffCount++;
+        } else if (st.code === 'working') {
+          onDutyCount++;
+        } else if (st.code === 'on_break') {
+          onBreakItems.push({ agent: ag, group, br: st.activeBreak });
+        }
+
+        if (st.nextBreak && st.nextBreak.minutesUntil > 0 && st.nextBreak.minutesUntil <= 30) {
+          upcomingItems.push({ agent: ag, group, br: st.nextBreak });
+        }
+      });
+
+      upcomingItems.sort((a, b) => a.br.minutesUntil - b.br.minutesUntil);
+
+      document.getElementById('kpiOnDuty').textContent = onDutyCount;
+      document.getElementById('kpiOnBreak').textContent = onBreakItems.length;
+      document.getElementById('kpiUpcoming').textContent = upcomingItems.length;
+      document.getElementById('kpiDaysOff').textContent = daysOffCount;
+      document.getElementById('kpiTotalAgents').textContent = `de ${state.agents.length} atendentes`;
+
+      document.getElementById('onBreakCountLabel').textContent = `${onBreakItems.length} ${onBreakItems.length === 1 ? 'ativo' : 'ativos'}`;
+      document.getElementById('upcomingCountLabel').textContent = `${upcomingItems.length} ${upcomingItems.length === 1 ? 'agendada' : 'agendadas'}`;
+
+      // Lista Em Pausa Agora
+      const onBreakEl = document.getElementById('onBreakList');
+      if (!onBreakItems.length) {
+        onBreakEl.innerHTML = `
+          <div class="rounded-xl border border-dashed border-black/[0.08] dark:border-white/[0.08] py-10 text-center">
+            <p class="text-xs font-medium text-[#6E6E73] dark:text-neutral-400">Nenhum atendente em pausa neste momento.</p>
+          </div>`;
+      } else {
+        onBreakEl.innerHTML = onBreakItems.map(({ agent, group, br }) => {
+          const pct = Math.min(100, Math.max(0, (br.elapsedSec / br.totalSec) * 100));
+          const remMin = Math.floor(br.remainingSec / 60);
+          const remSec = br.remainingSec % 60;
+          return `
+            <div class="rounded-xl bg-black/[0.025] dark:bg-white/[0.03] border border-black/[0.05] dark:border-white/[0.06] p-3.5">
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-9 h-9 rounded-xl bg-[#0A84FF]/15 text-[#0A84FF] text-xs font-semibold flex items-center justify-center shrink-0">
+                    ${getInitials(agent.name)}
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-semibold truncate">${agent.rank} ${agent.name}</p>
+                    <p class="text-[11px] text-[#6E6E73] dark:text-neutral-400 truncate">
+                      ${agent.pa} · <span class="text-[#0A84FF] font-medium">${br.type}</span> · ${group ? group.name : ''}
+                    </p>
+                  </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="text-sm font-semibold text-[#0A84FF] tabular-nums">${pad2(remMin)}:${pad2(remSec)}</p>
+                  <p class="text-[11px] text-[#6E6E73] dark:text-neutral-500 tabular-nums">${br.start} – ${br.end}</p>
+                </div>
+              </div>
+              <div class="mt-3 h-[2px] w-full rounded-full bg-black/[0.08] dark:bg-white/[0.08] overflow-hidden">
+                <div class="h-full bg-[#0A84FF] transition-all duration-700" style="width:${pct.toFixed(1)}%"></div>
+              </div>
+            </div>`;
+        }).join('');
+      }
+
+      // Lista Próximas Pausas (Próx. 30 min)
+      const upEl = document.getElementById('upcomingList');
+      if (!upcomingItems.length) {
+        upEl.innerHTML = `
+          <div class="rounded-xl border border-dashed border-black/[0.08] dark:border-white/[0.08] py-10 text-center">
+            <p class="text-xs font-medium text-[#6E6E73] dark:text-neutral-400">Nenhuma pausa programada para os próximos 30 minutos.</p>
+          </div>`;
+      } else {
+        upEl.innerHTML = upcomingItems.map(({ agent, group, br }) => {
+          const dur = getBreakDuration(br);
+          return `
+            <div class="rounded-xl bg-black/[0.025] dark:bg-white/[0.03] border border-black/[0.05] dark:border-white/[0.06] p-3.5 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-9 h-9 rounded-xl bg-[#FF9F0A]/15 text-[#FF9F0A] text-xs font-semibold flex items-center justify-center shrink-0">
+                  ${getInitials(agent.name)}
+                </div>
+                <div class="min-w-0">
+                  <p class="text-xs font-semibold truncate">${agent.rank} ${agent.name}</p>
+                  <p class="text-[11px] text-[#6E6E73] dark:text-neutral-400 truncate">
+                    ${agent.pa} · <span class="text-[#FF9F0A] font-medium">${br.type} (${dur}m)</span> · ${group ? group.name : ''}
+                  </p>
+                </div>
+              </div>
+              <div class="text-right shrink-0">
+                <p class="text-xs font-semibold text-[#FF9F0A] tabular-nums">em ${br.minutesUntil} min</p>
+                <p class="text-[11px] text-[#6E6E73] dark:text-neutral-400 tabular-nums">${br.start} – ${br.end}</p>
+              </div>
+            </div>`;
+        }).join('');
+      }
+    }
+
+    function renderAgentSelfDashboard() {
+      const ag = getLoggedAgent();
+      if (!ag) return;
+
+      // Popula seletor de atendente
+      const sel = document.getElementById('loggedAgentSelect');
+      sel.innerHTML = state.agents.map((a) => {
+        const g = getGroupById(a.groupId);
+        return `<option value="${a.id}" ${a.id === ag.id ? 'selected' : ''}>${a.rank} ${a.name} (${a.pa} · ${g ? g.start + '–' + g.end : ''})</option>`;
+      }).join('');
+
+      const now = getEffectiveNow();
+      const todayKey = formatDateKey(now);
+      const group = getGroupById(ag.groupId);
+      const st = getAgentLiveStatus(ag, now, todayKey);
+      const list = sortBreaksInShift(state.breaks[todayKey]?.[ag.id] || [], group);
+
+      document.getElementById('agentSelfDate').textContent = formatDatePtBR(now);
+      document.getElementById('agentSelfGreeting').textContent = `Olá, ${ag.rank} ${ag.name}`;
+      document.getElementById('agentSelfShiftInfo').textContent = `${ag.pa} · ${group ? `${group.name} (${group.start} – ${group.end})` : 'Sem grupo'}`;
+
+      // Banner / Barra de Notificações na Área de Trabalho
+      const promptBanner = document.getElementById('notifPromptBanner');
+      const statusBar = document.getElementById('notifStatusBar');
+      if (!state.notifications.asked) {
+        promptBanner.classList.remove('hidden');
+        statusBar.classList.add('hidden');
+      } else {
+        promptBanner.classList.add('hidden');
+        statusBar.classList.remove('hidden');
+        const dot = document.getElementById('notifStatusDot');
+        const txt = document.getElementById('notifStatusText');
+        const btnToggle = document.getElementById('btnToggleNotif');
+        const btnTest = document.getElementById('btnTestNotif');
+        const btnDownload = document.getElementById('btnDownloadStandalone');
+        const nativeState = getNativeNotifState();
+
+        btnDownload.classList.add('hidden');
+
+        if (state.notifications.enabled && nativeState === 'granted') {
+          dot.className = 'w-2 h-2 rounded-full bg-[#30D158] shrink-0';
+          txt.textContent = 'Notificações nativas na área de trabalho ativadas (5 min antes e na hora exata)';
+          btnToggle.textContent = 'Desativar';
+          btnTest.classList.remove('hidden');
+        } else if (state.notifications.enabled && (nativeState === 'iframe_blocked' || nativeState === 'iframe_default')) {
+          dot.className = 'w-2 h-2 rounded-full bg-[#FF9F0A] shrink-0';
+          txt.textContent = 'Avisos ativos na aba · O Preview bloqueia pop-ups do sistema — baixe o .html para receber na área de trabalho';
+          btnToggle.textContent = 'Desativar';
+          btnTest.classList.remove('hidden');
+          btnDownload.classList.remove('hidden');
+        } else if (state.notifications.enabled && nativeState === 'denied') {
+          dot.className = 'w-2 h-2 rounded-full bg-[#FF9F0A] shrink-0';
+          txt.textContent = 'Notificações bloqueadas no navegador · Libere no ícone de cadeado da barra de endereço';
+          btnToggle.textContent = 'Desativar';
+          btnTest.classList.remove('hidden');
+        } else if (state.notifications.enabled) {
+          dot.className = 'w-2 h-2 rounded-full bg-[#0A84FF] shrink-0';
+          txt.textContent = 'Alertas sonoros e visuais ativos · Clique para permitir na área de trabalho';
+          btnToggle.textContent = 'Desativar';
+          btnTest.classList.remove('hidden');
+        } else {
+          dot.className = 'w-2 h-2 rounded-full bg-neutral-400 shrink-0';
+          txt.textContent = 'Notificações na área de trabalho desativadas';
+          btnToggle.textContent = 'Ativar agora';
+          btnTest.classList.add('hidden');
+        }
+      }
+
+      // Card Hero de Status Ao Vivo
+      const hero = document.getElementById('agentHeroCard');
+      if (st.code === 'day_off') {
+        hero.innerHTML = `
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#30D158]">● Você está de folga hoje</span>
+              <h2 class="text-xl font-semibold mt-1">Bom descanso!</h2>
+              <p class="text-xs text-[#6E6E73] dark:text-neutral-400 mt-1">Nenhuma pausa programada para a data de hoje.</p>
+            </div>
+          </div>`;
+      } else if (st.code === 'on_break') {
+        const br = st.activeBreak;
+        const pct = Math.min(100, Math.max(0, (br.elapsedSec / br.totalSec) * 100));
+        const remMin = Math.floor(br.remainingSec / 60);
+        const remSec = br.remainingSec % 60;
+        hero.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0A84FF]">
+                <span class="w-2 h-2 rounded-full bg-[#0A84FF] live-dot"></span>
+                Você está em pausa agora
+              </span>
+              <h2 class="text-2xl font-semibold mt-1">${br.type}</h2>
+              <p class="text-xs text-[#6E6E73] dark:text-neutral-400 mt-1 tabular-nums">Horário: ${br.start} às ${br.end} (${getBreakDuration(br)} min)</p>
+            </div>
+            <div class="text-left sm:text-right">
+              <p class="text-[11px] uppercase tracking-wider text-[#6E6E73] dark:text-neutral-400">Tempo restante</p>
+              <p class="text-4xl font-semibold text-[#0A84FF] tabular-nums mt-0.5">${pad2(remMin)}:${pad2(remSec)}</p>
+            </div>
+          </div>
+          <div class="mt-5 h-1.5 w-full rounded-full bg-black/[0.07] dark:bg-white/[0.08] overflow-hidden">
+            <div class="h-full bg-[#0A84FF] transition-all duration-700" style="width:${pct.toFixed(1)}%"></div>
+          </div>`;
+      } else if (st.nextBreak) {
+        const nb = st.nextBreak;
+        hero.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#30D158]">● Em Serviço · Próxima pausa agendada</span>
+              <h2 class="text-2xl font-semibold mt-1">${nb.type} às <span class="tabular-nums">${nb.start}</span></h2>
+              <p class="text-xs text-[#6E6E73] dark:text-neutral-400 mt-1">Duração de ${getBreakDuration(nb)} minutos (retorno às ${nb.end}).</p>
+            </div>
+            <div class="text-left sm:text-right">
+              <p class="text-[11px] uppercase tracking-wider text-[#6E6E73] dark:text-neutral-400">Faltam</p>
+              <p class="text-3xl font-semibold text-[#FF9F0A] tabular-nums mt-0.5">${nb.minutesUntil} min</p>
+            </div>
+          </div>`;
+      } else {
+        hero.innerHTML = `
+          <div>
+            <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#6E6E73] dark:text-neutral-400">● ${st.label}</span>
+            <h2 class="text-xl font-semibold mt-1">Todas as pausas de hoje já foram concluídas</h2>
+            <p class="text-xs text-[#6E6E73] dark:text-neutral-400 mt-1">Confira abaixo o resumo dos seus horários no turno.</p>
+          </div>`;
+      }
+
+      // Cards das 3 Pausas do Dia
+      const totalMin = list.reduce((sum, b) => sum + getBreakDuration(b), 0);
+      document.getElementById('agentTotalBreakMin').textContent = `${totalMin} min programados`;
+
+      const gStart = group ? timeToMinutes(group.start) : 0;
+      const nowOff = toShiftOffset(now.getHours() * 60 + now.getMinutes(), gStart);
+
+      const grid = document.getElementById('agentBreaksGrid');
+      if (!list.length) {
+        grid.innerHTML = `<div class="md:col-span-3 rounded-2xl bg-white dark:bg-[#11141C] border border-dashed border-black/[0.08] dark:border-white/[0.08] p-8 text-center text-xs text-[#6E6E73] dark:text-neutral-400">Nenhuma pausa cadastrada para hoje.</div>`;
+      } else {
+        grid.innerHTML = list.map((br) => {
+          const bStartOff = toShiftOffset(timeToMinutes(br.start), gStart);
+          const dur = getBreakDuration(br);
+          const isCurrent = st.activeBreak && st.activeBreak.id === br.id;
+          const isPast = !isCurrent && (bStartOff + dur) <= nowOff;
+          const badge = isCurrent
+            ? '<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#0A84FF]/15 text-[#0A84FF]">Em andamento</span>'
+            : isPast
+              ? '<span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-black/[0.05] dark:bg-white/[0.08] text-[#6E6E73] dark:text-neutral-400">Concluída</span>'
+              : '<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#FF9F0A]/15 text-[#FF9F0A]">Agendada</span>';
+
+          return `
+            <div class="rounded-2xl bg-white dark:bg-[#11141C] border ${isCurrent ? 'border-[#0A84FF]/50 ring-1 ring-[#0A84FF]/30' : 'border-black/[0.06] dark:border-white/[0.07]'} p-5 shadow-sm">
+              <div class="flex items-center justify-between gap-2 mb-3">
+                <span class="text-xs font-semibold">${br.type}</span>
+                ${badge}
+              </div>
+              <p class="text-2xl font-semibold tracking-tight tabular-nums">${br.start} <span class="text-sm font-normal text-[#6E6E73] dark:text-neutral-500">– ${br.end}</span></p>
+              <p class="text-[11px] text-[#6E6E73] dark:text-neutral-400 mt-1.5">Duração fixa: ${dur} minutos</p>
+            </div>`;
+        }).join('');
+      }
+
+      // Folgas do Mês do Atendente
+      const mKey = formatMonthKey(now);
+      const [yr, mo] = mKey.split('-').map(Number);
+      const daysInMonth = new Date(yr, mo, 0).getDate();
+      const offDays = [];
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dk = `${yr}-${pad2(mo)}-${pad2(d)}`;
+        if (state.daysOff[dk]?.[ag.id]) offDays.push(d);
+      }
+      document.getElementById('agentMonthOffCount').textContent = `${offDays.length} ${offDays.length === 1 ? 'dia' : 'dias'}`;
+      const chips = document.getElementById('agentMonthOffChips');
+      chips.innerHTML = offDays.length
+        ? offDays.map((d) => `<span class="px-3 py-1 rounded-xl bg-[#30D158]/15 text-[#30D158] text-xs font-semibold tabular-nums">${pad2(d)}/${pad2(mo)}</span>`).join('')
+        : '<span class="text-xs text-[#6E6E73] dark:text-neutral-400">Nenhuma folga registrada neste mês.</span>';
+    }
+
+    // =========================================================================
+    // RENDERIZAÇÃO: PLANILHA DE PAUSAS
+    // =========================================================================
+    function renderBreaksTable() {
+      const dateInput = document.getElementById('breaksDateInput');
+      if (!dateInput.value) dateInput.value = formatDateKey(getEffectiveNow());
+      const dateKey = dateInput.value;
+      const monthPrefix = dateKey.slice(0, 7);
+
+      document.getElementById('breaksRoundSelect').value = String(state.roundInterval);
+      populateGroupSelect('breaksGroupFilter', true, document.getElementById('breaksGroupFilter').value);
+
+      const search = (document.getElementById('breaksSearch').value || '').toLowerCase().trim();
+      const grpFilter = document.getElementById('breaksGroupFilter').value;
+      const statusFilter = document.getElementById('breaksStatusFilter').value;
+      const now = getEffectiveNow();
+      const manager = isManagerRole();
+
+      const rows = state.agents.filter((ag) => {
+        if (grpFilter !== 'all' && ag.groupId !== grpFilter) return false;
+        if (search && !`${ag.rank} ${ag.name} ${ag.pa}`.toLowerCase().includes(search)) return false;
+        const st = getAgentLiveStatus(ag, now, dateKey);
+        if (statusFilter !== 'all' && st.code !== statusFilter) return false;
+        return true;
+      });
+
+      const tbody = document.getElementById('breaksTableBody');
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="9" class="py-10 text-center text-xs text-[#6E6E73] dark:text-neutral-400">Nenhum atendente encontrado com os filtros aplicados.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rows.map((ag) => {
+        const group = getGroupById(ag.groupId);
+        const st = getAgentLiveStatus(ag, now, dateKey);
+        const list = sortBreaksInShift(state.breaks[dateKey]?.[ag.id] || [], group);
+
+        const p1 = list.find((b) => b.type === 'Pausa 10 (1ª)');
+        const ln = list.find((b) => b.type === 'Lanche');
+        const p2 = list.find((b) => b.type === 'Pausa 10 (2ª)');
+        const totalMin = list.reduce((acc, b) => acc + getBreakDuration(b), 0);
+
+        // Conta folgas do mês
+        let monthOffs = 0;
+        Object.keys(state.daysOff).forEach((dk) => {
+          if (dk.startsWith(monthPrefix) && state.daysOff[dk]?.[ag.id]) monthOffs++;
+        });
+
+        const statusBadge = {
+          on_break:  '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#0A84FF]/15 text-[#0A84FF]">Em Pausa</span>',
+          working:   '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#30D158]/15 text-[#30D158]">Em Serviço</span>',
+          off_shift: '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-black/[0.05] dark:bg-white/[0.07] text-[#6E6E73] dark:text-neutral-400">Fora do Turno</span>',
+          day_off:   '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#FF9F0A]/15 text-[#FF9F0A]">De Folga</span>',
+        }[st.code];
+
+        const formatCell = (br) => br
+          ? `<button type="button" onclick="editBreakStart('${ag.id}','${dateKey}','${br.id}')" title="Clique para alterar o horário inicial" class="inline-flex px-2.5 py-1 rounded-lg bg-black/[0.04] dark:bg-white/[0.06] hover:ring-1 hover:ring-[#0A84FF] font-medium tabular-nums cursor-pointer">${br.start} – ${br.end} <span class="ml-1 text-[#0A84FF]">✎</span></button>`
+          : `<span class="text-[#6E6E73]/50 dark:text-neutral-600">—</span>`;
+
+        return `
+          <tr class="hover:bg-black/[0.015] dark:hover:bg-white/[0.02] transition">
+            <td class="py-3.5 px-4">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-semibold shrink-0" style="background:${group ? group.color + '20' : '#0A84FF20'}; color:${group ? group.color : '#0A84FF'}">
+                  ${getInitials(ag.name)}
+                </div>
+                <div>
+                  <p class="font-semibold">${ag.rank} ${ag.name}</p>
+                  <p class="text-[11px] text-[#6E6E73] dark:text-neutral-400">${ag.pa}</p>
+                </div>
+              </div>
+            </td>
+            <td class="py-3.5 px-4">
+              <p class="font-medium">${group ? group.name : '—'}</p>
+              <p class="text-[11px] text-[#6E6E73] dark:text-neutral-400 tabular-nums">${group ? `${group.start} – ${group.end}` : ''}</p>
+            </td>
+            <td class="py-3.5 px-4">${statusBadge}</td>
+            <td class="py-3.5 px-4">${formatCell(p1)}</td>
+            <td class="py-3.5 px-4">${formatCell(ln)}</td>
+            <td class="py-3.5 px-4">${formatCell(p2)}</td>
+            <td class="py-3.5 px-4 text-center font-semibold tabular-nums">${totalMin}m</td>
+            <td class="py-3.5 px-4 text-center tabular-nums">${monthOffs}</td>
+            <td class="py-3.5 px-4 text-right ${manager ? '' : 'hidden'}">
+              <div class="inline-flex items-center gap-1">
+                <button type="button" onclick="openManualBreakModal('${ag.id}', '${dateKey}')" class="px-2 py-1 rounded-lg bg-[#0A84FF]/10 hover:bg-[#0A84FF]/20 text-[#0A84FF] text-[11px] font-medium transition">+ Pausa</button>
+                <button type="button" onclick="openManualDayOffModal('${ag.id}', '${dateKey}')" class="px-2 py-1 rounded-lg bg-[#30D158]/10 hover:bg-[#30D158]/20 text-[#30D158] text-[11px] font-medium transition">+ Folga</button>
+                <button type="button" onclick="openAgentBreaksModal('${ag.id}', '${dateKey}')" class="px-2 py-1 rounded-lg bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] text-[11px] font-medium transition">Editar</button>
+                <button type="button" onclick="deleteAgent('${ag.id}')" title="Remover atendente" class="px-2 py-1 rounded-lg hover:bg-[#FF453A]/15 text-[#FF453A] text-[11px] transition">✕</button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    function editBreakStart(agentId, dateKey, breakId) {
+      if (!isManagerRole()) return;
+      const br = (state.breaks[dateKey]?.[agentId] || []).find(b => b.id === breakId);
+      if (!br) return;
+      const duration = getBreakDuration(br);
+      const input = document.createElement('input');
+      input.type = 'time'; input.value = br.start;
+      input.className = 'h-9 px-2 rounded-lg border border-[#0A84FF] bg-white dark:bg-[#141822] text-xs';
+      const button = document.querySelector(`button[onclick="editBreakStart('${agentId}','${dateKey}','${breakId}')"]`);
+      if (!button) return;
+      button.replaceWith(input); input.focus();
+      let committed = false;
+      const commit = () => {
+        if (committed || !input.isConnected) return;
+        committed = true;
+        const start = input.value;
+        if (!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(start)) { renderBreaksTable(); return; }
+        const group = getGroupById(getAgentById(agentId)?.groupId);
+        if (group && !isBreakInsideShift(start, duration, group)) {
+          showToast('O horário informado ultrapassa o expediente do grupo.', 'warning');
+          renderBreaksTable(); return;
+        }
+        br.start = start;
+        br.end = minutesToTime(timeToMinutes(start) + duration);
+        saveState(); renderBreaksTable();
+        showToast(`Pausa atualizada: ${br.start} – ${br.end}`);
+      };
+      input.addEventListener('change', commit);
+      input.addEventListener('blur', commit);
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { committed = true; renderBreaksTable(); } });
+    }
+
+    // =========================================================================
+    // RENDERIZAÇÃO: ESCALA MENSAL DE FOLGAS (1 A 31)
+    // =========================================================================
+    function renderScheduleTable() {
+      const mInput = document.getElementById('scheduleMonthInput');
+      if (!mInput.value) mInput.value = formatMonthKey(getEffectiveNow());
+      const monthKey = mInput.value;
+      const [year, month] = monthKey.split('-').map(Number);
+      const daysInMonth = new Date(year, month, 0).getDate();
+
+      populateGroupSelect('scheduleGroupFilter', true, document.getElementById('scheduleGroupFilter').value);
+      const grpFilter = document.getElementById('scheduleGroupFilter').value;
+      const agents = grpFilter === 'all' ? state.agents : state.agents.filter((a) => a.groupId === grpFilter);
+      const manager = isManagerRole();
+
+      let html = `<thead><tr class="border-b border-black/[0.06] dark:border-white/[0.08] bg-black/[0.02] dark:bg-white/[0.02] text-[11px]">
+        <th class="py-3 px-4 text-left sticky left-0 bg-white dark:bg-[#11141C] z-10 min-w-[180px]">Atendente</th>`;
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dow = new Date(year, month - 1, d).getDay();
+        const isWknd = dow === 0 || dow === 6;
+        html += `<th class="py-2 px-1.5 font-semibold tabular-nums ${isWknd ? 'text-[#FF9F0A]' : 'text-[#6E6E73] dark:text-neutral-400'}">${pad2(d)}</th>`;
+      }
+      html += `<th class="py-3 px-3 font-semibold text-[#6E6E73] dark:text-neutral-400">Folgas</th></tr></thead><tbody class="divide-y divide-black/[0.05] dark:divide-white/[0.06]">`;
+
+      const dailyAvailable = Array(daysInMonth + 1).fill(0);
+
+      agents.forEach((ag) => {
+        let totalOff = 0;
+        html += `<tr><td class="py-2.5 px-4 text-left font-medium sticky left-0 bg-white dark:bg-[#11141C] z-10 border-r border-black/[0.05] dark:border-white/[0.06]">
+          <div class="truncate max-w-[170px]">${ag.rank} ${ag.name}</div>
+          <div class="text-[10px] text-[#6E6E73] dark:text-neutral-500">${ag.pa}</div>
+        </td>`;
+
+        for (let d = 1; d <= daysInMonth; d++) {
+          const dk = `${year}-${pad2(month)}-${pad2(d)}`;
+          ensureScheduleDraft(monthKey);
+          const isOff = Boolean(scheduleDraft.daysOff[dk]?.[ag.id]);
+          if (isOff) {
+            totalOff++;
+          } else {
+            dailyAvailable[d]++;
+          }
+          const cellCls = isOff
+            ? 'bg-[#FF9F0A]/20 text-[#FF9F0A] font-bold'
+            : 'bg-black/[0.025] dark:bg-white/[0.03] text-[#6E6E73] dark:text-neutral-400';
+          const clickAttr = manager ? `onclick="toggleDayOffCell('${ag.id}', '${dk}')"` : '';
+          html += `<td class="p-1">
+            <button type="button" ${clickAttr} class="w-7 h-7 rounded-lg text-[11px] ${cellCls} ${manager ? 'hover:ring-1 hover:ring-[#0A84FF] cursor-pointer' : 'cursor-default'} transition">
+              ${isOff ? 'F' : 'T'}
+            </button>
+          </td>`;
+        }
+        html += `<td class="py-2 px-3 font-semibold tabular-nums">${totalOff}</td></tr>`;
+      });
+
+      // Rodapé com Efetivo Disponível por dia
+      html += `</tbody><tfoot><tr class="border-t border-black/[0.08] dark:border-white/[0.1] bg-black/[0.02] dark:bg-white/[0.03] font-semibold">
+        <td class="py-3 px-4 text-left sticky left-0 bg-[#F5F5F7] dark:bg-[#141822] z-10 text-[11px] uppercase tracking-wider text-[#30D158]">Efetivo Disponível</td>`;
+      for (let d = 1; d <= daysInMonth; d++) {
+        html += `<td class="py-3 px-1 text-xs text-[#30D158] tabular-nums">${dailyAvailable[d]}</td>`;
+      }
+      html += `<td class="py-3 px-3 text-[11px] text-[#6E6E73]">—</td></tr></tfoot>`;
+
+      document.getElementById('scheduleTable').innerHTML = html;
+      const wrap = document.getElementById('scheduleTable').parentElement;
+      let actions = document.getElementById('scheduleDraftActions');
+      if (!actions) {
+        actions = document.createElement('div');
+        actions.id = 'scheduleDraftActions';
+        actions.className = 'flex items-center justify-end gap-2 p-3 border-t border-black/[0.06] dark:border-white/[0.08]';
+        wrap.appendChild(actions);
+      }
+      const dirty = scheduleDraft && scheduleDraft.monthKey === monthKey &&
+        JSON.stringify(scheduleDraft.daysOff) !== JSON.stringify(state.daysOff);
+      actions.innerHTML = dirty && manager
+        ? `<span class="mr-auto text-xs text-[#FF9F0A] font-medium">Há alterações pendentes na escala</span>
+           <button type="button" onclick="cancelScheduleChanges()" class="h-9 px-4 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] text-xs font-semibold">Cancelar</button>
+           <button type="button" onclick="previewScheduleChanges()" class="h-9 px-4 rounded-xl bg-[#0A84FF] text-white text-xs font-semibold">Aplicar</button>`
+        : (manager ? '<span class="mr-auto text-xs text-[#6E6E73]">Clique nas células para editar e depois aplique as alterações.</span>' : '');
+    }
+
+    function ensureScheduleDraft(monthKey) {
+      if (!scheduleDraft || scheduleDraft.monthKey !== monthKey) {
+        scheduleDraft = { monthKey, daysOff: JSON.parse(JSON.stringify(state.daysOff || {})) };
+      }
+    }
+
+    function toggleDayOffCell(agentId, dateKey) {
+      if (!isManagerRole()) return;
+      ensureScheduleDraft(dateKey.slice(0, 7));
+      if (!scheduleDraft.daysOff[dateKey]) scheduleDraft.daysOff[dateKey] = {};
+      if (scheduleDraft.daysOff[dateKey][agentId]) {
+        delete scheduleDraft.daysOff[dateKey][agentId];
+        if (!Object.keys(scheduleDraft.daysOff[dateKey]).length) delete scheduleDraft.daysOff[dateKey];
+      } else {
+        scheduleDraft.daysOff[dateKey][agentId] = true;
+      }
+      renderScheduleTable();
+    }
+
+    function cancelScheduleChanges() {
+      scheduleDraft = null;
+      renderScheduleTable();
+      showToast('Alterações da escala canceladas.', 'info');
+    }
+
+    function previewScheduleChanges() {
+      if (!scheduleDraft) return;
+      const monthKey = scheduleDraft.monthKey, changes = [];
+      [...new Set([...Object.keys(state.daysOff), ...Object.keys(scheduleDraft.daysOff)])]
+        .filter(d => d.startsWith(monthKey)).forEach(dk => {
+          const before = state.daysOff[dk] || {}, after = scheduleDraft.daysOff[dk] || {};
+          state.agents.forEach(ag => {
+            if (!!before[ag.id] !== !!after[ag.id]) changes.push({date:dk, agent:ag, off:!!after[ag.id]});
+          });
+        });
+      if (!changes.length) { scheduleDraft = null; renderScheduleTable(); return; }
+      const modal = document.createElement('div');
+      modal.id = 'scheduleApplyModal';
+      modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4';
+      modal.innerHTML = `<div class="w-full max-w-xl max-h-[85vh] overflow-hidden rounded-2xl bg-white dark:bg-[#11141C] border border-black/10 dark:border-white/10 shadow-2xl">
+        <div class="p-5 border-b border-black/10 dark:border-white/10"><h3 class="text-base font-bold">Confirmar novas folgas</h3><p class="text-xs text-[#6E6E73] mt-1">${changes.length} alteração(ões) na escala de ${monthKey}</p></div>
+        <div class="p-5 max-h-[55vh] overflow-y-auto space-y-2">${changes.map(c => `<div class="flex justify-between gap-3 text-xs border-b border-black/5 dark:border-white/5 pb-2"><span>${c.agent.rank} ${c.agent.name}</span><strong>${c.date.split('-').reverse().join('/')} · ${c.off ? 'Folga (F)' : 'Trabalho (T)'}</strong></div>`).join('')}</div>
+        <div class="p-4 flex justify-end gap-2"><button onclick="closeScheduleApplyModal()" class="h-9 px-4 rounded-xl bg-black/5 dark:bg-white/10 text-xs font-semibold">Cancelar</button><button onclick="confirmScheduleApply()" class="h-9 px-4 rounded-xl bg-[#0A84FF] text-white text-xs font-semibold">Confirmar e salvar</button></div></div>`;
+      document.body.appendChild(modal);
+    }
+    function closeScheduleApplyModal() { document.getElementById('scheduleApplyModal')?.remove(); }
+    function confirmScheduleApply() {
+      if (!scheduleDraft) return;
+      const mk = scheduleDraft.monthKey;
+      Object.keys(state.daysOff).filter(d => d.startsWith(mk)).forEach(d => delete state.daysOff[d]);
+      Object.keys(scheduleDraft.daysOff).filter(d => d.startsWith(mk) && Object.keys(scheduleDraft.daysOff[d] || {}).length)
+        .forEach(d => state.daysOff[d] = {...scheduleDraft.daysOff[d]});
+      Object.keys(state.daysOff).forEach(d => Object.keys(state.daysOff[d] || {}).forEach(id => {
+        if (state.daysOff[d][id] && state.breaks[d]) delete state.breaks[d][id];
+      }));
+      scheduleDraft = null; closeScheduleApplyModal(); saveState(); renderScheduleTable();
+      showToast('Nova escala de folgas aplicada e salva.');
+    }
+
+    // =========================================================================
+    // RENDERIZAÇÃO: GRUPOS & HORÁRIOS DE TRABALHO
+    // =========================================================================
+    function renderGroups() {
+      const grid = document.getElementById('groupsGrid');
+      const manager = isManagerRole();
+
+      grid.innerHTML = state.groups.map((g) => {
+        const members = state.agents.filter((a) => a.groupId === g.id);
+        const durH = (getShiftDurationMinutes(g) / 60).toFixed(1).replace('.0', '');
+        const overnight = timeToMinutes(g.end) <= timeToMinutes(g.start);
+        return `
+          <div class="rounded-2xl bg-white dark:bg-[#11141C] border border-black/[0.06] dark:border-white/[0.07] p-6 shadow-sm flex flex-col justify-between gap-4">
+            <div>
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <span class="w-3 h-3 rounded-full shrink-0" style="background:${g.color}"></span>
+                  <div>
+                    <h3 class="text-base font-semibold tracking-tight">${g.name}</h3>
+                    <p class="text-xs text-[#6E6E73] dark:text-neutral-400 tabular-nums mt-0.5">
+                      Expediente: <strong>${g.start} – ${g.end}</strong> (${durH}h)${overnight ? ' · Vira meia-noite' : ''}
+                    </p>
+                  </div>
+                </div>
+                ${manager ? `
+                  <div class="flex items-center gap-1">
+                    <button type="button" onclick="openGroupModal('${g.id}')" class="px-2.5 py-1 rounded-lg bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] text-xs font-medium transition">Editar</button>
+                    <button type="button" onclick="deleteGroup('${g.id}')" class="px-2 py-1 rounded-lg hover:bg-[#FF453A]/15 text-[#FF453A] text-xs transition">✕</button>
+                  </div>` : ''}
+              </div>
+
+              <div class="mt-4 flex flex-wrap gap-2 text-[11px]">
+                <span class="px-2.5 py-1 rounded-lg bg-black/[0.04] dark:bg-white/[0.05] text-[#6E6E73] dark:text-neutral-300">${members.length} atendentes</span>
+                <span class="px-2.5 py-1 rounded-lg bg-black/[0.04] dark:bg-white/[0.05] text-[#6E6E73] dark:text-neutral-300">Máx. ${g.maxSimultaneous} pausas simultâneas</span>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-black/[0.05] dark:border-white/[0.06] flex flex-wrap gap-1.5">
+              ${members.length
+                ? members.map((m) => `<span class="px-2.5 py-1 rounded-lg bg-black/[0.03] dark:bg-white/[0.04] text-[11px] font-medium">${m.rank} ${m.name} <span class="text-[#6E6E73] dark:text-neutral-500">(${m.pa})</span></span>`).join('')
+                : '<span class="text-xs text-[#6E6E73] dark:text-neutral-500">Nenhum atendente neste grupo.</span>'}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // =========================================================================
+    // AÇÕES DOS FORMULÁRIOS E VALIDAÇÃO RÍGIDA DE PAUSAS
+    // =========================================================================
+    function populateGroupSelect(selectId, includeAll = false, preserveVal = null) {
+      const sel = document.getElementById(selectId);
+      if (!sel) return;
+      const prev = preserveVal !== null ? preserveVal : sel.value;
+      sel.innerHTML = (includeAll ? '<option value="all">Todos os Grupos</option>' : '') +
+        state.groups.map((g) => `<option value="${g.id}">${g.name} (${g.start}–${g.end})</option>`).join('');
+      if (prev && Array.from(sel.options).some((o) => o.value === prev)) {
+        sel.value = prev;
+      }
+    }
+
+    function openManualBreakModal(preAgentId = null, preDate = null) {
+      const sel = document.getElementById('mbAgent');
+      sel.innerHTML = state.agents.map((a) => `<option value="${a.id}">${a.rank} ${a.name} (${a.pa})</option>`).join('');
+      if (preAgentId) sel.value = preAgentId;
+      document.getElementById('mbDate').value = preDate || formatDateKey(getEffectiveNow());
+      document.getElementById('mbValidationMsg').classList.add('hidden');
+      refreshManualBreakSlots();
+      openModal('modalManualBreak');
+    }
+
+    function refreshManualBreakSlots() {
+      const agentId = document.getElementById('mbAgent').value;
+      const type = document.getElementById('mbType').value;
+      const ag = getAgentById(agentId);
+      const group = ag ? getGroupById(ag.groupId) : null;
+      const dur = BREAK_TYPES[type] ? BREAK_TYPES[type].duration : 10;
+      const step = state.roundInterval || 10;
+
+      document.getElementById('mbShiftHint').textContent = group
+        ? `Expediente: ${group.start} às ${group.end} · Somente horários redondos de ${step} em ${step} min`
+        : '';
+
+      const startSel = document.getElementById('mbStart');
+      if (!group) {
+        startSel.innerHTML = '';
+        return;
+      }
+
+      const gStart = timeToMinutes(group.start);
+      const shiftDur = getShiftDurationMinutes(group);
+      const options = [];
+
+      // Gera apenas horários redondos (múltiplos de step) 100% dentro do expediente
+      for (let off = 0; off + dur <= shiftDur; off++) {
+        const clockMin = (gStart + off) % 1440;
+        if (clockMin % step === 0) {
+          const st = minutesToTime(clockMin);
+          const en = minutesToTime(clockMin + dur);
+          options.push(`<option value="${st}">${st} – ${en} (${dur} min)</option>`);
+        }
+      }
+      startSel.innerHTML = options.join('');
+    }
+
+    function submitManualBreak(e) {
+      e.preventDefault();
+      const agentId = document.getElementById('mbAgent').value;
+      const dateKey = document.getElementById('mbDate').value;
+      const type = document.getElementById('mbType').value;
+      const start = document.getElementById('mbStart').value;
+      const msgEl = document.getElementById('mbValidationMsg');
+
+      const ag = getAgentById(agentId);
+      const group = ag ? getGroupById(ag.groupId) : null;
+      const dur = BREAK_TYPES[type].duration;
+      const end = minutesToTime(timeToMinutes(start) + dur);
+
+      if (!isBreakInsideShift(start, dur, group)) {
+        msgEl.textContent = 'Horário fora do expediente do grupo.';
+        msgEl.classList.remove('hidden');
+        return;
+      }
+
+      if (!state.breaks[dateKey]) state.breaks[dateKey] = {};
+      const current = (state.breaks[dateKey][agentId] || []).filter((b) => b.type !== type);
+      const gStart = group ? timeToMinutes(group.start) : 0;
+      const newStartOff = toShiftOffset(timeToMinutes(start), gStart);
+      const newEndOff = newStartOff + dur;
+
+      // Valida sequência obrigatória: 1ª Pausa 10 → Lanche (20m) → 2ª Pausa 10
+      const p1 = current.find((b) => b.type === 'Pausa 10 (1ª)');
+      const ln = current.find((b) => b.type === 'Lanche');
+      const p2 = current.find((b) => b.type === 'Pausa 10 (2ª)');
+
+      if (type === 'Pausa 10 (1ª)' && ln && newEndOff > toShiftOffset(timeToMinutes(ln.start), gStart)) {
+        msgEl.textContent = `A 1ª Pausa 10 deve terminar antes do Lanche (${ln.start}).`;
+        msgEl.classList.remove('hidden');
+        return;
+      }
+      if (type === 'Lanche') {
+        if (p1 && newStartOff < toShiftOffset(timeToMinutes(p1.start), gStart) + 10) {
+          msgEl.textContent = `O Lanche deve iniciar após a 1ª Pausa 10 (${p1.end}).`;
+          msgEl.classList.remove('hidden');
+          return;
+        }
+        if (p2 && newEndOff > toShiftOffset(timeToMinutes(p2.start), gStart)) {
+          msgEl.textContent = `O Lanche deve terminar antes da 2ª Pausa 10 (${p2.start}).`;
+          msgEl.classList.remove('hidden');
+          return;
+        }
+      }
+      if (type === 'Pausa 10 (2ª)' && ln && newStartOff < toShiftOffset(timeToMinutes(ln.start), gStart) + 20) {
+        msgEl.textContent = `A 2ª Pausa 10 deve iniciar após o Lanche (${ln.end}).`;
+        msgEl.classList.remove('hidden');
+        return;
+      }
+
+      current.push({ id: `bm_${Date.now()}`, type, start, end });
+      state.breaks[dateKey][agentId] = sortBreaksInShift(current, group);
+
+      // Se estava de folga nesse dia, remove a folga
+      if (state.daysOff[dateKey]?.[agentId]) {
+        delete state.daysOff[dateKey][agentId];
+      }
+
+      saveState();
+      closeModal('modalManualBreak');
+      renderAll();
+      showToast(`${type} (${start} – ${end}) salva para ${ag.rank} ${ag.name}.`);
+    }
+
+    function openManualDayOffModal(preAgentId = null, preDate = null) {
+      const sel = document.getElementById('mdAgent');
+      sel.innerHTML = state.agents.map((a) => `<option value="${a.id}">${a.rank} ${a.name} (${a.pa})</option>`).join('');
+      if (preAgentId) sel.value = preAgentId;
+      document.getElementById('mdDate').value = preDate || formatDateKey(getEffectiveNow());
+      openModal('modalManualDayOff');
+    }
+
+    function submitManualDayOff(e) {
+      e.preventDefault();
+      const agentId = document.getElementById('mdAgent').value;
+      const dateKey = document.getElementById('mdDate').value;
+      if (!state.daysOff[dateKey]) state.daysOff[dateKey] = {};
+      state.daysOff[dateKey][agentId] = true;
+      if (state.breaks[dateKey]) state.breaks[dateKey][agentId] = [];
+      saveState();
+      closeModal('modalManualDayOff');
+      renderAll();
+      const ag = getAgentById(agentId);
+      showToast(`Folga registrada em ${dateKey} para ${ag ? ag.name : 'atendente'}.`);
+    }
+
+    function submitAutoBreaks(e) {
+      e.preventDefault();
+      const monthKey = document.getElementById('abMonth').value;
+      const round = Number(document.getElementById('abRound').value) || 10;
+      const grp = document.getElementById('abGroup').value;
+      closeModal('modalAutoBreaks');
+      generateMonthlyBreaks(monthKey, round, grp, false);
+    }
+
+    function submitAutoDaysOff(e) {
+      e.preventDefault();
+      const monthKey = document.getElementById('adMonth').value;
+      const regime = document.getElementById('adRegime').value;
+      const grp = document.getElementById('adGroup').value;
+      closeModal('modalAutoDaysOff');
+      generateMonthlyDaysOff(monthKey, regime, grp, false);
+    }
+
+    function submitAddAgent(e) {
+      e.preventDefault();
+      const rank = document.getElementById('naRank').value;
+      const name = document.getElementById('naName').value.trim();
+      const pa = document.getElementById('naPA').value.trim().toUpperCase();
+      const groupId = document.getElementById('naGroup').value;
+      if (!name || !pa) return;
+
+      const id = `ag_${Date.now()}`;
+      state.agents.push({ id, rank, name, pa, groupId });
+      document.getElementById('naName').value = '';
+      document.getElementById('naPA').value = '';
+      saveState();
+      closeModal('modalAddAgent');
+      renderAll();
+      showToast(`${rank} ${name} (${pa}) adicionado à equipe.`);
+    }
+
+    function deleteAgent(agentId) {
+      const ag = getAgentById(agentId);
+      state.agents = state.agents.filter((a) => a.id !== agentId);
+      if (state.loggedAgentId === agentId && state.agents.length) {
+        state.loggedAgentId = state.agents[0].id;
+      }
+      saveState();
+      renderAll();
+      showToast(`${ag ? ag.name : 'Atendente'} removido da escala.`, 'warning');
+    }
+
+    function openGroupModal(groupId = null) {
+      const g = groupId ? getGroupById(groupId) : null;
+      document.getElementById('modalGroupTitle').textContent = g ? 'Editar Grupo & Expediente' : 'Novo Grupo & Expediente';
+      document.getElementById('grId').value = g ? g.id : '';
+      document.getElementById('grName').value = g ? g.name : '';
+      document.getElementById('grStart').value = g ? g.start : '06:00';
+      document.getElementById('grEnd').value = g ? g.end : '12:00';
+      document.getElementById('grMaxSimult').value = g ? g.maxSimultaneous : 2;
+      document.getElementById('grColor').value = g ? g.color : '#0A84FF';
+      document.getElementById('grRecalcWrap').classList.toggle('hidden', !g);
+      openModal('modalGroup');
+    }
+
+    function submitGroup(e) {
+      e.preventDefault();
+      const id = document.getElementById('grId').value;
+      const name = document.getElementById('grName').value.trim();
+      const start = document.getElementById('grStart').value;
+      const end = document.getElementById('grEnd').value;
+      const maxSimultaneous = Number(document.getElementById('grMaxSimult').value) || 2;
+      const color = document.getElementById('grColor').value;
+
+      if (id) {
+        const g = getGroupById(id);
+        if (g) {
+          g.name = name;
+          g.start = start;
+          g.end = end;
+          g.maxSimultaneous = maxSimultaneous;
+          g.color = color;
+          if (document.getElementById('grRecalc').checked) {
+            generateMonthlyBreaks(formatMonthKey(getEffectiveNow()), state.roundInterval, g.id, true);
+          }
+        }
+      } else {
+        state.groups.push({ id: `grp_${Date.now()}`, name, start, end, maxSimultaneous, color });
+      }
+
+      saveState();
+      closeModal('modalGroup');
+      renderAll();
+      showToast(`Grupo "${name}" (${start}–${end}) salvo com sucesso.`);
+    }
+
+    function deleteGroup(groupId) {
+      if (state.groups.length <= 1) {
+        showToast('Mantenha pelo menos um grupo ativo no sistema.', 'warning');
+        return;
+      }
+      state.groups = state.groups.filter((g) => g.id !== groupId);
+      const fallback = state.groups[0].id;
+      state.agents.forEach((a) => {
+        if (a.groupId === groupId) a.groupId = fallback;
+      });
+      saveState();
+      renderAll();
+      showToast('Grupo removido e atendentes realocados.', 'warning');
+    }
+
+    function openAgentBreaksModal(agentId, dateKey) {
+      const ag = getAgentById(agentId);
+      const group = ag ? getGroupById(ag.groupId) : null;
+      document.getElementById('mabTitle').textContent = `${ag.rank} ${ag.name} (${ag.pa})`;
+      document.getElementById('mabSubtitle').textContent = `Data: ${dateKey} · ${group ? `${group.name} (${group.start}–${group.end})` : ''}`;
+
+      const list = sortBreaksInShift(state.breaks[dateKey]?.[agentId] || [], group);
+      const box = document.getElementById('mabList');
+      if (!list.length) {
+        box.innerHTML = `<p class="text-xs text-[#6E6E73] dark:text-neutral-400 py-4 text-center">Nenhuma pausa registrada nesta data.</p>`;
+      } else {
+        box.innerHTML = list.map((b) => `
+          <div class="flex items-center justify-between p-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.05] text-xs">
+            <div>
+              <p class="font-semibold">${b.type}</p>
+              <p class="text-[11px] text-[#6E6E73] dark:text-neutral-400 tabular-nums">${b.start} – ${b.end} (${getBreakDuration(b)} min)</p>
+            </div>
+            <button type="button" onclick="removeBreak('${agentId}', '${dateKey}', '${b.id}')" class="px-2.5 py-1 rounded-lg bg-[#FF453A]/15 text-[#FF453A] text-[11px] font-medium hover:bg-[#FF453A]/25 transition">Remover</button>
+          </div>`).join('');
+      }
+      openModal('modalAgentBreaks');
+    }
+
+    function removeBreak(agentId, dateKey, breakId) {
+      if (state.breaks[dateKey]?.[agentId]) {
+        state.breaks[dateKey][agentId] = state.breaks[dateKey][agentId].filter((b) => b.id !== breakId);
+      }
+      saveState();
+      openAgentBreaksModal(agentId, dateKey);
+      renderAll();
+    }
+
+    // =========================================================================
+    // EXPORTAÇÃO CSV (EXCEL)
+    // =========================================================================
+    function exportCSV() {
+      const dateKey = document.getElementById('breaksDateInput').value || formatDateKey(getEffectiveNow());
+      const rows = [['Atendente', 'P.A.', 'Grupo', 'Expediente', '1ª Pausa 10', 'Lanche (20m)', '2ª Pausa 10', 'Total (min)', 'Folga Hoje']];
+
+      state.agents.forEach((ag) => {
+        const g = getGroupById(ag.groupId);
+        const list = state.breaks[dateKey]?.[ag.id] || [];
+        const p1 = list.find((b) => b.type === 'Pausa 10 (1ª)');
+        const ln = list.find((b) => b.type === 'Lanche');
+        const p2 = list.find((b) => b.type === 'Pausa 10 (2ª)');
+        const total = list.reduce((s, b) => s + getBreakDuration(b), 0);
+        const off = state.daysOff[dateKey]?.[ag.id] ? 'SIM' : 'NÃO';
+        rows.push([
+          `${ag.rank} ${ag.name}`,
+          ag.pa,
+          g ? g.name : '',
+          g ? `${g.start}-${g.end}` : '',
+          p1 ? `${p1.start}-${p1.end}` : '',
+          ln ? `${ln.start}-${ln.end}` : '',
+          p2 ? `${p2.start}-${p2.end}` : '',
+          String(total),
+          off,
+        ]);
+      });
+
+      const csv = '\uFEFF' + rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `COPOM190_Pausas_${dateKey}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Planilha COPOM190_Pausas_${dateKey}.csv exportada.`);
+    }
+
+    // =========================================================================
+    // INICIALIZAÇÃO GERAL
+    // =========================================================================
+    function renderAll() {
+      applyRoleUI();
+      if (state.activeTab === 'overview') renderOverview();
+      if (state.activeTab === 'breaks') renderBreaksTable();
+      if (state.activeTab === 'schedule') renderScheduleTable();
+      if (state.activeTab === 'groups') renderGroups();
+      if (state.activeTab === 'history' && isManagerRole()) renderHistory();
+    }
+
+    function renderHistory() {
+      const body = document.getElementById('historyTableBody');
+      if (!body) return;
+      const entries = Array.isArray(state.history) ? state.history : [];
+      const total = document.getElementById('historyTotal');
+      const last = document.getElementById('historyLast');
+      if (total) total.textContent = String(entries.length);
+      if (last) last.textContent = entries.length
+        ? new Date(entries[0].timestamp).toLocaleString('pt-BR')
+        : 'Nenhuma alteração';
+      if (!entries.length) {
+        body.innerHTML = '<tr><td colspan="4" class="px-5 py-10 text-center text-xs text-[#6E6E73] dark:text-neutral-400">Nenhuma alteração registrada ainda.</td></tr>';
+        return;
+      }
+      body.innerHTML = entries.map((entry) => {
+        const date = new Date(entry.timestamp);
+        const dateLabel = Number.isNaN(date.getTime()) ? 'Data inválida' : date.toLocaleString('pt-BR');
+        const safe = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[char]));
+        return `<tr>
+          <td class="px-5 py-3.5 whitespace-nowrap tabular-nums">${safe(dateLabel)}</td>
+          <td class="px-4 py-3.5">${safe(entry.role)}</td>
+          <td class="px-4 py-3.5">${safe(entry.category)}</td>
+          <td class="px-5 py-3.5">${safe(entry.description)}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function exportHistoryCSV() {
+      const rows = [['Data e hora', 'Perfil', 'Categoria', 'Descrição']];
+      (state.history || []).forEach((entry) => rows.push([
+        new Date(entry.timestamp).toLocaleString('pt-BR'),
+        entry.role, entry.category, entry.description
+      ]));
+      const csv = '\\uFEFF' + rows.map((row) => row.map((value) =>
+        `"${String(value ?? '').replace(/"/g, '""')}"`
+      ).join(';')).join('\\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `COPOM190_Historico_${formatDateKey(new Date())}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      showToast('Histórico exportado em CSV.');
+    }
+
+    function clearHistory() {
+      if (!confirm('Deseja realmente limpar todo o histórico de modificações?')) return;
+      state.history = [];
+      lastAuditSnapshot = createAuditSnapshot();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      renderHistory();
+      showToast('Histórico limpo.', 'warning');
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.menu-popover') && !e.target.closest('button[onclick*="toggleMenuPopover"]')) {
+        closeAllPopovers();
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      document.documentElement.classList.toggle('dark', state.theme === 'dark');
+      if (state.simulatedTime) {
+        document.getElementById('simTimeInput').value = state.simulatedTime;
+      }
+
+      updateClockDisplay();
+      applyRoleUI();
+      switchTab(state.activeTab || 'overview');
+
+      // Para o piscar do título quando o atendente voltar para a aba
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) stopTitleBlink();
+      });
+      window.addEventListener('focus', stopTitleBlink);
+
+      // Atualização ao vivo a cada 1 segundo (resistente a aba em segundo plano)
+      startReliableTicker(() => {
+        updateClockDisplay();
+        if (state.activeTab === 'overview') {
+          renderOverview();
+        }
+        checkAgentBreakNotifications();
+      });
+    });
+  </script>
+</body></html>
