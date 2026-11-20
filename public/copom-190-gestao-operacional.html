@@ -154,7 +154,7 @@
 </div>
 </button>
 <div class="my-1.5 border-t border-black/[0.06] dark:border-white/[0.08]"></div>
-<button class="w-full text-left px-3 py-2 rounded-xl hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-xs font-medium flex items-center gap-2.5 transition" onclick="closeAllPopovers(); openModal('modalAddAgent')" type="button">
+<button class="w-full text-left px-3 py-2 rounded-xl hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-xs font-medium flex items-center gap-2.5 transition" onclick="showToast('Cadastre atendentes em Acessos e Cargos na Base 190.', 'info')" type="button">
 <svg class="w-4 h-4 text-[#6E6E73] dark:text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" x2="20" y1="8" y2="14"></line><line x1="23" x2="17" y1="11" y2="11"></line></svg>
               Novo Atendente
             </button>
@@ -1012,7 +1012,7 @@
     }
 
     function isMinuteInsideShift(minuteOfDay, group) {
-      if (!group) return true;
+      if (!group) return false;
       const s = timeToMinutes(group.start);
       const dur = getShiftDurationMinutes(group);
       const off = toShiftOffset(minuteOfDay, s);
@@ -1020,7 +1020,7 @@
     }
 
     function isBreakInsideShift(startHHMM, durationMin, group) {
-      if (!group) return true;
+      if (!group) return false;
       const s = timeToMinutes(group.start);
       const shiftDur = getShiftDurationMinutes(group);
       const bStartOff = toShiftOffset(timeToMinutes(startHHMM), s);
@@ -1070,7 +1070,7 @@
     }
 
     function getLoggedAgent() {
-      return getAgentById(state.loggedAgentId) || state.agents[0] || null;
+      return getAgentById(state.loggedAgentId) || null;
     }
 
     // =========================================================================
@@ -1088,144 +1088,96 @@
       }
     }
 
-    function loadState() {
+    function loadState(){
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) {
-          seedDefaultData();
-          state.history = [];
-          lastAuditSnapshot = createAuditSnapshot();
-          return;
-        }
-        const parsed = JSON.parse(raw);
-        if (!parsed || !Array.isArray(parsed.groups) || !parsed.groups.length) {
-          seedDefaultData();
-          state.history = [];
-          lastAuditSnapshot = createAuditSnapshot();
-          return;
-        }
-        Object.assign(state, parsed);
-        if (!state.notifications) {
-          state.notifications = { asked: false, enabled: false, notifiedKeys: {} };
-        }
-        if (!Array.isArray(state.history)) state.history = [];
-        lastAuditSnapshot = createAuditSnapshot();
-        if (!state.loggedAgentId && state.agents.length) {
-          state.loggedAgentId = state.agents[0].id;
-        }
-      } catch (err) {
-        console.warn('Erro ao carregar dados salvos, restaurando padrão:', err);
-        seedDefaultData();
-        state.history = [];
-        lastAuditSnapshot = createAuditSnapshot();
-      }
+        const raw=localStorage.getItem(STORAGE_KEY);
+        if(raw){const data=JSON.parse(raw);if(data&&typeof data==='object')Object.assign(state,data);}
+      } catch(error){console.warn('Dados locais inválidos; iniciando sem demonstração.',error);}
+      if(!Array.isArray(state.groups))state.groups=[];
+      if(!Array.isArray(state.agents))state.agents=[];
+      if(!state.breaks||typeof state.breaks!=='object')state.breaks={};
+      if(!state.daysOff||typeof state.daysOff!=='object')state.daysOff={};
+      if(!Array.isArray(state.history))state.history=[];
+      if(!state.notifications)state.notifications={asked:false,enabled:false,notifiedKeys:{}};
+      lastAuditSnapshot=null;
     }
 
-    function seedDefaultData() {
-      state.roundInterval = 10;
-      state.simulatedTime = null;
-      state.groups = [
-        { id: 'grp_a', name: 'Turno A · Manhã',     start: '06:00', end: '12:00', maxSimultaneous: 2, color: '#0A84FF' },
-        { id: 'grp_b', name: 'Turno B · Tarde',     start: '12:00', end: '18:00', maxSimultaneous: 2, color: '#30D158' },
-        { id: 'grp_c', name: 'Turno C · Noite',     start: '18:00', end: '00:00', maxSimultaneous: 2, color: '#FF9F0A' },
-        { id: 'grp_d', name: 'Turno D · Madrugada', start: '00:00', end: '06:00', maxSimultaneous: 2, color: '#BF5AF2' },
-      ];
+    let baseScheduleSnapshot=null;
+    let baseSignedUser=null;
+    const validClock=/^([01]\d|2[0-3]):[0-5]\d$/;
+    const escapeName=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const shiftId=(start,end)=>'shift_'+start.replace(':','')+'_'+end.replace(':','');
 
-      state.agents = [
-        { id: 'ag_1',  rank: 'Sd.',     name: 'Lucas Ferreira',   pa: 'PA-01', groupId: 'grp_a' },
-        { id: 'ag_2',  rank: 'Cb.',     name: 'Mariana Costa',    pa: 'PA-02', groupId: 'grp_a' },
-        { id: 'ag_3',  rank: 'Sd.',     name: 'Rafael Oliveira',  pa: 'PA-03', groupId: 'grp_a' },
-        { id: 'ag_4',  rank: '3º Sgt.', name: 'Bruno Almeida',    pa: 'PA-04', groupId: 'grp_b' },
-        { id: 'ag_5',  rank: 'Sd.',     name: 'Camila Rocha',     pa: 'PA-05', groupId: 'grp_b' },
-        { id: 'ag_6',  rank: 'Cb.',     name: 'Diego Martins',    pa: 'PA-06', groupId: 'grp_b' },
-        { id: 'ag_7',  rank: 'Sd.',     name: 'Juliana Ribeiro',  pa: 'PA-07', groupId: 'grp_c' },
-        { id: 'ag_8',  rank: 'Cb.',     name: 'Thiago Mendes',    pa: 'PA-08', groupId: 'grp_c' },
-        { id: 'ag_9',  rank: 'Sd.',     name: 'Patrícia Lima',    pa: 'PA-09', groupId: 'grp_c' },
-        { id: 'ag_10', rank: '3º Sgt.', name: 'Carlos Eduardo',   pa: 'PA-10', groupId: 'grp_d' },
-        { id: 'ag_11', rank: 'Sd.',     name: 'Fernanda Souza',   pa: 'PA-11', groupId: 'grp_d' },
-        { id: 'ag_12', rank: 'Cb.',     name: 'André Carvalho',   pa: 'PA-12', groupId: 'grp_d' },
-      ];
-
-      state.breaks = {};
-      state.daysOff = {};
-
-      const now = new Date();
-      const monthKey = formatMonthKey(now);
-      const todayKey = formatDateKey(now);
-
-      // Gera folgas 6x1 para o mês atual e pausas redondas para todo o mês
-      generateMonthlyDaysOff(monthKey, '6x1', 'all', true);
-      generateMonthlyBreaks(monthKey, 10, 'all', true);
-
-      // Ajusta as pausas de hoje no turno ativo para mostrar atividade ao vivo imediatamente
-      const nowMin = now.getHours() * 60 + now.getMinutes();
-      const activeGroup = state.groups.find((g) => isMinuteInsideShift(nowMin, g)) || state.groups[0];
-      const activeAgents = state.agents.filter((a) => a.groupId === activeGroup.id);
-
-      // Garante que os agentes do turno ativo estejam escalados hoje
-      activeAgents.forEach((ag) => {
-        if (state.daysOff[todayKey]) delete state.daysOff[todayKey][ag.id];
+    function syncOfficialRoster(data,account){
+      if(!Array.isArray(data?.users)||!Array.isArray(data?.profiles))throw Error('Cadastro oficial indisponível.');
+      baseScheduleSnapshot=data;baseSignedUser=account;
+      const customGroups=state.groups.filter(g=>g&&/^grp_\d{10,}$/.test(String(g.id||'')));
+      const previous=new Map((state.agents||[]).map(a=>[a.id,a]));
+      const profileById=new Map(data.profiles.map(p=>[p.user_id,p]));
+      const allAttendants=data.users.filter(u=>u?.operational_role==='attendant'&&typeof u.id==='string');
+      const ids=new Set(allAttendants.map(u=>u.id));
+      const officialGroups=[];
+      const entries=Array.isArray(data.entries)?data.entries:[];
+      state.agents=allAttendants.map(u=>{
+        const p=profileById.get(u.id);
+        let shift=p&&validClock.test(p.start_time)&&validClock.test(p.end_time)&&p.start_time!==p.end_time
+          ?{start:p.start_time,end:p.end_time}:null;
+        if(!shift){
+          const saved=entries.find(e=>e.user_id===u.id&&!e.is_off&&validClock.test(e.start_time)&&validClock.test(e.end_time)&&e.start_time!==e.end_time);
+          if(saved)shift={start:saved.start_time,end:saved.end_time};
+        }
+        let groupId=null;
+        if(shift){
+          groupId=shiftId(shift.start,shift.end);
+          if(!officialGroups.some(g=>g.id===groupId))
+            officialGroups.push({id:groupId,name:'Expediente '+shift.start+'–'+shift.end,start:shift.start,end:shift.end,maxSimultaneous:1,color:'#0A84FF',source:'base190'});
+        }else{
+          const old=previous.get(u.id);
+          if(customGroups.some(g=>g.id===old?.groupId))groupId=old.groupId;
+        }
+        return {id:u.id,name:escapeName(u.display_name||u.username),rank:'',pa:'Não cadastrada',groupId,source:'base190'};
       });
-
-      const gStart = timeToMinutes(activeGroup.start);
-      const shiftDur = getShiftDurationMinutes(activeGroup);
-      const roundFloor = Math.floor(nowMin / 10) * 10;
-      const roundNext10 = roundFloor + 10;
-
-      if (!state.breaks[todayKey]) state.breaks[todayKey] = {};
-
-      // Monta 3 pausas válidas (10m → Lanche 20m → 10m) ancoradas perto do horário atual
-      const buildAnchoredBreaks = (anchorStartMin, anchorType) => {
-        const anchorOff = toShiftOffset(anchorStartMin, gStart);
-        let p1Off, lOff, p2Off;
-        if (anchorType === 'Lanche') {
-          lOff = Math.min(Math.max(anchorOff, 40), shiftDur - 60);
-          p1Off = Math.max(20, lOff - 60);
-          p2Off = Math.min(shiftDur - 20, lOff + 60);
-        } else if (anchorType === 'Pausa 10 (1ª)') {
-          p1Off = Math.min(Math.max(anchorOff, 10), shiftDur - 100);
-          lOff = Math.min(shiftDur - 50, p1Off + 60);
-          p2Off = Math.min(shiftDur - 20, lOff + 60);
-        } else {
-          p2Off = Math.min(Math.max(anchorOff, 110), shiftDur - 10);
-          lOff = Math.max(50, p2Off - 60);
-          p1Off = Math.max(10, lOff - 60);
+      state.groups=[...officialGroups,...customGroups];
+      const clean=dataset=>Object.fromEntries(Object.entries(dataset||{}).map(([day,values])=>
+        [day,Object.fromEntries(Object.entries(values||{}).filter(([id])=>ids.has(id)))])
+        .filter(([,values])=>Object.keys(values).length));
+      state.breaks=clean(state.breaks);state.daysOff=clean(state.daysOff);
+      // Os registros da escala oficial do mês têm precedência sobre ajustes locais.
+      for(const entry of entries){
+        if(!ids.has(entry.user_id)||typeof entry.day!=='string')continue;
+        const day=entry.day.slice(0,10),id=entry.user_id;
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(day))continue;
+        if(entry.is_off){
+          (state.daysOff[day]??={})[id]=true;
+          if(state.breaks[day])delete state.breaks[day][id];
+          continue;
         }
-        // Garante horários redondos de 10 em 10 min
-        p1Off = Math.round(p1Off / 10) * 10;
-        lOff = Math.round(lOff / 10) * 10;
-        p2Off = Math.round(p2Off / 10) * 10;
-
-        return [
-          { id: `b_${Date.now()}_${Math.random()}`, type: 'Pausa 10 (1ª)', start: minutesToTime(gStart + p1Off), end: minutesToTime(gStart + p1Off + 10) },
-          { id: `b_${Date.now()}_${Math.random()}`, type: 'Lanche',        start: minutesToTime(gStart + lOff),  end: minutesToTime(gStart + lOff + 20) },
-          { id: `b_${Date.now()}_${Math.random()}`, type: 'Pausa 10 (2ª)', start: minutesToTime(gStart + p2Off), end: minutesToTime(gStart + p2Off + 10) },
-        ];
-      };
-
-      if (activeAgents[0]) {
-        // Em pausa agora (Lanche 20m)
-        state.breaks[todayKey][activeAgents[0].id] = buildAnchoredBreaks(roundFloor, 'Lanche');
+        if(state.daysOff[day])delete state.daysOff[day][id];
+        const starts=[entry.break_1,entry.break_2,entry.break_3];
+        if(starts.every(value=>validClock.test(value))){
+          (state.breaks[day]??={})[id]=starts.map((start,i)=>({
+            id:'base_'+day+'_'+id+'_'+i,
+            type:['Pausa 10 (1ª)','Lanche','Pausa 10 (2ª)'][i],
+            start,end:minutesToTime(timeToMinutes(start)+[10,20,10][i])
+          }));
+        }
       }
-      if (activeAgents[1]) {
-        // Em pausa agora (Pausa 10)
-        state.breaks[todayKey][activeAgents[1].id] = buildAnchoredBreaks(roundFloor, 'Pausa 10 (1ª)');
-      }
-      if (activeAgents[2]) {
-        // Próxima pausa em até 10 min
-        state.breaks[todayKey][activeAgents[2].id] = buildAnchoredBreaks(roundNext10, 'Lanche');
-      }
-
-      state.loggedAgentId = activeAgents[0] ? activeAgents[0].id : state.agents[0].id;
-      saveState();
+      state.loggedAgentId=ids.has(account.id)?account.id:
+        (account.operationalRole==='dev'&&ids.has(state.loggedAgentId)?state.loggedAgentId:null);
+      const label=document.getElementById('baseRosterStatus');
+      if(label)label.textContent=allAttendants.length
+        ?allAttendants.length+' atendente(s) ativo(s) da Base 190 · ajustes desta aba permanecem locais neste navegador'
+        :'Nenhum atendente ativo na Base 190 · cadastre profissionais em Acessos e Cargos';
+      lastAuditSnapshot=createAuditSnapshot();
+      try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}catch(error){console.warn('Falha ao salvar dados locais.',error);}
     }
 
-    function resetToDefaultData() {
+    function resetToDefaultData(){
       closeModal('modalResetConfirm');
-      localStorage.removeItem(STORAGE_KEY);
-      seedDefaultData();
-      renderAll();
-      showToast('Dados padrão do COPOM 190 restaurados com sucesso.');
+      state.agents=[];state.groups=[];state.daysOff={};state.breaks={};state.history=[];state.loggedAgentId=null;
+      if(baseScheduleSnapshot&&baseSignedUser)syncOfficialRoster(baseScheduleSnapshot,baseSignedUser);
+      scheduleDraft=null;renderAll();
+      showToast('Ajustes locais limpos; usuários reais e escala oficial preservados.','info');
     }
 
     // =========================================================================
@@ -1797,6 +1749,7 @@
     // =========================================================================
     function getAgentLiveStatus(agent, now, dateKey) {
       const group = getGroupById(agent.groupId);
+      if (!group) return {code:'unassigned',label:'Turno não configurado',activeBreak:null,nextBreak:null};
       if (state.daysOff[dateKey]?.[agent.id]) {
         return { code: 'day_off', label: 'De Folga', activeBreak: null, nextBreak: null };
       }
@@ -1960,7 +1913,7 @@
 
     function renderAgentSelfDashboard() {
       const ag = getLoggedAgent();
-      if (!ag) return;
+      if (!ag){const e=document.getElementById('agentSelfGreeting');if(e)e.textContent='Nenhum atendente vinculado a esta conta.';return;}
 
       // Popula seletor de atendente
       const sel = document.getElementById('loggedAgentSelect');
@@ -2406,7 +2359,7 @@
       const grid = document.getElementById('groupsGrid');
       const manager = isManagerRole();
 
-      grid.innerHTML = state.groups.map((g) => {
+      grid.innerHTML = state.groups.length ? state.groups.map((g) => {
         const members = state.agents.filter((a) => a.groupId === g.id);
         const durH = (getShiftDurationMinutes(g) / 60).toFixed(1).replace('.0', '');
         const overnight = timeToMinutes(g.end) <= timeToMinutes(g.start);
@@ -2442,7 +2395,7 @@
                 : '<span class="text-xs text-[#6E6E73] dark:text-neutral-500">Nenhum atendente neste grupo.</span>'}
             </div>
           </div>`;
-      }).join('');
+      }).join('') : '<div class="rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-neutral-400">Nenhum grupo fictício foi criado. Configure os turnos dos atendentes em Gestão de Piso na Base 190.</div>';
     }
 
     // =========================================================================
@@ -2612,6 +2565,8 @@
 
     function submitAddAgent(e) {
       e.preventDefault();
+      showToast('Os profissionais são cadastrados em Acessos e Cargos na Base 190.','warning');
+      return;
       const rank = document.getElementById('naRank').value;
       const name = document.getElementById('naName').value.trim();
       const pa = document.getElementById('naPA').value.trim().toUpperCase();
@@ -2629,6 +2584,8 @@
     }
 
     function deleteAgent(agentId) {
+      showToast('A exclusão de contas é gerenciada em Acessos e Cargos na Base 190.','warning');
+      return;
       const ag = getAgentById(agentId);
       state.agents = state.agents.filter((a) => a.id !== agentId);
       if (state.loggedAgentId === agentId && state.agents.length) {
