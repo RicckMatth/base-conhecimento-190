@@ -11,6 +11,7 @@ import AccessControl from './access-control.jsx';
 import AnnouncementCanvas from './announcement-canvas.jsx';
 import AnnouncementNotifications from './announcement-notifications.jsx';
 import { Icon, categoryIcon } from './icons.jsx';
+import {tabLabel,tabIcon,safeNavigationTarget,tabDirection,tabMotionTiming} from '../lib/tab-navigation.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 function TabLoader({ tabName = 'Módulo 190', subtitle = 'Carregando dados e sincronizando interface…', icon = 'shield' }) {
@@ -181,6 +182,19 @@ export default function Home() {
   const [screen, setScreen] = useState('home'), [requestMode, setRequestMode] = useState(false);
   const [tabLoading, setTabLoading] = useState(false);
   const [loadingTabKey, setLoadingTabKey] = useState('');
+  const [navigationPhase,setNavigationPhase]=useState('idle');
+  const [navigationTarget,setNavigationTarget]=useState('');
+  const [navigationDirection,setNavigationDirection]=useState('forward');
+  const navSequenceRef=useRef(0);
+  const navTimersRef=useRef({exit:null,enter:null});
+  const reducedMotionRef=useRef(false);
+  useEffect(()=>{
+    const media=window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update=()=>{reducedMotionRef.current=media.matches;};
+    update();
+    media.addEventListener?.('change',update);
+    return ()=>media.removeEventListener?.('change',update);
+  },[]);
   const [chatFrameLoading, setChatFrameLoading] = useState(true);
   const [qualityState, setQualityState] = useState(null);
   const [operationsTab, setOperationsTab] = useState('overview');
@@ -205,12 +219,13 @@ export default function Home() {
       { type: 'base190:theme', theme: dark ? 'dark' : 'light' }, '*'
     );
   }, [dark, screen]);
-  const loadingTimerRef = useRef(null);
-  useEffect(() => {
-    return () => {
-      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+  useEffect(()=>{
+    return ()=>{
+      navSequenceRef.current+=1;
+      if(navTimersRef.current.exit!==null)clearTimeout(navTimersRef.current.exit);
+      if(navTimersRef.current.enter!==null)clearTimeout(navTimersRef.current.enter);
     };
-  }, []);
+  },[]);
   const [login, setLogin] = useState({ username: '', password: '' });
   const [loginMode,setLoginMode]=useState('login');
   const [setupForm,setSetupForm]=useState({username:'',code:'',password:'',confirm:''});
@@ -428,42 +443,55 @@ export default function Home() {
     return () => window.removeEventListener('keydown', onKey);
   }, [profileModalOpen]);
 
-  async function go(next) {
-    if (!window.dispatchEvent(new Event('base190:before-navigation', { cancelable: true }))) return;
-    if(next==='brain')next='chat';
-    const allowed = [...activeProfileConfig.centralTabs, ...activeProfileConfig.adminTabs];
-    if (!allowed.includes(next)) {
-      setNotice(`Acesso restrito: a aba solicitada não está disponível para o perfil ${activeProfileConfig.name}.`);
-      next = activeProfileConfig.centralTabs[0] || 'home';
+  function go(requested){
+    // Editors may veto a navigation to prevent losing an unsaved draft.
+    if(!window.dispatchEvent(new Event('base190:before-navigation',{cancelable:true})))return;
+    const allowed=[...activeProfileConfig.centralTabs,...activeProfileConfig.adminTabs];
+    const target=safeNavigationTarget(requested,allowed,activeProfileConfig.centralTabs[0]||'home');
+    const invalid=target!==(requested==='brain'?'chat':requested);
+    if(target===screen&&navigationPhase==='idle'){
+      if(invalid)setNotice('Essa aba não está disponível para o seu perfil.');
+      return;
     }
-    if (next === 'docs') setDocsOpened(true);
-    if (next === 'home') showCurrentAnnouncement();
-    if (next === 'chat') setChatFrameLoading(true);
-    clear();
-    setScreen(next);
-
+    const seq=++navSequenceRef.current;
+    if(navTimersRef.current.exit!==null)clearTimeout(navTimersRef.current.exit);
+    if(navTimersRef.current.enter!==null)clearTimeout(navTimersRef.current.enter);
+    const timing=tabMotionTiming(reducedMotionRef.current);
+    setNavigationTarget(target);
+    setNavigationDirection(tabDirection(screen,target));
+    setNavigationPhase('exit');
     setTabLoading(true);
-    setLoadingTabKey(next);
+    setLoadingTabKey(target);
+    clear();
+    if(invalid)setNotice('Essa aba não está disponível para o seu perfil.');
 
-    try {
-      if (next === 'audit') { const x = await call('/admin/audit'); setEvents(x.events || []); }
-      else if (next === 'rules') { const x = await call('/rules'); setBrainRules(x || {}); }
-    } catch (e) {
-      err(e);
-    } finally {
-      if (typeof globalThis !== 'undefined' && globalThis.window) {
-        if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
-        loadingTimerRef.current = setTimeout(() => {
-          try {
-            if (typeof globalThis !== 'undefined' && globalThis.window) {
-              setTabLoading(false);
-            }
-          } catch { }
-        }, 150);
-      } else {
-        setTabLoading(false);
-      }
-    }
+    navTimersRef.current.exit=setTimeout(()=>{
+      if(seq!==navSequenceRef.current)return;
+      if(target==='docs')setDocsOpened(true);
+      if(target==='chat')setChatFrameLoading(true);
+      if(target==='home')showCurrentAnnouncement();
+      setScreen(target);
+      setNavigationPhase('enter');
+      const task=async()=>{
+        if(target==='audit'){
+          const x=await call('/admin/audit');
+          if(seq===navSequenceRef.current)setEvents(x.events||[]);
+        }else if(target==='rules'){
+          const x=await call('/rules');
+          if(seq===navSequenceRef.current)setBrainRules(x||{});
+        }
+      };
+      task().catch(error=>{
+        if(seq===navSequenceRef.current)err(error);
+      }).finally(()=>{
+        if(seq===navSequenceRef.current)setTabLoading(false);
+      });
+      navTimersRef.current.enter=setTimeout(()=>{
+        if(seq!==navSequenceRef.current)return;
+        setNavigationPhase('idle');
+        setNavigationTarget('');
+      },timing.enter);
+    },timing.exit);
   }
   async function analyze(e) {
     e?.preventDefault?.(); clear(); const text = relato.trim(); if (text.length < 3) return err(new Error('Informe o relato ou a dúvida para análise.'));
@@ -647,9 +675,9 @@ export default function Home() {
   const isImmersiveScreen = screen === 'quality' || screen === 'chat' || screen==='operations';
   const visibleLinks = links.filter(([id]) => activeProfileConfig.centralTabs.includes(id));
   const visibleAdminLinks = adminLinks.filter(([id]) => activeProfileConfig.adminTabs.includes(id));
-  const headerIconName=({ home: 'home', docs: 'book', catalog: 'book', chat: 'brain', floor: 'shield', operations: 'calendar', quality: 'audit', access: 'users', announcements: 'megaphone', editor: 'edit', rules: 'settings', audit: 'audit', detail: 'book', brain: 'brain' })[screen] || 'shield';
+  const headerIconName=tabIcon(screen);
   return <div className={'shell' + (isImmersiveScreen ? ' immersive-mode' : '') + (screen === 'quality' ? ' quality-mode' : '') + (sidebarExpanded ? ' sidebar-expanded' : '')}>
-    {tabLoading && <div className="tab-top-progress-bar"><div className="tab-top-progress-bar-fill" /></div>}
+    {(tabLoading||navigationPhase!=='idle')&&<div className="tab-top-progress-bar base190-navigation-progress" aria-hidden="true"><div className="tab-top-progress-bar-fill" /></div>}
     <aside id="base190-sidebar" className="sidebar compact" aria-label="Navegação principal" data-expanded={sidebarExpanded?'true':'false'}>
       <div className="logo"><div className="logoicon" title="Base 190">190</div><div className="logo-text"><strong>Base 190</strong><small>CONHECIMENTO OPERACIONAL</small></div></div>
       <button type="button" className="sidebar-toggle" onClick={toggleSidebar}
@@ -818,7 +846,19 @@ export default function Home() {
           </button>
         </div>
       </header>
-      <main className={'content' + (isImmersiveScreen ? ' quality-content-mode immersive-content-mode' : ' spaced')} data-current-tab={screen}>
+      <main className={'content' + (isImmersiveScreen ? ' quality-content-mode immersive-content-mode' : ' spaced')}
+        data-current-tab={screen} data-nav-phase={navigationPhase} data-nav-direction={navigationDirection}
+        aria-busy={navigationPhase==='exit'||tabLoading}>
+        {(navigationPhase!=='idle'||tabLoading)&&
+          <div className="base190-navigation-hud" role="status" aria-live="polite" aria-atomic="true">
+            <span className="base190-navigation-hud-symbol"><Icon name={tabIcon(navigationTarget||screen)} size={19}/></span>
+            <span className="base190-navigation-hud-copy">
+              <small>CENTRO 190 · NAVEGAÇÃO</small>
+              <strong>{tabLabel(navigationTarget||screen)}</strong>
+              <span>{tabLoading?'Preparando conteúdo…':'Abrindo módulo…'}</span>
+            </span>
+            <span className="base190-navigation-hud-spinner" aria-hidden="true"/>
+          </div>}
         {notice && <div className="notice" role="alert">{notice}</div>}{success && <div className="notice success" role="status">{success}</div>}
         {catalogIssue && <div className="notice" role="alert" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <span>{catalogIssue}{catalogDegraded ? ' Consulta em modo de contingência: não é confirmação de que as alterações do banco estejam sincronizadas.' : ''}</span>
