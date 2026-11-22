@@ -2,13 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {COPOM_CATALOG} from '../lib/copom-catalog.js';
+import {safeNavigationTarget} from '../lib/tab-navigation.js';
 
 const page=await readFile(new URL('../app/page.jsx',import.meta.url),'utf8');
 
 test('Chat 190 é a única aba pública de atendimento',()=>{
  assert.match(page,/\['chat','Chat 190','brain'\]/);
  assert.doesNotMatch(page,/\['brain','Cérebro 190','brain'\]/);
- assert.match(page,/if\(next==='brain'\)next='chat'/);
+ assert.equal(safeNavigationTarget('brain',['home','chat']),'chat');
  assert.ok(page.includes('src="/copom-sade-190.html"'));
  assert.match(page,/sandbox="allow-scripts allow-forms"/);
  assert.doesNotMatch(page,/sandbox="[^"]*allow-same-origin/);

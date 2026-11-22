@@ -1,0 +1,196 @@
+/* Centro 190 · Motion system v1
+ * Only animates the route surface, never the fixed shell or embedded navigation.
+ * No layout-height changes: iframes, rich-text editors and scroll containers keep their size.
+ */
+:root{
+  --base190-motion-exit:135ms;
+  --base190-motion-enter:355ms;
+  --base190-motion-ease:cubic-bezier(.22,1,.36,1);
+  --base190-motion-soft:cubic-bezier(.16,1,.3,1);
+}
+.shell>.main>.content[data-nav-phase="exit"]>.tab-view-container:not([hidden]){
+  animation:base190-route-leave-forward var(--base190-motion-exit) cubic-bezier(.4,0,.95,.7) both;
+  pointer-events:none;
+}
+.shell>.main>.content[data-nav-phase="exit"][data-nav-direction="back"]>.tab-view-container:not([hidden]){
+  animation-name:base190-route-leave-back;
+}
+.shell>.main>.content[data-nav-phase="enter"]>.tab-view-container:not([hidden]){
+  animation:base190-route-enter-forward var(--base190-motion-enter) var(--base190-motion-ease) both;
+  transform-origin:50% 10%;
+}
+.shell>.main>.content[data-nav-phase="enter"][data-nav-direction="back"]>.tab-view-container:not([hidden]){
+  animation-name:base190-route-enter-back;
+}
+@keyframes base190-route-leave-forward{
+  from{opacity:1;transform:translate3d(0,0,0) scale(1)}
+  to{opacity:0;transform:translate3d(-11px,1px,0) scale(.994)}
+}
+@keyframes base190-route-leave-back{
+  from{opacity:1;transform:translate3d(0,0,0) scale(1)}
+  to{opacity:0;transform:translate3d(11px,1px,0) scale(.994)}
+}
+@keyframes base190-route-enter-forward{
+  from{opacity:0;transform:translate3d(17px,8px,0) scale(.986)}
+  55%{opacity:1}
+  to{opacity:1;transform:translate3d(0,0,0) scale(1)}
+}
+@keyframes base190-route-enter-back{
+  from{opacity:0;transform:translate3d(-17px,8px,0) scale(.986)}
+  55%{opacity:1}
+  to{opacity:1;transform:translate3d(0,0,0) scale(1)}
+}
+
+/* A subtly staged reveal on the landing dashboard. */
+.shell>.main>.content[data-nav-phase="enter"][data-current-tab="home"]>.tab-view-container>.hero,
+.shell>.main>.content[data-nav-phase="enter"][data-current-tab="home"]>.tab-view-container>.ann-home-feature{
+  animation:base190-panel-reveal .46s var(--base190-motion-soft) .06s both;
+}
+.shell>.main>.content[data-nav-phase="enter"][data-current-tab="home"]>.tab-view-container>.grid3{
+  animation:base190-panel-reveal .48s var(--base190-motion-soft) .11s both;
+}
+.shell>.main>.content[data-nav-phase="enter"][data-current-tab="home"]>.tab-view-container>.domain-section{
+  animation:base190-panel-reveal .48s var(--base190-motion-soft) .16s both;
+}
+.shell>.main>.content[data-nav-phase="enter"][data-current-tab="home"]>.tab-view-container>section:not(.hero):not(.domain-section):not(.ann-home-feature){
+  animation:base190-panel-reveal .48s var(--base190-motion-soft) .19s both;
+}
+@keyframes base190-panel-reveal{
+  from{opacity:.3;transform:translate3d(0,12px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
+
+/* The shell stays still. Feedback follows the route, with no fullscreen blocking spinner. */
+.shell>.main>.content{position:relative;isolation:isolate}
+.shell .base190-navigation-hud{
+  position:absolute;
+  z-index:80;
+  top:clamp(8px,1.8vw,18px);
+  right:clamp(10px,2vw,28px);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:228px;
+  max-width:min(345px,calc(100% - 20px));
+  padding:12px 15px;
+  border:1px solid color-mix(in srgb,var(--blue) 38%,var(--line));
+  background:color-mix(in srgb,var(--panel) 94%,transparent);
+  color:var(--ink);
+  box-shadow:0 15px 50px #00000024,0 0 0 1px #ffffff08,0 5px 20px color-mix(in srgb,var(--blue) 7%,transparent);
+  border-radius:15px;
+  pointer-events:none;
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  animation:base190-hud-appear .27s var(--base190-motion-ease) .19s both;
+}
+.shell .base190-navigation-hud-symbol{
+  flex:0 0 39px;
+  width:39px;
+  height:39px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  background:color-mix(in srgb,var(--blue) 13%,var(--soft));
+  color:var(--blue);
+  border:1px solid color-mix(in srgb,var(--blue) 23%,var(--line));
+  box-shadow:inset 0 1px 0 #ffffff12;
+}
+.shell .base190-navigation-hud-copy{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  min-width:0;
+  flex:1 1 auto;
+}
+.shell .base190-navigation-hud-copy small{
+  font-size:9px;
+  letter-spacing:1.1px;
+  font-weight:850;
+  color:var(--blue);
+}
+.shell .base190-navigation-hud-copy strong{
+  font-size:13px;
+  font-weight:790;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.shell .base190-navigation-hud-copy>span{
+  font-size:11px;
+  color:var(--muted);
+}
+.shell .base190-navigation-hud-spinner{
+  flex:0 0 17px;
+  width:17px;height:17px;
+  border-radius:100%;
+  border:2px solid color-mix(in srgb,var(--blue) 18%,transparent);
+  border-top-color:var(--blue);
+  animation:base190-nav-spin .7s linear infinite;
+}
+@keyframes base190-nav-spin{to{transform:rotate(360deg)}}
+@keyframes base190-hud-appear{
+  from{opacity:0;transform:translate3d(0,-10px,0) scale(.97)}
+  to{opacity:1;transform:translate3d(0,0,0) scale(1)}
+}
+
+/* Fast feedback even for modules that have no server fetch. */
+.shell>.base190-navigation-progress{
+  height:3px;
+  background:color-mix(in srgb,var(--blue) 9%,transparent);
+}
+.shell>.base190-navigation-progress .tab-top-progress-bar-fill{
+  background:linear-gradient(90deg,transparent,var(--blue),#86eee6,var(--blue),transparent);
+  background-size:100% 100%;
+  box-shadow:0 0 12px color-mix(in srgb,var(--blue) 70%,transparent);
+  animation:base190-progress-travel 1.05s cubic-bezier(.6,.15,.15,.9) infinite;
+}
+@keyframes base190-progress-travel{
+  from{transform:translate3d(-100%,0,0)}
+  to{transform:translate3d(100%,0,0)}
+}
+
+/* The active navigation affordance is a subtle glow, not a second sidebar. */
+.shell[data-nav-phase="enter"]>.sidebar.compact .nav-btn.active svg,
+.shell[data-nav-phase="enter"] .base190-header-symbol svg{
+  animation:base190-nav-icon-arrive .35s var(--base190-motion-soft) both;
+}
+@keyframes base190-nav-icon-arrive{
+  from{opacity:.35;transform:scale(.78)}
+  60%{transform:scale(1.1)}
+  to{opacity:1;transform:scale(1)}
+}
+.shell[data-nav-phase="enter"] .base190-header-location strong{
+  animation:base190-header-name-appear .31s ease-out both;
+}
+@keyframes base190-header-name-appear{
+  from{opacity:.15;transform:translate3d(0,4px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
+@media(max-width:650px){
+  .shell .base190-navigation-hud{padding:10px 12px;min-width:0;right:10px;top:7px;max-width:calc(100% - 20px)}
+  .shell .base190-navigation-hud-symbol{width:32px;height:32px;flex-basis:32px}
+  .shell .base190-navigation-hud-copy small{font-size:8px}
+  .shell .base190-navigation-hud-copy strong{font-size:12px}
+  .shell .base190-navigation-hud-copy>span{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  :root{--base190-motion-exit:0ms;--base190-motion-enter:0ms}
+  .shell>.main>.content[data-nav-phase="exit"]>.tab-view-container:not([hidden]),
+  .shell>.main>.content[data-nav-phase="enter"]>.tab-view-container:not([hidden]),
+  .shell>.main>.content[data-nav-phase="enter"][data-current-tab="home"]>.tab-view-container>*,
+  .shell[data-nav-phase="enter"]>.sidebar.compact .nav-btn.active svg,
+  .shell[data-nav-phase="enter"] .base190-header-symbol svg,
+  .shell[data-nav-phase="enter"] .base190-header-location strong{
+    animation:none!important;
+    transform:none!important;
+    opacity:1!important;
+  }
+  .shell .base190-navigation-hud,
+  .shell .base190-navigation-hud-spinner,
+  .shell>.base190-navigation-progress .tab-top-progress-bar-fill{
+    animation:none!important;
+  }
+  .shell .base190-navigation-hud{opacity:1;transform:none}
+  .shell .base190-navigation-hud-spinner{border:2px solid var(--blue);border-radius:100%}
+  .shell>.base190-navigation-progress .tab-top-progress-bar-fill{transform:none}
+}
