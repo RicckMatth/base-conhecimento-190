@@ -315,7 +315,7 @@ export default function Home() {
       setUser(data.user);setScreen('home');setLogin({username:'',password:''});setLoginMode('login');
       refreshCatalog().catch(err);
     } catch(e) {
-      if(e.code==='ACTIVATION_REQUIRED'){
+      if(e.code==='ACTIVATION_REQUIRED'||e.code==='RESET_REQUIRED'){
         setSetupForm(form=>({...form,username:login.username}));setLoginMode('activate');err(e);
       }else err(e);
     }finally{setBusy(false);}
