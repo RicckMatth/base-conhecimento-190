@@ -37,7 +37,7 @@ async function identity(){
 }
 function publicUser(u){return {id:u.id,username:u.username,name:u.display_name,role:u.role,operationalRole:u.operational_role||'attendant',canTestGemini:canTestGemini(u),mustChangePassword:Boolean(u.must_change_password)};}
 function requireRole(u,admin=false){if(!u) return failure('Sessão ausente ou expirada.',401);if(admin&&u.role!=='admin')return failure('Acesso restrito ao administrador.',403);return null;}
-const usernameOf=(v)=>string(v,40).toLowerCase();
+const usernameOf=(v)=>typeof v==='string'?v.trim().toLowerCase():'';
 function entryPayload(v) {
   const code=string(v.code,70).toUpperCase(),title=string(v.title,200),category=string(v.category,80),
     summary=string(v.summary,1000),body=string(v.body,16000),priority=string(v.priority,20);
