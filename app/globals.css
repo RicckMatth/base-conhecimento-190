@@ -2458,3 +2458,12 @@ html,body{font-family:Inter,"Segoe UI",system-ui,sans-serif}h1,h2,h3{text-wrap:b
   .docs-integrated .docs-paper{padding:14px}
   .docs-integrated .library-cover h1{font-size:25px}
 }
+
+/* Microsoft Entra sign-in: consistent with the existing secure login surface. */
+.microsoft-divider{display:flex;align-items:center;gap:12px;text-align:center;color:var(--muted);font-size:12px;font-weight:600}
+.microsoft-divider:before,.microsoft-divider:after{content:"";flex:1;height:1px;background:var(--line)}
+.microsoft-login{display:flex;align-items:center;justify-content:center;gap:12px;min-height:45px;border:1px solid var(--line);font-weight:750;box-shadow:0 3px 12px #00000009}
+.microsoft-login:focus-visible{outline:3px solid #70a9ff;outline-offset:2px}
+.microsoft-mark{display:grid;grid-template-columns:repeat(2,8px);grid-template-rows:repeat(2,8px);gap:2px;flex-shrink:0}
+.microsoft-mark i:nth-child(1){background:#f25022}.microsoft-mark i:nth-child(2){background:#7fba00}
+.microsoft-mark i:nth-child(3){background:#00a4ef}.microsoft-mark i:nth-child(4){background:#ffb900}

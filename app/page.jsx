@@ -234,6 +234,27 @@ export default function Home() {
     } finally { setCatalogRefreshing(false); }
   }
   useEffect(() => {
+    const microsoftStatus = new URLSearchParams(window.location.search).get('microsoft');
+    const loginMessages = {
+      pending: 'Sua conta corporativa foi verificada. O acesso foi solicitado e aguarda aprovação de um administrador.',
+      rejected: 'Sua solicitação de acesso corporativo foi recusada. Procure o responsável pela gestão de acessos.',
+      consent: 'A Microsoft não autorizou este aplicativo. Se sua organização exigir consentimento, solicite aprovação à TI.',
+      domain: 'Acesso negado: utilize sua conta corporativa @minsait.com.',
+      disabled: 'Esta conta está desativada no Centro 190.',
+      expired: 'A tentativa de login expirou ou não foi validada. Tente novamente.',
+      invalid: 'Não foi possível validar a identidade Microsoft. Tente novamente.',
+      link: 'Entre com seu usuário e senha do Centro 190 antes de vincular a Microsoft.',
+      linked: 'Conta Microsoft vinculada com sucesso.',
+      conflict: 'Essa conta Microsoft já está vinculada a outro usuário do Centro 190. Procure o administrador.',
+      config: 'O login Microsoft ainda não está configurado corretamente no servidor.',
+      provider: 'Não foi possível concluir a autenticação Microsoft. Tente novamente.',
+      failed: 'O login Microsoft não pôde ser concluído. Tente novamente.'
+    };
+    if (microsoftStatus && loginMessages[microsoftStatus]) {
+      if (microsoftStatus === 'linked') setSuccess(loginMessages[microsoftStatus]);
+      else setNotice(loginMessages[microsoftStatus]);
+      window.history.replaceState(null, '', window.location.pathname);
+    }
     const stored = localStorage.getItem('base190_theme');
     const preferDark = stored === 'dark';
     document.documentElement.dataset.theme = preferDark ? 'dark' : 'light'; setDark(preferDark);
@@ -483,6 +504,14 @@ export default function Home() {
         <div><label htmlFor="password">Senha</label><input id="password" type="password" required autoComplete="current-password" value={login.password} onChange={e => setLogin({ ...login, password: e.target.value })} placeholder="Digite sua senha" /></div>
         <Btn type="submit" disabled={busy} className="full">{busy ? 'Verificando…' : 'Entrar na plataforma →'}</Btn>
       </form>}
+      {!requestMode && <>
+        <div className="microsoft-divider"><span>ou entre com sua conta corporativa</span></div>
+        <Btn className="secondary full microsoft-login" disabled={busy} onClick={() => window.location.assign('/api/auth/microsoft/start')}>
+          <span className="microsoft-mark" aria-hidden="true"><i /><i /><i /><i /></span>
+          Entrar com Microsoft
+        </Btn>
+        <p className="hint">Exclusivo para contas @minsait.com. Novos usuários precisam de aprovação interna.</p>
+      </>}
       <Btn className="secondary full" onClick={() => { setRequestMode(!requestMode); clear(); }}>{requestMode ? 'Já possuo acesso — entrar' : 'Solicitar acesso'}</Btn>
       <div className="divider" /><p className="hint">Acesso individual e autorizado. Entre em contato com o administrador para solicitar ajuda.</p>
     </div></section>
@@ -544,6 +573,7 @@ export default function Home() {
           <span className="nav-label">{dark ? 'Modo Claro' : 'Modo Escuro'}</span>
         </button>
         <p className="who">{user.name}<br /><small>{user.username} • {activeProfileConfig.accessLabel}</small></p>
+        <button className="nav-btn" onClick={() => window.location.assign('/api/auth/microsoft/start?link=1')} aria-label="Vincular conta Microsoft" title="Vincular conta Microsoft"><Icon name="lock" /><span className="nav-label">Vincular Microsoft</span></button>
         <button className="nav-btn" onClick={logout} disabled={busy} aria-label="Encerrar sessão" title="Encerrar sessão"><Icon name="logout" /><span className="nav-label">Sair</span></button>
       </div>
     </aside>
