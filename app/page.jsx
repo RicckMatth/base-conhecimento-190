@@ -190,7 +190,8 @@ export default function Home() {
   const navTimersRef=useRef({exit:null,enter:null});
   const reducedMotionRef=useRef(false);
   useEffect(()=>{
-    const media=window.matchMedia('(prefers-reduced-motion: reduce)');
+    const media=typeof window.matchMedia==='function'?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
+    if(!media)return;
     const update=()=>{reducedMotionRef.current=media.matches;};
     update();
     media.addEventListener?.('change',update);
