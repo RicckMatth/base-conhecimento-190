@@ -342,8 +342,7 @@ export default function Home() {
   async function openAnnouncementFromNotification(id){
     const data=await call('/announcements/publications/'+id);
     setOpenedAnnouncement(data.publication);
-    setScreen('home');
-    setTabLoading(false);
+    go('home',{preserveAnnouncement:true});
     setAnnouncementRefresh(x=>x+1);
     window.history.replaceState(null,'',window.location.pathname+'?announcement='+id);
   }
@@ -443,7 +442,7 @@ export default function Home() {
     return () => window.removeEventListener('keydown', onKey);
   }, [profileModalOpen]);
 
-  function go(requested){
+  function go(requested,options={}){
     // Editors may veto a navigation to prevent losing an unsaved draft.
     if(!window.dispatchEvent(new Event('base190:before-navigation',{cancelable:true})))return;
     const allowed=[...activeProfileConfig.centralTabs,...activeProfileConfig.adminTabs];
@@ -469,7 +468,7 @@ export default function Home() {
       if(seq!==navSequenceRef.current)return;
       if(target==='docs')setDocsOpened(true);
       if(target==='chat')setChatFrameLoading(true);
-      if(target==='home')showCurrentAnnouncement();
+      if(target==='home'&&!options.preserveAnnouncement)showCurrentAnnouncement();
       setScreen(target);
       setNavigationPhase('enter');
       const task=async()=>{
@@ -520,7 +519,7 @@ export default function Home() {
     try {
       if (editor.id) await call('/admin/entries', { method: 'PATCH', body: body(editor) });
       else await call('/admin/entries', { method: 'POST', body: body(editor) });
-      await refreshCatalog(); ok('Ficha salva com histórico de revisões.'); setScreen('catalog');
+      await refreshCatalog(); ok('Ficha salva com histórico de revisões.'); go('catalog');
     } catch (e) { err(e); } finally { setBusy(false); }
   }
   async function loadHistory() {
@@ -676,7 +675,7 @@ export default function Home() {
   const visibleLinks = links.filter(([id]) => activeProfileConfig.centralTabs.includes(id));
   const visibleAdminLinks = adminLinks.filter(([id]) => activeProfileConfig.adminTabs.includes(id));
   const headerIconName=tabIcon(screen);
-  return <div className={'shell' + (isImmersiveScreen ? ' immersive-mode' : '') + (screen === 'quality' ? ' quality-mode' : '') + (sidebarExpanded ? ' sidebar-expanded' : '')}>
+  return <div data-nav-phase={navigationPhase} className={'shell' + (isImmersiveScreen ? ' immersive-mode' : '') + (screen === 'quality' ? ' quality-mode' : '') + (sidebarExpanded ? ' sidebar-expanded' : '')}>
     {(tabLoading||navigationPhase!=='idle')&&<div className="tab-top-progress-bar base190-navigation-progress" aria-hidden="true"><div className="tab-top-progress-bar-fill" /></div>}
     <aside id="base190-sidebar" className="sidebar compact" aria-label="Navegação principal" data-expanded={sidebarExpanded?'true':'false'}>
       <div className="logo"><div className="logoicon" title="Base 190">190</div><div className="logo-text"><strong>Base 190</strong><small>CONHECIMENTO OPERACIONAL</small></div></div>
@@ -963,7 +962,7 @@ export default function Home() {
 
         {screen === 'access' && ['dev', 'coordinator'].includes(activeProfileConfig.id) && <div key="access" className="tab-view-container"><AccessControl currentUser={user} onStateChange={setAccessState} /></div>}
         {activeProfileConfig.adminTabs.includes('rules') && screen === 'rules' && <div key="rules" className="tab-view-container">
-          {tabLoading ? (
+          {tabLoading&&navigationPhase!=='exit' ? (
             <TabLoader tabName="Matriz de Regras" subtitle="Sincronizando 769 regras contextuais e cenários do assistente…" icon="settings" />
           ) : (
             <>
@@ -988,7 +987,7 @@ export default function Home() {
         </div>}
 
         {activeProfileConfig.adminTabs.includes('audit') && screen === 'audit' && <div key="audit" className="tab-view-container">
-          {tabLoading ? (
+          {tabLoading&&navigationPhase!=='exit' ? (
             <TabLoader tabName="Registro de Auditoria" subtitle="Carregando histórico de rastreabilidade e ações de gestão…" icon="audit" />
           ) : (
             <>
