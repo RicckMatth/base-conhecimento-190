@@ -47,7 +47,11 @@ async function call(path, options = {}) {
   });
   let data = {};
   try { data = await response.json(); } catch { }
-  if (!response.ok) throw new Error(data.error || 'Falha na comunicação com o servidor.');
+  if (!response.ok) {
+    const error=new Error(data.error || 'Falha na comunicação com o servidor.');
+    error.code=data.code||'';
+    throw error;
+  }
   return data;
 }
 const body = (value) => JSON.stringify(value);
@@ -98,7 +102,7 @@ export const PROFILES = [
     color: '#34d399',
     icon: 'users',
     desc: 'Gestão de piso e eventos de PAs, resolução de chamados técnicos de TI, acompanhamento de monitorias e auditoria.',
-    centralTabs:['home', 'docs', 'catalog', 'chat', 'floor', 'operations', 'quality'],
+    centralTabs:['home', 'docs', 'catalog', 'chat', 'floor', 'operations', 'quality', 'access'],
     adminTabs: ['audit'],
     canEditDocs: false,
     canEditCatalog: false,
@@ -165,6 +169,7 @@ export default function Home() {
   const isPreviewing = canPreviewRoles && effectiveProfileId !== user?.operationalRole;
   const [notice, setNotice] = useState(''), [success, setSuccess] = useState('');
   const [catalogIssue, setCatalogIssue] = useState(''), [catalogDegraded, setCatalogDegraded] = useState(false), [catalogRefreshing, setCatalogRefreshing] = useState(false);
+  const [entriesReady,setEntriesReady]=useState(false),[rulesReady,setRulesReady]=useState(false);
   const [docsOpened, setDocsOpened] = useState(false);
   const [screen, setScreen] = useState('home'), [requestMode, setRequestMode] = useState(false);
   const [tabLoading, setTabLoading] = useState(false);
@@ -197,6 +202,9 @@ export default function Home() {
     };
   }, []);
   const [login, setLogin] = useState({ username: '', password: '' });
+  const [loginMode,setLoginMode]=useState('login');
+  const [setupForm,setSetupForm]=useState({username:'',code:'',password:'',confirm:''});
+  const [resetPm,setResetPm]=useState('');
   const [passwordForm, setPasswordForm] = useState({ current: '', next: '', confirm: '' });
   const [request, setRequest] = useState({ username: '', name: '', reason: '' });
   const [entries, setEntries] = useState([]), [brainRules, setBrainRules] = useState({ base: [], extras: [], custom: [] });
@@ -221,17 +229,24 @@ export default function Home() {
   }
   async function refreshCatalog() {
     setCatalogRefreshing(true);
+    setCatalogIssue('');
+    // Progressive rendering: entries and rules no longer wait on each other.
+    const catalogTask=call('/entries').then(catalog=>{
+      if(Array.isArray(catalog.entries))setEntries(catalog.entries);
+      return catalog;
+    }).finally(()=>setEntriesReady(true));
+    const rulesTask=call('/rules').then(rules=>{
+      if(Array.isArray(rules.base))setBrainRules(rules);
+      return rules;
+    }).finally(()=>setRulesReady(true));
     try {
-      // Consultas independentes: uma falha em regras não deve apagar 769 fichas.
-      const [catalog, rules] = await Promise.allSettled([call('/entries'), call('/rules')]);
-      if (catalog.status === 'fulfilled' && Array.isArray(catalog.value.entries)) setEntries(catalog.value.entries);
-      if (rules.status === 'fulfilled' && Array.isArray(rules.value.base)) setBrainRules(rules.value);
-      const errors = [catalog, rules].filter(x => x.status === 'rejected').map(x => x.reason?.message || 'Falha de consulta');
-      const degraded = [catalog, rules].filter(x => x.status === 'fulfilled' && x.value.degraded).map(x => x.value.warning).filter(Boolean);
-      setCatalogDegraded(degraded.length > 0);
-      setCatalogIssue(errors.length ? 'Falha ao consultar ' + (catalog.status === 'rejected' ? 'o catálogo' : 'as regras') + '. ' + errors.join(' ') + ' Tente recarregar.' : degraded[0] || '');
-      return !errors.length && !degraded.length;
-    } finally { setCatalogRefreshing(false); }
+      const [catalog,rules]=await Promise.allSettled([catalogTask,rulesTask]);
+      const errors=[catalog,rules].filter(item=>item.status==='rejected').map(item=>item.reason?.message||'Falha de consulta');
+      const degraded=[catalog,rules].filter(item=>item.status==='fulfilled'&&item.value.degraded).map(item=>item.value.warning).filter(Boolean);
+      setCatalogDegraded(degraded.length>0);
+      setCatalogIssue(errors.length?'Falha ao consultar a biblioteca. '+errors.join(' ')+' Tente novamente.':degraded[0]||'');
+      return !errors.length&&!degraded.length;
+    }finally{setCatalogRefreshing(false);}
   }
   useEffect(() => {
     const microsoftStatus = new URLSearchParams(window.location.search).get('microsoft');
@@ -263,18 +278,13 @@ export default function Home() {
       try {
         const a = await call('/session');
         if (!live) return;
-        setUser(a.user); setLoadingPhase('catalog');
-        const [catalog, rules] = await Promise.allSettled([call('/entries'),call('/rules')]);
-        if (live) {
-          if (catalog.status==='fulfilled' && Array.isArray(catalog.value.entries)) setEntries(catalog.value.entries);
-          if (rules.status==='fulfilled' && Array.isArray(rules.value.base)) setBrainRules(rules.value);
-          const errors = [catalog, rules].filter(x => x.status === 'rejected').map(x => x.reason?.message || 'Falha de consulta');
-          const degraded = [catalog, rules].filter(x => x.status === 'fulfilled' && x.value.degraded).map(x => x.value.warning).filter(Boolean);
-          setCatalogDegraded(degraded.length>0);
-          setCatalogIssue(errors.length ? 'Não foi possível carregar ' + (catalog.status === 'rejected' ? 'o catálogo' : 'as regras') + '. ' + errors.join(' ') : degraded[0] || '');
-        }
-      } catch (e) { if (live && !/Sessão ausente|Sessão expirada|não autorizado/i.test(e.message)) setNotice(e.message); }
-      finally { if (live) setLoading(false); }
+        setUser(a.user);
+        setLoading(false);
+        setLoadingPhase('catalog');
+        refreshCatalog().catch(error=>{if(live)setCatalogIssue(error.message);});
+      } catch (e) {
+        if (live&&!/Sessão ausente|Sessão expirada|não autorizado/i.test(e.message)) setNotice(e.message);
+      } finally { if (live) setLoading(false); }
     })();
     return () => { live = false; };
   }, []);
@@ -290,8 +300,31 @@ export default function Home() {
   }
   async function submitLogin(event) {
     event.preventDefault(); clear(); setBusy(true);
-    try { const data = await call('/auth/login', { method: 'POST', body: body(login) }); setUser(data.user); setScreen('home'); setLogin({ username: '', password: '' }); await refreshCatalog(); }
-    catch (e) { err(e); } finally { setBusy(false); }
+    try {
+      const data = await call('/auth/login', { method: 'POST', body: body(login) });
+      setUser(data.user);setScreen('home');setLogin({username:'',password:''});setLoginMode('login');
+      refreshCatalog().catch(err);
+    } catch(e) {
+      if(e.code==='ACTIVATION_REQUIRED'){
+        setSetupForm(form=>({...form,username:login.username}));setLoginMode('activate');err(e);
+      }else err(e);
+    }finally{setBusy(false);}
+  }
+  async function submitSetup(event){
+    event.preventDefault();clear();setBusy(true);
+    try {
+      const result=await call('/auth/password/setup',{method:'POST',body:body(setupForm)});
+      setLogin({username:setupForm.username,password:''});
+      setSetupForm({username:'',code:'',password:'',confirm:''});setLoginMode('login');ok(result.message);
+    }catch(e){err(e);}finally{setBusy(false);}
+  }
+  async function submitResetRequest(event){
+    event.preventDefault();clear();setBusy(true);
+    try {
+      const result=await call('/auth/password/reset/request',{method:'POST',body:body({username:resetPm})});
+      ok(result.message);setSetupForm(form=>({...form,username:resetPm}));
+      setLoginMode('activate');setResetPm('');
+    }catch(e){err(e);}finally{setBusy(false);}
   }
   async function submitRequest(event) {
     event.preventDefault(); clear(); setBusy(true);
