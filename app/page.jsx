@@ -8,6 +8,8 @@ import StartupScreen from './startup-screen.jsx';
 import FloorControl from './floor-control.jsx';
 import Quality from './quality.jsx';
 import AccessControl from './access-control.jsx';
+import AnnouncementCanvas from './announcement-canvas.jsx';
+import AnnouncementNotifications from './announcement-notifications.jsx';
 import { Icon, categoryIcon } from './icons.jsx';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -34,6 +36,11 @@ function TabLoader({ tabName = 'Módulo 190', subtitle = 'Carregando dados e sin
     </div>
   );
 }
+
+const AnnouncementStudio = dynamic(() => import('./announcement-studio.jsx'), {
+  loading: () => <TabLoader tabName="Estúdio de anúncios" subtitle="Abrindo editor visual de publicações…" icon="megaphone" />,
+  ssr: false
+});
 
 const Documentation = dynamic(() => import('./nexus-documentation.jsx'), {
   loading: () => <TabLoader tabName="Base de Conhecimento" subtitle="Carregando biblioteca institucional, pastas e artigos…" icon="book" />,
@@ -71,7 +78,7 @@ export const PROFILES = [
     icon: 'settings',
     desc: 'Acesso pleno irrestrito a todos os módulos, regras semânticas, edição de textos, controle de acessos e auditoria.',
     centralTabs:['home', 'docs', 'catalog', 'chat', 'floor', 'operations', 'quality', 'access'],
-    adminTabs: ['editor', 'rules', 'audit'],
+    adminTabs: ['announcements', 'editor', 'rules', 'audit'],
     canEditDocs: true,
     canEditCatalog: true,
     canManageFloorEvents: true,
@@ -179,6 +186,9 @@ export default function Home() {
   const [operationsTab, setOperationsTab] = useState('overview');
   const [floorState, setFloorState] = useState(null);
   const [accessState, setAccessState] = useState(null);
+  const [activeAnnouncement,setActiveAnnouncement]=useState(null);
+  const [openedAnnouncement,setOpenedAnnouncement]=useState(null);
+  const [announcementRefresh,setAnnouncementRefresh]=useState(0);
   useEffect(() => {
     function onOpsMsg(e) {
       if (e.data?.type === 'base190:ops-active-tab' && e.data.tab) {
@@ -291,6 +301,42 @@ export default function Home() {
     return () => { live = false; };
   }, []);
   useEffect(()=>{
+    if(!user?.id||user.mustChangePassword)return;
+    let live=true;
+    const refresh=()=>{
+      if(document.visibilityState==='hidden')return;
+      call('/announcements/home').then(data=>{
+        if(live)setActiveAnnouncement(data.active||null);
+      }).catch(()=>{});
+    };
+    refresh();
+    const timer=setInterval(refresh,45000);
+    window.addEventListener('focus',refresh);
+    return ()=>{live=false;clearInterval(timer);window.removeEventListener('focus',refresh);};
+  },[user?.id,user?.mustChangePassword,announcementRefresh]);
+  useEffect(()=>{
+    if(!user?.id||user.mustChangePassword)return;
+    const id=new URLSearchParams(window.location.search).get('announcement');
+    if(!id||!/^[0-9a-f-]{36}$/i.test(id))return;
+    let live=true;
+    call('/announcements/publications/'+id).then(data=>{
+      if(live){setOpenedAnnouncement(data.publication);setScreen('home');}
+    }).catch(()=>{});
+    return ()=>{live=false;};
+  },[user?.id,user?.mustChangePassword]);
+  async function openAnnouncementFromNotification(id){
+    const data=await call('/announcements/publications/'+id);
+    setOpenedAnnouncement(data.publication);
+    setScreen('home');
+    setTabLoading(false);
+    setAnnouncementRefresh(x=>x+1);
+    window.history.replaceState(null,'',window.location.pathname+'?announcement='+id);
+  }
+  function showCurrentAnnouncement(){
+    setOpenedAnnouncement(null);
+    window.history.replaceState(null,'',window.location.pathname);
+  }
+  useEffect(()=>{
     if(!user?.id||user.mustChangePassword||!['manager','coordinator','dev'].includes(user.operationalRole))return;
     let live=true;
     const check=()=>call('/management/access/reset-pending').then(data=>{if(live)setResetPendingCount(data.pending||0);}).catch(()=>{});
@@ -391,6 +437,7 @@ export default function Home() {
       next = activeProfileConfig.centralTabs[0] || 'home';
     }
     if (next === 'docs') setDocsOpened(true);
+    if (next === 'home') showCurrentAnnouncement();
     if (next === 'chat') setChatFrameLoading(true);
     clear();
     setScreen(next);
@@ -596,11 +643,11 @@ export default function Home() {
   </section>;
 
   const links = [['home', 'Visão geral', 'home'], ['docs', 'Base de conhecimento', 'book'], ['catalog', 'Catálogo', 'book'], ['chat','Chat 190','brain'], ['floor', 'Gestão de piso', 'shield'], ['operations','Pausas e Folgas','calendar'], ['quality', 'Qualidade', 'audit'], ['access','Acessos e Cargos', 'users']];
-  const adminLinks = [['editor', 'Editar textos', 'edit'], ['access', 'Autorizar acessos', 'users'], ['rules', 'Regras do assistente', 'settings'], ['audit', 'Auditoria', 'audit']];
+  const adminLinks = [['announcements','Anúncios','megaphone'],['editor', 'Editar textos', 'edit'], ['access', 'Autorizar acessos', 'users'], ['rules', 'Regras do assistente', 'settings'], ['audit', 'Auditoria', 'audit']];
   const isImmersiveScreen = screen === 'quality' || screen === 'chat' || screen==='operations';
   const visibleLinks = links.filter(([id]) => activeProfileConfig.centralTabs.includes(id));
   const visibleAdminLinks = adminLinks.filter(([id]) => activeProfileConfig.adminTabs.includes(id));
-  const headerIconName=({ home: 'home', docs: 'book', catalog: 'book', chat: 'brain', floor: 'shield', operations: 'calendar', quality: 'audit', access: 'users', editor: 'edit', rules: 'settings', audit: 'audit', detail: 'book', brain: 'brain' })[screen] || 'shield';
+  const headerIconName=({ home: 'home', docs: 'book', catalog: 'book', chat: 'brain', floor: 'shield', operations: 'calendar', quality: 'audit', access: 'users', announcements: 'megaphone', editor: 'edit', rules: 'settings', audit: 'audit', detail: 'book', brain: 'brain' })[screen] || 'shield';
   return <div className={'shell' + (isImmersiveScreen ? ' immersive-mode' : '') + (screen === 'quality' ? ' quality-mode' : '') + (sidebarExpanded ? ' sidebar-expanded' : '')}>
     {tabLoading && <div className="tab-top-progress-bar"><div className="tab-top-progress-bar-fill" /></div>}
     <aside id="base190-sidebar" className="sidebar compact" aria-label="Navegação principal" data-expanded={sidebarExpanded?'true':'false'}>
@@ -649,7 +696,7 @@ export default function Home() {
           <span className="base190-header-symbol" aria-hidden="true"><Icon name={headerIconName} size={16} /></span>
           <span className="base190-header-root">Base 190</span>
           <span className="base190-header-separator" aria-hidden="true">/</span>
-          <strong>{screen === 'docs' ? 'Conhecimento' : screen === 'home' ? 'Visão geral' : screen === 'brain' ? 'Análise de relatos' : screen === 'chat' ? 'Chat 190' : screen === 'operations' ? 'Pausas e folgas' : screen === 'floor' ? 'Gestão de piso' : screen === 'access' ? 'Acessos e cargos' : screen === 'quality' ? 'Qualidade' : screen === 'catalog' ? 'Catálogo' : screen === 'detail' ? 'Ficha operacional' : screen === 'editor' ? 'Editor de conteúdo' : screen === 'rules' ? 'Regras' : 'Auditoria'}</strong>
+          <strong>{screen === 'docs' ? 'Conhecimento' : screen === 'home' ? 'Visão geral' : screen === 'brain' ? 'Análise de relatos' : screen === 'chat' ? 'Chat 190' : screen === 'operations' ? 'Pausas e folgas' : screen === 'floor' ? 'Gestão de piso' : screen === 'access' ? 'Acessos e cargos' : screen === 'announcements' ? 'Anúncios' : screen === 'quality' ? 'Qualidade' : screen === 'catalog' ? 'Catálogo' : screen === 'detail' ? 'Ficha operacional' : screen === 'editor' ? 'Editor de conteúdo' : screen === 'rules' ? 'Regras' : 'Auditoria'}</strong>
         </div>
         {screen === 'quality' && qualityState && (
           <nav className="quality-topbar-nav" aria-label="Navegação de Qualidade">
@@ -762,6 +809,7 @@ export default function Home() {
         )}
         <div className="base190-header-actions">
           {screen === 'operations' && <a className="base190-header-icon" href="/copom-190-gestao-operacional.html" target="_blank" rel="noopener noreferrer" aria-label="Abrir pausas e folgas em tela cheia" title="Abrir em tela cheia"><Icon name="link" size={17} /></a>}
+          <AnnouncementNotifications userId={user?.id} refreshKey={announcementRefresh} onOpen={openAnnouncementFromNotification}/>
           <button type="button" className="base190-header-icon" onClick={theme} aria-label={dark ? 'Ativar tema claro' : 'Ativar tema escuro'} title={dark ? 'Tema claro' : 'Tema escuro'}><Icon name={dark ? 'sun' : 'moon'} size={18} /></button>
           <button type="button" className="base190-header-profile" onClick={() => setProfileModalOpen(true)} aria-label={canPreviewRoles ? 'Alternar perfil para testes' : 'Ver meu cargo'} title={canPreviewRoles ? 'Alternar perfil para testes' : 'Ver meu cargo'}>
             <span className="profile-indicator-dot" style={{ backgroundColor: activeProfileConfig.color }} />
@@ -778,10 +826,16 @@ export default function Home() {
         </div>}
 
         {screen === 'home' && <div key="home" className="tab-view-container">
-          <section className="hero"><div className="hero-orbit" aria-hidden="true"><Icon name="shield" size={114} /></div><span className="eyebrow">CHAT 190 • ASSISTENTE UNIFICADO</span><h1>Clareza para cada atendimento.</h1>
+          {(openedAnnouncement||activeAnnouncement)?<section className="ann-home-feature" aria-label="Comunicado em destaque">
+            <AnnouncementCanvas layout={(openedAnnouncement||activeAnnouncement).layout} title={(openedAnnouncement||activeAnnouncement).title}/>
+            <div className="ann-home-meta"><span><Icon name="megaphone" size={17}/> {(openedAnnouncement||activeAnnouncement).title}</span>
+              <span>Publicado em {new Date((openedAnnouncement||activeAnnouncement).published_at).toLocaleDateString('pt-BR')}</span>
+              {openedAnnouncement&&<button type="button" onClick={showCurrentAnnouncement}>Voltar ao anúncio atual</button>}
+            </div>
+          </section>:<section className="hero"><div className="hero-orbit" aria-hidden="true"><Icon name="shield" size={114} /></div><span className="eyebrow">CHAT 190 • ASSISTENTE UNIFICADO</span><h1>Clareza para cada atendimento.</h1>
             <p>Descreva uma ocorrência ou faça uma pergunta sobre uma natureza. O Chat 190 consulta o catálogo, explica quando usar cada ficha e sinaliza o que precisa ser confirmado.</p>
             <form className="search-row" onSubmit={analyze}><input value={relato} onChange={e => setRelato(e.target.value)} aria-label="Relato ou dúvida para análise" placeholder="Ex.: quando usar a natureza de roubo?" /><Btn type="submit" disabled={busy}>Consultar no Chat 190 →</Btn></form>
-          </section>
+          </section>}
           {catalogRefreshing&&<div className="catalog-sync-banner" role="status" aria-live="polite"><span className="startup-spinner" aria-hidden="true"/> Carregando e sincronizando o catálogo operacional. Você pode navegar enquanto isso…</div>}
           <div className="grid3"><div className="card stat"><small><Icon name="book" /> Fichas no catálogo</small><strong aria-busy={!entriesReady}>{!entriesReady?'…':entries.length}</strong><span className="badge">{catalogDegraded ? 'Contingência · somente leitura' : 'Conhecimento'}</span></div>
             <div className="card stat"><small><Icon name="brain" /> Regras de classificação</small><strong aria-busy={!rulesReady}>{!rulesReady?'…':totalRules}</strong><span className="badge">{catalogDegraded ? 'Regras locais' : 'Chat 190'}</span></div>
@@ -792,6 +846,12 @@ export default function Home() {
           <div className="helpnote">Os exemplos da base não constituem códigos ou protocolos oficiais homologados. É proibido utilizar a ferramenta para inserir dados sigilosos sem autorização institucional.</div>
         </div>}
 
+        {screen==='announcements'&&user?.role==='admin'&&user?.operationalRole==='dev'&&
+          <div key="announcements" className="tab-view-container">
+            <AnnouncementStudio
+              onPublished={publication=>{setActiveAnnouncement(publication);setOpenedAnnouncement(null);setAnnouncementRefresh(x=>x+1);}}
+              onRestore={()=>{setActiveAnnouncement(null);setOpenedAnnouncement(null);setAnnouncementRefresh(x=>x+1);}}/>
+          </div>}
         {docsOpened&&<div key="docs" hidden={screen!=='docs'} className="tab-view-container"><Documentation onExit={()=>go('home')} isAdmin={activeProfileConfig.canEditDocs} active={screen === 'docs'} dark={dark} toggleTheme={theme} /></div>}
         {screen === 'floor' && <div key="floor" className="tab-view-container"><FloorControl isAdmin={activeProfileConfig.canManageFloorEvents} onStateChange={setFloorState} /></div>}
         {screen==='operations'&&<section key="operations" className="tab-view-container base190-operations-embed" aria-label="Gestão Operacional de Pausas e Folgas">

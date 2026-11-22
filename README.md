@@ -51,6 +51,20 @@ O servidor cria as tabelas automaticamente na primeira requisição autenticada 
 `DATABASE_URL` não configurada: API responde **503** (falha segura). Banco inacessível: autenticação e escrita não são liberadas.
 
 
+
+## Estúdio de anúncios e notificações da Visão Geral
+
+O usuário **Dev (administrador)** tem acesso à aba **Anúncios**. O editor substitui apenas o banner superior da página inicial, sem alterar o catálogo, o Chat 190, as permissões ou as demais seções.
+
+- Crie um anúncio a partir de modelos (comunicado, novidade, urgência) ou edite um já salvo; personalização de fundo sólido, degradê ou imagem.
+- Adicione até 40 blocos (títulos, textos, etiquetas, imagens, botões com links seguros e formas). Posicione-os arrastando com mouse/toque, redimensione pela alça, ajuste propriedades no painel lateral ou mova com as setas do teclado. Há prévias desktop e mobile.
+- **Salvar rascunho** não modifica a home nem envia notificações. **Publicar anúncio** cria uma versão imutável, passa a exibi-la no banner e grava uma notificação individual para **cada usuário ativo** do banco Neon.
+- O sino no cabeçalho consulta avisos periodicamente enquanto o sistema estiver aberto (até 30 segundos entre verificações), exibe não lidas e permite abrir o anúncio correspondente na página inicial. Usuários offline veem o aviso ao entrarem depois. Não envia push externo nem e-mail.
+- O histórico das publicações permanece disponível. **Restaurar padrão** reativa a div original com busca no Chat 190; não apaga notificações anteriores.
+- Imagens são validadas, convertidas a WebP e servidas exclusivamente após autenticação. O sistema prefere **Vercel Blob privado**; caso a integração não exista, usa armazenamento controlado no Neon (máximo 2 MB por imagem processada, até 40 MB no total). Para uso intensivo de imagens, conecte um store Vercel Blob privado.
+
+Não é permitida a inserção de HTML/JavaScript arbitrários em anúncios: o editor usa componentes e links validados pelo servidor. Publicações e ações administrativas são registradas na auditoria do sistema.
+
 ## Acesso PM Civil, primeiro acesso e recuperação de senha
 
 O login local aceita apenas identidades **PM Civil** previamente autorizadas. A interface não revela a regra de formação do identificador; o backend aplica a validação. O login corporativo Microsoft permanece separado e restrito ao diretório e domínio institucionais autorizados.
