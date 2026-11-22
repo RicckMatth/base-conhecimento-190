@@ -206,6 +206,8 @@ export default function Home() {
   const [setupForm,setSetupForm]=useState({username:'',code:'',password:'',confirm:''});
   const [resetPm,setResetPm]=useState('');
   const [passwordForm, setPasswordForm] = useState({ current: '', next: '', confirm: '' });
+  const [passwordModalOpen,setPasswordModalOpen]=useState(false);
+  const [resetPendingCount,setResetPendingCount]=useState(0);
   const [request, setRequest] = useState({ username: '', name: '', reason: '' });
   const [entries, setEntries] = useState([]), [brainRules, setBrainRules] = useState({ base: [], extras: [], custom: [] });
   const [search, setSearch] = useState(''), [cat, setCat] = useState('Todas'), [selectedId, setSelectedId] = useState(null);
@@ -288,6 +290,14 @@ export default function Home() {
     })();
     return () => { live = false; };
   }, []);
+  useEffect(()=>{
+    if(!user?.id||user.mustChangePassword||!['manager','coordinator','dev'].includes(user.operationalRole))return;
+    let live=true;
+    const check=()=>call('/management/access/reset-pending').then(data=>{if(live)setResetPendingCount(data.pending||0);}).catch(()=>{});
+    check();
+    window.addEventListener('focus',check);
+    return ()=>{live=false;window.removeEventListener('focus',check);};
+  },[user?.id,user?.mustChangePassword,user?.operationalRole]);
   useEffect(() => {
     if (!user || user.mustChangePassword) return;
     call('/ai/status').then(setAI).catch(() => setAI(null));
@@ -337,7 +347,7 @@ export default function Home() {
     setBusy(true);
     try {
       const x = await call('/auth/change-password', { method: 'POST', body: body({ current: passwordForm.current, next: passwordForm.next }) });
-      setUser(null); setPasswordForm({ current: '', next: '', confirm: '' }); ok(x.message);
+      setUser(null); setPasswordModalOpen(false); setPasswordForm({ current: '', next: '', confirm: '' }); ok(x.message);
     } catch (e) { err(e); } finally { setBusy(false); }
   }
   async function logout() {
@@ -571,17 +581,17 @@ export default function Home() {
     </div></section>
   </div>;
 
-  if (user.mustChangePassword) return <section className="login-form" style={{ minHeight: '100vh' }}>
+  if (user.mustChangePassword || passwordModalOpen) return <section className="login-form" style={{ minHeight: '100vh' }}>
     <form className="login-card card" onSubmit={changePassword}>
-      <span className="badge">SEGURANÇA DA CONTA</span><h2>Defina uma nova senha</h2>
-      <p className="muted">A credencial inicial é provisória. Para continuar, escolha uma senha exclusiva para esta plataforma.</p>
+      <span className="badge">SEGURANÇA DA CONTA</span><h2>{user.mustChangePassword?'Defina uma nova senha':'Alterar minha senha'}</h2>
+      <p className="muted">{user.mustChangePassword?'A credencial inicial é provisória. Defina uma senha exclusiva para continuar.':'Informe sua senha atual e escolha uma nova. A alteração encerrará suas sessões ativas.'}</p>
       {notice && <div className="notice" role="alert">{notice}</div>}{success && <div className="notice success" role="status">{success}</div>}
       <div><label htmlFor="old-pass">Senha atual</label><input id="old-pass" type="password" autoComplete="current-password" required value={passwordForm.current} onChange={e => setPasswordForm({ ...passwordForm, current: e.target.value })} /></div>
       <div><label htmlFor="new-pass">Nova senha forte</label><input id="new-pass" type="password" autoComplete="new-password" required minLength={12} value={passwordForm.next} onChange={e => setPasswordForm({ ...passwordForm, next: e.target.value })} /></div>
       <div><label htmlFor="confirm-pass">Confirme a nova senha</label><input id="confirm-pass" type="password" autoComplete="new-password" required value={passwordForm.confirm} onChange={e => setPasswordForm({ ...passwordForm, confirm: e.target.value })} /></div>
       <small>Use 12 ou mais caracteres, maiúsculas, minúsculas, números e símbolo.</small>
       <Btn type="submit" className="full" disabled={busy}>Alterar senha e encerrar sessão</Btn>
-      <Btn className="secondary full" onClick={logout}>Sair sem alterar</Btn>
+      <Btn className="secondary full" onClick={user.mustChangePassword?logout:()=>{setPasswordModalOpen(false);clear();}}> {user.mustChangePassword?'Sair sem alterar':'Voltar ao sistema'} </Btn>
     </form>
   </section>;
 
@@ -602,7 +612,7 @@ export default function Home() {
         <Icon name="arrow" size={19} /><span className="sidebar-toggle-label">{sidebarExpanded ? 'Recolher menu' : 'Expandir menu'}</span>
       </button>
       <span className="nav-caption">CENTRAL</span>
-      {visibleLinks.map(([id, label, icon]) => <button key={id} className={'nav-btn ' + (screen === id ? 'active' : '')} onClick={()=>go(id)} aria-label={label} aria-current={screen === id ? 'page' : undefined} title={label}><Icon name={icon} /><span className="nav-label">{label}</span></button>)}
+      {visibleLinks.map(([id, label, icon]) => <button key={id} className={'nav-btn ' + (screen === id ? 'active' : '')} onClick={()=>go(id)} aria-label={label} aria-current={screen === id ? 'page' : undefined} title={label}><Icon name={icon} /><span className="nav-label">{label}</span>{id==='access'&&resetPendingCount>0&&<span className="nav-pending-badge" title="Recuperações de senha pendentes">{resetPendingCount}</span>}</button>)}
       {visibleAdminLinks.length > 0 && <><span className="nav-caption">ADMINISTRAÇÃO</span>{visibleAdminLinks.map(([id, label, icon]) => <button key={id} className={'nav-btn ' + (screen === id ? 'active' : '')} onClick={() => id === 'editor' ? editEntry(null) : go(id)} aria-label={label} aria-current={screen === id ? 'page' : undefined} title={label}><Icon name={icon} /><span className="nav-label">{label}</span></button>)}</>}
       <div className="sidebar-profile-box">
         <button
@@ -627,6 +637,7 @@ export default function Home() {
           <span className="nav-label">{dark ? 'Modo Claro' : 'Modo Escuro'}</span>
         </button>
         <p className="who">{user.name}<br /><small>{user.username} • {activeProfileConfig.accessLabel}</small></p>
+        <button className="nav-btn" onClick={()=>{setPasswordForm({current:'',next:'',confirm:''});setPasswordModalOpen(true);clear();}} title="Alterar minha senha" aria-label="Alterar minha senha"><Icon name="lock"/><span className="nav-label">Alterar minha senha</span></button>
         <button className="nav-btn" onClick={() => window.location.assign('/api/auth/microsoft/start?link=1')} aria-label="Vincular conta Microsoft" title="Vincular conta Microsoft"><Icon name="lock" /><span className="nav-label">Vincular Microsoft</span></button>
         <button className="nav-btn" onClick={logout} disabled={busy} aria-label="Encerrar sessão" title="Encerrar sessão"><Icon name="logout" /><span className="nav-label">Sair</span></button>
       </div>
