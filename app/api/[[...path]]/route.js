@@ -61,7 +61,7 @@ async function gate(request,method,ctx){
   // Se a preparação complementar falhar, consultas autenticadas de leitura
   // ainda podem exibir o catálogo estático, sem escrever no banco.
   let bootstrapIssue=null;
-  const fastRead = method==='GET' && ['/session','/entries','/rules'].includes(route);
+  const fastRead = method==='GET' && ['/session','/entries','/rules','/ai/status'].includes(route);
   try{if(!fastRead)await prepare();}catch(error){
     bootstrapIssue=error;
     console.error('Base190 bootstrap failure',{route,code:error?.code||'unknown'});
@@ -103,10 +103,13 @@ async function gate(request,method,ctx){
     const key='login:'+username;
     if(await isRateLimited(key)) return failure('Acesso temporariamente limitado. Tente novamente em 15 minutos.',429);
     if(username===ADMIN_LOGIN) await ensureAdmin();
-    const found=await db().query('SELECT id,username,display_name,role,operational_role,password_hash,active,must_change_password,password_initialized FROM users WHERE username=$1',[username]);
+    const found=await db().query('SELECT id,username,display_name,role,operational_role,password_hash,active,must_change_password,password_initialized,password_reset_required FROM users WHERE username=$1',[username]);
     const u=found.rows[0];
     if(u?.active && !u.password_initialized) {
       return reply({error:'Acesso PM Civil liberado. Para criar sua senha, utilize o código de ativação fornecido pelo responsável.',code:'ACTIVATION_REQUIRED'},409);
+    }
+    if(u?.active && u.password_reset_required) {
+      return reply({error:'A recuperação foi autorizada. Utilize o código entregue pelo gestor para cadastrar uma nova senha.',code:'RESET_REQUIRED'},409);
     }
     // A senha precisa ser verificada pelo servidor; identidade vazia ou desconhecida não autentica.
     const valid=await passwordVerify(pass,u?.password_hash||'scrypt:00000000000000000000000000000000:'+('00'.repeat(64)));
