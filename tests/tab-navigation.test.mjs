@@ -29,7 +29,7 @@ test('acesso a abas continua restrito a quem tem permissão',()=>{
   assert.equal(safeNavigationTarget('announcements',allowed),'home');
   assert.equal(safeNavigationTarget('quality',allowed),'home');
   assert.equal(safeNavigationTarget('detail',['home','quality']),'home');
-  assert.equal(safeNavigationTarget('rules',['quality','chat'],'chat'), 'usa aba de fallback disponível');
+  assert.equal(safeNavigationTarget('rules',['quality','chat'],'chat'),'chat','usa aba de fallback disponível');
 });
 test('animações têm duração curta e são desativadas para movimento reduzido',()=>{
   assert.deepEqual(tabMotionTiming(true),{exit:0,enter:0,indicator:0});
