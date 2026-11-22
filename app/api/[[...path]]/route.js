@@ -474,6 +474,18 @@ async function gate(request,method,ctx){
   }
 
   // Painel central: a identidade operacional vem da sessão, nunca do seletor da interface.
+  if(route==='/management/access/reset-pending'&&method==='GET'){
+    if(!u||u.must_change_password||!['dev','coordinator','manager'].includes(u.operational_role))
+      return failure('Acesso restrito à gestão.',403);
+    const roles=u.operational_role==='dev'?['attendant','quality_analyst','manager','coordinator']:
+      u.operational_role==='coordinator'?['attendant','quality_analyst','manager']:['attendant'];
+    try{
+      const result=await db().query(
+        "SELECT count(*)::int AS count FROM password_reset_requests r JOIN users u ON u.id=r.user_id "+
+        "WHERE r.status='pending' AND u.active=true AND u.role='user' AND u.operational_role=ANY($1::text[])",[roles]);
+      return reply({pending:result.rows[0]?.count||0});
+    }catch(error){return failure('Solicitações indisponíveis temporariamente.',503);}
+  }
   if(route==='/management/access/resets'&&method==='POST'){
     try{return reply(await reviewPasswordReset(db(),u,await input(request,2000)));}
     catch(e){return failure(e.message,e.status||400);}
