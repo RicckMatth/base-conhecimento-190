@@ -54,6 +54,8 @@ test('chat montado ignora eventos da extensão e apresenta interface SADE isolad
   assert.equal(calls.length,before);assert.ok(document.body.textContent.includes('Clareza para cada atendimento.'));
   assert.doesNotMatch(document.body.textContent,/INJEÇÃO EXTERNA|Extensão detectada|Baixar extensão|Integração 190/);
   await click('Chat 190');
+  // O novo sistema aguarda a animação de saída antes de montar a aba.
+  await act(async()=>{await new Promise(resolve=>setTimeout(resolve,190));});
   const iframe=document.querySelector('iframe.sade-embed-frame');
   assert.ok(iframe,'O Chat 190 deve montar a tela SADE completa.');
   assert.equal(iframe.getAttribute('src'),'/copom-sade-190.html');
