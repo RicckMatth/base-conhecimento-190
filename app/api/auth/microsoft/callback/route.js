@@ -84,6 +84,8 @@ export async function GET(request) {
     let user = userResult.rows[0];
     if (user && !user.active) throw new MicrosoftAuthError('disabled');
     if (!user) {
+      const prior = await db().query('SELECT status FROM access_requests WHERE username=$1', [username]);
+      if (prior.rows[0]?.status === 'rejected') throw new MicrosoftAuthError('rejected');
       await db().query(
         "INSERT INTO access_requests(id,username,display_name,reason) " +
         "VALUES($1,$2,$3,$4) ON CONFLICT(username) DO NOTHING",
