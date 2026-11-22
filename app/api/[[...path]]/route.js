@@ -61,8 +61,16 @@ async function gate(request,method,ctx){
   // Se a preparação complementar falhar, consultas autenticadas de leitura
   // ainda podem exibir o catálogo estático, sem escrever no banco.
   let bootstrapIssue=null;
-  const fastRead = method==='GET' && ['/session','/entries','/rules','/ai/status'].includes(route);
-  try{if(!fastRead)await prepare();}catch(error){
+  const fastRead = method==='GET' && ['/session','/entries','/rules','/ai/status','/management/access/reset-pending'].includes(route);
+  const loginProbe = route==='/auth/login' && method==='POST';
+  try{
+    if(loginProbe){
+      // Avoid repeating dozens of catalog/schema migrations on a cold login.
+      // Any missing auth schema column triggers the original full bootstrap safely.
+      try{await db().query('SELECT password_initialized,password_reset_required FROM users LIMIT 0');}
+      catch{await prepare();}
+    }else if(!fastRead)await prepare();
+  }catch(error){
     bootstrapIssue=error;
     console.error('Base190 bootstrap failure',{route,code:error?.code||'unknown'});
     if(!((method==='GET'&&['/entries','/rules','/session','/quality'].includes(route))||(method==='POST'&&['/chat','/analyze','/quality/monitor','/quality/followup','/quality/ack'].includes(route))))throw error;
