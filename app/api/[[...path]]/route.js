@@ -5,6 +5,7 @@ import {getSchedule,editOperationalRole,editShift,editScheduleDay,generateMonth,
 import {qualityBoard,qualitySaveMonitor,qualitySaveFollowup,qualityAcknowledge,qualityHistory} from '../../../lib/quality-store.js';
 import {generateMonitoriaPdf,generateAcompanhamentoPdf} from '../../../lib/quality-pdf.js';
 import {listAccess,decideRequest,createAccount,updateAccount} from '../../../lib/access-management.js';
+import {initializePassword,requestPasswordReset,reviewPasswordReset} from '../../../lib/password-flows.js';
 import {listDocumentationSpaces,createDocumentationSpace,updateDocumentationSpace} from '../../../lib/documentation-spaces.js';
 import {cleanDocument} from '../../../lib/documentation.js';
 import { readFeedbackTicket,learnableQuestions } from '../../../lib/question-feedback.js';
@@ -18,7 +19,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { randomUUID } from 'node:crypto';
 import { db,prepare,ensureAdmin,log,saveQuestionFeedback,consumeAiBudget,isRateLimited,recordFailure,clearFailure } from '../../../lib/db.js';
-import { ADMIN_LOGIN, COOKIE_NAME,HOURS,cookieSettings,token,digest,passwordHash,passwordVerify,validLogin,string,sameOrigin,input } from '../../../lib/security.js';
+import { ADMIN_LOGIN, COOKIE_NAME,HOURS,cookieSettings,token,digest,passwordHash,passwordVerify,validPmCivilLogin,string,sameOrigin,input } from '../../../lib/security.js';
 export const runtime='nodejs';
 export const maxDuration=30;
 export const dynamic='force-dynamic';
@@ -60,7 +61,8 @@ async function gate(request,method,ctx){
   // Se a preparação complementar falhar, consultas autenticadas de leitura
   // ainda podem exibir o catálogo estático, sem escrever no banco.
   let bootstrapIssue=null;
-  try{await prepare();}catch(error){
+  const fastRead = method==='GET' && ['/session','/entries','/rules'].includes(route);
+  try{if(!fastRead)await prepare();}catch(error){
     bootstrapIssue=error;
     console.error('Base190 bootstrap failure',{route,code:error?.code||'unknown'});
     if(!((method==='GET'&&['/entries','/rules','/session','/quality'].includes(route))||(method==='POST'&&['/chat','/analyze','/quality/monitor','/quality/followup','/quality/ack'].includes(route))))throw error;
@@ -68,7 +70,7 @@ async function gate(request,method,ctx){
 
   if(route==='/access-requests'&&method==='POST') {
     const v=await input(request,2000), username=usernameOf(v.username),name=string(v.name,100),reason=string(v.reason,500);
-    if(!validLogin(username)||username===ADMIN_LOGIN||name.length<3) return failure('Informe nome e usuário válido (4 a 40 caracteres).');
+    if(!validPmCivilLogin(username)||username===ADMIN_LOGIN||name.length<3) return failure('Informe um acesso PM Civil válido e seu nome.');
     const remote=digest(request.headers.get('x-forwarded-for')||'unknown').slice(0,20);
     if(await isRateLimited('request:'+remote,5)) return failure('Muitas solicitações. Tente mais tarde.',429);
     await recordFailure('request:'+remote);
@@ -81,18 +83,34 @@ async function gate(request,method,ctx){
     return reply({message:'Solicitação enviada. Aguarde a aprovação do administrador.'},201);
   }
 
+  if(route==='/auth/password/reset/request'&&method==='POST'){
+    const value=await input(request,1500);
+    const requester=digest(request.headers.get('x-forwarded-for')||'unknown').slice(0,24);
+    if(await isRateLimited('reset-ip:'+requester,8))return failure('Muitas solicitações. Tente mais tarde.',429);
+    await recordFailure('reset-ip:'+requester);
+    return reply(await requestPasswordReset(db(),value,{isRateLimited,recordFailure}));
+  }
+  if(route==='/auth/password/setup'&&method==='POST'){
+    const value=await input(request,3500);
+    try {
+      return reply(await initializePassword(db(),value,{isRateLimited,recordFailure,clearFailure}));
+    }catch(error){return failure(error.message,error.status||400);}
+  }
   if(route==='/auth/login'&&method==='POST') {
     const v=await input(request,2000), username=usernameOf(v.username);
     const pass=typeof v.password==='string'?v.password:'';
-    if(!validLogin(username)||pass.length>200||!pass) return failure('Credenciais inválidas.',401);
+    if(!validPmCivilLogin(username)||pass.length>200) return failure('Entre com seu acesso PM Civil e sua senha.',401);
     const key='login:'+username;
     if(await isRateLimited(key)) return failure('Acesso temporariamente limitado. Tente novamente em 15 minutos.',429);
     if(username===ADMIN_LOGIN) await ensureAdmin();
-    const found=await db().query('SELECT id,username,display_name,role,operational_role,password_hash,active,must_change_password FROM users WHERE username=$1',[username]);
+    const found=await db().query('SELECT id,username,display_name,role,operational_role,password_hash,active,must_change_password,password_initialized FROM users WHERE username=$1',[username]);
     const u=found.rows[0];
-    // Mesmo em usuário não encontrado executa hash para reduzir diferenças de tempo.
+    if(u?.active && !u.password_initialized) {
+      return reply({error:'Acesso PM Civil liberado. Para criar sua senha, utilize o código de ativação fornecido pelo responsável.',code:'ACTIVATION_REQUIRED'},409);
+    }
+    // A senha precisa ser verificada pelo servidor; identidade vazia ou desconhecida não autentica.
     const valid=await passwordVerify(pass,u?.password_hash||'scrypt:00000000000000000000000000000000:'+('00'.repeat(64)));
-    if(!u||!u.active||!valid) {await recordFailure(key);return failure('Credenciais inválidas.',401);}
+    if(!u||!u.active||!valid||!pass) {await recordFailure(key);return failure('Acesso PM Civil ou senha inválidos.',401);}
     await clearFailure(key);
     await log(u.id,'login',u.username);
     return createLoginSession(u);
@@ -456,6 +474,10 @@ async function gate(request,method,ctx){
   }
 
   // Painel central: a identidade operacional vem da sessão, nunca do seletor da interface.
+  if(route==='/management/access/resets'&&method==='POST'){
+    try{return reply(await reviewPasswordReset(db(),u,await input(request,2000)));}
+    catch(e){return failure(e.message,e.status||400);}
+  }
   if(route==='/management/access'&&method==='GET'){
     try{return reply(await listAccess(db(),u));}
     catch(e){return failure(e.message,e.status||400);}
