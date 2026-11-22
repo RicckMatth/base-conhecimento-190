@@ -1,5 +1,7 @@
 // Local SVG symbols: consistent 24 px grid, no font or external request.
 const paths={
+ bell:'M18 8a6 6 0 0 0-12 0c0 7-3 8-3 9h18c0-1-3-2-3-9Zm-8 12a2 2 0 0 0 4 0',
+ megaphone:'M3 10h4l12-6v16L7 14H3Zm4 4 2 7h4l-3-6m12-5v4',
  thumbUp:'M7 10v11H3V10Zm0 1 5-9a3 3 0 0 1 2 4l-1 4h6a2 2 0 0 1 2 2l-2 7a3 3 0 0 1-3 2H7',
  thumbDown:'M7 14V3H3v11Zm0-1 5 9a3 3 0 0 0 2-4l-1-4h6a2 2 0 0 0 2-2l-2-7a3 3 0 0 0-3-2H7',
  home:'m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z',
