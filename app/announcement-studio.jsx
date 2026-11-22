@@ -147,7 +147,7 @@ export default function AnnouncementStudio({onPublished=()=>{},onRestore=()=>{}}
       if(!res.ok)throw Error(data.error||'Falha ao carregar a imagem.');
       if(uploadMode.current==='background')
         patchLayout(p=>({...p,background:{...p.background,mode:'image',imageId:data.id}}));
-      else if(selected?.type==='image')patchLayer(selected.id,{imageId:data.id,text:file.name});
+      else if(uploadMode.current==='replace-element'&&selected?.type==='image')patchLayer(selected.id,{imageId:data.id,text:file.name});
       else{
         const item=layer('image',{x:66,y:14,w:29,h:72,imageId:data.id,text:file.name,fit:'cover'});
         patchLayout(p=>({...p,elements:[...p.elements,{...item,z:p.elements.length+1}]}));setSelectedId(item.id);
@@ -220,7 +220,7 @@ export default function AnnouncementStudio({onPublished=()=>{},onRestore=()=>{}}
         </div>
         <div className="ann-add-tools" aria-label="Adicionar elementos">
           {types.map(([type,label])=><button key={type} disabled={busy}
-            onClick={()=>type==='image'?requestUpload('element'):addLayer(type)}>
+            onClick={()=>type==='image'?requestUpload('new-element'):addLayer(type)}>
             <span aria-hidden="true">{({heading:'T',text:'¶',image:'▧',button:'▣',label:'◉',shape:'▦'})[type]}</span>{label}
           </button>)}
           <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp"
@@ -259,7 +259,7 @@ export default function AnnouncementStudio({onPublished=()=>{},onRestore=()=>{}}
             {selected.type!=='image'&&selected.type!=='shape'&&
               <label>Conteúdo<textarea rows={3} maxLength={1200} value={selected.text}
                 onChange={e=>patchLayer(selected.id,{text:e.target.value})}/></label>}
-            {selected.type==='image'&&<button className="ann-btn ann-btn-outline" onClick={()=>requestUpload('element')}>Trocar imagem</button>}
+            {selected.type==='image'&&<button className="ann-btn ann-btn-outline" onClick={()=>requestUpload('replace-element')}>Trocar imagem</button>}
             {selected.type==='button'&&<label>Link do botão
               <input value={selected.href||''} placeholder="https://... ou /caminho"
                 onChange={e=>patchLayer(selected.id,{href:e.target.value})}/></label>}
