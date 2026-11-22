@@ -1,6 +1,7 @@
 import {put,get,del} from '@vercel/blob';
 import {normalizeImage,readLimited,storeAsset,readableAsset,deleteAsset,requireEditor,importExternalImage} from '../../../lib/documentation-assets.js';
 import {saveDocument,saveDraft,uuid} from '../../../lib/documentation-store.js';
+import {ensureAnnouncementSchema,announcementHome,announcementPublication,announcementManageList,announcementCampaign,saveAnnouncement,restoreDefaultHero,userAnnouncementNotifications,markAnnouncementRead,markAllAnnouncementsRead,registerAnnouncementAsset,readableAnnouncementAsset,canManageAnnouncements} from '../../../lib/announcements.js';
 import {getSchedule,editOperationalRole,editShift,editScheduleDay,generateMonth,editSchedulePreferences,editSundayChoice,editDailyBreaks,getLiveBreaks} from '../../../lib/floor-scheduling.js';
 import {qualityBoard,qualitySaveMonitor,qualitySaveFollowup,qualityAcknowledge,qualityHistory} from '../../../lib/quality-store.js';
 import {generateMonitoriaPdf,generateAcompanhamentoPdf} from '../../../lib/quality-pdf.js';
@@ -62,6 +63,7 @@ async function gate(request,method,ctx){
   // ainda podem exibir o catálogo estático, sem escrever no banco.
   let bootstrapIssue=null;
   const fastRead = method==='GET' && ['/session','/entries','/rules','/ai/status','/management/access/reset-pending'].includes(route);
+  const announcementRoute=route==='/announcements'||route.startsWith('/announcements/');
   const loginProbe = route==='/auth/login' && method==='POST';
   try{
     if(loginProbe){
@@ -69,7 +71,7 @@ async function gate(request,method,ctx){
       // Any missing auth schema column triggers the original full bootstrap safely.
       try{await db().query('SELECT password_initialized,password_reset_required FROM users LIMIT 0');}
       catch{await prepare();}
-    }else if(!fastRead)await prepare();
+    }else if(!fastRead&&!announcementRoute)await prepare();
   }catch(error){
     bootstrapIssue=error;
     console.error('Base190 bootstrap failure',{route,code:error?.code||'unknown'});
@@ -159,6 +161,68 @@ async function gate(request,method,ctx){
     return out;
   }
   if(u.must_change_password)return failure('Troca obrigatória da senha provisória antes de utilizar a plataforma.',403);
+  // Estúdio de anúncios e notificações persistentes, isolados da inicialização cara do catálogo.
+  if(announcementRoute){
+    try{
+      await ensureAnnouncementSchema(db());
+      if(route==='/announcements/home'&&method==='GET')return reply(await announcementHome(db()));
+      if(route.startsWith('/announcements/publications/')&&method==='GET'){
+        const id=route.slice('/announcements/publications/'.length);
+        return reply(await announcementPublication(db(),id));
+      }
+      if(route==='/announcements/notifications'&&method==='GET')
+        return reply(await userAnnouncementNotifications(db(),u));
+      if(route==='/announcements/notifications/read-all'&&method==='POST')
+        return reply(await markAllAnnouncementsRead(db(),u));
+      if(route.startsWith('/announcements/notifications/')&&route.endsWith('/read')&&method==='POST'){
+        const id=route.split('/')[3];
+        return reply(await markAnnouncementRead(db(),u,id));
+      }
+      if(route==='/announcements/manage'&&method==='GET')
+        return reply(await announcementManageList(db(),u));
+      if(route.startsWith('/announcements/manage/')&&method==='GET')
+        return reply(await announcementCampaign(db(),u,route.split('/')[3]));
+      if(route==='/announcements/manage'&&method==='POST'){
+        const data=await input(request,52000);
+        if(data.action==='save'||data.action==='publish'){
+          const result=await saveAnnouncement(db(),u,data,data.action==='publish');
+          return reply(result,data.id?200:201);
+        }
+        return failure('Ação de anúncio inválida.');
+      }
+      if(route==='/announcements/default'&&method==='POST')
+        return reply(await restoreDefaultHero(db(),u));
+      if(route==='/announcements/assets'&&method==='POST'){
+        if(!canManageAnnouncements(u))return failure('Acesso restrito.',403);
+        if(!process.env.BLOB_STORE_ID&&!process.env.BLOB_READ_WRITE_TOKEN)
+          return failure('Armazenamento privado de imagens não configurado na Vercel.',503);
+        if(Number(request.headers.get('content-length'))>3145728)return failure('Imagem excede 3 MB.',413);
+        const image=await normalizeImage(
+          await readLimited(request.body),
+          (request.headers.get('content-type')||'').split(';')[0]
+        );
+        return reply(await registerAnnouncementAsset(db(),u,image,{put,del}),201);
+      }
+      if(route.startsWith('/announcements/assets/')&&method==='GET'){
+        const id=route.split('/')[3];
+        const asset=await readableAnnouncementAsset(db(),u,id);
+        const file=await get(asset.pathname,{access:'private',abortSignal:AbortSignal.timeout(15000)});
+        if(!file||file.statusCode!==200)return failure('Imagem indisponível.',404);
+        return new Response(file.stream,{headers:{
+          'Content-Type':asset.mime,
+          'Cache-Control':'private, max-age=1800',
+          'X-Content-Type-Options':'nosniff',
+          'Content-Disposition':'inline; filename="anuncio.webp"',
+          'Content-Security-Policy':"default-src 'none'; sandbox"
+        }});
+      }
+      return failure('Operação de anúncios não encontrada.',404);
+    }catch(error){
+      console.error('Anúncio Base 190:',error?.code||error?.name||'unexpected');
+      return failure(error?.status&&error.status<500?error.message:'Não foi possível consultar ou salvar os anúncios.',error?.status||503);
+    }
+  }
+
   // Qualidade 190: GET/POST protegidos pela sessão; todas as permissões,
   // assinaturas e notas são verificadas novamente no servidor.
   if(route==='/quality'&&method==='GET'){
