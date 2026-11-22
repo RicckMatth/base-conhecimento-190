@@ -27,13 +27,16 @@ test('consultas autenticadas recuperam catálogo e regras de modo somente leitur
  const fallbackArea=api.slice(api.indexOf("if(route==='/entries'"),api.indexOf("if(route.startsWith('/documentation/assets'))"));
  assert.doesNotMatch(fallbackArea,/UPDATE knowledge|DELETE FROM knowledge|TRUNCATE/);
 });
-test('front-end recebe fichas mesmo se regras falharem e não mostra zero falso',()=>{
- assert.match(page,/Promise\.allSettled\(\[call\('\/entries'\),call\('\/rules'\)\]\)/);
- assert.match(page,/catalog\.status==='fulfilled'/);
- assert.match(page,/rules\.status==='fulfilled'/);
+test('front-end renderiza fichas e regras progressivamente sem exibir falso zero',()=>{
+ assert.match(page,/const catalogTask=call\('\/entries'\)\.then/);
+ assert.match(page,/const rulesTask=call\('\/rules'\)\.then/);
+ assert.match(page,/Promise\.allSettled\(\[catalogTask,rulesTask\]\)/);
+ assert.match(page,/setEntries\(catalog\.entries\)/);
+ assert.match(page,/setBrainRules\(rules\)/);
  assert.match(page,/setCatalogDegraded\(degraded\.length>0\)/);
- assert.match(page,/catalogIssue&&!entries\.length\?'—':entries\.length/);
- assert.match(page,/catalogIssue&&!totalRules\?'—':totalRules/);
+ assert.match(page,/!entriesReady\?'…':entries\.length/);
+ assert.match(page,/!rulesReady\?'…':totalRules/);
+ assert.match(page,/catalog-sync-banner/);
  assert.match(page,/Tentar novamente/);
  assert.match(page,/if\(entry\?\.readOnly\|\|catalogDegraded\)/);
 });
