@@ -237,7 +237,7 @@ export default function Home() {
     const microsoftStatus = new URLSearchParams(window.location.search).get('microsoft');
     const loginMessages = {
       pending: 'Sua conta corporativa foi verificada. O acesso foi solicitado e aguarda aprovação de um administrador.',
-      rejected: 'Sua solicitação de acesso corporativo foi recusada. Procure o responsável pela gestão de acessos.'
+      rejected: 'Sua solicitação de acesso corporativo foi recusada. Procure o responsável pela gestão de acessos.',
       consent: 'A Microsoft não autorizou este aplicativo. Se sua organização exigir consentimento, solicite aprovação à TI.',
       domain: 'Acesso negado: utilize sua conta corporativa @minsait.com.',
       disabled: 'Esta conta está desativada no Centro 190.',
