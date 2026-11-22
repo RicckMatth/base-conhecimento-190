@@ -2641,7 +2641,7 @@ html,body{font-family:Inter,"Segoe UI",system-ui,sans-serif}h1,h2,h3{text-wrap:b
   .ann-home-feature .ann-stage,.ann-stage.is-mobile{display:flex;flex-direction:column;align-items:stretch;gap:13px;height:auto;min-height:220px;padding:24px 20px}
   .ann-home-feature .ann-layer,.ann-stage.is-mobile .ann-layer{position:relative!important;left:auto!important;top:auto!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none;font-size:clamp(13px,4vw,30px)!important;opacity:1;display:flex}
   .ann-home-feature .ann-layer-heading,.ann-stage.is-mobile .ann-layer-heading{font-size:clamp(24px,7vw,37px)!important}
-  .ann-home-feature .ann-layer-text,.ann-stage.is-mobile .ann-layer-text{max-height:none}
+  .ann-home-feature .ann-inner-text,.ann-stage.is-mobile .ann-inner-text{max-height:none}
   .ann-home-feature .ann-layer-image,.ann-stage.is-mobile .ann-layer-image{max-height:240px;min-height:160px}
   .ann-home-feature .ann-layer-image img,.ann-stage.is-mobile .ann-layer-image img{height:210px}
   .ann-home-feature .ann-layer-shape,.ann-stage.is-mobile .ann-layer-shape{display:none}
