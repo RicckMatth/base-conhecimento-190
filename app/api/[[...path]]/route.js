@@ -194,8 +194,6 @@ async function gate(request,method,ctx){
         return reply(await restoreDefaultHero(db(),u));
       if(route==='/announcements/assets'&&method==='POST'){
         if(!canManageAnnouncements(u))return failure('Acesso restrito.',403);
-        if(!process.env.BLOB_STORE_ID&&!process.env.BLOB_READ_WRITE_TOKEN)
-          return failure('Armazenamento privado de imagens não configurado na Vercel.',503);
         if(Number(request.headers.get('content-length'))>3145728)return failure('Imagem excede 3 MB.',413);
         const image=await normalizeImage(
           await readLimited(request.body),
@@ -206,9 +204,14 @@ async function gate(request,method,ctx){
       if(route.startsWith('/announcements/assets/')&&method==='GET'){
         const id=route.split('/')[3];
         const asset=await readableAnnouncementAsset(db(),u,id);
-        const file=await get(asset.pathname,{access:'private',abortSignal:AbortSignal.timeout(15000)});
-        if(!file||file.statusCode!==200)return failure('Imagem indisponível.',404);
-        return new Response(file.stream,{headers:{
+        let bytes;
+        if(asset.content){bytes=asset.content;}
+        else{
+          const file=await get(asset.pathname,{access:'private',abortSignal:AbortSignal.timeout(15000)});
+          if(!file||file.statusCode!==200)return failure('Imagem indisponível.',404);
+          bytes=file.stream;
+        }
+        return new Response(bytes,{headers:{
           'Content-Type':asset.mime,
           'Cache-Control':'private, max-age=1800',
           'X-Content-Type-Options':'nosniff',
