@@ -58,7 +58,7 @@ export async function GET(request) {
     if (transaction.linkUserId) {
       const localUser = await existingLocalAccount(request);
       if (!localUser || localUser.id !== transaction.linkUserId) throw new MicrosoftAuthError('link');
-      if (linked && linked.id !== localUser.id) throw new MicrosoftAuthError('linked');
+      if (linked && linked.id !== localUser.id) throw new MicrosoftAuthError('conflict');
       try {
         await db().query(
           "INSERT INTO microsoft_identities(tenant_id,object_id,user_id,email) " +
@@ -66,7 +66,7 @@ export async function GET(request) {
           "WHERE microsoft_identities.user_id=EXCLUDED.user_id",
           [identity.tenantId, identity.objectId, localUser.id, identity.email]);
       } catch (error) {
-        if (error.code === '23505') throw new MicrosoftAuthError('linked');
+        if (error.code === '23505') throw new MicrosoftAuthError('conflict');
         throw error;
       }
       await log(localUser.id, 'microsoft_account_linked', identity.tenantId + '/' + identity.objectId);
@@ -103,7 +103,7 @@ export async function GET(request) {
         "INSERT INTO microsoft_identities(tenant_id,object_id,user_id,email) VALUES($1,$2,$3,$4)",
         [identity.tenantId, identity.objectId, user.id, identity.email]);
     } catch (error) {
-      if (error.code === '23505') throw new MicrosoftAuthError('linked');
+      if (error.code === '23505') throw new MicrosoftAuthError('conflict');
       throw error;
     }
     return finish(request, 'success', await createSession(user));
