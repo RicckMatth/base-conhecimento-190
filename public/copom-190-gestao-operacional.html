@@ -199,6 +199,7 @@
   justify-content:space-between;
   padding:8px clamp(10px,1.5vw,20px);
 }
+.base190-inside-shell body>header{display:none!important}
 .base190-inside-shell body>header>div>div:first-child{display:none!important}
 .base190-inside-shell #desktopNav{
   display:flex!important;
@@ -540,44 +541,12 @@
 <span id="agentSelfDate">Sexta-feira, 20 de novembro</span>
 </div>
 <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight leading-tight" id="agentSelfGreeting">Aguardando identificação da Base 190</h1>
-<p class="text-xs text-[#65748A] dark:text-neutral-400" id="agentSelfShiftInfo">Nenhum expediente fictício carregado</p>
+<p class="text-xs text-[#65748A] dark:text-neutral-400" id="agentSelfShiftInfo">Aguardando escala operacional</p>
 </div>
-<!-- Seletor de Atendente Logado (para facilitar uso/teste) -->
+<!-- Seletor de Atendente Logado -->
 <div class="flex items-center gap-2">
 <label class="text-xs text-[#65748A] dark:text-neutral-400" for="loggedAgentSelect">Logado como:</label>
 <select class="h-9 px-3 rounded-xl bg-white dark:bg-[#1C3155] border border-black/[0.08] dark:border-white/[0.1] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#086B83]" id="loggedAgentSelect" onchange="changeLoggedAgent(this.value)"><option value="">Aguardando cadastro oficial</option></select>
-</div>
-</div>
-<!-- Banner de Pergunta de Notificação (quando ainda não respondeu) -->
-<div class="rounded-2xl bg-gradient-to-r from-[#086B83]/12 via-[#086B83]/6 to-transparent border border-[#086B83]/25 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hidden" id="notifPromptBanner">
-<div class="flex items-start gap-3.5">
-<div class="w-10 h-10 rounded-xl bg-[#086B83]/15 text-[#086B83] flex items-center justify-center shrink-0">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-</div>
-<div>
-<h3 class="text-sm font-semibold">Deseja receber notificação na área de trabalho?</h3>
-<p class="text-xs text-[#65748A] dark:text-neutral-400 mt-0.5">O sistema avisa 5 minutos antes e na hora exata de iniciar sua pausa, mesmo com a janela minimizada.</p>
-</div>
-</div>
-<div class="flex items-center gap-2 shrink-0">
-<button class="h-9 px-4 rounded-xl bg-[#086B83] hover:bg-[#07586B] text-white text-xs font-medium transition" onclick="requestDesktopNotifications()" type="button">Sim, ativar alertas</button>
-<button class="h-9 px-3.5 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] hover:bg-black/[0.1] text-xs font-medium transition" onclick="dismissNotificationPrompt()" type="button">Agora não</button>
-</div>
-</div>
-<!-- Barra Discreta de Controle de Notificações (quando já respondeu) -->
-<div class="rounded-2xl bg-white dark:bg-[#131F33] border border-black/[0.06] dark:border-white/[0.07] px-5 py-3.5 flex flex-wrap items-center justify-between gap-3" id="notifStatusBar">
-<div class="flex items-center gap-2.5 text-xs">
-<span class="w-2 h-2 rounded-full bg-[#C58218] shrink-0" id="notifStatusDot"></span>
-<span class="font-medium text-[#101B32] dark:text-neutral-200" id="notifStatusText">Avisos ativos na aba · O Preview bloqueia pop-ups do sistema — baixe o .html para receber na área de trabalho</span>
-</div>
-<div class="flex flex-wrap items-center gap-2">
-<button class="h-8 px-3 rounded-lg text-xs font-medium bg-[#C58218]/15 text-[#C58218] hover:bg-[#C58218]/25 transition" id="btnDownloadStandalone" onclick="downloadStandaloneHtml()" type="button">
-              Baixar .html (Área de Trabalho)
-            </button>
-<button class="h-8 px-3 rounded-lg text-xs font-medium bg-black/[0.04] dark:bg-white/[0.06] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] text-[#101B32] dark:text-neutral-200 transition" id="btnTestNotif" onclick="testDesktopNotification()" type="button">
-              Testar aviso
-            </button>
-<button class="h-8 px-3 rounded-lg text-xs font-medium text-[#086B83] hover:bg-[#086B83]/10 transition" id="btnToggleNotif" onclick="toggleDesktopNotifications()" type="button">Desativar</button>
 </div>
 </div>
 <!-- Card Principal de Status Ao Vivo do Atendente -->
@@ -758,24 +727,6 @@
 <!-- ===================================================================== -->
 <!-- MODAIS                                                                -->
 <!-- ===================================================================== -->
-<!-- Modal: Pergunta Automática de Notificação (Atendente) -->
-<div class="modal-backdrop fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden" id="modalNotifPrompt">
-<div class="w-full max-w-md rounded-3xl bg-white dark:bg-[#1C3155] border border-black/[0.08] dark:border-white/[0.1] p-6 shadow-2xl space-y-4">
-<div class="w-12 h-12 rounded-2xl bg-[#086B83]/15 text-[#086B83] flex items-center justify-center">
-<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-</div>
-<div>
-<h3 class="text-lg font-semibold tracking-tight">Receber avisos na área de trabalho?</h3>
-<p class="text-xs text-[#65748A] dark:text-neutral-400 mt-1.5 leading-relaxed">
-          Podemos enviar uma notificação direto na sua área de trabalho <strong>5 minutos antes</strong> e na <strong>hora exata</strong> de iniciar cada pausa do seu turno.
-        </p>
-</div>
-<div class="flex flex-col sm:flex-row gap-2 pt-2">
-<button class="flex-1 h-10 rounded-xl bg-[#086B83] hover:bg-[#07586B] text-white text-xs font-semibold transition" onclick="requestDesktopNotifications()" type="button">Sim, quero ser avisado</button>
-<button class="h-10 px-4 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] hover:bg-black/[0.1] text-xs font-medium transition" onclick="dismissNotificationPrompt()" type="button">Agora não</button>
-</div>
-</div>
-</div>
 <!-- Modal: Inserir Pausa Manual -->
 <div class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" id="modalManualBreak">
 <div class="w-full max-w-md rounded-3xl bg-white dark:bg-[#1C3155] border border-black/[0.08] dark:border-white/[0.1] p-6 shadow-2xl">
@@ -1053,8 +1004,8 @@
       userRole: 'atendente', // Definido pela sessao da Base 190 (sem seletor local de privilegios)
       loggedAgentId: null,
       notifications: {
-        asked: false,
-        enabled: false,
+        asked: true,
+        enabled: true,
         notifiedKeys: {},
       },
       groups: [],
@@ -1246,7 +1197,9 @@
       if(!state.breaks||typeof state.breaks!=='object')state.breaks={};
       if(!state.daysOff||typeof state.daysOff!=='object')state.daysOff={};
       if(!Array.isArray(state.history))state.history=[];
-      if(!state.notifications)state.notifications={asked:false,enabled:false,notifiedKeys:{}};
+      if(!state.notifications)state.notifications={asked:true,enabled:true,notifiedKeys:{}};
+      state.notifications.asked=true;
+      state.notifications.enabled=true;
       lastAuditSnapshot=null;
     }
 
@@ -1555,99 +1508,35 @@
 
     async function requestDesktopNotifications() {
       state.notifications.asked = true;
-      closeModal('modalNotifPrompt');
-
-      if ('Notification' in window) {
+      state.notifications.enabled = true;
+      if ('Notification' in window && Notification.permission === 'default') {
         try {
-          let perm = Notification.permission;
-          if (perm === 'default') {
-            perm = await new Promise((resolve) => {
-              const maybePromise = Notification.requestPermission(resolve);
-              if (maybePromise && typeof maybePromise.then === 'function') {
-                maybePromise.then(resolve).catch(() => resolve('denied'));
-              }
-            });
-          }
-
-          if (perm === 'granted') {
-            state.notifications.enabled = true;
-            saveState();
-            renderAgentSelfDashboard();
-            sendDesktopNotification(
-              'COPOM 190 · Alertas Ativados',
-              'Você receberá avisos direto na área de trabalho quando chegar a hora da sua pausa.',
-              'copom190-setup'
-            );
-            return;
-          }
-
-          state.notifications.enabled = true;
-          saveState();
-          renderAgentSelfDashboard();
-          if (isRunningInIframe()) {
-            showToast('O Preview embutido bloqueia pop-ups do Windows/Mac. Baixe o .html para receber na área de trabalho.', 'warning');
-          } else {
-            showToast('Permissão bloqueada no navegador. Libere as notificações no cadeado da barra de endereço.', 'warning');
-          }
-          return;
+          await Notification.requestPermission();
         } catch (err) {
-          console.warn('Erro ao solicitar permissão de notificação:', err);
+          // Navegador restrito ou iframe
         }
       }
-
-      state.notifications.enabled = true;
       saveState();
       renderAgentSelfDashboard();
-      showToast('Alertas visuais e sonoros ativados nesta aba.', 'warning');
     }
 
-    function downloadStandaloneHtml() {
-      const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'copom_190_gestao.html';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      showToast('Arquivo copom_190_gestao.html baixado! Abra-o no navegador para receber notificações na área de trabalho.');
-    }
+    function downloadStandaloneHtml() {}
 
     function dismissNotificationPrompt() {
       state.notifications.asked = true;
-      state.notifications.enabled = false;
-      closeModal('modalNotifPrompt');
+      state.notifications.enabled = true;
       saveState();
       renderAgentSelfDashboard();
     }
 
     function toggleDesktopNotifications() {
-      if (state.notifications.enabled) {
-        state.notifications.enabled = false;
-        saveState();
-        renderAgentSelfDashboard();
-        showToast('Notificações de pausa desativadas.');
-      } else {
-        requestDesktopNotifications();
-      }
+      state.notifications.enabled = !state.notifications.enabled;
+      saveState();
+      renderAgentSelfDashboard();
+      showToast(state.notifications.enabled ? 'Alertas de pausa ativados.' : 'Alertas de pausa silenciados.');
     }
 
-    function testDesktopNotification() {
-      const ag = getLoggedAgent();
-      const nome = ag ? `${ag.rank} ${ag.name}` : 'Atendente';
-      const sentNative = sendDesktopNotification(
-        'COPOM 190 · Teste de Notificação',
-        `Olá ${nome}, seus avisos de pausa na área de trabalho estão funcionando!`,
-        `copom190-test-${Date.now()}`
-      );
-      if (!sentNative && isRunningInIframe()) {
-        showToast('Aviso exibido na página. Para aparecer na área de trabalho do sistema, abra o .html fora do Preview.', 'warning');
-      } else if (!sentNative) {
-        showToast('Permita notificações nas configurações do navegador para exibir fora da página.', 'warning');
-      }
-    }
+    function testDesktopNotification() {}
 
     function checkAgentBreakNotifications() {
       if (isManagerRole() || !state.notifications.enabled) return;
@@ -1815,6 +1704,9 @@
 
     function switchTab(tab) {
       state.activeTab = tab;
+      try {
+        window.parent?.postMessage({ type: 'base190:ops-active-tab', tab: tab }, '*');
+      } catch(e) {}
       document.querySelectorAll('.tab-section').forEach((sec) => sec.classList.add('hidden'));
       const activeSec = document.getElementById(`tab-${tab}`);
       if (activeSec) activeSec.classList.remove('hidden');
@@ -2125,52 +2017,11 @@
       document.getElementById('agentSelfGreeting').textContent = `Olá, ${ag.rank} ${ag.name}`;
       document.getElementById('agentSelfShiftInfo').textContent = `${ag.pa} · ${group ? `${group.name} (${group.start} – ${group.end})` : 'Sem grupo'}`;
 
-      // Banner / Barra de Notificações na Área de Trabalho
+      // Alertas operacionais
       const promptBanner = document.getElementById('notifPromptBanner');
       const statusBar = document.getElementById('notifStatusBar');
-      if (!state.notifications.asked) {
-        promptBanner.classList.remove('hidden');
-        statusBar.classList.add('hidden');
-      } else {
-        promptBanner.classList.add('hidden');
-        statusBar.classList.remove('hidden');
-        const dot = document.getElementById('notifStatusDot');
-        const txt = document.getElementById('notifStatusText');
-        const btnToggle = document.getElementById('btnToggleNotif');
-        const btnTest = document.getElementById('btnTestNotif');
-        const btnDownload = document.getElementById('btnDownloadStandalone');
-        const nativeState = getNativeNotifState();
-
-        btnDownload.classList.add('hidden');
-
-        if (state.notifications.enabled && nativeState === 'granted') {
-          dot.className = 'w-2 h-2 rounded-full bg-[#159B74] shrink-0';
-          txt.textContent = 'Notificações nativas na área de trabalho ativadas (5 min antes e na hora exata)';
-          btnToggle.textContent = 'Desativar';
-          btnTest.classList.remove('hidden');
-        } else if (state.notifications.enabled && (nativeState === 'iframe_blocked' || nativeState === 'iframe_default')) {
-          dot.className = 'w-2 h-2 rounded-full bg-[#C58218] shrink-0';
-          txt.textContent = 'Avisos ativos na aba · O Preview bloqueia pop-ups do sistema — baixe o .html para receber na área de trabalho';
-          btnToggle.textContent = 'Desativar';
-          btnTest.classList.remove('hidden');
-          btnDownload.classList.remove('hidden');
-        } else if (state.notifications.enabled && nativeState === 'denied') {
-          dot.className = 'w-2 h-2 rounded-full bg-[#C58218] shrink-0';
-          txt.textContent = 'Notificações bloqueadas no navegador · Libere no ícone de cadeado da barra de endereço';
-          btnToggle.textContent = 'Desativar';
-          btnTest.classList.remove('hidden');
-        } else if (state.notifications.enabled) {
-          dot.className = 'w-2 h-2 rounded-full bg-[#086B83] shrink-0';
-          txt.textContent = 'Alertas sonoros e visuais ativos · Clique para permitir na área de trabalho';
-          btnToggle.textContent = 'Desativar';
-          btnTest.classList.remove('hidden');
-        } else {
-          dot.className = 'w-2 h-2 rounded-full bg-neutral-400 shrink-0';
-          txt.textContent = 'Notificações na área de trabalho desativadas';
-          btnToggle.textContent = 'Ativar agora';
-          btnTest.classList.add('hidden');
-        }
-      }
+      if (promptBanner) promptBanner.classList.add('hidden');
+      if (statusBar) statusBar.classList.add('hidden');
 
       // Card Hero de Status Ao Vivo
       const hero = document.getElementById('agentHeroCard');
@@ -3035,6 +2886,11 @@
         if (!document.hidden) stopTitleBlink();
       });
       window.addEventListener('focus', stopTitleBlink);
+      window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'base190:ops-tab' && typeof switchTab === 'function') {
+          switchTab(e.data.tab);
+        }
+      });
 
       // Atualização ao vivo a cada 1 segundo (resistente a aba em segundo plano)
       startReliableTicker(() => {

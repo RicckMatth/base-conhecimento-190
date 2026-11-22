@@ -1,86 +1,19 @@
 'use client';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  QUALITY_BLOCKS,
+  QUALITY_CRITICAL,
+  QUALITY_MANAGEMENT,
+  QUALITY_ACKNOWLEDGE,
+  qualityScore,
+  qualityClass,
+  canAuditQuality
+} from '../lib/quality-core.js';
 
-const STORAGE_KEY = 'copom_190_monitorias_v6';
-
-const CRITERIA_DEF = [
-  {
-    id: 'cordialidade',
-    label: 'Cordialidade e Postura',
-    description: 'Tom de voz adequado, respeito, empatia e clareza na abertura e condução da chamada.',
-    max: 20,
-    defaultScore: 18
-  },
-  {
-    id: 'agilidade',
-    label: 'Agilidade na Coleta de Dados',
-    description: 'Rapidez e objetividade na identificação da natureza da ocorrência e avaliação de risco imediato.',
-    max: 20,
-    defaultScore: 18
-  },
-  {
-    id: 'endereco',
-    label: 'Assertividade no Endereço',
-    description: 'Confirmação exata de logradouro, número, bairro, município e ponto de referência.',
-    max: 20,
-    defaultScore: 18
-  },
-  {
-    id: 'crise',
-    label: 'Gerenciamento de Crise e Calma',
-    description: 'Controle emocional, postura firme e condução segura de solicitantes em situação de estresse.',
-    max: 20,
-    defaultScore: 18
-  },
-  {
-    id: 'pop',
-    label: 'Procedimentos Operacionais Padrão',
-    description: 'Aderência integral ao protocolo POP 190 de classificação de prioridade, triagem e despacho.',
-    max: 20,
-    defaultScore: 18
-  }
-];
-
-const DEFAULT_ATTENDANTS = [];
-
-function getSeedData() {
-  return [];
-}
-
-function getPerformanceMeta(score, isDark = false) {
-  if (score >= 90) {
-    return {
-      label: 'Excelente',
-      stroke: isDark ? '#14b8a6' : '#0d9488',
-      barColor: isDark ? '#14b8a6' : '#0d9488',
-      badgeClass: 'excelente'
-    };
-  }
-  if (score >= 75) {
-    return {
-      label: 'Bom',
-      stroke: isDark ? '#69d0e0' : '#096d85',
-      barColor: isDark ? '#69d0e0' : '#096d85',
-      badgeClass: 'bom'
-    };
-  }
-  if (score >= 60) {
-    return {
-      label: 'Atenção',
-      stroke: isDark ? '#f59e0b' : '#d97706',
-      barColor: isDark ? '#f59e0b' : '#d97706',
-      badgeClass: 'atencao'
-    };
-  }
-  return {
-    label: 'Crítico',
-    stroke: isDark ? '#f87171' : '#dc2626',
-    barColor: isDark ? '#f87171' : '#dc2626',
-    badgeClass: 'critico'
-  };
-}
+const STORAGE_KEY = 'copom_190_monitorias_v7';
 
 function formatDecimalScore(score) {
+  if (score === null || score === undefined || isNaN(score)) return '0,0';
   return (score / 10).toFixed(1).replace('.', ',');
 }
 
@@ -103,9 +36,16 @@ function formatDateTimeBR(isoString) {
 
 function formatDateBR(dateStr) {
   if (!dateStr) return '—';
-  const parts = dateStr.split('-');
+  const parts = String(dateStr).split('T')[0].split('-');
   if (parts.length !== 3) return dateStr;
   return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+
+function getCurrentDateInput() {
+  const now = new Date();
+  const offset = now.getTimezoneOffset();
+  const local = new Date(now.getTime() - offset * 60000);
+  return local.toISOString().slice(0, 10);
 }
 
 function getCurrentLocalDateTimeInput() {
@@ -115,7 +55,14 @@ function getCurrentLocalDateTimeInput() {
   return local.toISOString().slice(0, 16);
 }
 
-export default function Quality({ user, activeProfile = null, dark = false, toggleTheme = null }) {
+function formatDurationDisplay(totalSeconds) {
+  const s = parseInt(totalSeconds, 10) || 0;
+  const mins = Math.floor(s / 60);
+  const secs = s % 60;
+  return `${mins}m ${String(secs).padStart(2, '0')}s`;
+}
+
+export default function Quality({ user, activeProfile = null, dark = false, toggleTheme = null, onStateChange = null }) {
   const isSupervisor = useMemo(() => {
     if (activeProfile) {
       return ['dev', 'coordinator', 'manager', 'quality_analyst'].includes(activeProfile);
@@ -156,27 +103,46 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
   const [searchFeedback, setSearchFeedback] = useState('');
   const [searchPublic, setSearchPublic] = useState('');
 
-  // Modais e gaveta
-  const [activeModalId, setActiveModalId] = useState(null); // Modal de Gerenciamento
-  const [activeResultModalId, setActiveResultModalId] = useState(null); // Modal de Ver Resultado
+  // Modais
+  const [activeModalId, setActiveModalId] = useState(null); // Modal de Gerenciamento (Monitor)
+  const [activeResultModalId, setActiveResultModalId] = useState(null); // Modal de Ver Resultado & Assinar
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toasts, setToasts] = useState([]);
 
-  // Estado do formulário de cadastro
+  // =========================================================================
+  // ESTADO DO FORMULÁRIO DE CADASTRAMENTO (Baseado nas Fichas Oficiais)
+  // =========================================================================
   const [formChamado, setFormChamado] = useState('');
-  const [formDataChamada, setFormDataChamada] = useState(getCurrentLocalDateTimeInput());
-  const [formMonitor, setFormMonitor] = useState(user?.name || user?.username || '');
+  const [formDataChamada, setFormDataChamada] = useState(getCurrentDateInput());
+  const [formDurationMinutes, setFormDurationMinutes] = useState(4);
+  const [formDurationSeconds, setFormDurationSeconds] = useState(20);
+  const [formTurno, setFormTurno] = useState('weekday'); // weekday | weekend
+  const [formTipoAuditoria, setFormTipoAuditoria] = useState('audio'); // audio | live
+  const [formMonitor, setFormMonitor] = useState(user?.name || user?.username || 'Supervisor de Qualidade');
   const [formSelectedAttendantKey, setFormSelectedAttendantKey] = useState('');
   const [formAtendente, setFormAtendente] = useState('');
+  const [formMatricula, setFormMatricula] = useState('');
   const [formEmailAtendente, setFormEmailAtendente] = useState('');
-  const [formObservacoes, setFormObservacoes] = useState('');
-  const [formScores, setFormScores] = useState({
-    cordialidade: 18,
-    agilidade: 18,
-    endereco: 18,
-    crise: 18,
-    pop: 18
+
+  // 12 Critérios dos 4 Blocos (Sim, Não, N/A)
+  const [formRatings, setFormRatings] = useState(() => {
+    const initial = {};
+    QUALITY_BLOCKS.forEach(b => {
+      b.items.forEach(item => {
+        initial[item.id] = 'yes'; // Padrão inicial 100% Sim
+      });
+    });
+    return initial;
   });
+
+  // 6 Penalidades Críticas (Tolerância Zero)
+  const [formCritical, setFormCritical] = useState([]);
+
+  // Diagnóstico PDCA e Providência Gerencial
+  const [formManagementAction, setFormManagementAction] = useState('praise');
+  const [formStrengths, setFormStrengths] = useState('Prontidão no atendimento, comunicação clara e assertiva com o cidadão.');
+  const [formImprovements, setFormImprovements] = useState('Atentar para a verificação ágil do ponto de referência no SADE.');
+  const [formCorrectiveAction, setFormCorrectiveAction] = useState('Alinhamento de fraseologia de corte e confirmação imediata do local.');
 
   // Modal 1: Agendamento & Envio
   const [schedDate, setSchedDate] = useState('');
@@ -187,8 +153,11 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
   const [channelEmail, setChannelEmail] = useState(true);
   const [channelDash, setChannelDash] = useState(true);
 
-  // Exibição e Impressão
-  const [printReportItem, setPrintReportItem] = useState(null);
+  // Modal 2: Assinatura Digital do Atendente
+  const [signatureCanvasDrawing, setSignatureCanvasDrawing] = useState(false);
+  const [signatureAgreed, setSignatureAgreed] = useState(false);
+  const [signatureDataUrl, setSignatureDataUrl] = useState('');
+  const signatureCanvasRef = useRef(null);
 
   // Toast helper
   const showToast = useCallback((message, type = 'info', action = null) => {
@@ -203,28 +172,18 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
-  // 1. Carregar monitorias salvas (inicia zerado)
+  // 1. Carregar monitorias salvas (inicia zerado de amostras antigas)
   useEffect(() => {
     try {
-      // Limpa dados de demonstrações anteriores
-      localStorage.removeItem('copom_190_monitorias');
-      localStorage.removeItem('copom_190_monitorias_v1');
-      localStorage.removeItem('copom_190_monitorias_v2');
-      localStorage.removeItem('copom_190_monitorias_v3');
-      localStorage.removeItem('copom_190_monitorias_v4');
-      localStorage.removeItem('copom_190_monitorias_v5');
+      ['copom_190_monitorias', 'copom_190_monitorias_v1', 'copom_190_monitorias_v2', 'copom_190_monitorias_v3', 'copom_190_monitorias_v4', 'copom_190_monitorias_v5', 'copom_190_monitorias_v6'].forEach(k => {
+        localStorage.removeItem(k);
+      });
 
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setMonitorias(
-            parsed.map(item => ({
-              ...item,
-              encaminhada: typeof item.encaminhada === 'boolean' ? item.encaminhada : Boolean(item.envio),
-              cienciaEm: item.cienciaEm || null
-            }))
-          );
+          setMonitorias(parsed);
           return;
         }
       }
@@ -234,7 +193,7 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
     setMonitorias([]);
   }, []);
 
-  // 2. Carregar atendentes cadastrados no banco de dados
+  // 2. Carregar atendentes cadastrados no banco de dados e monitorias da API
   useEffect(() => {
     let alive = true;
     const monthNow = new Date().toISOString().slice(0, 7);
@@ -251,10 +210,48 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
           fromDb: true
         }));
         setRegisteredAttendants(formatted);
+
+        // Se houver monitorias do servidor
+        if (Array.isArray(data?.monitors) && data.monitors.length > 0) {
+          const apiMonitors = data.monitors.map(m => ({
+            id: m.id,
+            chamado: m.protocol_cad || 'CAD-190',
+            atendente: m.operator_name || 'Operador',
+            matricula: m.operator_username || '',
+            emailAtendente: m.operator_username?.includes('@') ? m.operator_username : `${m.operator_username}@copom.gov.br`,
+            dataChamada: m.audit_day || new Date().toISOString().slice(0, 10),
+            duration_seconds: m.duration_seconds || 240,
+            shift_period: m.shift_period || 'weekday',
+            audit_type: m.audit_type || 'audio',
+            monitor: m.auditor_name || 'Supervisor',
+            ratings: m.ratings || {},
+            critical: m.critical || [],
+            notaFinal: m.score ?? 0,
+            observacoes: m.strengths || '',
+            strengths: m.strengths || '',
+            improvements: m.improvements || '',
+            correctiveAction: m.corrective_action || '',
+            managementAction: m.management_action || 'praise',
+            status: m.acknowledged_at ? 'Concluído' : m.status === 'published' ? 'Pendente de Leitura' : 'Rascunho',
+            encaminhada: m.status === 'published',
+            envio: m.published_at ? { enviadoEm: m.published_at, canais: ['Dashboard do Atendente'] } : null,
+            cienciaEm: m.acknowledged_at || null,
+            operator_signature_name: m.operator_signature_name || null,
+            operator_signature_image: m.operator_signature_image || null,
+            fromServer: true
+          }));
+          setMonitorias(prev => {
+            const merged = [...apiMonitors];
+            prev.forEach(p => {
+              if (!merged.some(x => x.id === p.id || x.chamado === p.chamado)) {
+                merged.push(p);
+              }
+            });
+            return merged;
+          });
+        }
       })
-      .catch(() => {
-        // Se falhar ou não tiver permissão, mantemos atendentes padrão
-      });
+      .catch(() => {});
     return () => {
       alive = false;
     };
@@ -263,36 +260,29 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
   // Lista consolidada de atendentes conhecidos
   const allAttendants = useMemo(() => {
     const map = new Map();
-    // Atendentes padrão
-    DEFAULT_ATTENDANTS.forEach(a => map.set(a.nome.toLowerCase(), a));
-    // Atendentes do banco de dados (têm prioridade)
     registeredAttendants.forEach(a => map.set(a.nome.toLowerCase(), a));
-    // Atendentes das monitorias existentes
     monitorias.forEach(m => {
       if (m.atendente && !map.has(m.atendente.toLowerCase())) {
         map.set(m.atendente.toLowerCase(), {
           id: 'mon-' + m.atendente,
           nome: m.atendente,
           email: m.emailAtendente || `${m.atendente.toLowerCase().replace(/\s+/g, '.')}@copom.gov.br`,
-          username: m.atendente.toLowerCase().replace(/\s+/g, '.')
+          username: m.matricula || m.atendente.toLowerCase().replace(/\s+/g, '.')
         });
       }
     });
     return Array.from(map.values()).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
   }, [registeredAttendants, monitorias]);
 
-  // Persistir monitorias
-  const persistMonitorias = useCallback(
-    updated => {
-      setMonitorias(updated);
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      } catch (err) {
-        console.error('Erro ao salvar no localStorage:', err);
-      }
-    },
-    []
-  );
+  // Persistir monitorias no localStorage
+  const persistMonitorias = useCallback(updated => {
+    setMonitorias(updated);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch (err) {
+      console.error('Erro ao salvar no localStorage:', err);
+    }
+  }, []);
 
   // Monitorias ativas para modais
   const activeModalItem = useMemo(() => {
@@ -316,7 +306,26 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
     }
   }, [activeModalItem]);
 
-  // Sincronizar atendente do formulário de cadastro
+  // Inicializar Canvas de Assinatura do Modal 2
+  useEffect(() => {
+    if (activeResultModalItem && !activeResultModalItem.cienciaEm) {
+      setSignatureAgreed(false);
+      setSignatureDataUrl('');
+      setTimeout(() => {
+        const cvs = signatureCanvasRef.current;
+        if (cvs) {
+          const ctx = cvs.getContext('2d');
+          ctx.clearRect(0, 0, cvs.width, cvs.height);
+          ctx.strokeStyle = dark ? '#69d0e0' : '#0c2333';
+          ctx.lineWidth = 2.5;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+        }
+      }, 100);
+    }
+  }, [activeResultModalItem, dark]);
+
+  // Sincronizar seleção de atendente
   function handleSelectAttendant(attKey) {
     setFormSelectedAttendantKey(attKey);
     if (!attKey || attKey === 'custom') {
@@ -325,84 +334,209 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
     const found = allAttendants.find(a => a.id === attKey || a.nome === attKey);
     if (found) {
       setFormAtendente(found.nome);
+      setFormMatricula(found.username || '190-PM');
       setFormEmailAtendente(found.email);
     }
   }
 
-  // Pontuação do formulário em tempo real
-  const formTotalScore = useMemo(() => {
-    return CRITERIA_DEF.reduce((acc, c) => acc + (Number(formScores[c.id]) || 0), 0);
-  }, [formScores]);
+  // =========================================================================
+  // CÁLCULO DE PONTUAÇÃO EM TEMPO REAL (Conforme Ficha Oficial 100 Pts)
+  // =========================================================================
+  const formScoring = useMemo(() => {
+    try {
+      return qualityScore(formRatings, formCritical, { complete: false });
+    } catch {
+      return { score: 100, raw: 100, critical: false, class: qualityClass(100), blocks: [] };
+    }
+  }, [formRatings, formCritical]);
 
-  const formMeta = useMemo(() => getPerformanceMeta(formTotalScore, dark), [formTotalScore, dark]);
+  const formTotalScore = formScoring.score ?? 0;
+  const formIsZeroTolerance = formScoring.critical;
 
-  function handleScoreChange(id, value) {
-    const val = Math.max(0, Math.min(20, parseInt(value, 10) || 0));
-    setFormScores(prev => ({ ...prev, [id]: val }));
+  const formMeta = useMemo(() => {
+    if (formIsZeroTolerance) {
+      return {
+        label: 'Tolerância Zero (0)',
+        stroke: dark ? '#f87171' : '#dc2626',
+        barColor: dark ? '#f87171' : '#dc2626',
+        badgeClass: 'critico'
+      };
+    }
+    if (formTotalScore >= 90) {
+      return {
+        label: 'Excelente (Padrão Ouro)',
+        stroke: dark ? '#14b8a6' : '#0d9488',
+        barColor: dark ? '#14b8a6' : '#0d9488',
+        badgeClass: 'excelente'
+      };
+    }
+    if (formTotalScore >= 75) {
+      return {
+        label: 'Adequado (Operacional)',
+        stroke: dark ? '#69d0e0' : '#096d85',
+        barColor: dark ? '#69d0e0' : '#096d85',
+        badgeClass: 'bom'
+      };
+    }
+    return {
+      label: 'Abaixo do Padrão (Reciclagem)',
+      stroke: dark ? '#f87171' : '#dc2626',
+      barColor: dark ? '#f87171' : '#dc2626',
+      badgeClass: 'critico'
+    };
+  }, [formTotalScore, formIsZeroTolerance, dark]);
+
+  function handleRatingChange(criterionId, value) {
+    setFormRatings(prev => ({
+      ...prev,
+      [criterionId]: value
+    }));
+  }
+
+  function handleToggleCritical(critId) {
+    setFormCritical(prev => {
+      if (prev.includes(critId)) {
+        return prev.filter(x => x !== critId);
+      }
+      return [...prev, critId];
+    });
+  }
+
+  function handleMarkAllYes() {
+    const allYes = {};
+    QUALITY_BLOCKS.forEach(b => {
+      b.items.forEach(item => {
+        allYes[item.id] = 'yes';
+      });
+    });
+    setFormRatings(allYes);
+    setFormCritical([]);
+    showToast('Todos os 12 critérios marcados como "Sim".', 'info');
   }
 
   function resetCadastroForm(notify = false) {
     setFormChamado('');
-    setFormDataChamada(getCurrentLocalDateTimeInput());
+    setFormDataChamada(getCurrentDateInput());
+    setFormDurationMinutes(4);
+    setFormDurationSeconds(20);
+    setFormTurno('weekday');
+    setFormTipoAuditoria('audio');
     setFormSelectedAttendantKey('');
     setFormAtendente('');
+    setFormMatricula('');
     setFormEmailAtendente('');
-    setFormObservacoes('');
-    setFormScores({ cordialidade: 18, agilidade: 18, endereco: 18, crise: 18, pop: 18 });
+    const allYes = {};
+    QUALITY_BLOCKS.forEach(b => {
+      b.items.forEach(item => {
+        allYes[item.id] = 'yes';
+      });
+    });
+    setFormRatings(allYes);
+    setFormCritical([]);
+    setFormManagementAction('praise');
+    setFormStrengths('Prontidão no atendimento, comunicação clara e assertiva com o cidadão.');
+    setFormImprovements('Atentar para a verificação ágil do ponto de referência no SADE.');
+    setFormCorrectiveAction('Alinhamento de fraseologia de corte e confirmação imediata do local.');
     if (notify) showToast('Formulário limpo e pronto para novo registro.', 'info');
   }
 
-  function handleSaveMonitoria(e) {
-    e.preventDefault();
+  // Salvar Monitoria (Local e Backend)
+  async function handleSaveMonitoria(e, shouldPublish = false) {
+    if (e) e.preventDefault();
     const chamado = formChamado.trim();
     const atendente = formAtendente.trim();
     const email = formEmailAtendente.trim();
     const monitor = formMonitor.trim();
 
     if (!chamado || !formDataChamada || !atendente || !email || !monitor) {
-      showToast('Preencha todos os campos obrigatórios de Dados do Atendimento.', 'error');
+      showToast('Preencha os campos obrigatórios de Dados do Atendimento.', 'error');
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      showToast('Informe um e-mail institucional válido para o atendente.', 'error');
-      return;
-    }
+    const totalSeconds = (parseInt(formDurationMinutes, 10) || 0) * 60 + (parseInt(formDurationSeconds, 10) || 0);
 
-    const nova = {
+    const novaMonitoria = {
       id: 'mon-' + Date.now(),
       chamado,
+      protocol_cad: chamado,
       atendente,
+      operator_name: atendente,
+      matricula: formMatricula || '190-PM',
+      operator_username: formMatricula || 'sd.operador',
       emailAtendente: email,
       dataChamada: formDataChamada,
+      audit_day: formDataChamada,
+      duration_seconds: totalSeconds,
+      shift_period: formTurno,
+      audit_type: formTipoAuditoria,
       monitor,
-      scores: { ...formScores },
+      auditor_name: monitor,
+      ratings: { ...formRatings },
+      critical: [...formCritical],
       notaFinal: formTotalScore,
-      observacoes: formObservacoes.trim() || 'Sem observações adicionais registradas.',
-      status: 'Pendente de Leitura',
-      encaminhada: false,
-      envio: null,
+      score: formTotalScore,
+      management_action: formManagementAction,
+      strengths: formStrengths.trim(),
+      improvements: formImprovements.trim(),
+      corrective_action: formCorrectiveAction.trim(),
+      observacoes: formStrengths.trim(),
+      status: shouldPublish ? 'Pendente de Leitura' : 'Rascunho',
+      encaminhada: shouldPublish,
+      envio: shouldPublish ? { enviadoEm: new Date().toISOString(), canais: ['Dashboard do Atendente'] } : null,
       feedback: null,
       cienciaEm: null,
+      operator_signature_name: null,
+      operator_signature_image: null,
       criadoEm: new Date().toISOString()
     };
 
-    const next = [nova, ...monitorias];
+    // Tentar persistir no backend se selecionado operador cadastrado no banco
+    const matchedOp = registeredAttendants.find(a => a.nome.toLowerCase() === atendente.toLowerCase() || a.id === formSelectedAttendantKey);
+    if (matchedOp?.id && isSupervisor) {
+      try {
+        await fetch('/api/quality/monitor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            operatorId: matchedOp.id,
+            protocolCad: chamado,
+            auditDay: formDataChamada,
+            durationSeconds: totalSeconds,
+            auditType: formTipoAuditoria,
+            shiftPeriod: formTurno,
+            ratings: formRatings,
+            critical: formCritical,
+            strengths: formStrengths.trim(),
+            improvements: formImprovements.trim(),
+            correctiveAction: formCorrectiveAction.trim(),
+            managementAction: formManagementAction,
+            auditorName: monitor,
+            auditorAgreed: true,
+            publish: shouldPublish
+          })
+        });
+      } catch (err) {
+        console.warn('Salvamento no backend em contingência:', err);
+      }
+    }
+
+    const next = [novaMonitoria, ...monitorias.filter(m => m.chamado !== chamado)];
     persistMonitorias(next);
     resetCadastroForm(false);
 
     showToast(
-      `Monitoria ${chamado} salva com nota ${formTotalScore}/100 para ${atendente}.`,
+      shouldPublish
+        ? `Monitoria ${chamado} salva e publicada para ciência de ${atendente} com nota ${formTotalScore}/100.`
+        : `Rascunho da monitoria ${chamado} salvo com sucesso.`,
       'success',
       {
-        label: 'Ir para Encaminhamento →',
+        label: 'Ver Monitorias →',
         onClick: () => setCurrentView('feedback')
       }
     );
   }
 
-  // Ações do Modal 1 (Monitor)
+  // Encaminhar do Modal 1
   function handleSendReport() {
     if (!activeModalItem) return;
     if (!channelEmail && !channelDash) {
@@ -418,6 +552,7 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
         return {
           ...m,
           encaminhada: true,
+          status: m.status === 'Rascunho' ? 'Pendente de Leitura' : m.status,
           envio: { enviadoEm: new Date().toISOString(), canais }
         };
       }
@@ -425,7 +560,7 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
     });
 
     persistMonitorias(updated);
-    showToast(`Relatório do chamado ${activeModalItem.chamado} encaminhado e publicado na aba Monitorias.`, 'success');
+    showToast(`Relatório do chamado ${activeModalItem.chamado} encaminhado ao atendente com sucesso!`, 'success');
   }
 
   function handleSaveSchedule(e) {
@@ -485,30 +620,215 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
     showToast(isConcluded ? `Monitoria reaberta com status "${newStatus}".` : `Monitoria ${activeModalItem.chamado} marcada como Concluída.`, 'success');
   }
 
-  // Ação do Modal 2: Confirmar Ciência
-  function handleConfirmCiencia() {
+  // =========================================================================
+  // SISTEMA INTEGRADO DE ASSINATURA DIGITAL (CANVAS E CERTIFICADO)
+  // =========================================================================
+  function startSignatureDrawing(e) {
+    const cvs = signatureCanvasRef.current;
+    if (!cvs) return;
+    const rect = cvs.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const ctx = cvs.getContext('2d');
+    ctx.beginPath();
+    ctx.moveTo(clientX - rect.left, clientY - rect.top);
+    setSignatureCanvasDrawing(true);
+  }
+
+  function drawSignature(e) {
+    if (!signatureCanvasDrawing) return;
+    const cvs = signatureCanvasRef.current;
+    if (!cvs) return;
+    const rect = cvs.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const ctx = cvs.getContext('2d');
+    ctx.lineTo(clientX - rect.left, clientY - rect.top);
+    ctx.stroke();
+    e.preventDefault();
+  }
+
+  function stopSignatureDrawing() {
+    if (!signatureCanvasDrawing) return;
+    setSignatureCanvasDrawing(false);
+    const cvs = signatureCanvasRef.current;
+    if (cvs) {
+      setSignatureDataUrl(cvs.toDataURL('image/png'));
+    }
+  }
+
+  function clearSignature() {
+    const cvs = signatureCanvasRef.current;
+    if (cvs) {
+      const ctx = cvs.getContext('2d');
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+    }
+    setSignatureDataUrl('');
+  }
+
+  function generateAutoRubric() {
+    const cvs = signatureCanvasRef.current;
+    if (!cvs) return;
+    const ctx = cvs.getContext('2d');
+    ctx.clearRect(0, 0, cvs.width, cvs.height);
+    ctx.save();
+    ctx.strokeStyle = dark ? '#69d0e0' : '#0c2333';
+    ctx.fillStyle = dark ? '#69d0e0' : '#0c2333';
+    ctx.lineWidth = 2.5;
+
+    // Desenha rubrica caligráfica vetorial baseada no nome
+    ctx.beginPath();
+    ctx.moveTo(30, 60);
+    ctx.bezierCurveTo(60, 20, 90, 80, 140, 45);
+    ctx.bezierCurveTo(170, 20, 190, 75, 230, 40);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(25, 68);
+    ctx.lineTo(260, 62);
+    ctx.stroke();
+
+    ctx.font = 'italic 16px "Brush Script MT", cursive, sans-serif';
+    ctx.fillText(attendantSelfName.slice(0, 25), 45, 52);
+    ctx.restore();
+
+    setSignatureDataUrl(cvs.toDataURL('image/png'));
+  }
+
+  // Confirmar Ciência e Assinatura Digital do Atendente Logado
+  async function handleConfirmSignature() {
     if (!activeResultModalItem) return;
+    if (!signatureAgreed) {
+      showToast('Por favor, assinale o termo de declaração de ciência para assinar.', 'error');
+      return;
+    }
+
+    let finalSignImg = signatureDataUrl;
+    if (!finalSignImg) {
+      // Se não desenhou manualmente, gera rubrica institucional automática
+      generateAutoRubric();
+      const cvs = signatureCanvasRef.current;
+      finalSignImg = cvs ? cvs.toDataURL('image/png') : null;
+    }
+
+    const ackTime = new Date().toISOString();
+
+    // Sincronizar com backend `/api/quality/ack`
+    try {
+      await fetch('/api/quality/ack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: activeResultModalItem.id,
+          kind: 'monitor',
+          signature: {
+            name: attendantSelfName,
+            agreed: true,
+            image: finalSignImg
+          }
+        })
+      });
+    } catch (e) {
+      console.warn('Ciência salva em contingência local:', e);
+    }
+
+    // Atualizar no estado local
     const updated = monitorias.map(m => {
       if (m.id === activeResultModalItem.id) {
         return {
           ...m,
-          cienciaEm: new Date().toISOString(),
-          status: m.status === 'Pendente de Leitura' ? (m.feedback ? 'Feedback Agendado' : 'Concluído') : m.status
+          status: 'Concluído',
+          cienciaEm: ackTime,
+          acknowledged_at: ackTime,
+          operator_signature_name: attendantSelfName,
+          operator_signature_image: finalSignImg
         };
       }
       return m;
     });
+
     persistMonitorias(updated);
-    showToast(`Ciência registrada com sucesso para o chamado ${activeResultModalItem.chamado}.`, 'success');
+    showToast(`Ficha assinada digitalmente com sucesso por ${attendantSelfName}! Documento autenticado.`, 'success');
   }
 
-  // Impressão Institucional
-  function triggerPrint(item) {
+  // =========================================================================
+  // BAIXAR PDF PREENCHIDO E ASSINADO (MANIPULAÇÃO DO PDF ORIGINAL)
+  // =========================================================================
+  async function handleDownloadPdf(item) {
     if (!item) return;
-    setPrintReportItem(item);
-    setTimeout(() => {
-      window.print();
-    }, 150);
+    showToast('Gerando documento PDF preenchido e assinado...', 'info');
+    try {
+      // Tentar rota oficial do servidor primeiro (se já persistido)
+      if (item.fromServer && item.id) {
+        const url = `/api/quality/pdf?kind=monitor&id=${encodeURIComponent(item.id)}`;
+        window.open(url, '_blank');
+        return;
+      }
+
+      // Geração segura via endpoint POST do servidor
+      const res = await fetch('/api/quality/pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind: 'monitor', data: item })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Falha ao processar PDF no servidor');
+      }
+
+      const blob = await res.blob();
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `Ficha_Monitoria_190_${item.chamado || item.protocol_cad || 'registro'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(downloadUrl);
+
+      showToast('Download do PDF concluído com sucesso!', 'success');
+    } catch (err) {
+      console.error('Erro ao gerar PDF preenchido:', err);
+      showToast('Não foi possível gerar o PDF: ' + (err.message || 'Erro inesperado'), 'error');
+    }
+  }
+
+  // Baixar PDF da Ficha de Acompanhamento Mensal
+  async function handleDownloadFollowupPdf(followupObj, list) {
+    showToast('Gerando Ficha de Acompanhamento Consolidada em PDF...', 'info');
+    try {
+      if (followupObj?.id) {
+        const url = `/api/quality/pdf?kind=followup&id=${encodeURIComponent(followupObj.id)}`;
+        window.open(url, '_blank');
+        return;
+      }
+
+      const res = await fetch('/api/quality/pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind: 'followup', data: followupObj, monitors: list })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Falha ao processar PDF no servidor');
+      }
+
+      const blob = await res.blob();
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `Ficha_Acompanhamento_Operador_190_${followupObj?.period || 'mes'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(downloadUrl);
+      showToast('Download da Ficha de Acompanhamento concluído!', 'success');
+    } catch (err) {
+      console.error('Erro ao gerar PDF de acompanhamento:', err);
+      showToast('Erro ao gerar PDF: ' + err.message, 'error');
+    }
   }
 
   // Filtros Aba 2 (Encaminhamento e Feedback)
@@ -530,11 +850,11 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
   const countAgendado = useMemo(() => monitorias.filter(m => m.status === 'Feedback Agendado').length, [monitorias]);
   const countConcluido = useMemo(() => monitorias.filter(m => m.status === 'Concluído').length, [monitorias]);
 
-  // Filtros Aba 3 (Monitorias Encaminhadas)
+  // Filtros Aba 3 (Monitorias para o Atendente / Gerais)
   const forwardedBaseList = useMemo(() => {
     return monitorias.filter(m => {
-      if (!m.encaminhada) return false;
-      // No perfil de Atendente (ou visão de atendente): estritamente e somente as DELE
+      if (!m.encaminhada && m.status !== 'Concluído') return false;
+      // No perfil de Atendente: estritamente e somente as DELE
       if (activeProfile === 'attendant' || currentRole === 'atendente') {
         const myName = (attendantSelfName || '').trim().toLowerCase();
         const mAtendente = String(m.atendente || '').trim().toLowerCase();
@@ -547,7 +867,7 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
           (myName && myName.includes(mAtendente));
         return isMine;
       }
-      // Modo supervisor/monitor: pode filtrar por atendente ou visualizar todos
+      // Modo supervisor: pode filtrar por atendente ou ver todos
       if (selectedAttendant && selectedAttendant !== 'ALL') {
         return String(m.atendente || '').trim().toLowerCase() === selectedAttendant.trim().toLowerCase();
       }
@@ -589,9 +909,15 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
   const circumference = 326.73;
   const strokeOffset = circumference - (formTotalScore / 100) * circumference;
 
+  // Broadcast nav state to parent shell (for unified topbar integration)
+  useEffect(() => {
+    if (typeof onStateChange === 'function') {
+      onStateChange({ currentView, setCurrentView, currentRole, setCurrentRole, isSupervisor, countPendente, publicTotal });
+    }
+  }, [currentView, currentRole, isSupervisor, countPendente, publicTotal]);
+
   return (
     <div className="quality-module">
-      {/* Shell Principal */}
       <div className="qm-shell">
         {/* Overlay mobile */}
         {mobileMenuOpen && (
@@ -685,7 +1011,7 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
               <svg fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-              <span>Monitorias</span>
+              <span>Monitorias & Ciência</span>
               {publicTotal > 0 && <span className="qm-badge blue">{publicTotal}</span>}
             </button>
           </nav>
@@ -712,7 +1038,7 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                     onClick={() => {
                       setCurrentRole('atendente');
                       setCurrentView('monitorias');
-                      showToast('Perfil alternado para Atendente (visualização das monitorias).', 'info');
+                      showToast('Perfil alternado para Atendente (visualização estrita das suas monitorias).', 'info');
                     }}
                   >
                     Atendente
@@ -723,15 +1049,14 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
               <div style={{ textAlign: 'center', padding: '6px 0' }}>
                 <span className="qm-role-selector-label">Perfil Operacional</span>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#38bdf8', background: 'rgba(56, 189, 248, 0.12)', padding: '6px 8px', borderRadius: 8, border: '1px solid rgba(56, 189, 248, 0.25)' }}>
-                  🎧 Atendente (Consulta & Ciência)
+                  🎧 Atendente (Consulta & Assinatura)
                 </div>
                 <small className="qm-text-muted" style={{ display: 'block', marginTop: 4, fontSize: 10 }}>
-                  Cadastramento e envio restritos
+                  Acesso exclusivo às suas avaliações
                 </small>
               </div>
             )}
 
-            {/* Identificação Fixa do Atendente (modo atendente restrito às suas avaliações) */}
             {currentRole === 'atendente' && (
               <div className="qm-attendant-select-wrap">
                 <span className="qm-role-selector-label">Atendente Conectado</span>
@@ -744,12 +1069,11 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                   </strong>
                 </div>
                 <small className="qm-text-muted" style={{ display: 'block', marginTop: 4, fontSize: 10, lineHeight: 1.3 }}>
-                  🔒 Visualização restrita às suas avaliações
+                  🔒 Assinatura vinculada à sua sessão
                 </small>
               </div>
             )}
 
-            {/* Alternador de Tema na Sidebar */}
             {toggleTheme && (
               <button
                 type="button"
@@ -793,9 +1117,8 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
           </div>
         </aside>
 
-        {/* Coluna de Conteúdo Principal */}
+        {/* Conteúdo Principal */}
         <div className="qm-content-wrap">
-          {/* Barra Mobile */}
           <header className="qm-mobile-topbar">
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <button
@@ -811,7 +1134,7 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
               <div>
                 <strong style={{ fontSize: 14, display: 'block', lineHeight: 1.2 }}>Central 190</strong>
                 <small className="qm-text-muted" style={{ fontSize: 11 }}>
-                  {currentRole === 'monitor' ? 'Monitoria de Qualidade' : 'Visão do Atendente'}
+                  {currentRole === 'monitor' ? 'Monitoria de Qualidade Oficial' : 'Visão do Atendente'}
                 </small>
               </div>
             </div>
@@ -836,65 +1159,46 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                   )}
                 </button>
               )}
-              {currentRole === 'monitor' && countPendente > 0 && (
-                <span className="qm-section-badge amber">{countPendente} pendentes</span>
-              )}
             </div>
           </header>
 
           <main className="qm-main">
             {/* =============================================================== */}
-            {/* ABA 1: CADASTRAMENTO DE MONITORIA                               */}
+            {/* ABA 1: CADASTRAMENTO DE MONITORIA (4 BLOCOS + TOLERÂNCIA ZERO)  */}
             {/* =============================================================== */}
             {currentView === 'cadastro' && currentRole === 'monitor' && (
               <section key="cadastro" className="qm-view-enter">
                 <div className="qm-section-header">
                   <div>
                     <div className="qm-section-title-wrap">
-                      <h1 className="qm-section-title">Cadastramento de Monitoria</h1>
-                      <span className="qm-section-badge blue">Acesso: Monitor / Supervisor</span>
+                      <h1 className="qm-section-title">Ficha de Monitoria e Auditoria de Qualidade</h1>
+                      <span className="qm-section-badge blue">Modelo Oficial COPOM 190</span>
                     </div>
                     <p className="qm-section-desc">
-                      Avaliação técnica de chamadas de emergência 190 com cálculo e diagnóstico em tempo real.
+                      Avaliação operacional em 4 blocos técnicos (100 pontos), 12 critérios auditados e 6 penalidades de tolerância zero.
                     </p>
                   </div>
                   <div className="qm-header-actions">
-                    {toggleTheme && (
-                      <button
-                        type="button"
-                        onClick={toggleTheme}
-                        className="qm-theme-btn"
-                        title={dark ? 'Alternar para Modo Claro' : 'Alternar para Modo Escuro'}
-                      >
-                        {dark ? (
-                          <>
-                            <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                              <circle cx="12" cy="12" r="5" />
-                              <path strokeLinecap="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-                            </svg>
-                            <span>Modo Claro</span>
-                          </>
-                        ) : (
-                          <>
-                            <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-                            </svg>
-                            <span>Modo Escuro</span>
-                          </>
-                        )}
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={handleMarkAllYes}
+                      className="qm-btn-secondary"
+                      style={{ width: 'auto', padding: '7px 12px', fontSize: 12 }}
+                      title="Define 'Sim' em todos os 12 critérios"
+                    >
+                      ✓ Marcar Todos como Sim
+                    </button>
                     <div className="qm-section-badge">
                       <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: 'var(--copom-blue)' }} />
-                      Escala: 0 a 100 pontos (0,0 a 10,0)
+                      Escala Oficial: 100 Pontos
                     </div>
                   </div>
                 </div>
 
-                <form onSubmit={handleSaveMonitoria} className="qm-grid-cadastro">
-                  {/* Coluna Esquerda: Formulário de Avaliação */}
+                <form onSubmit={e => handleSaveMonitoria(e, true)} className="qm-grid-cadastro">
+                  {/* Coluna Esquerda: Formulário Completo */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                    {/* Bloco 1: Dados do Atendimento */}
+                    {/* Bloco de Cabeçalho: Identificação do Atendimento */}
                     <div className="qm-card">
                       <div className="qm-card-header">
                         <div className="qm-card-icon">
@@ -903,9 +1207,9 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                           </svg>
                         </div>
                         <div>
-                          <h2 className="qm-card-title">Dados do Atendimento</h2>
+                          <h2 className="qm-card-title">Dados do Atendimento e da Auditoria</h2>
                           <p className="qm-card-desc">
-                            Identificação do chamado, seleção do atendente cadastrado no sistema e monitor responsável.
+                            Identificação do operador avaliado, número de CAD, duração e turno operacional.
                           </p>
                         </div>
                       </div>
@@ -913,12 +1217,12 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                       <div className="qm-form-grid-3">
                         <div className="qm-field">
                           <label className="qm-label">
-                            Número do Chamado / CAD <span className="qm-req">*</span>
+                            Protocolo / Nº CAD <span className="qm-req">*</span>
                           </label>
                           <input
                             type="text"
                             required
-                            placeholder="Ex: 190-2026-085104"
+                            placeholder="Ex: CAD-190-2026-085104"
                             value={formChamado}
                             onChange={e => setFormChamado(e.target.value)}
                             className="qm-input"
@@ -927,10 +1231,10 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
 
                         <div className="qm-field">
                           <label className="qm-label">
-                            Data e Hora da Chamada <span className="qm-req">*</span>
+                            Data da Auditoria <span className="qm-req">*</span>
                           </label>
                           <input
-                            type="datetime-local"
+                            type="date"
                             required
                             value={formDataChamada}
                             onChange={e => setFormDataChamada(e.target.value)}
@@ -940,46 +1244,59 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
 
                         <div className="qm-field">
                           <label className="qm-label">
-                            Nome do Monitor / Supervisor <span className="qm-req">*</span>
+                            Supervisor / Auditor <span className="qm-req">*</span>
                           </label>
                           <input
                             type="text"
                             required
-                            placeholder="Ex: Sgt. Supervisor"
                             value={formMonitor}
                             onChange={e => setFormMonitor(e.target.value)}
                             className="qm-input"
                           />
                         </div>
 
-                        {/* SELETOR INTELIGENTE DE ATENDENTE CADASTRADO NO SISTEMA */}
+                        {/* Seletor do Atendente */}
                         <div className="qm-field col-span-2">
                           <label className="qm-label">
-                            Atendente Cadastrado no Sistema <span className="qm-req">*</span>
+                            Operador Avaliado (Base de Usuários) <span className="qm-req">*</span>
                           </label>
                           <select
                             value={formSelectedAttendantKey}
                             onChange={e => handleSelectAttendant(e.target.value)}
                             className="qm-select"
                           >
-                            <option value="">-- Selecione um atendente cadastrado na base --</option>
+                            <option value="">-- Selecione o atendente cadastrado no COPOM --</option>
                             {allAttendants.map(att => (
                               <option key={att.id || att.nome} value={att.id || att.nome}>
-                                {att.nome} {att.fromDb ? '(Usuário do Sistema)' : ''} — {att.email}
+                                {att.nome} ({att.username}) — {att.email}
                               </option>
                             ))}
-                            <option value="custom">Outro (digitação manual)...</option>
+                            <option value="custom">Outro operador (digitação manual)...</option>
                           </select>
                         </div>
 
                         <div className="qm-field">
                           <label className="qm-label">
-                            Nome do Atendente <span className="qm-req">*</span>
+                            Matrícula / ID <span className="qm-req">*</span>
                           </label>
                           <input
                             type="text"
                             required
-                            placeholder="Nome completo do atendente"
+                            placeholder="Ex: 190-8842"
+                            value={formMatricula}
+                            onChange={e => setFormMatricula(e.target.value)}
+                            className="qm-input"
+                          />
+                        </div>
+
+                        <div className="qm-field col-span-2">
+                          <label className="qm-label">
+                            Nome Completo do Atendente <span className="qm-req">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Nome do atendente"
                             value={formAtendente}
                             onChange={e => {
                               setFormAtendente(e.target.value);
@@ -989,117 +1306,266 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                           />
                         </div>
 
-                        <div className="qm-field col-span-2">
+                        <div className="qm-field">
                           <label className="qm-label">
-                            E-mail Institucional do Atendente <span className="qm-req">*</span>
+                            Duração da Chamada (TMA) <span className="qm-req">*</span>
                           </label>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <input
+                              type="number"
+                              min="0"
+                              max="120"
+                              value={formDurationMinutes}
+                              onChange={e => setFormDurationMinutes(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                              className="qm-input"
+                              style={{ width: 65, textAlign: 'center' }}
+                            />
+                            <span style={{ fontSize: 12, fontWeight: 600 }}>min</span>
+                            <input
+                              type="number"
+                              min="0"
+                              max="59"
+                              value={formDurationSeconds}
+                              onChange={e => setFormDurationSeconds(Math.max(0, Math.min(59, parseInt(e.target.value, 10) || 0)))}
+                              className="qm-input"
+                              style={{ width: 65, textAlign: 'center' }}
+                            />
+                            <span style={{ fontSize: 12, fontWeight: 600 }}>seg</span>
+                          </div>
+                        </div>
+
+                        {/* Turno e Tipo de Auditoria */}
+                        <div className="qm-field">
+                          <label className="qm-label">Turno / Período</label>
+                          <select
+                            value={formTurno}
+                            onChange={e => setFormTurno(e.target.value)}
+                            className="qm-select"
+                          >
+                            <option value="weekday">Dia Útil</option>
+                            <option value="weekend">Final de Semana / Pico</option>
+                          </select>
+                        </div>
+
+                        <div className="qm-field">
+                          <label className="qm-label">Tipo de Auditoria</label>
+                          <select
+                            value={formTipoAuditoria}
+                            onChange={e => setFormTipoAuditoria(e.target.value)}
+                            className="qm-select"
+                          >
+                            <option value="audio">Áudio Retrospectivo</option>
+                            <option value="live">Tempo Real (Escuta Ativa)</option>
+                          </select>
+                        </div>
+
+                        <div className="qm-field col-span-2">
+                          <label className="qm-label">E-mail Institucional</label>
                           <input
                             type="email"
                             required
                             placeholder="atendente@copom.gov.br"
                             value={formEmailAtendente}
-                            onChange={e => {
-                              setFormEmailAtendente(e.target.value);
-                              setFormSelectedAttendantKey('custom');
-                            }}
+                            onChange={e => setFormEmailAtendente(e.target.value)}
                             className="qm-input"
                           />
                         </div>
                       </div>
                     </div>
 
-                    {/* Bloco 2: Critérios Específicos 190 */}
-                    <div className="qm-card">
+                    {/* Os 4 Blocos Técnicos Oficiais da Ficha */}
+                    {QUALITY_BLOCKS.map((block, bIdx) => (
+                      <div key={block.id} className="qm-card qm-block-card">
+                        <div className="qm-card-header" style={{ paddingBottom: 10 }}>
+                          <div className="qm-card-icon" style={{ backgroundColor: 'var(--copom-soft)', color: 'var(--copom-blue)' }}>
+                            <strong>B{bIdx + 1}</strong>
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                              <h2 className="qm-card-title">
+                                Bloco {bIdx + 1}: {block.name}
+                              </h2>
+                              <span className="qm-badge blue" style={{ fontWeight: 700 }}>
+                                {block.max} Pontos
+                              </span>
+                            </div>
+                            <p className="qm-card-desc">
+                              Avalie a conformidade de cada item operacional conforme o Procedimento Operacional Padrão (POP).
+                            </p>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                          {block.items.map(item => {
+                            const val = formRatings[item.id] || 'yes';
+                            return (
+                              <div key={item.id} className="qm-criterion-box">
+                                <div className="qm-criterion-info">
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <span className="qm-crit-code">{item.id}</span>
+                                    <strong className="qm-crit-name">{item.label}</strong>
+                                    <span className="qm-crit-weight">{item.points} pts</span>
+                                  </div>
+                                  <p className="qm-crit-desc">{item.description}</p>
+                                </div>
+
+                                <div className="qm-crit-actions">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRatingChange(item.id, 'yes')}
+                                    className={`qm-opt-btn sim ${val === 'yes' ? 'active' : ''}`}
+                                  >
+                                    Sim ({item.points})
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRatingChange(item.id, 'no')}
+                                    className={`qm-opt-btn nao ${val === 'no' ? 'active' : ''}`}
+                                  >
+                                    Não (0)
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRatingChange(item.id, 'na')}
+                                    className={`qm-opt-btn na ${val === 'na' ? 'active' : ''}`}
+                                    title="Não Aplicável: a pontuação máxima é recalculada proporcionalmente"
+                                  >
+                                    N/A
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Seção 2: Penalidades Críticas – Tolerância Zero */}
+                    <div className="qm-card qm-critical-card">
                       <div className="qm-card-header">
-                        <div className="qm-card-icon">
-                          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <div className="qm-card-icon" style={{ backgroundColor: 'rgba(220, 38, 38, 0.15)', color: '#dc2626' }}>
+                          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                           </svg>
                         </div>
                         <div>
-                          <h2 className="qm-card-title">Critérios Operacionais 190 (POP)</h2>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <h2 className="qm-card-title" style={{ color: '#dc2626' }}>
+                              2. Penalidades Críticas — Tolerância Zero
+                            </h2>
+                            <span className="qm-badge red">Anula a nota para 0</span>
+                          </div>
                           <p className="qm-card-desc">
-                            Atribua de 0 a 20 pontos em cada critério operacional (total de 100 pontos).
+                            Ocorrência de falha grave zera a nota final da monitoria imediatamente e exige plano de ação corretivo em sala.
                           </p>
                         </div>
                       </div>
 
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                        {CRITERIA_DEF.map((c, index) => {
-                          const val = formScores[c.id] ?? 0;
-                          return (
-                            <div key={c.id} className="qm-criterion-item">
-                              <div className="qm-criterion-header">
-                                <div>
-                                  <label className="qm-criterion-label">
-                                    {index + 1}. {c.label}
-                                  </label>
-                                  <p className="qm-criterion-desc">{c.description}</p>
-                                </div>
-                                <div className="qm-criterion-score-input">
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    max={c.max}
-                                    value={val}
-                                    onChange={e => handleScoreChange(c.id, e.target.value)}
-                                    className="qm-num-input"
-                                    aria-label={`Pontuação de ${c.label}`}
-                                  />
-                                  <span className="qm-max-label">/ {c.max}</span>
-                                </div>
-                              </div>
+                      {formIsZeroTolerance && (
+                        <div className="qm-critical-active-banner">
+                          ⚠️ ATENÇÃO: Falha crítica identificada. A nota final foi fixada em 0 (Zero) e exige plano imediato de reciclagem ou feedback formal.
+                        </div>
+                      )}
 
-                              <div className="qm-slider-row">
-                                <input
-                                  type="range"
-                                  min="0"
-                                  max={c.max}
-                                  value={val}
-                                  onChange={e => handleScoreChange(c.id, e.target.value)}
-                                  className="qm-score-slider"
-                                />
-                                <div className="qm-quick-btns">
-                                  {[0, 5, 10, 15, 20].map(quickVal => (
-                                    <button
-                                      key={quickVal}
-                                      type="button"
-                                      onClick={() => handleScoreChange(c.id, quickVal)}
-                                      className={`qm-quick-btn ${val === quickVal ? 'active' : ''}`}
-                                    >
-                                      {quickVal}
-                                    </button>
-                                  ))}
-                                </div>
+                      <div className="qm-critical-grid">
+                        {QUALITY_CRITICAL.map(crit => {
+                          const isChecked = formCritical.includes(crit.id);
+                          return (
+                            <label key={crit.id} className={`qm-critical-item ${isChecked ? 'active' : ''}`}>
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => handleToggleCritical(crit.id)}
+                                className="qm-critical-checkbox"
+                              />
+                              <div className="qm-critical-info">
+                                <strong className="qm-critical-label">{crit.label}</strong>
+                                <p className="qm-critical-desc">{crit.description}</p>
                               </div>
-                            </div>
+                            </label>
                           );
                         })}
                       </div>
                     </div>
 
-                    {/* Bloco 3: Observações e Pontos de Melhoria */}
+                    {/* Seção 3: Diagnóstico, PDCA e Providência Gerencial */}
                     <div className="qm-card">
                       <div className="qm-card-header">
                         <div className="qm-card-icon">
                           <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
                         </div>
                         <div>
-                          <h2 className="qm-card-title">Observações e Pontos de Melhoria</h2>
+                          <h2 className="qm-card-title">3. Diagnóstico e Plano de Ação (Ciclo PDCA)</h2>
                           <p className="qm-card-desc">
-                            Orientações técnicas, pontos fortes e recomendações para o feedback com o atendente.
+                            Preencha as observações qualitativas e a providência gerencial acordada com o operador.
                           </p>
                         </div>
                       </div>
-                      <textarea
-                        rows={4}
-                        placeholder="Descreva os pontos fortes observados e as oportunidades específicas de melhoria operacional..."
-                        value={formObservacoes}
-                        onChange={e => setFormObservacoes(e.target.value)}
-                        className="qm-textarea"
-                      />
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        {/* Providência Gerencial */}
+                        <div className="qm-field">
+                          <label className="qm-label">Providência Gerencial Acordada <span className="qm-req">*</span></label>
+                          <div className="qm-mgmt-grid">
+                            {QUALITY_MANAGEMENT.map(([mId, mLabel]) => {
+                              const isSelected = formManagementAction === mId;
+                              return (
+                                <label key={mId} className={`qm-mgmt-card ${isSelected ? 'active' : ''}`}>
+                                  <input
+                                    type="radio"
+                                    name="managementAction"
+                                    value={mId}
+                                    checked={isSelected}
+                                    onChange={() => setFormManagementAction(mId)}
+                                    className="qm-mgmt-radio"
+                                  />
+                                  <div className="qm-mgmt-info">
+                                    <span className="qm-mgmt-title">{mLabel}</span>
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="qm-field">
+                          <label className="qm-label">Pontos Fortes (O que o operador executou com excelência) <span className="qm-req">*</span></label>
+                          <textarea
+                            rows={2}
+                            required
+                            placeholder="Descreva a postura, empatia, tom de voz e domínio do protocolo..."
+                            value={formStrengths}
+                            onChange={e => setFormStrengths(e.target.value)}
+                            className="qm-textarea"
+                          />
+                        </div>
+
+                        <div className="qm-field">
+                          <label className="qm-label">Não Conformidades / Oportunidades de Melhoria <span className="qm-req">*</span></label>
+                          <textarea
+                            rows={2}
+                            required
+                            placeholder="Excesso de perguntas, validação de ponto de referência, controle emocional..."
+                            value={formImprovements}
+                            onChange={e => setFormImprovements(e.target.value)}
+                            className="qm-textarea"
+                          />
+                        </div>
+
+                        <div className="qm-field">
+                          <label className="qm-label">Ação Corretiva Acordada (Plano de Ação) <span className="qm-req">*</span></label>
+                          <textarea
+                            rows={2}
+                            required
+                            placeholder="Escuta conjunta da gravação, reforço na fraseologia de corte, treinamento no SADE..."
+                            value={formCorrectiveAction}
+                            onChange={e => setFormCorrectiveAction(e.target.value)}
+                            className="qm-textarea"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -1141,22 +1607,30 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                         </div>
                       </div>
 
-                      {/* Barras de progresso por critério */}
+                      {/* Barras de progresso por Bloco */}
                       <div className="qm-breakdown-list">
-                        {CRITERIA_DEF.map(c => {
-                          const val = formScores[c.id] ?? 0;
-                          const pct = Math.round((val / c.max) * 100);
-                          const barCol = val >= 16 ? (dark ? '#14b8a6' : '#0d9488') : val >= 12 ? (dark ? '#69d0e0' : '#096d85') : val >= 8 ? (dark ? '#f59e0b' : '#d97706') : (dark ? '#f87171' : '#dc2626');
+                        {QUALITY_BLOCKS.map((b, idx) => {
+                          let earned = 0, possible = 0;
+                          b.items.forEach(item => {
+                            if (formRatings[item.id] !== 'na') {
+                              possible += item.points;
+                              if (formRatings[item.id] === 'yes') earned += item.points;
+                            }
+                          });
+                          const pct = possible > 0 ? Math.round((earned / possible) * 100) : 0;
                           return (
-                            <div key={c.id} className="qm-breakdown-row">
+                            <div key={b.id} className="qm-breakdown-row">
                               <div className="qm-breakdown-labels">
-                                <span className="qm-breakdown-name">{c.label}</span>
-                                <span className="qm-breakdown-val">{val}/{c.max}</span>
+                                <span className="qm-breakdown-name">Bloco {idx + 1} ({b.max}p)</span>
+                                <span className="qm-breakdown-val">{earned}/{possible}</span>
                               </div>
                               <div className="qm-progress-bar">
                                 <div
                                   className="qm-progress-fill"
-                                  style={{ width: `${pct}%`, backgroundColor: barCol }}
+                                  style={{
+                                    width: `${pct}%`,
+                                    backgroundColor: formIsZeroTolerance ? '#dc2626' : pct >= 85 ? 'var(--copom-emerald)' : pct >= 70 ? 'var(--copom-blue)' : 'var(--copom-red)'
+                                  }}
                                 />
                               </div>
                             </div>
@@ -1170,12 +1644,20 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
-                          Salvar Monitoria
+                          Salvar e Publicar Avaliação
+                        </button>
+                        <button
+                          type="button"
+                          onClick={e => handleSaveMonitoria(e, false)}
+                          className="qm-btn-secondary"
+                        >
+                          Salvar como Rascunho
                         </button>
                         <button
                           type="button"
                           onClick={() => resetCadastroForm(true)}
                           className="qm-btn-secondary"
+                          style={{ opacity: 0.8 }}
                         >
                           Limpar Formulário
                         </button>
@@ -1194,39 +1676,14 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                 <div className="qm-section-header">
                   <div>
                     <div className="qm-section-title-wrap">
-                      <h1 className="qm-section-title">Encaminhamento e Feedback</h1>
+                      <h1 className="qm-section-title">Encaminhamento e Gestão de Feedbacks</h1>
                       <span className="qm-section-badge blue">Acesso: Monitor / Supervisor</span>
                     </div>
                     <p className="qm-section-desc">
-                      Gerencie o envio de notas aos atendentes, agende as sessões de retorno e acompanhe os status.
+                      Controle o fluxo de envio aos atendentes, agende as sessões de retorno e emita as Fichas Oficiais em PDF.
                     </p>
                   </div>
                   <div className="qm-header-actions">
-                    {toggleTheme && (
-                      <button
-                        type="button"
-                        onClick={toggleTheme}
-                        className="qm-theme-btn"
-                        title={dark ? 'Alternar para Modo Claro' : 'Alternar para Modo Escuro'}
-                      >
-                        {dark ? (
-                          <>
-                            <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                              <circle cx="12" cy="12" r="5" />
-                              <path strokeLinecap="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-                            </svg>
-                            <span>Modo Claro</span>
-                          </>
-                        ) : (
-                          <>
-                            <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-                            </svg>
-                            <span>Modo Escuro</span>
-                          </>
-                        )}
-                      </button>
-                    )}
                     <button
                       type="button"
                       onClick={() => setCurrentView('cadastro')}
@@ -1279,7 +1736,7 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                     className={`qm-kpi-card ${activeStatusFilter === 'Concluído' ? 'active-emerald' : ''}`}
                   >
                     <div className="qm-kpi-header">
-                      <span className="qm-kpi-label">Concluído</span>
+                      <span className="qm-kpi-label">Concluído / Assinado</span>
                       <span className="qm-kpi-dot emerald" />
                     </div>
                     <div className="qm-kpi-body">
@@ -1328,28 +1785,27 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                     <table className="qm-table">
                       <thead>
                         <tr>
-                          <th>Chamado</th>
-                          <th>Atendente</th>
-                          <th>Data da Chamada</th>
-                          <th>Monitor</th>
+                          <th>Chamado / CAD</th>
+                          <th>Atendente Avaliado</th>
+                          <th>Data / Duração</th>
+                          <th>Supervisor</th>
                           <th>Nota Final</th>
                           <th>Status</th>
-                          <th>Feedback Agendado</th>
-                          <th style={{ textAlign: 'right' }}>Ações</th>
+                          <th>Feedback</th>
+                          <th style={{ textAlign: 'right' }}>Ações & PDF</th>
                         </tr>
                       </thead>
                       <tbody>
                         {filteredFeedbackList.map(m => {
-                          const meta = getPerformanceMeta(m.notaFinal);
                           const isSent = m.encaminhada;
                           return (
                             <tr key={m.id}>
                               <td>
                                 <div className="qm-text-bold">{m.chamado}</div>
                                 {isSent ? (
-                                  <span style={{ fontSize: 11, color: 'var(--copom-emerald)', fontWeight: 600 }}>Nota encaminhada</span>
+                                  <span style={{ fontSize: 11, color: 'var(--copom-emerald)', fontWeight: 600 }}>Nota publicada</span>
                                 ) : (
-                                  <span style={{ fontSize: 11, color: 'var(--copom-amber)', fontWeight: 600 }}>Aguardando envio</span>
+                                  <span style={{ fontSize: 11, color: 'var(--copom-amber)', fontWeight: 600 }}>Rascunho interno</span>
                                 )}
                               </td>
                               <td>
@@ -1357,13 +1813,14 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                                 <div className="qm-text-muted">{m.emailAtendente}</div>
                               </td>
                               <td>
-                                <span className="qm-text-muted">{formatDateTimeBR(m.dataChamada)}</span>
+                                <div className="qm-text-bold" style={{ fontSize: 12 }}>{formatDateBR(m.dataChamada)}</div>
+                                <span className="qm-text-muted">{formatDurationDisplay(m.duration_seconds)}</span>
                               </td>
                               <td>
                                 <span className="qm-text-muted">{m.monitor}</span>
                               </td>
                               <td>
-                                <span className={`qm-score-tag ${meta.badgeClass}`}>
+                                <span className={`qm-score-tag ${m.notaFinal >= 90 ? 'excelente' : m.notaFinal >= 75 ? 'bom' : 'critico'}`}>
                                   {m.notaFinal} / 100
                                 </span>
                               </td>
@@ -1379,6 +1836,11 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                                 >
                                   {m.status}
                                 </span>
+                                {m.cienciaEm && (
+                                  <div style={{ fontSize: 10, color: 'var(--copom-emerald)', fontWeight: 700, marginTop: 2 }}>
+                                    ✓ Assinado digitalmente
+                                  </div>
+                                )}
                               </td>
                               <td>
                                 {m.feedback ? (
@@ -1393,17 +1855,26 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                                 )}
                               </td>
                               <td style={{ textAlign: 'right' }}>
-                                <button
-                                  type="button"
-                                  onClick={() => setActiveModalId(m.id)}
-                                  className="qm-btn-manage"
-                                >
-                                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                  </svg>
-                                  Gerenciar
-                                </button>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDownloadPdf(m)}
+                                    className="qm-btn-pdf"
+                                    title="Baixar Ficha de Monitoria em PDF (Oficial e Preenchida)"
+                                  >
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    PDF
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setActiveModalId(m.id)}
+                                    className="qm-btn-manage"
+                                  >
+                                    Gerenciar
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           );
@@ -1420,7 +1891,7 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                         </svg>
                       </div>
                       <p className="qm-empty-title">Nenhuma monitoria encontrada</p>
-                      <p className="qm-empty-desc">Ajuste os filtros de busca ou cadastre uma nova avaliação.</p>
+                      <p className="qm-empty-desc">Cadastre uma nova monitoria no módulo de Cadastramento.</p>
                     </div>
                   )}
                 </div>
@@ -1428,58 +1899,31 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
             )}
 
             {/* =============================================================== */}
-            {/* ABA 3: MONITORIAS (ENCAMINHADAS / ATENDENTES)                    */}
+            {/* ABA 3: MONITORIAS & CIÊNCIA (Visão Atendente e Auditor)         */}
             {/* =============================================================== */}
             {currentView === 'monitorias' && (
               <section key="monitorias" className="qm-view-enter">
                 <div className="qm-section-header">
                   <div>
                     <div className="qm-section-title-wrap">
-                      <h1 className="qm-section-title">Monitorias</h1>
+                      <h1 className="qm-section-title">Monitorias de Qualidade & Assinatura de Ciência</h1>
                       <span className={`qm-section-badge ${currentRole === 'monitor' ? 'blue' : 'emerald'}`}>
                         {currentRole === 'monitor' ? 'Acesso: Monitor / Supervisor' : 'Acesso: Atendente'}
                       </span>
                     </div>
                     <p className="qm-section-desc">
-                      Consulta transparente das monitorias encaminhadas, pontuações operacionais e confirmação de ciência.
+                      Consulta detalhada das auditorias recebidas, preenchimento automático das fichas e assinatura digital autenticada.
                     </p>
                   </div>
 
                   <div className="qm-header-actions">
-                    {toggleTheme && (
-                      <button
-                        type="button"
-                        onClick={toggleTheme}
-                        className="qm-theme-btn"
-                        title={dark ? 'Alternar para Modo Claro' : 'Alternar para Modo Escuro'}
-                      >
-                        {dark ? (
-                          <>
-                            <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                              <circle cx="12" cy="12" r="5" />
-                              <path strokeLinecap="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-                            </svg>
-                            <span>Modo Claro</span>
-                          </>
-                        ) : (
-                          <>
-                            <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-                            </svg>
-                            <span>Modo Escuro</span>
-                          </>
-                        )}
-                      </button>
-                    )}
-
-                    {/* Indicador de Atendente Filtrado */}
                     {currentRole === 'atendente' && (
                       <div className="qm-attendant-banner">
                         <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
                         <span>
-                          Minhas Avaliações: <strong>{attendantSelfName}</strong>
+                          Operador Conectado: <strong>{attendantSelfName}</strong>
                         </span>
                       </div>
                     )}
@@ -1490,7 +1934,7 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                 <div className="qm-stat-grid-4">
                   <div className="qm-stat-card">
                     <div className="qm-stat-header">
-                      <span className="qm-kpi-label">Monitorias Encaminhadas</span>
+                      <span className="qm-kpi-label">Avaliações Disponíveis</span>
                       <div className="qm-stat-icon-wrap slate">
                         <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -1499,13 +1943,13 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                     </div>
                     <div className="qm-stat-val-row">
                       <span className="qm-stat-val">{publicTotal}</span>
-                      <span className="qm-stat-sub">disponíveis</span>
+                      <span className="qm-stat-sub">auditadas</span>
                     </div>
                   </div>
 
                   <div className="qm-stat-card">
                     <div className="qm-stat-header">
-                      <span className="qm-kpi-label">Média das Notas</span>
+                      <span className="qm-kpi-label">Média Geral das Notas</span>
                       <div className="qm-stat-icon-wrap blue">
                         <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -1537,7 +1981,7 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
 
                   <div className="qm-stat-card">
                     <div className="qm-stat-header">
-                      <span className="qm-kpi-label">Ciência / Concluídas</span>
+                      <span className="qm-kpi-label">Ciência / Assinadas</span>
                       <div className="qm-stat-icon-wrap emerald">
                         <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1546,12 +1990,12 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                     </div>
                     <div className="qm-stat-val-row">
                       <span className="qm-stat-val">{publicCiencia}</span>
-                      <span className="qm-stat-sub">confirmadas</span>
+                      <span className="qm-stat-sub">completas</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Tabela de Monitorias Públicas */}
+                {/* Tabela de Monitorias Públicas / do Atendente */}
                 <div className="qm-table-card">
                   <div className="qm-table-toolbar">
                     <div className="qm-search-wrap">
@@ -1585,19 +2029,19 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                     <table className="qm-table">
                       <thead>
                         <tr>
-                          <th>Chamado</th>
+                          <th>Chamado / CAD</th>
                           <th>Atendente</th>
-                          <th>Data da Chamada</th>
-                          <th>Monitor</th>
+                          <th>Data / Duração</th>
+                          <th>Supervisor</th>
                           <th>Nota Final</th>
-                          <th>Status / Ciência</th>
-                          <th>Feedback Agendado</th>
-                          <th style={{ textAlign: 'right' }}>Resultado</th>
+                          <th>Status & Assinatura</th>
+                          <th>Feedback</th>
+                          <th style={{ textAlign: 'right' }}>Ações</th>
                         </tr>
                       </thead>
                       <tbody>
                         {filteredPublicList.map(m => {
-                          const meta = getPerformanceMeta(m.notaFinal);
+                          const isSigned = Boolean(m.cienciaEm || m.acknowledged_at);
                           return (
                             <tr key={m.id}>
                               <td>
@@ -1611,43 +2055,32 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                                 <div className="qm-text-muted">{m.emailAtendente}</div>
                               </td>
                               <td>
-                                <span className="qm-text-muted">{formatDateTimeBR(m.dataChamada)}</span>
+                                <div className="qm-text-bold" style={{ fontSize: 12 }}>{formatDateBR(m.dataChamada)}</div>
+                                <span className="qm-text-muted">{formatDurationDisplay(m.duration_seconds)}</span>
                               </td>
                               <td>
                                 <span className="qm-text-muted">{m.monitor}</span>
                               </td>
                               <td>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                  <span className={`qm-score-tag ${meta.badgeClass}`}>
-                                    {m.notaFinal} / 100
-                                  </span>
-                                  <span className="qm-text-muted" style={{ fontSize: 11, fontWeight: 600 }}>
-                                    {meta.label}
-                                  </span>
-                                </div>
+                                <span className={`qm-score-tag ${m.notaFinal >= 90 ? 'excelente' : m.notaFinal >= 75 ? 'bom' : 'critico'}`}>
+                                  {m.notaFinal} / 100
+                                </span>
                               </td>
                               <td>
                                 <span
                                   className={`qm-status-badge ${
-                                    m.status === 'Concluído'
-                                      ? 'concluido'
-                                      : m.status === 'Feedback Agendado'
-                                      ? 'agendado'
-                                      : 'pendente'
+                                    isSigned ? 'concluido' : m.status === 'Feedback Agendado' ? 'agendado' : 'pendente'
                                   }`}
                                 >
-                                  {m.status}
+                                  {isSigned ? 'Concluído / Assinado' : m.status}
                                 </span>
-                                {m.cienciaEm ? (
-                                  <div style={{ fontSize: 11, color: 'var(--copom-emerald)', fontWeight: 600, marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
-                                    <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Ciência confirmada
+                                {isSigned ? (
+                                  <div style={{ fontSize: 11, color: 'var(--copom-emerald)', fontWeight: 700, marginTop: 3 }}>
+                                    ✓ Assinado eletronicamente
                                   </div>
                                 ) : (
-                                  <div className="qm-text-muted" style={{ fontSize: 11, marginTop: 4 }}>
-                                    Aguardando ciência
+                                  <div style={{ fontSize: 11, color: 'var(--copom-amber)', fontWeight: 600, marginTop: 3 }}>
+                                    ⏳ Aguardando assinatura
                                   </div>
                                 )}
                               </td>
@@ -1664,17 +2097,26 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                                 )}
                               </td>
                               <td style={{ textAlign: 'right' }}>
-                                <button
-                                  type="button"
-                                  onClick={() => setActiveResultModalId(m.id)}
-                                  className="qm-btn-view"
-                                >
-                                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                  </svg>
-                                  Ver Resultado
-                                </button>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDownloadPdf(m)}
+                                    className="qm-btn-pdf"
+                                    title="Baixar Ficha de Monitoria em PDF Preenchida e Assinada"
+                                  >
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    PDF
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setActiveResultModalId(m.id)}
+                                    className="qm-btn-view"
+                                  >
+                                    {isSigned ? 'Visualizar Ficha' : 'Ver Avaliação & Assinar'}
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           );
@@ -1690,15 +2132,11 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                       </div>
-                      <p className="qm-empty-title">
-                        {currentRole === 'atendente'
-                          ? 'Nenhuma avaliação recebida'
-                          : 'Nenhuma monitoria encaminhada encontrada'}
-                      </p>
+                      <p className="qm-empty-title">Nenhuma monitoria encontrada</p>
                       <p className="qm-empty-desc">
                         {currentRole === 'atendente'
-                          ? `Suas avaliações operacionais encaminhadas pelos monitores serão listadas aqui para ${attendantSelfName}.`
-                          : 'Apenas avaliações já encaminhadas pelo monitor aparecem nesta listagem.'}
+                          ? `Suas avaliações operacionais publicadas pelos monitores aparecerão aqui para ${attendantSelfName}.`
+                          : 'Apenas avaliações já publicadas para ciência aparecem nesta listagem.'}
                       </p>
                     </div>
                   )}
@@ -1731,7 +2169,9 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                     {activeModalItem.status}
                   </span>
                 </div>
-                <p className="qm-modal-sub">Registrado em {formatDateTimeBR(activeModalItem.criadoEm)}</p>
+                <p className="qm-modal-sub">
+                  Auditado em {formatDateBR(activeModalItem.dataChamada)} · Duração: {formatDurationDisplay(activeModalItem.duration_seconds)}
+                </p>
               </div>
               <button
                 type="button"
@@ -1755,12 +2195,12 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                       <strong className="qm-text-bold">{activeModalItem.atendente}</strong>
                     </div>
                     <div>
-                      <span className="qm-text-muted" style={{ display: 'block' }}>Monitor</span>
-                      <strong className="qm-text-bold">{activeModalItem.monitor}</strong>
+                      <span className="qm-text-muted" style={{ display: 'block' }}>Matrícula / ID</span>
+                      <strong className="qm-text-bold">{activeModalItem.matricula || '190-PM'}</strong>
                     </div>
                     <div>
-                      <span className="qm-text-muted" style={{ display: 'block' }}>Data da Chamada</span>
-                      <strong className="qm-text-bold">{formatDateTimeBR(activeModalItem.dataChamada)}</strong>
+                      <span className="qm-text-muted" style={{ display: 'block' }}>Supervisor</span>
+                      <strong className="qm-text-bold">{activeModalItem.monitor}</strong>
                     </div>
                   </div>
                   <div className="qm-modal-tile" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 14px', borderRadius: 12 }}>
@@ -1768,32 +2208,52 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                       <span className="qm-text-muted" style={{ fontSize: 10, textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Nota Final</span>
                       <span className="qm-text-muted" style={{ fontSize: 11, fontWeight: 600 }}>{formatDecimalScore(activeModalItem.notaFinal)} / 10,0</span>
                     </div>
-                    <span className={`qm-score-tag ${getPerformanceMeta(activeModalItem.notaFinal, dark).badgeClass}`} style={{ fontSize: 16 }}>
+                    <span className={`qm-score-tag ${activeModalItem.notaFinal >= 90 ? 'excelente' : activeModalItem.notaFinal >= 75 ? 'bom' : 'critico'}`} style={{ fontSize: 16 }}>
                       {activeModalItem.notaFinal}
                     </span>
                   </div>
                 </div>
 
-                {/* Grade de 5 Critérios */}
+                {/* Detalhes dos 4 Blocos */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginTop: 14 }}>
-                  {CRITERIA_DEF.map(c => {
-                    const score = activeModalItem.scores?.[c.id] ?? 0;
+                  {QUALITY_BLOCKS.map((b, idx) => {
+                    let earned = 0, possible = 0;
+                    b.items.forEach(item => {
+                      if (activeModalItem.ratings?.[item.id] !== 'na') {
+                        possible += item.points;
+                        if (activeModalItem.ratings?.[item.id] === 'yes') earned += item.points;
+                      }
+                    });
                     return (
-                      <div key={c.id} className="qm-modal-tile" style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, fontSize: 12 }}>
-                        <span className="qm-text-muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.label}</span>
-                        <strong style={{ fontWeight: 700 }}>{score}/{c.max}</strong>
+                      <div key={b.id} className="qm-modal-tile" style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, fontSize: 12 }}>
+                        <span className="qm-text-muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          Bloco {idx + 1}: {b.name.slice(0, 22)}...
+                        </span>
+                        <strong style={{ fontWeight: 700 }}>{earned}/{possible}</strong>
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Observações */}
-                <div style={{ marginTop: 14 }}>
-                  <span className="qm-text-muted" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
-                    Observações e Recomendações
-                  </span>
-                  <div className="qm-modal-text-box">
-                    {activeModalItem.observacoes}
+                {/* PDCA Registrado */}
+                <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div>
+                    <span className="qm-text-muted" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', display: 'block' }}>
+                      Pontos Fortes
+                    </span>
+                    <div className="qm-modal-text-box">{activeModalItem.strengths || activeModalItem.observacoes}</div>
+                  </div>
+                  <div>
+                    <span className="qm-text-muted" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', display: 'block' }}>
+                      Não Conformidades / Oportunidades de Melhoria
+                    </span>
+                    <div className="qm-modal-text-box">{activeModalItem.improvements || 'Nenhum ponto registrado.'}</div>
+                  </div>
+                  <div>
+                    <span className="qm-text-muted" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', display: 'block' }}>
+                      Ação Corretiva Acordada
+                    </span>
+                    <div className="qm-modal-text-box">{activeModalItem.corrective_action || 'Manutenção na escala.'}</div>
                   </div>
                 </div>
               </div>
@@ -1802,13 +2262,13 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
               <div className="qm-modal-section">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                   <div>
-                    <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Encaminhar Relatório / Nota</h3>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Encaminhar Ficha de Avaliação</h3>
                     <p className="qm-text-muted" style={{ fontSize: 11, margin: '2px 0 0 0' }}>
-                      Disponibiliza a avaliação na aba Monitorias para ciência do atendente.
+                      Disponibiliza o documento na aba Monitorias para ciência e assinatura do atendente.
                     </p>
                   </div>
                   {activeModalItem.encaminhada && (
-                    <span className="qm-status-badge concluido">Encaminhado</span>
+                    <span className="qm-status-badge concluido">Publicada</span>
                   )}
                 </div>
 
@@ -1818,11 +2278,11 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                       type="checkbox"
                       checked={channelEmail}
                       onChange={e => setChannelEmail(e.target.checked)}
-                      style={{ accentColor: 'var(--copom-blue)' }}
+                      className="qm-modal-checkbox"
                     />
-                    <div>
-                      <strong style={{ fontSize: 12, display: 'block' }}>E-mail Institucional</strong>
-                      <span className="qm-text-muted" style={{ fontSize: 10 }}>{activeModalItem.emailAtendente}</span>
+                    <div className="qm-modal-check-info">
+                      <strong className="qm-modal-check-title">E-mail Institucional</strong>
+                      <span className="qm-text-muted" style={{ fontSize: 11 }}>{activeModalItem.emailAtendente}</span>
                     </div>
                   </label>
 
@@ -1831,11 +2291,11 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                       type="checkbox"
                       checked={channelDash}
                       onChange={e => setChannelDash(e.target.checked)}
-                      style={{ accentColor: 'var(--copom-blue)' }}
+                      className="qm-modal-checkbox"
                     />
-                    <div>
-                      <strong style={{ fontSize: 12, display: 'block' }}>Dashboard do Atendente</strong>
-                      <span className="qm-text-muted" style={{ fontSize: 10 }}>Disponibiliza na aba Monitorias</span>
+                    <div className="qm-modal-check-info">
+                      <strong className="qm-modal-check-title">Dashboard do Atendente</strong>
+                      <span className="qm-text-muted" style={{ fontSize: 11 }}>Disponibiliza para assinatura digital</span>
                     </div>
                   </label>
                 </div>
@@ -1843,8 +2303,8 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
                   <p style={{ fontSize: 11, color: activeModalItem.encaminhada ? 'var(--copom-emerald)' : 'var(--copom-amber)', fontWeight: 600, margin: 0 }}>
                     {activeModalItem.encaminhada && activeModalItem.envio
-                      ? `Encaminhado em ${formatDateTimeBR(activeModalItem.envio.enviadoEm)} via ${activeModalItem.envio.canais.join(' e ')}.`
-                      : 'Ainda não encaminhado (oculto para o atendente).'}
+                      ? `Publicado em ${formatDateTimeBR(activeModalItem.envio.enviadoEm)}.`
+                      : 'Ainda não publicado (invisível para o atendente).'}
                   </p>
                   <button
                     type="button"
@@ -1855,18 +2315,18 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                     <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                     </svg>
-                    {activeModalItem.encaminhada ? 'Reenviar Relatório' : 'Encaminhar Relatório/Nota'}
+                    {activeModalItem.encaminhada ? 'Reenviar / Notificar' : 'Publicar Ficha para Ciência'}
                   </button>
                 </div>
               </div>
 
-              {/* Seção 3: Agendamento de Feedback & Status */}
+              {/* Seção 3: Agendamento de Feedback */}
               <form onSubmit={handleSaveSchedule} className="qm-modal-section">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                   <div>
-                    <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Agendamento de Feedback e Status</h3>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Agendamento de Sessão de Feedback</h3>
                     <p style={{ fontSize: 11, color: '#64748b', margin: '2px 0 0 0' }}>
-                      Defina a data, horário e modalidade para o alinhamento individual.
+                      Defina a data, horário e modalidade para a devolutiva presencial ou online.
                     </p>
                   </div>
                   <div>
@@ -1916,10 +2376,10 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
                 </div>
 
                 <div className="qm-field" style={{ marginBottom: 12 }}>
-                  <label className="qm-label">Local / Sala ou Link da Reunião</label>
+                  <label className="qm-label">Local / Sala de Feedback</label>
                   <input
                     type="text"
-                    placeholder="Ex: Sala de Supervisão 02 — COPOM ou link da videoconferência"
+                    placeholder="Ex: Sala de Supervisão 02 — COPOM"
                     value={schedLocation}
                     onChange={e => setSchedLocation(e.target.value)}
                     className="qm-input"
@@ -1928,9 +2388,6 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <button type="submit" className="qm-btn-primary" style={{ width: 'auto', padding: '8px 16px' }}>
-                    <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
                     Salvar Agendamento
                   </button>
                 </div>
@@ -1941,14 +2398,14 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
             <div className="qm-modal-footer">
               <button
                 type="button"
-                onClick={() => triggerPrint(activeModalItem)}
-                className="qm-btn-secondary"
-                style={{ width: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                onClick={() => handleDownloadPdf(activeModalItem)}
+                className="qm-btn-pdf"
+                style={{ width: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px' }}
               >
                 <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                Imprimir Relatório
+                Baixar Ficha em PDF (Oficial)
               </button>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -1978,34 +2435,30 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
       )}
 
       {/* =============================================================== */}
-      {/* MODAL 2: RESULTADO DA MONITORIA (Atendente / Leitura / Ciência)  */}
+      {/* MODAL 2: RESULTADO DA MONITORIA E ASSINATURA DIGITAL (Atendente)*/}
       {/* =============================================================== */}
       {activeResultModalItem && (
         <div className="qm-modal-backdrop" onClick={() => setActiveResultModalId(null)}>
-          <div className="qm-modal-box" onClick={e => e.stopPropagation()}>
+          <div className="qm-modal-box" style={{ maxWidth: 880 }} onClick={e => e.stopPropagation()}>
             <div className="qm-modal-header dark">
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: '#93c5fd' }}>
-                    Resultado da Monitoria
+                    Ficha de Monitoria de Qualidade — COPOM 190
                   </span>
                   <span
                     className={`qm-status-badge ${
-                      activeResultModalItem.status === 'Concluído'
-                        ? 'concluido'
-                        : activeResultModalItem.status === 'Feedback Agendado'
-                        ? 'agendado'
-                        : 'pendente'
+                      activeResultModalItem.cienciaEm ? 'concluido' : 'pendente'
                     }`}
                   >
-                    {activeResultModalItem.status}
+                    {activeResultModalItem.cienciaEm ? 'Assinado Digitalmente' : 'Aguardando Assinatura'}
                   </span>
                 </div>
                 <h2 className="qm-modal-title" style={{ marginTop: 4 }}>
-                  Chamado {activeResultModalItem.chamado}
+                  Chamado CAD {activeResultModalItem.chamado}
                 </h2>
                 <p className="qm-modal-sub">
-                  Chamada de {formatDateTimeBR(activeResultModalItem.dataChamada)} · Avaliado por {activeResultModalItem.monitor}
+                  Atendimento em {formatDateBR(activeResultModalItem.dataChamada)} · Duração: {formatDurationDisplay(activeResultModalItem.duration_seconds)} · Auditor: {activeResultModalItem.monitor}
                 </p>
               </div>
               <button
@@ -2021,183 +2474,266 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
             </div>
 
             <div className="qm-modal-body">
-              {/* Bloco Superior: Dados + Card Nota Final */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 14 }}>
+              {/* Resumo da Nota e Diagnóstico */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14 }}>
                 <div className="qm-modal-section tinted" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, fontSize: 12 }}>
                   <div>
-                    <span className="qm-text-muted" style={{ display: 'block' }}>Atendente Avaliado</span>
+                    <span className="qm-text-muted" style={{ display: 'block' }}>Operador Avaliado</span>
                     <strong className="qm-text-bold" style={{ fontSize: 14 }}>{activeResultModalItem.atendente}</strong>
-                    <span className="qm-text-muted" style={{ display: 'block' }}>{activeResultModalItem.emailAtendente}</span>
+                    <span className="qm-text-muted" style={{ display: 'block' }}>Matrícula: {activeResultModalItem.matricula || '190-PM'}</span>
                   </div>
                   <div>
-                    <span className="qm-text-muted" style={{ display: 'block' }}>Monitor Responsável</span>
+                    <span className="qm-text-muted" style={{ display: 'block' }}>Supervisor Auditor</span>
                     <strong className="qm-text-bold">{activeResultModalItem.monitor}</strong>
                   </div>
                   <div>
-                    <span className="qm-text-muted" style={{ display: 'block' }}>Data da Chamada</span>
-                    <span className="qm-text-bold">{formatDateTimeBR(activeResultModalItem.dataChamada)}</span>
+                    <span className="qm-text-muted" style={{ display: 'block' }}>Turno / Período</span>
+                    <span className="qm-text-bold">{activeResultModalItem.shift_period === 'weekend' ? 'Final de Semana / Pico' : 'Dia Útil'}</span>
                   </div>
                   <div>
-                    <span className="qm-text-muted" style={{ display: 'block' }}>Encaminhado em</span>
-                    <span className="qm-text-bold">
-                      {activeResultModalItem.envio ? formatDateTimeBR(activeResultModalItem.envio.enviadoEm) : '—'}
-                    </span>
+                    <span className="qm-text-muted" style={{ display: 'block' }}>Tipo de Auditoria</span>
+                    <span className="qm-text-bold">{activeResultModalItem.audit_type === 'live' ? 'Tempo Real (Escuta Ativa)' : 'Áudio Retrospectivo'}</span>
                   </div>
                 </div>
 
-                {/* Card de Destaque da Nota Final */}
                 <div className="qm-modal-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
                   <span className="qm-text-muted" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}>
-                    Nota Final da Monitoria
+                    Pontuação Final Obtida
                   </span>
                   <div style={{ marginTop: 6, display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                    <span style={{ fontSize: 36, fontWeight: 800, color: 'var(--copom-dark)', lineHeight: 1 }}>
+                    <span style={{ fontSize: 40, fontWeight: 800, color: 'var(--copom-dark)', lineHeight: 1 }}>
                       {activeResultModalItem.notaFinal}
                     </span>
-                    <span className="qm-text-muted" style={{ fontSize: 14, fontWeight: 600 }}>/ 100</span>
+                    <span className="qm-text-muted" style={{ fontSize: 15, fontWeight: 600 }}>/ 100</span>
                   </div>
                   <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span className="qm-circle-decimal" style={{ margin: 0, padding: '3px 10px', fontSize: 11, fontWeight: 700 }}>
                       {formatDecimalScore(activeResultModalItem.notaFinal)} / 10,0
                     </span>
-                    <span className={`qm-score-tag ${getPerformanceMeta(activeResultModalItem.notaFinal, dark).badgeClass}`}>
-                      {getPerformanceMeta(activeResultModalItem.notaFinal, dark).label}
+                    <span className={`qm-score-tag ${activeResultModalItem.notaFinal >= 90 ? 'excelente' : activeResultModalItem.notaFinal >= 75 ? 'bom' : 'critico'}`}>
+                      {activeResultModalItem.notaFinal >= 90 ? 'Excelente' : activeResultModalItem.notaFinal >= 75 ? 'Adequado' : 'Abaixo do Padrão'}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Detalhamento dos 5 Critérios */}
+              {/* Detalhamento dos 4 Blocos Oficiais */}
               <div className="qm-modal-section">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                  <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Detalhamento por Critério Operacional (190)</h3>
-                  <span className="qm-text-muted" style={{ fontSize: 11 }}>Máximo: 20 pts por critério</span>
+                <h3 style={{ fontSize: 14, fontWeight: 700, margin: '0 0 12px 0' }}>Detalhamento Técnico por Bloco de Avaliação</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  {QUALITY_BLOCKS.map((b, bIdx) => (
+                    <div key={b.id} style={{ border: '1px solid var(--copom-border)', borderRadius: 10, padding: 12, backgroundColor: 'var(--copom-card-tint)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, borderBottom: '1px solid var(--copom-border)', paddingBottom: 6 }}>
+                        <strong style={{ fontSize: 13, color: 'var(--copom-blue)' }}>Bloco {bIdx + 1}: {b.name}</strong>
+                        <span style={{ fontSize: 11, fontWeight: 700 }}>Máx: {b.max} pts</span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8 }}>
+                        {b.items.map(item => {
+                          const val = activeResultModalItem.ratings?.[item.id] || 'yes';
+                          return (
+                            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, padding: '4px 8px', borderRadius: 6, background: 'var(--copom-card)' }}>
+                              <span style={{ color: 'var(--copom-dark)' }}>{item.id} {item.label}</span>
+                              <span
+                                style={{
+                                  fontWeight: 700,
+                                  color: val === 'yes' ? 'var(--copom-emerald)' : val === 'no' ? 'var(--copom-red)' : 'var(--copom-muted)',
+                                  backgroundColor: val === 'yes' ? 'rgba(13, 148, 136, 0.12)' : val === 'no' ? 'rgba(220, 38, 38, 0.12)' : 'rgba(100, 116, 139, 0.12)',
+                                  padding: '2px 8px',
+                                  borderRadius: 6
+                                }}
+                              >
+                                {val === 'yes' ? `Sim (${item.points})` : val === 'no' ? 'Não (0)' : 'N/A'}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {CRITERIA_DEF.map(c => {
-                    const score = activeResultModalItem.scores?.[c.id] ?? 0;
-                    const pct = Math.round((score / c.max) * 100);
-                    const barColor = score >= 16 ? (dark ? '#14b8a6' : '#059669') : score >= 12 ? (dark ? '#69d0e0' : '#2563eb') : score >= 8 ? (dark ? '#f59e0b' : '#f59e0b') : (dark ? '#f87171' : '#dc2626');
-                    return (
-                      <div key={c.id}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
-                          <span style={{ fontWeight: 600, color: 'var(--copom-dark)' }}>{c.label}</span>
-                          <span style={{ fontWeight: 800 }}>
-                            {score} <span className="qm-text-muted" style={{ fontWeight: 500 }}>/ {c.max}</span>
-                          </span>
-                        </div>
-                        <div className="qm-progress-bar" style={{ height: 8 }}>
-                          <div
-                            className="qm-progress-fill"
-                            style={{ width: `${pct}%`, backgroundColor: barColor }}
+              </div>
+
+              {/* PDCA e Feedback */}
+              <div className="qm-modal-section tinted">
+                <h3 style={{ fontSize: 13, fontWeight: 700, margin: '0 0 10px 0' }}>Diagnóstico Qualitativo e Providência Gerencial</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 12 }}>
+                  <div>
+                    <strong style={{ color: 'var(--copom-dark)', display: 'block' }}>Pontos Fortes:</strong>
+                    <div className="qm-modal-text-box">{activeResultModalItem.strengths || activeResultModalItem.observacoes}</div>
+                  </div>
+                  <div>
+                    <strong style={{ color: 'var(--copom-dark)', display: 'block' }}>Oportunidades de Melhoria:</strong>
+                    <div className="qm-modal-text-box">{activeResultModalItem.improvements || 'Procedimentos em conformidade.'}</div>
+                  </div>
+                  <div>
+                    <strong style={{ color: 'var(--copom-dark)', display: 'block' }}>Ação Corretiva Acordada:</strong>
+                    <div className="qm-modal-text-box">{activeResultModalItem.corrective_action || 'Manutenção na escala.'}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ============================================================= */}
+              {/* SISTEMA INTEGRADO DE ASSINATURA DIGITAL DO ATENDENTE          */}
+              {/* ============================================================= */}
+              <div className="qm-modal-section" style={{ border: '2px solid var(--copom-blue)', borderRadius: 12, padding: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ color: 'var(--copom-blue)' }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: 'var(--copom-blue)' }}>
+                      Assinatura Digital de Ciência do Operador
+                    </h3>
+                  </div>
+                  {activeResultModalItem.cienciaEm ? (
+                    <span className="qm-badge emerald">Documento Assinado</span>
+                  ) : (
+                    <span className="qm-badge amber">Pendente de Assinatura</span>
+                  )}
+                </div>
+
+                {activeResultModalItem.cienciaEm ? (
+                  /* SE JÁ ESTIVER ASSINADA */
+                  <div className="qm-signed-box">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                      {activeResultModalItem.operator_signature_image && (
+                        <div style={{ background: '#ffffff', padding: 8, borderRadius: 8, border: '1px solid #cbd5e1' }}>
+                          <img
+                            src={activeResultModalItem.operator_signature_image}
+                            alt="Assinatura Digital do Atendente"
+                            style={{ height: 44, width: 'auto', display: 'block' }}
                           />
                         </div>
+                      )}
+                      <div>
+                        <strong style={{ fontSize: 14, color: 'var(--copom-emerald)', display: 'block' }}>
+                          ✓ Ciência Confirmada Eletronicamente
+                        </strong>
+                        <span style={{ fontSize: 12, color: 'var(--copom-dark)', display: 'block' }}>
+                          Assinado por: <strong>{activeResultModalItem.operator_signature_name || activeResultModalItem.atendente}</strong>
+                        </span>
+                        <span className="qm-text-muted" style={{ fontSize: 11 }}>
+                          Data/Hora do Registro: {formatDateTimeBR(activeResultModalItem.cienciaEm)}
+                        </span>
+                        <small style={{ display: 'block', fontSize: 10, color: '#64748b', marginTop: 4 }}>
+                          🔒 Certificado digital emitido com a identidade autenticada da sessão do operador.
+                        </small>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Observações e Pontos de Melhoria */}
-              <div className="qm-modal-section blue">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ color: 'var(--copom-blue)' }}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                  </svg>
-                  <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, color: 'var(--copom-blue)' }}>
-                    Observações e Pontos de Melhoria
-                  </h3>
-                </div>
-                <p style={{ fontSize: 13, color: 'var(--copom-dark)', margin: 0, lineHeight: 1.5 }}>
-                  {activeResultModalItem.observacoes}
-                </p>
-              </div>
-
-              {/* Sessão de Feedback Agendada */}
-              <div className="qm-modal-section tinted">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0 }}>Sessão de Feedback</h3>
-                </div>
-                {activeResultModalItem.feedback ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, fontSize: 12 }}>
-                    <div className="qm-modal-tile" style={{ padding: 10, borderRadius: 8 }}>
-                      <span className="qm-text-muted" style={{ display: 'block' }}>Data e Horário</span>
-                      <strong className="qm-text-bold">
-                        {formatDateBR(activeResultModalItem.feedback.data)} às {activeResultModalItem.feedback.horario}
-                      </strong>
-                    </div>
-                    <div className="qm-modal-tile" style={{ padding: 10, borderRadius: 8 }}>
-                      <span className="qm-text-muted" style={{ display: 'block' }}>Modalidade</span>
-                      <strong className="qm-text-bold">{activeResultModalItem.feedback.modalidade}</strong>
-                    </div>
-                    <div className="qm-modal-tile" style={{ padding: 10, borderRadius: 8 }}>
-                      <span className="qm-text-muted" style={{ display: 'block' }}>Local / Link</span>
-                      <strong className="qm-text-bold" style={{ wordBreak: 'break-all' }}>
-                        {activeResultModalItem.feedback.local || 'A definir com o monitor'}
-                      </strong>
                     </div>
                   </div>
                 ) : (
-                  <p className="qm-modal-tile qm-text-muted" style={{ fontSize: 12, padding: 10, borderRadius: 8, margin: 0 }}>
-                    A sessão de feedback ainda não foi agendada pelo monitor.
-                  </p>
+                  /* SE ESTIVER PENDENTE DE ASSINATURA */
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <p style={{ fontSize: 12, color: 'var(--copom-dark)', margin: 0, background: 'var(--copom-card-tint)', padding: 10, borderRadius: 8, border: '1px solid var(--copom-border)' }}>
+                      <strong>Declaração Legal de Ciência:</strong> {QUALITY_ACKNOWLEDGE}
+                    </p>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12 }}>
+                      <span className="qm-text-muted">Operador autenticado para assinatura:</span>
+                      <strong style={{ color: 'var(--copom-blue)' }}>{attendantSelfName}</strong>
+                    </div>
+
+                    {/* Canvas Interativo de Assinatura */}
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600 }}>Desenhe sua assinatura no quadro abaixo (ou use a rubrica automática):</span>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button
+                            type="button"
+                            onClick={generateAutoRubric}
+                            className="qm-btn-secondary"
+                            style={{ padding: '4px 10px', fontSize: 11 }}
+                          >
+                            Rubrica Automática
+                          </button>
+                          <button
+                            type="button"
+                            onClick={clearSignature}
+                            className="qm-btn-secondary"
+                            style={{ padding: '4px 10px', fontSize: 11 }}
+                          >
+                            Limpar
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="qm-canvas-wrap">
+                        <canvas
+                          ref={signatureCanvasRef}
+                          width={400}
+                          height={100}
+                          className="qm-signature-canvas"
+                          onMouseDown={startSignatureDrawing}
+                          onMouseMove={drawSignature}
+                          onMouseUp={stopSignatureDrawing}
+                          onMouseLeave={stopSignatureDrawing}
+                          onTouchStart={startSignatureDrawing}
+                          onTouchMove={drawSignature}
+                          onTouchEnd={stopSignatureDrawing}
+                        />
+                        <div className="qm-canvas-guide">Assine aqui com mouse, caneta ou toque</div>
+                      </div>
+                    </div>
+
+                    <label className="qm-agree-label">
+                      <input
+                        type="checkbox"
+                        checked={signatureAgreed}
+                        onChange={e => setSignatureAgreed(e.target.checked)}
+                        className="qm-agree-checkbox"
+                      />
+                      <span className="qm-agree-text">
+                        Confirmo a minha identidade como <u>{attendantSelfName}</u> e declaro ciência da nota e das orientações técnicas desta monitoria.
+                      </span>
+                    </label>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
+                      <button
+                        type="button"
+                        onClick={handleConfirmSignature}
+                        disabled={!signatureAgreed}
+                        className="qm-btn-primary"
+                        style={{
+                          width: 'auto',
+                          backgroundColor: signatureAgreed ? '#059669' : '#94a3b8',
+                          cursor: signatureAgreed ? 'pointer' : 'not-allowed',
+                          padding: '10px 20px',
+                          fontSize: 13
+                        }}
+                      >
+                        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Confirmar e Assinar Digitalmente
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
-
-              {/* Banner de Ciência Confirmada */}
-              {activeResultModalItem.cienciaEm && (
-                <div className="qm-notice-confirmed" style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ color: 'var(--copom-emerald)' }}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <div style={{ fontSize: 12, color: 'inherit' }}>
-                    <strong style={{ display: 'block' }}>Leitura e Ciência Confirmadas</strong>
-                    <span>Registrada em {formatDateTimeBR(activeResultModalItem.cienciaEm)}.</span>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Rodapé do Modal 2 */}
             <div className="qm-modal-footer">
               <button
                 type="button"
-                onClick={() => triggerPrint(activeResultModalItem)}
-                className="qm-btn-secondary"
-                style={{ width: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                onClick={() => handleDownloadPdf(activeResultModalItem)}
+                className="qm-btn-pdf"
+                style={{ width: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px' }}
               >
                 <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                Imprimir Relatório
+                Baixar Ficha em PDF (Preenchida & Assinada)
               </button>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                {!activeResultModalItem.cienciaEm && (
-                  <button
-                    type="button"
-                    onClick={handleConfirmCiencia}
-                    className="qm-btn-primary"
-                    style={{ width: 'auto', backgroundColor: '#059669' }}
-                  >
-                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Confirmar Leitura / Dar Ciência
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setActiveResultModalId(null)}
-                  className="qm-btn-secondary"
-                  style={{ width: 'auto' }}
-                >
-                  Fechar
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setActiveResultModalId(null)}
+                className="qm-btn-secondary"
+                style={{ width: 'auto' }}
+              >
+                Fechar
+              </button>
             </div>
           </div>
         </div>
@@ -2236,106 +2772,6 @@ export default function Quality({ user, activeProfile = null, dark = false, togg
           </div>
         ))}
       </div>
-
-      {/* =============================================================== */}
-      {/* ÁREA DEDICADA DE IMPRESSÃO LIMPA (PDF / PAPEL)                  */}
-      {/* =============================================================== */}
-      {printReportItem && (
-        <div id="qm-print-report-area">
-          <div style={{ fontFamily: 'Inter, sans-serif', color: '#0f172a', maxWidth: 780, margin: '0 auto', padding: 24 }}>
-            <div style={{ borderBottom: '2px solid #0b1220', paddingBottom: 14, marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-              <div>
-                <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b', fontWeight: 700 }}>
-                  Central de Atendimento 190 — COPOM
-                </div>
-                <h1 style={{ fontSize: 20, fontWeight: 800, margin: '4px 0 0 0' }}>
-                  Relatório de Monitoria de Qualidade
-                </h1>
-              </div>
-              <div style={{ textAlign: 'right', fontSize: 12, color: '#475569' }}>
-                <div><strong>Chamado:</strong> {printReportItem.chamado}</div>
-                <div><strong>Status:</strong> {printReportItem.status}</div>
-              </div>
-            </div>
-
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 20, fontSize: 13 }}>
-              <tbody>
-                <tr>
-                  <td style={{ padding: 8, border: '1px solid #cbd5e1', background: '#f8fafc', width: '22%' }}><strong>Atendente</strong></td>
-                  <td style={{ padding: 8, border: '1px solid #cbd5e1', width: '28%' }}>{printReportItem.atendente}</td>
-                  <td style={{ padding: 8, border: '1px solid #cbd5e1', background: '#f8fafc', width: '22%' }}><strong>Data da Chamada</strong></td>
-                  <td style={{ padding: 8, border: '1px solid #cbd5e1', width: '28%' }}>{formatDateTimeBR(printReportItem.dataChamada)}</td>
-                </tr>
-                <tr>
-                  <td style={{ padding: 8, border: '1px solid #cbd5e1', background: '#f8fafc' }}><strong>E-mail</strong></td>
-                  <td style={{ padding: 8, border: '1px solid #cbd5e1' }}>{printReportItem.emailAtendente}</td>
-                  <td style={{ padding: 8, border: '1px solid #cbd5e1', background: '#f8fafc' }}><strong>Monitor Responsável</strong></td>
-                  <td style={{ padding: 8, border: '1px solid #cbd5e1' }}>{printReportItem.monitor}</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <h2 style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>Avaliação por Critérios Operacionais (POP 190)</h2>
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 20, fontSize: 13 }}>
-              <thead>
-                <tr style={{ background: '#f1f5f9' }}>
-                  <th style={{ textAlign: 'left', padding: 8, border: '1px solid #cbd5e1' }}>Critério</th>
-                  <th style={{ textAlign: 'right', padding: 8, border: '1px solid #cbd5e1', width: 120 }}>Pontuação</th>
-                </tr>
-              </thead>
-              <tbody>
-                {CRITERIA_DEF.map(c => (
-                  <tr key={c.id}>
-                    <td style={{ padding: 8, border: '1px solid #cbd5e1' }}>{c.label}</td>
-                    <td style={{ padding: 8, border: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 600 }}>
-                      {printReportItem.scores?.[c.id] ?? 0} / {c.max}
-                    </td>
-                  </tr>
-                ))}
-                <tr style={{ background: '#f8fafc' }}>
-                  <td style={{ padding: '10px 8px', border: '1px solid #cbd5e1', fontWeight: 700 }}>
-                    NOTA FINAL ({getPerformanceMeta(printReportItem.notaFinal).label})
-                  </td>
-                  <td style={{ padding: '10px 8px', border: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700, fontSize: 15 }}>
-                    {printReportItem.notaFinal} / 100 ({formatDecimalScore(printReportItem.notaFinal)})
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            <div style={{ marginBottom: 20 }}>
-              <h2 style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>Observações e Pontos de Melhoria</h2>
-              <div style={{ padding: 12, border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 13, lineHeight: 1.5, background: '#ffffff' }}>
-                {printReportItem.observacoes}
-              </div>
-            </div>
-
-            <div style={{ marginBottom: 32, fontSize: 13 }}>
-              <h2 style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>Feedback, Encaminhamento e Ciência</h2>
-              <p style={{ margin: '4px 0' }}>
-                <strong>Encaminhamento:</strong> {printReportItem.envio ? `Enviado em ${formatDateTimeBR(printReportItem.envio.enviadoEm)} (${printReportItem.envio.canais.join(', ')})` : 'Não encaminhado'}
-              </p>
-              <p style={{ margin: '4px 0' }}>
-                <strong>Sessão de Feedback:</strong> {printReportItem.feedback ? `${formatDateBR(printReportItem.feedback.data)} às ${printReportItem.feedback.horario} — ${printReportItem.feedback.modalidade}${printReportItem.feedback.local ? ` (${printReportItem.feedback.local})` : ''}` : 'Não agendada'}
-              </p>
-              <p style={{ margin: '4px 0' }}>
-                <strong>Ciência do Atendente:</strong> {printReportItem.cienciaEm ? `Confirmada em ${formatDateTimeBR(printReportItem.cienciaEm)}` : 'Pendente de confirmação'}
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 48, fontSize: 12, color: '#475569' }}>
-              <div style={{ width: '44%', borderTop: '1px solid #64748b', paddingTop: 6, textAlign: 'center' }}>
-                Assinatura do Monitor / Supervisor<br />
-                <strong>{printReportItem.monitor}</strong>
-              </div>
-              <div style={{ width: '44%', borderTop: '1px solid #64748b', paddingTop: 6, textAlign: 'center' }}>
-                Ciência do Atendente<br />
-                <strong>{printReportItem.atendente}</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

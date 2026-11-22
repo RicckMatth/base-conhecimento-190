@@ -9,7 +9,7 @@ import FloorControl from './floor-control.jsx';
 import Quality from './quality.jsx';
 import AccessControl from './access-control.jsx';
 import { Icon, categoryIcon } from './icons.jsx';
-import { useEffect,useMemo,useRef,useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 function TabLoader({ tabName = 'Módulo 190', subtitle = 'Carregando dados e sincronizando interface…', icon = 'shield' }) {
   return (
@@ -35,309 +35,328 @@ function TabLoader({ tabName = 'Módulo 190', subtitle = 'Carregando dados e sin
   );
 }
 
-const Documentation=dynamic(()=>import('./nexus-documentation.jsx'),{
-  loading:()=> <TabLoader tabName="Base de Conhecimento" subtitle="Carregando biblioteca institucional, pastas e artigos…" icon="book"/>,
-  ssr:false
+const Documentation = dynamic(() => import('./nexus-documentation.jsx'), {
+  loading: () => <TabLoader tabName="Base de Conhecimento" subtitle="Carregando biblioteca institucional, pastas e artigos…" icon="book" />,
+  ssr: false
 });
 
-async function call(path,options={}) {
-  const response=await fetch('/api'+path,{credentials:'same-origin',cache:'no-store',...options,
-    headers:{...(options.body?{'Content-Type':'application/json'}:{}),...options.headers}});
-  let data={};
-  try{data=await response.json();}catch{}
-  if(!response.ok)throw new Error(data.error||'Falha na comunicação com o servidor.');
+async function call(path, options = {}) {
+  const response = await fetch('/api' + path, {
+    credentials: 'same-origin', cache: 'no-store', ...options,
+    headers: { ...(options.body ? { 'Content-Type': 'application/json' } : {}), ...options.headers }
+  });
+  let data = {};
+  try { data = await response.json(); } catch { }
+  if (!response.ok) throw new Error(data.error || 'Falha na comunicação com o servidor.');
   return data;
 }
-const body=(value)=>JSON.stringify(value);
-const emptyEntry=()=>({code:'',title:'',category:'Proteção',priority:'Média',summary:'',body:'',tags:[],revision:0});
-const toEntries=(value)=>value.split(',').map(x=>x.trim()).filter(Boolean);
-const formatDate=(v)=>v?new Date(v).toLocaleString('pt-BR'):'—';
-const Btn=({children,onClick,className='',disabled=false,type='button'})=><button type={type} className={'btn '+className} disabled={disabled} onClick={onClick}>{children}</button>;
-const Tag=({priority})=><span className={'badge '+(priority==='Crítica'?'crit':priority==='Alta'?'high':'')}>{priority||'Média'}</span>;
+const body = (value) => JSON.stringify(value);
+const emptyEntry = () => ({ code: '', title: '', category: 'Proteção', priority: 'Média', summary: '', body: '', tags: [], revision: 0 });
+const toEntries = (value) => value.split(',').map(x => x.trim()).filter(Boolean);
+const formatDate = (v) => v ? new Date(v).toLocaleString('pt-BR') : '—';
+const Btn = ({ children, onClick, className = '', disabled = false, type = 'button' }) => <button type={type} className={'btn ' + className} disabled={disabled} onClick={onClick}>{children}</button>;
+const Tag = ({ priority }) => <span className={'badge ' + (priority === 'Crítica' ? 'crit' : priority === 'Alta' ? 'high' : '')}>{priority || 'Média'}</span>;
 
-export const PROFILES=[
+export const PROFILES = [
   {
-    id:'dev',
-    name:'Dev',
-    roleTitle:'Desenvolvedor / Administrador de Sistema',
-    badge:'Acesso Irrestrito',
-    color:'#a855f7',
-    icon:'settings',
-    desc:'Acesso pleno irrestrito a todos os módulos, regras semânticas, edição de textos, controle de acessos e auditoria.',
-    centralTabs:['home','docs','catalog','chat','floor','operations','quality','access'],
-    adminTabs:['editor','rules','audit'],
-    canEditDocs:true,
-    canEditCatalog:true,
-    canManageFloorEvents:true,
-    isQualitySupervisor:true,
-    accessLabel:'Dev (Admin)'
+    id: 'dev',
+    name: 'Dev',
+    roleTitle: 'Desenvolvedor / Administrador de Sistema',
+    badge: 'Acesso Irrestrito',
+    color: '#a855f7',
+    icon: 'settings',
+    desc: 'Acesso pleno irrestrito a todos os módulos, regras semânticas, edição de textos, controle de acessos e auditoria.',
+    centralTabs:['home', 'docs', 'catalog', 'chat', 'floor', 'operations', 'quality', 'access'],
+    adminTabs: ['editor', 'rules', 'audit'],
+    canEditDocs: true,
+    canEditCatalog: true,
+    canManageFloorEvents: true,
+    isQualitySupervisor: true,
+    accessLabel: 'Dev (Admin)'
   },
   {
-    id:'coordinator',
-    name:'Coordenador',
-    roleTitle:'Coordenação Operacional COPOM',
-    badge:'Coordenação',
-    color:'#38bdf8',
-    icon:'shield',
-    desc:'Supervisão geral, aprovação de novos operadores, edição de procedimentos operacionais e auditoria de ações.',
-    centralTabs:['home','docs','catalog','chat','floor','operations','quality','access'],
-    adminTabs:['editor','audit'],
-    canEditDocs:true,
-    canEditCatalog:true,
-    canManageFloorEvents:true,
-    isQualitySupervisor:true,
-    accessLabel:'Coordenador'
+    id: 'coordinator',
+    name: 'Coordenador',
+    roleTitle: 'Coordenação Operacional COPOM',
+    badge: 'Coordenação',
+    color: '#38bdf8',
+    icon: 'shield',
+    desc: 'Supervisão geral, aprovação de novos operadores, edição de procedimentos operacionais e auditoria de ações.',
+    centralTabs:['home', 'docs', 'catalog', 'chat', 'floor', 'operations', 'quality', 'access'],
+    adminTabs: ['editor', 'audit'],
+    canEditDocs: true,
+    canEditCatalog: true,
+    canManageFloorEvents: true,
+    isQualitySupervisor: true,
+    accessLabel: 'Coordenador'
   },
   {
-    id:'manager',
-    name:'Gestor',
-    roleTitle:'Gestor / Supervisor de Piso',
-    badge:'Gestor de Piso',
-    color:'#34d399',
-    icon:'users',
-    desc:'Gestão de piso e eventos de PAs, resolução de chamados técnicos de TI, acompanhamento de monitorias e auditoria.',
-    centralTabs:['home','docs','catalog','chat','floor','operations','quality'],
-    adminTabs:['audit'],
-    canEditDocs:false,
-    canEditCatalog:false,
-    canManageFloorEvents:true,
-    isQualitySupervisor:true,
-    accessLabel:'Gestor de Piso'
+    id: 'manager',
+    name: 'Gestor',
+    roleTitle: 'Gestor / Supervisor de Piso',
+    badge: 'Gestor de Piso',
+    color: '#34d399',
+    icon: 'users',
+    desc: 'Gestão de piso e eventos de PAs, resolução de chamados técnicos de TI, acompanhamento de monitorias e auditoria.',
+    centralTabs:['home', 'docs', 'catalog', 'chat', 'floor', 'operations', 'quality'],
+    adminTabs: ['audit'],
+    canEditDocs: false,
+    canEditCatalog: false,
+    canManageFloorEvents: true,
+    isQualitySupervisor: true,
+    accessLabel: 'Gestor de Piso'
   },
   {
-    id:'quality_analyst',
-    name:'Analista de Qualidade',
-    roleTitle:'Analista de Monitoria & Qualidade POP',
-    badge:'Analista Qualidade',
-    color:'#fbbf24',
-    icon:'audit',
-    desc:'Avaliação técnica de atendimentos, cadastramento de novas monitorias, agendamento de feedbacks e acompanhamento pedagógico.',
-    centralTabs:['quality','home','docs','catalog','chat','floor','operations'],
-    adminTabs:['audit'],
-    canEditDocs:false,
-    canEditCatalog:false,
-    canManageFloorEvents:false,
-    isQualitySupervisor:true,
-    accessLabel:'Analista de Qualidade'
+    id: 'quality_analyst',
+    name: 'Analista de Qualidade',
+    roleTitle: 'Analista de Monitoria & Qualidade POP',
+    badge: 'Analista Qualidade',
+    color: '#fbbf24',
+    icon: 'audit',
+    desc: 'Avaliação técnica de atendimentos, cadastramento de novas monitorias, agendamento de feedbacks e acompanhamento pedagógico.',
+    centralTabs:['quality', 'home', 'docs', 'catalog', 'chat', 'floor', 'operations'],
+    adminTabs: ['audit'],
+    canEditDocs: false,
+    canEditCatalog: false,
+    canManageFloorEvents: false,
+    isQualitySupervisor: true,
+    accessLabel: 'Analista de Qualidade'
   },
   {
-    id:'attendant',
-    name:'Atendente',
-    roleTitle:'Operador de Atendimento 190',
-    badge:'Atendente Operacional',
-    color:'#22d3ee',
-    icon:'brain',
-    desc:'Atendimento de chamadas com Chat 190 (triagem SADE), consulta de naturezas e manuais, e confirmação de ciência de suas monitorias.',
-    centralTabs:['home','chat','catalog','docs','floor','operations','quality'],
-    adminTabs:[],
-    canEditDocs:false,
-    canEditCatalog:false,
-    canManageFloorEvents:false,
-    isQualitySupervisor:false,
-    accessLabel:'Atendente'
+    id: 'attendant',
+    name: 'Atendente',
+    roleTitle: 'Operador de Atendimento 190',
+    badge: 'Atendente Operacional',
+    color: '#22d3ee',
+    icon: 'brain',
+    desc: 'Atendimento de chamadas com Chat 190 (triagem SADE), consulta de naturezas e manuais, e confirmação de ciência de suas monitorias.',
+    centralTabs:['home', 'chat', 'catalog', 'docs', 'floor', 'operations', 'quality'],
+    adminTabs: [],
+    canEditDocs: false,
+    canEditCatalog: false,
+    canManageFloorEvents: false,
+    isQualitySupervisor: false,
+    accessLabel: 'Atendente'
   }
 ];
 
-export default function Home(){
-  const [loadingPhase,setLoadingPhase]=useState('session');
-  const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
-  const [user,setUser]=useState(null),[dark,setDark]=useState(false);
-  const [profileModalOpen,setProfileModalOpen]=useState(false);
+export default function Home() {
+  const [loadingPhase, setLoadingPhase] = useState('session');
+  const [loading, setLoading] = useState(true), [busy, setBusy] = useState(false);
+  const [user, setUser] = useState(null), [dark, setDark] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [sidebarExpanded,setSidebarExpanded]=useState(false);
-  useEffect(()=>{
-    if(!user?.id)return;
-    try{setSidebarExpanded(localStorage.getItem('base190_sidebar_expanded_'+user.id)==='1');}
-    catch{setSidebarExpanded(false);}
-  },[user?.id]);
-  function toggleSidebar(){
-    const next=!sidebarExpanded;
+  useEffect(() => {
+    if (!user?.id) return;
+    try { setSidebarExpanded(localStorage.getItem('base190_sidebar_expanded_' + user.id) === '1'); }
+    catch { setSidebarExpanded(false); }
+  }, [user?.id]);
+  function toggleSidebar() {
+    const next = !sidebarExpanded;
     setSidebarExpanded(next);
-    try{if(user?.id)localStorage.setItem('base190_sidebar_expanded_'+user.id,next?'1':'0');}catch{}
+    try { if (user?.id) localStorage.setItem('base190_sidebar_expanded_'+user.id, next ? '1' : '0'); } catch { }
   }
-  const [previewProfile,setPreviewProfile]=useState({userId:null,role:null});
+  const [previewProfile, setPreviewProfile] = useState({ userId: null, role: null });
   // A prévia Dev troca somente a apresentação. O servidor continua validando o cargo real.
   const canPreviewRoles=user?.role==='admin'&&user?.operationalRole==='dev';
-  const effectiveProfileId=canPreviewRoles&&previewProfile.userId===user?.id&&PROFILES.some(p=>p.id===previewProfile.role)
-    ?previewProfile.role:(user?.operationalRole||'attendant');
-  const activeProfileConfig=useMemo(()=>PROFILES.find(p=>p.id===effectiveProfileId)||PROFILES.find(p=>p.id==='attendant'),[effectiveProfileId]);
-  const isPreviewing=canPreviewRoles&&effectiveProfileId!==user?.operationalRole;
-  const [notice,setNotice]=useState(''),[success,setSuccess]=useState('');
-  const [catalogIssue,setCatalogIssue]=useState(''),[catalogDegraded,setCatalogDegraded]=useState(false),[catalogRefreshing,setCatalogRefreshing]=useState(false);
-  const [docsOpened,setDocsOpened]=useState(false);
-  const [screen,setScreen]=useState('home'),[requestMode,setRequestMode]=useState(false);
-  const [tabLoading,setTabLoading]=useState(false);
-  const [loadingTabKey,setLoadingTabKey]=useState('');
-  const [chatFrameLoading,setChatFrameLoading]=useState(true);
-  // Sincroniza o tema do Chat SADE sem permitir ao iframe controlar a sessão.
-  useEffect(()=>{
-    if(screen!=='chat')return;
-    document.querySelector('.sade-embed-frame')?.contentWindow?.postMessage(
-      {type:'base190:theme',theme:dark?'dark':'light'},'*'
-    );
-  },[dark,screen]);
-  const loadingTimerRef=useRef(null);
-  useEffect(()=>{
-    return ()=>{
-      if(loadingTimerRef.current)clearTimeout(loadingTimerRef.current);
-    };
-  },[]);
-  const [login,setLogin]=useState({username:'',password:''});
-  const [passwordForm,setPasswordForm]=useState({current:'',next:'',confirm:''});
-  const [request,setRequest]=useState({username:'',name:'',reason:''});
-  const [entries,setEntries]=useState([]),[brainRules,setBrainRules]=useState({base:[],extras:[],custom:[]});
-  const [search,setSearch]=useState(''),[cat,setCat]=useState('Todas'),[selectedId,setSelectedId]=useState(null);
-  const [priorityFilter,setPriorityFilter]=useState('Todas');
-  const [catalogLimit,setCatalogLimit]=useState(60);
-  const [relato,setRelato]=useState(''),[analysis,setAnalysis]=useState(null);
-  const [pendingSadeReport,setPendingSadeReport]=useState('');
-  const [ai,setAI]=useState(null),[aiTesting,setAITesting]=useState(false),[aiTestResult,setAITestResult]=useState('');
-  const [events,setEvents]=useState([]);
-  const [editor,setEditor]=useState(emptyEntry()),[ruleDraft,setRuleDraft]=useState({code:'',officialNature:'',category:'Proteção',priority:'Média',group1:'',group2:'',explanation:''});
-  const [revisionHistory,setRevisionHistory]=useState([]);
-
-  function ok(message){setSuccess(message);setNotice('');}
-  function err(error){setNotice(error?.message||String(error));setSuccess('');}
-  function clear(){setNotice('');setSuccess('');}
-  function theme(){
-    setDark(v=>{const next=!v;localStorage.setItem('base190_theme',next?'dark':'light');
-      document.documentElement.dataset.theme=next?'dark':'light';return next;});
-  }
-  async function refreshCatalog(){
-    setCatalogRefreshing(true);
-    try{
-      // Consultas independentes: uma falha em regras não deve apagar 769 fichas.
-      const [catalog,rules]=await Promise.allSettled([call('/entries'),call('/rules')]);
-      if(catalog.status==='fulfilled'&&Array.isArray(catalog.value.entries))setEntries(catalog.value.entries);
-      if(rules.status==='fulfilled'&&Array.isArray(rules.value.base))setBrainRules(rules.value);
-      const errors=[catalog,rules].filter(x=>x.status==='rejected').map(x=>x.reason?.message||'Falha de consulta');
-      const degraded=[catalog,rules].filter(x=>x.status==='fulfilled'&&x.value.degraded).map(x=>x.value.warning).filter(Boolean);
-      setCatalogDegraded(degraded.length>0);
-      setCatalogIssue(errors.length?'Falha ao consultar '+(catalog.status==='rejected'?'o catálogo':'as regras')+'. '+errors.join(' ')+' Tente recarregar.':degraded[0]||'');
-      return !errors.length&&!degraded.length;
-    }finally{setCatalogRefreshing(false);}
-  }
-  useEffect(()=>{
-    const stored=localStorage.getItem('base190_theme');
-    const preferDark=stored==='dark';
-    document.documentElement.dataset.theme=preferDark?'dark':'light';setDark(preferDark);
-    let live=true;
-    (async()=>{try{
-      const a=await call('/session');
-      if(!live)return;
-      setUser(a.user);setLoadingPhase('catalog');
-      const [catalog,rules]=await Promise.allSettled([call('/entries'),call('/rules')]);
-      if(live){
-        if(catalog.status==='fulfilled'&&Array.isArray(catalog.value.entries))setEntries(catalog.value.entries);
-        if(rules.status==='fulfilled'&&Array.isArray(rules.value.base))setBrainRules(rules.value);
-        const errors=[catalog,rules].filter(x=>x.status==='rejected').map(x=>x.reason?.message||'Falha de consulta');
-        const degraded=[catalog,rules].filter(x=>x.status==='fulfilled'&&x.value.degraded).map(x=>x.value.warning).filter(Boolean);
-        setCatalogDegraded(degraded.length>0);
-        setCatalogIssue(errors.length?'Não foi possível carregar '+(catalog.status==='rejected'?'o catálogo':'as regras')+'. '+errors.join(' '):degraded[0]||'');
+  const effectiveProfileId = canPreviewRoles && previewProfile.userId === user?.id && PROFILES.some(p => p.id === previewProfile.role)
+    ? previewProfile.role : (user?.operationalRole || 'attendant');
+  const activeProfileConfig = useMemo(() => PROFILES.find(p => p.id === effectiveProfileId) || PROFILES.find(p => p.id === 'attendant'), [effectiveProfileId]);
+  const isPreviewing = canPreviewRoles && effectiveProfileId !== user?.operationalRole;
+  const [notice, setNotice] = useState(''), [success, setSuccess] = useState('');
+  const [catalogIssue, setCatalogIssue] = useState(''), [catalogDegraded, setCatalogDegraded] = useState(false), [catalogRefreshing, setCatalogRefreshing] = useState(false);
+  const [docsOpened, setDocsOpened] = useState(false);
+  const [screen, setScreen] = useState('home'), [requestMode, setRequestMode] = useState(false);
+  const [tabLoading, setTabLoading] = useState(false);
+  const [loadingTabKey, setLoadingTabKey] = useState('');
+  const [chatFrameLoading, setChatFrameLoading] = useState(true);
+  const [qualityState, setQualityState] = useState(null);
+  const [operationsTab, setOperationsTab] = useState('overview');
+  const [floorState, setFloorState] = useState(null);
+  const [accessState, setAccessState] = useState(null);
+  useEffect(() => {
+    function onOpsMsg(e) {
+      if (e.data?.type === 'base190:ops-active-tab' && e.data.tab) {
+        setOperationsTab(e.data.tab);
       }
-    }catch(e){if(live && !/Sessão ausente|Sessão expirada|não autorizado/i.test(e.message))setNotice(e.message);}
-    finally{if(live)setLoading(false);}})();
-    return()=>{live=false;};
-  },[]);
-  useEffect(()=>{
-    if(!user||user.mustChangePassword)return;
-    call('/ai/status').then(setAI).catch(()=>setAI(null));
-  },[user?.id,user?.mustChangePassword]);
-  async function testAI(){
-    if(!user?.canTestGemini)return;
-    setAITesting(true);setAITestResult('');
-    try{const data=await call('/admin/ai/test',{method:'POST',body:'{}'});setAITestResult(data.result?.resposta||'Configuração consultada.');}
-    catch(e){setAITestResult(e.message);}finally{setAITesting(false);}
-  }
-  async function submitLogin(event){
-    event.preventDefault();clear();setBusy(true);
-    try{const data=await call('/auth/login',{method:'POST',body:body(login)});setUser(data.user);setScreen('home');setLogin({username:'',password:''});await refreshCatalog();}
-    catch(e){err(e);}finally{setBusy(false);}
-  }
-  async function submitRequest(event){
-    event.preventDefault();clear();setBusy(true);
-    try{const data=await call('/access-requests',{method:'POST',body:body(request)});ok(data.message);setRequest({username:'',name:'',reason:''});}
-    catch(e){err(e);}finally{setBusy(false);}
-  }
-  async function changePassword(event){
-    event.preventDefault();clear();
-    if(passwordForm.next!==passwordForm.confirm)return err(new Error('A confirmação não corresponde à nova senha.'));
-    setBusy(true);
-    try{
-      const x=await call('/auth/change-password',{method:'POST',body:body({current:passwordForm.current,next:passwordForm.next})});
-      setUser(null);setPasswordForm({current:'',next:'',confirm:''});ok(x.message);
-    }catch(e){err(e);}finally{setBusy(false);}
-  }
-  async function logout(){
-    const waits=[];window.dispatchEvent(new CustomEvent('base190:flush-editors',{detail:{waits}}));const drafts=await Promise.all(waits);if(drafts.some(result=>result!==true)&&!confirm('Não foi possível salvar a recuperação. Sair mesmo assim pode perder alterações. Continuar?'))return;
-    setBusy(true);try{await call('/auth/logout',{method:'POST',body:'{}'});}catch(e){err(e);}
-    setDocsOpened(false);setUser(null);setScreen('home');setEntries([]);setBrainRules({base:[],extras:[],custom:[]});setBusy(false);
-  }
-  useEffect(()=>{
-    if(!canPreviewRoles||!user?.id)return;
-    try{
-      const saved=localStorage.getItem('base190_preview_'+user.id);
-      if(saved&&PROFILES.some(profile=>profile.id===saved))setPreviewProfile({userId:user.id,role:saved});
-    }catch{}
-  },[canPreviewRoles,user?.id]);
-
-  function switchProfile(targetId){
-    if(!canPreviewRoles)return;
-    const target=PROFILES.find(p=>p.id===targetId);
-    if(!target)return;
-    setPreviewProfile({userId:user.id,role:targetId});
-    try{localStorage.setItem('base190_preview_'+user.id,targetId);}catch{}
-    setProfileModalOpen(false);
-    const allowed=[...target.centralTabs,...target.adminTabs];
-    if(!allowed.includes(screen))setScreen(target.centralTabs[0]||'home');
-    ok(targetId===user.operationalRole?'Prévia encerrada: visualização do cargo real restaurada.':`Prévia de ${target.name} ativada. As permissões reais não foram alteradas.`);
-  }
-
-  useEffect(()=>{
-    if(!profileModalOpen)return;
-    const onKey=(e)=>{if(e.key==='Escape')setProfileModalOpen(false);};
-    window.addEventListener('keydown',onKey);
-    return ()=>window.removeEventListener('keydown',onKey);
-  },[profileModalOpen]);
-
-  async function go(next){
-    if(!window.dispatchEvent(new Event('base190:before-navigation',{cancelable:true})))return;
-    if(next==='brain')next='chat';
-    const allowed=[...activeProfileConfig.centralTabs,...activeProfileConfig.adminTabs];
-    if(!allowed.includes(next)){
-      setNotice(`Acesso restrito: a aba solicitada não está disponível para o perfil ${activeProfileConfig.name}.`);
-      next=activeProfileConfig.centralTabs[0]||'home';
     }
-    if(next==='docs')setDocsOpened(true);
-    if(next==='chat')setChatFrameLoading(true);
+    window.addEventListener('message', onOpsMsg);
+    return () => window.removeEventListener('message', onOpsMsg);
+  }, []);
+  // Sincroniza o tema do Chat SADE sem permitir ao iframe controlar a sessão.
+  useEffect(() => {
+    if (screen !== 'chat') return;
+    document.querySelector('.sade-embed-frame')?.contentWindow?.postMessage(
+      { type: 'base190:theme', theme: dark ? 'dark' : 'light' }, '*'
+    );
+  }, [dark, screen]);
+  const loadingTimerRef = useRef(null);
+  useEffect(() => {
+    return () => {
+      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+    };
+  }, []);
+  const [login, setLogin] = useState({ username: '', password: '' });
+  const [passwordForm, setPasswordForm] = useState({ current: '', next: '', confirm: '' });
+  const [request, setRequest] = useState({ username: '', name: '', reason: '' });
+  const [entries, setEntries] = useState([]), [brainRules, setBrainRules] = useState({ base: [], extras: [], custom: [] });
+  const [search, setSearch] = useState(''), [cat, setCat] = useState('Todas'), [selectedId, setSelectedId] = useState(null);
+  const [priorityFilter, setPriorityFilter] = useState('Todas');
+  const [catalogLimit, setCatalogLimit] = useState(60);
+  const [relato, setRelato] = useState(''), [analysis, setAnalysis] = useState(null);
+  const [pendingSadeReport, setPendingSadeReport] = useState('');
+  const [ai, setAI] = useState(null), [aiTesting, setAITesting] = useState(false), [aiTestResult, setAITestResult] = useState('');
+  const [events, setEvents] = useState([]);
+  const [editor, setEditor] = useState(emptyEntry()), [ruleDraft, setRuleDraft] = useState({ code: '', officialNature: '', category: 'Proteção', priority: 'Média', group1: '', group2: '', explanation: '' });
+  const [revisionHistory, setRevisionHistory] = useState([]);
+
+  function ok(message) { setSuccess(message); setNotice(''); }
+  function err(error) { setNotice(error?.message || String(error)); setSuccess(''); }
+  function clear() { setNotice(''); setSuccess(''); }
+  function theme() {
+    setDark(v => {
+      const next = !v; localStorage.setItem('base190_theme', next ? 'dark' : 'light');
+      document.documentElement.dataset.theme = next ? 'dark' : 'light'; return next;
+    });
+  }
+  async function refreshCatalog() {
+    setCatalogRefreshing(true);
+    try {
+      // Consultas independentes: uma falha em regras não deve apagar 769 fichas.
+      const [catalog, rules] = await Promise.allSettled([call('/entries'), call('/rules')]);
+      if (catalog.status === 'fulfilled' && Array.isArray(catalog.value.entries)) setEntries(catalog.value.entries);
+      if (rules.status === 'fulfilled' && Array.isArray(rules.value.base)) setBrainRules(rules.value);
+      const errors = [catalog, rules].filter(x => x.status === 'rejected').map(x => x.reason?.message || 'Falha de consulta');
+      const degraded = [catalog, rules].filter(x => x.status === 'fulfilled' && x.value.degraded).map(x => x.value.warning).filter(Boolean);
+      setCatalogDegraded(degraded.length > 0);
+      setCatalogIssue(errors.length ? 'Falha ao consultar ' + (catalog.status === 'rejected' ? 'o catálogo' : 'as regras') + '. ' + errors.join(' ') + ' Tente recarregar.' : degraded[0] || '');
+      return !errors.length && !degraded.length;
+    } finally { setCatalogRefreshing(false); }
+  }
+  useEffect(() => {
+    const stored = localStorage.getItem('base190_theme');
+    const preferDark = stored === 'dark';
+    document.documentElement.dataset.theme = preferDark ? 'dark' : 'light'; setDark(preferDark);
+    let live = true;
+    (async () => {
+      try {
+        const a = await call('/session');
+        if (!live) return;
+        setUser(a.user); setLoadingPhase('catalog');
+        const [catalog, rules] = await Promise.allSettled([call('/entries'),call('/rules')]);
+        if (live) {
+          if (catalog.status==='fulfilled' && Array.isArray(catalog.value.entries)) setEntries(catalog.value.entries);
+          if (rules.status==='fulfilled' && Array.isArray(rules.value.base)) setBrainRules(rules.value);
+          const errors = [catalog, rules].filter(x => x.status === 'rejected').map(x => x.reason?.message || 'Falha de consulta');
+          const degraded = [catalog, rules].filter(x => x.status === 'fulfilled' && x.value.degraded).map(x => x.value.warning).filter(Boolean);
+          setCatalogDegraded(degraded.length>0);
+          setCatalogIssue(errors.length ? 'Não foi possível carregar ' + (catalog.status === 'rejected' ? 'o catálogo' : 'as regras') + '. ' + errors.join(' ') : degraded[0] || '');
+        }
+      } catch (e) { if (live && !/Sessão ausente|Sessão expirada|não autorizado/i.test(e.message)) setNotice(e.message); }
+      finally { if (live) setLoading(false); }
+    })();
+    return () => { live = false; };
+  }, []);
+  useEffect(() => {
+    if (!user || user.mustChangePassword) return;
+    call('/ai/status').then(setAI).catch(() => setAI(null));
+  }, [user?.id, user?.mustChangePassword]);
+  async function testAI() {
+    if (!user?.canTestGemini) return;
+    setAITesting(true); setAITestResult('');
+    try { const data = await call('/admin/ai/test', { method: 'POST', body: '{}' }); setAITestResult(data.result?.resposta || 'Configuração consultada.'); }
+    catch (e) { setAITestResult(e.message); } finally { setAITesting(false); }
+  }
+  async function submitLogin(event) {
+    event.preventDefault(); clear(); setBusy(true);
+    try { const data = await call('/auth/login', { method: 'POST', body: body(login) }); setUser(data.user); setScreen('home'); setLogin({ username: '', password: '' }); await refreshCatalog(); }
+    catch (e) { err(e); } finally { setBusy(false); }
+  }
+  async function submitRequest(event) {
+    event.preventDefault(); clear(); setBusy(true);
+    try { const data = await call('/access-requests', { method: 'POST', body: body(request) }); ok(data.message); setRequest({ username: '', name: '', reason: '' }); }
+    catch (e) { err(e); } finally { setBusy(false); }
+  }
+  async function changePassword(event) {
+    event.preventDefault(); clear();
+    if (passwordForm.next !== passwordForm.confirm) return err(new Error('A confirmação não corresponde à nova senha.'));
+    setBusy(true);
+    try {
+      const x = await call('/auth/change-password', { method: 'POST', body: body({ current: passwordForm.current, next: passwordForm.next }) });
+      setUser(null); setPasswordForm({ current: '', next: '', confirm: '' }); ok(x.message);
+    } catch (e) { err(e); } finally { setBusy(false); }
+  }
+  async function logout() {
+    const waits = []; window.dispatchEvent(new CustomEvent('base190:flush-editors', { detail: { waits } })); const drafts = await Promise.all(waits); if (drafts.some(result => result !== true) && !confirm('Não foi possível salvar a recuperação. Sair mesmo assim pode perder alterações. Continuar?')) return;
+    setBusy(true); try { await call('/auth/logout', { method: 'POST', body: '{}' }); } catch (e) { err(e); }
+    setDocsOpened(false); setUser(null); setScreen('home'); setEntries([]); setBrainRules({ base: [], extras: [], custom: [] }); setBusy(false);
+  }
+  useEffect(() => {
+    if (!canPreviewRoles || !user?.id) return;
+    try {
+      const saved = localStorage.getItem('base190_preview_' + user.id);
+      if (saved && PROFILES.some(profile => profile.id === saved)) setPreviewProfile({ userId: user.id, role: saved });
+    } catch { }
+  }, [canPreviewRoles, user?.id]);
+
+  function switchProfile(targetId) {
+    if(!canPreviewRoles)return;
+    const target = PROFILES.find(p => p.id === targetId);
+    if (!target) return;
+    setPreviewProfile({ userId: user.id, role: targetId });
+    try { localStorage.setItem('base190_preview_' + user.id, targetId); } catch { }
+    setProfileModalOpen(false);
+    const allowed = [...target.centralTabs, ...target.adminTabs];
+    if (!allowed.includes(screen)) setScreen(target.centralTabs[0] || 'home');
+    ok(targetId === user.operationalRole ? 'Prévia encerrada: visualização do cargo real restaurada.' : `Prévia de ${target.name} ativada. As permissões reais não foram alteradas.`);
+  }
+
+  useEffect(() => {
+    if (!profileModalOpen) return;
+    const onKey = (e) => { if (e.key === 'Escape') setProfileModalOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [profileModalOpen]);
+
+  async function go(next) {
+    if (!window.dispatchEvent(new Event('base190:before-navigation', { cancelable: true }))) return;
+    if(next==='brain')next='chat';
+    const allowed = [...activeProfileConfig.centralTabs, ...activeProfileConfig.adminTabs];
+    if (!allowed.includes(next)) {
+      setNotice(`Acesso restrito: a aba solicitada não está disponível para o perfil ${activeProfileConfig.name}.`);
+      next = activeProfileConfig.centralTabs[0] || 'home';
+    }
+    if (next === 'docs') setDocsOpened(true);
+    if (next === 'chat') setChatFrameLoading(true);
     clear();
     setScreen(next);
 
     setTabLoading(true);
     setLoadingTabKey(next);
 
-    try{
-      if(next==='audit'){const x=await call('/admin/audit');setEvents(x.events||[]);}
-      else if(next==='rules'){const x=await call('/rules');setBrainRules(x||{});}
-    }catch(e){
+    try {
+      if (next === 'audit') { const x = await call('/admin/audit'); setEvents(x.events || []); }
+      else if (next === 'rules') { const x = await call('/rules'); setBrainRules(x || {}); }
+    } catch (e) {
       err(e);
-    }finally{
-      if(typeof globalThis!=='undefined'&&globalThis.window){
-        if(loadingTimerRef.current)clearTimeout(loadingTimerRef.current);
-        loadingTimerRef.current=setTimeout(()=>{
-          try{
-            if(typeof globalThis!=='undefined'&&globalThis.window){
+    } finally {
+      if (typeof globalThis !== 'undefined' && globalThis.window) {
+        if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+        loadingTimerRef.current = setTimeout(() => {
+          try {
+            if (typeof globalThis !== 'undefined' && globalThis.window) {
               setTabLoading(false);
             }
-          }catch{}
-        },150);
-      }else{
+          } catch { }
+        }, 150);
+      } else {
         setTabLoading(false);
       }
     }
   }
-  async function analyze(e){
-    e?.preventDefault?.();clear();const text=relato.trim();if(text.length<3)return err(new Error('Informe o relato ou a dúvida para análise.'));
-    setRelato('');setPendingSadeReport(text);go('chat');
+  async function analyze(e) {
+    e?.preventDefault?.(); clear(); const text = relato.trim(); if (text.length < 3) return err(new Error('Informe o relato ou a dúvida para análise.'));
+    setRelato(''); setPendingSadeReport(text); go('chat');
   }
   useEffect(() => {
     if (screen === 'chat' && pendingSadeReport && !chatFrameLoading) {
@@ -348,325 +367,432 @@ export default function Home(){
       }
     }
   }, [screen, pendingSadeReport, chatFrameLoading]);
-  function openEntry(id){setSelectedId(id);go('detail');}
-  const selected=entries.find(e=>e.id===selectedId);
-  const categories=useMemo(()=>['Todas',...new Set(entries.map(e=>e.category))], [entries]);
-  const filtered=useMemo(()=>entries.filter(e=>(cat==='Todas'||e.category===cat)&&(priorityFilter==='Todas'||e.priority===priorityFilter)&&
-    (!search.trim()||[e.title,e.code,e.category,e.summary,e.body,...(e.tags||[])].join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
-      .includes(search.trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()))),[entries,cat,search,priorityFilter]);
-  useEffect(()=>setCatalogLimit(60),[search,cat,priorityFilter]);
-  const totalRules=(brainRules.base?.length||0)+(brainRules.extras?.length||0)+(brainRules.custom?.length||0);
-  function editEntry(entry){if(entry?.readOnly||catalogDegraded){setCatalogIssue('A edição está indisponível no catálogo de contingência. Recarregue os dados do banco antes de modificar uma ficha.');return;}setEditor(entry?{...entry,tags:entry.tags||[]}:emptyEntry());setRevisionHistory([]);go('editor');}
-  async function saveEntry(e){
-    e.preventDefault();clear();setBusy(true);
-    try{
-      if(editor.id)await call('/admin/entries',{method:'PATCH',body:body(editor)});
-      else await call('/admin/entries',{method:'POST',body:body(editor)});
-      await refreshCatalog();ok('Ficha salva com histórico de revisões.');setScreen('catalog');
-    }catch(e){err(e);}finally{setBusy(false);}
+  function openEntry(id) { setSelectedId(id); go('detail'); }
+  const selected = entries.find(e => e.id === selectedId);
+  const categories = useMemo(() => ['Todas', ...new Set(entries.map(e => e.category))], [entries]);
+  const filtered = useMemo(() => entries.filter(e => (cat === 'Todas' || e.category === cat) && (priorityFilter === 'Todas' || e.priority === priorityFilter) &&
+    (!search.trim() || [e.title, e.code, e.category, e.summary, e.body, ...(e.tags || [])].join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+      .includes(search.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()))), [entries, cat, search, priorityFilter]);
+  useEffect(() => setCatalogLimit(60), [search, cat, priorityFilter]);
+  const totalRules = (brainRules.base?.length || 0) + (brainRules.extras?.length || 0) + (brainRules.custom?.length || 0);
+  function editEntry(entry) { if(entry?.readOnly||catalogDegraded) { setCatalogIssue('A edição está indisponível no catálogo de contingência. Recarregue os dados do banco antes de modificar uma ficha.'); return; } setEditor(entry ? { ...entry, tags: entry.tags || [] } : emptyEntry()); setRevisionHistory([]); go('editor'); }
+  async function saveEntry(e) {
+    e.preventDefault(); clear(); setBusy(true);
+    try {
+      if (editor.id) await call('/admin/entries', { method: 'PATCH', body: body(editor) });
+      else await call('/admin/entries', { method: 'POST', body: body(editor) });
+      await refreshCatalog(); ok('Ficha salva com histórico de revisões.'); setScreen('catalog');
+    } catch (e) { err(e); } finally { setBusy(false); }
   }
-  async function loadHistory(){
-    try{const d=await call('/admin/entries/revisions?id='+encodeURIComponent(editor.id));setRevisionHistory(d.revisions);}
-    catch(e){err(e);}
+  async function loadHistory() {
+    try { const d = await call('/admin/entries/revisions?id=' + encodeURIComponent(editor.id)); setRevisionHistory(d.revisions); }
+    catch (e) { err(e); }
   }
-  async function createRule(e){
-    e.preventDefault();clear();setBusy(true);
-    try{
-      const payload={...ruleDraft,group1:toEntries(ruleDraft.group1),group2:toEntries(ruleDraft.group2)};
-      await call('/admin/rules',{method:'POST',body:body(payload)});
-      const r=await call('/rules');setBrainRules(r);
-      setRuleDraft({code:'',officialNature:'',category:'Proteção',priority:'Média',group1:'',group2:'',explanation:''});ok('Nova regra adicionada ao assistente.');
-    }catch(e){err(e);}finally{setBusy(false);}
+  async function createRule(e) {
+    e.preventDefault(); clear(); setBusy(true);
+    try {
+      const payload = { ...ruleDraft, group1: toEntries(ruleDraft.group1), group2: toEntries(ruleDraft.group2) };
+      await call('/admin/rules', { method: 'POST', body: body(payload) });
+      const r = await call('/rules'); setBrainRules(r);
+      setRuleDraft({ code: '', officialNature: '', category: 'Proteção', priority: 'Média', group1: '', group2: '', explanation: '' }); ok('Nova regra adicionada ao assistente.');
+    } catch (e) { err(e); } finally { setBusy(false); }
   }
-  async function deleteRule(id){
-    if(!window.confirm('Excluir esta regra personalizada?'))return;
-    clear();try{await call('/admin/rules',{method:'DELETE',body:body({id})});setBrainRules(await call('/rules'));ok('Regra excluída.');}
-    catch(e){err(e);}
+  async function deleteRule(id) {
+    if (!window.confirm('Excluir esta regra personalizada?')) return;
+    clear(); try { await call('/admin/rules', { method: 'DELETE', body: body({ id }) }); setBrainRules(await call('/rules')); ok('Regra excluída.'); }
+    catch (e) { err(e); }
   }
-  function entryGrid(items){return <div className="cards">{items.map((a,i)=><button key={a.id||a.code||i} className="record-card" onClick={()=>openEntry(a.id)}>
-    <div className="toolbar"><span className="badge">{a.code}</span><Tag priority={a.priority}/></div>
-    <div className="record-symbol"><Icon name={categoryIcon(a.category)} size={23}/><span>{a.category}</span></div><h3>{a.title}</h3><p>{a.summary}</p>
-    <div className="end"><small>{a.category}</small><b style={{color:'var(--blue)'}}>Consultar <Icon name="arrow" size={15}/></b></div>
-  </button>)}</div>}
-  function triageView(result){
-    const pending=result?.triage?.pending||result?.principal?.triageQuestions?.map((question,i)=>({id:String(i),question}))||[];
-    const answered=result?.triage?.answered?.length||0;
-    return <section className="triage-panel" aria-label="Triagem contextual"><div className="triage-heading"><Icon name="audit" size={19}/><h3>Perguntas de triagem</h3><span className="badge">{pending.length} pendente{pending.length===1?'':'s'}</span></div>
-      <p className="triage-caption">{answered>0?`${answered} pergunta(s) já respondida(s) no relato foram ocultadas.`:'Confirme somente as informações que ainda faltam no relato.'}</p>
-      {pending.length?<ul className="triage-questions">{pending.map((q,i)=><li key={q.id}><span className="triage-index">{String(i+1).padStart(2,'0')}</span><div>{q.question}{q.reason==='conflicting'&&<small className="triage-conflict">Há informações divergentes no relato. Confirme.</small>}</div></li>)}</ul>:<p className="triage-complete"><Icon name="shield" size={18}/> As perguntas previstas para esta natureza já estão respondidas no relato. Confira os dados antes de concluir.</p>}
+  function entryGrid(items) {
+    return <div className="cards">{items.map((a, i) => <button key={a.id || a.code || i} className="record-card" onClick={() => openEntry(a.id)}>
+      <div className="toolbar"><span className="badge">{a.code}</span><Tag priority={a.priority} /></div>
+      <div className="record-symbol"><Icon name={categoryIcon(a.category)} size={23} /><span>{a.category}</span></div><h3>{a.title}</h3><p>{a.summary}</p>
+      <div className="end"><small>{a.category}</small><b style={{ color: 'var(--blue)' }}>Consultar <Icon name="arrow" size={15} /></b></div>
+    </button>)}</div>
+  }
+  function triageView(result) {
+    const pending = result?.triage?.pending || result?.principal?.triageQuestions?.map((question, i) => ({ id: String(i), question })) || [];
+    const answered = result?.triage?.answered?.length || 0;
+    return <section className="triage-panel" aria-label="Triagem contextual"><div className="triage-heading"><Icon name="audit" size={19} /><h3>Perguntas de triagem</h3><span className="badge">{pending.length} pendente{pending.length === 1 ? '' : 's'}</span></div>
+      <p className="triage-caption">{answered > 0 ? `${answered} pergunta(s) já respondida(s) no relato foram ocultadas.` : 'Confirme somente as informações que ainda faltam no relato.'}</p>
+      {pending.length ? <ul className="triage-questions">{pending.map((q, i) => <li key={q.id}><span className="triage-index">{String(i + 1).padStart(2, '0')}</span><div>{q.question}{q.reason === 'conflicting' && <small className="triage-conflict">Há informações divergentes no relato. Confirme.</small>}</div></li>)}</ul> : <p className="triage-complete"><Icon name="shield" size={18} /> As perguntas previstas para esta natureza já estão respondidas no relato. Confira os dados antes de concluir.</p>}
     </section>;
   }
-  async function reanalyzeResult(result,roleOverrides){
-    const reply=await call('/analyze',{method:'POST',body:body({text:result.originalReport,roleOverrides})});
-    setAnalysis(prev=>prev===result?reply.result:prev);
-    setChatMessages(prev=>prev.map(m=>m.result===result?{...m,result:reply.result}:m));
+  async function reanalyzeResult(result, roleOverrides) {
+    const reply = await call('/analyze', { method: 'POST', body: body({ text: result.originalReport, roleOverrides }) });
+    setAnalysis(prev => prev === result ? reply.result : prev);
+    setChatMessages(prev => prev.map(m => m.result === result ? { ...m, result: reply.result } : m));
   }
-  function chatAnswer(result){
-    if(!result)return <p>Sem resposta da Base 190.</p>;
-    if(result.tipo==='faq'||result.tipo==='ia'||result.tipo==='local-triage')return <div className="chat-answer"><span className="badge">{result.source==='gemini'?'Gemini · resposta complementar':'Base local · sem consulta à IA'}</span><h3>{result.titulo||'Orientação'}</h3>{result.contextUsed&&<p className="helpnote" role="note">{result.contextNote||'Complemento interpretado com o relato anterior desta conversa. Confira os fatos antes de utilizar.'}</p>}<p className="assistant-text" style={{whiteSpace:'pre-line'}}>{result.resposta}</p>{(result.tipo==='ia'||result.tipo==='local-triage')&&<GeminiInsights key={JSON.stringify([result.originalReport,result.roleAnalysis])} result={result} onReanalyze={roles=>reanalyzeResult(result,roles)}/>} {result.tipo==='local-triage'&&<WritingReview original={result.originalReport} aiConfigured={Boolean(ai?.configured)}/>}  {!!result.references?.length&&<details><summary>Fichas consultadas</summary><ul>{result.references.map(r=><li key={r.code}>{r.code} · {r.title}</li>)}</ul></details>}{result.tipo==='ia'&&<><small>Conteúdo gerado por IA. Confira as informações antes de utilizar.</small><AnalysisFeedback key={result.feedbackTicket||'legacy'} result={result}/></>}</div>;
-    if(result.tipo!=='classificacao')return <div className="chat-answer"><b>Análise não conclusiva</b><p>{result.mensagem||'Verifique o relato e consulte os procedimentos oficiais.'}</p></div>;
-    const main=result.principal||{};
+  function chatAnswer(result) {
+    if (!result) return <p>Sem resposta da Base 190.</p>;
+    if (result.tipo === 'faq' || result.tipo === 'ia' || result.tipo==='local-triage') return <div className="chat-answer"><span className="badge">{result.source === 'gemini' ? 'Gemini · resposta complementar' : 'Base local · sem consulta à IA'}</span><h3>{result.titulo || 'Orientação'}</h3>{result.contextUsed && <p className="helpnote" role="note">{result.contextNote || 'Complemento interpretado com o relato anterior desta conversa. Confira os fatos antes de utilizar.'}</p>}<p className="assistant-text" style={{ whiteSpace: 'pre-line' }}>{result.resposta}</p>{(result.tipo === 'ia' || result.tipo==='local-triage') && <GeminiInsights key={JSON.stringify([result.originalReport, result.roleAnalysis])} result={result} onReanalyze={roles => reanalyzeResult(result, roles)} />} {result.tipo==='local-triage' && <WritingReview original={result.originalReport} aiConfigured={Boolean(ai?.configured)} />}  {!!result.references?.length && <details><summary>Fichas consultadas</summary><ul>{result.references.map(r => <li key={r.code}>{r.code} · {r.title}</li>)}</ul></details>}{result.tipo === 'ia' && <><small>Conteúdo gerado por IA. Confira as informações antes de utilizar.</small><AnalysisFeedback key={result.feedbackTicket || 'legacy'} result={result} /></>}</div>;
+    if (result.tipo !== 'classificacao') return <div className="chat-answer"><b>Análise não conclusiva</b><p>{result.mensagem || 'Verifique o relato e consulte os procedimentos oficiais.'}</p></div>;
+    const main = result.principal || {};
     return <div className="chat-answer">
-      <div className="chat-answer-title"><span>Natureza sugerida</span><Tag priority={main.priority}/></div>
-      <h3>{main.officialNature||'Não identificada'}</h3>
-      <div className="chat-tags"><span>{main.code||'Código a confirmar'}</span><span>Índice heurístico {result.indiceHeuristico??'—'}/99</span></div>
-      {main.explanation&&<p>{main.explanation}</p>}
-      <LegalReference legal={main.legal}/>
+      <div className="chat-answer-title"><span>Natureza sugerida</span><Tag priority={main.priority} /></div>
+      <h3>{main.officialNature || 'Não identificada'}</h3>
+      <div className="chat-tags"><span>{main.code || 'Código a confirmar'}</span><span>Índice heurístico {result.indiceHeuristico ?? '—'}/99</span></div>
+      {main.explanation && <p>{main.explanation}</p>}
+      <LegalReference legal={main.legal} />
       {triageView(result)}
-      {result.relatoRevisado&&<WritingReview original={result.termoOriginal} suggested={result.relatoRevisado} aiConfigured={Boolean(ai?.configured)}/>}
-      {!!result.secundarias?.length&&<details><summary>Outras hipóteses</summary><p>{result.secundarias.slice(0,4).map(x=>x.officialNature).filter(Boolean).join(' • ')}</p></details>}
+      {result.relatoRevisado && <WritingReview original={result.termoOriginal} suggested={result.relatoRevisado} aiConfigured={Boolean(ai?.configured)} />}
+      {!!result.secundarias?.length && <details><summary>Outras hipóteses</summary><p>{result.secundarias.slice(0, 4).map(x => x.officialNature).filter(Boolean).join(' • ')}</p></details>}
       <small>Orientação assistiva, não homologada; confirme natureza, prioridade e informações.</small>
     </div>;
   }
-  function resultView(result=analysis){
-    if(!result)return <div className="helpnote">O Cérebro utiliza regras de linguagem e palavras-chave. O operador deve confirmar as informações e a natureza conforme o protocolo em vigor.</div>;
-    if(result.tipo==='ia'||result.tipo==='local-triage')return <div className="card result-result">{chatAnswer(result)}</div>;
-    if(result.tipo==='faq')return <div className="card result-result"><span className="eyebrow">Dúvida operacional</span><h2>{result.titulo}</h2><p style={{whiteSpace:'pre-wrap'}}>{result.resposta}</p></div>;
-    if(result.tipo==='indefinido')return <div className="card result-result"><span className="badge">Não conclusivo</span><h2>Natureza não identificada com segurança</h2><p>{result.mensagem}</p></div>;
-    const a=result.principal;
+  function resultView(result = analysis) {
+    if (!result) return <div className="helpnote">O Cérebro utiliza regras de linguagem e palavras-chave. O operador deve confirmar as informações e a natureza conforme o protocolo em vigor.</div>;
+    if (result.tipo === 'ia' || result.tipo === 'local-triage') return <div className="card result-result">{chatAnswer(result)}</div>;
+    if (result.tipo === 'faq') return <div className="card result-result"><span className="eyebrow">Dúvida operacional</span><h2>{result.titulo}</h2><p style={{ whiteSpace: 'pre-wrap' }}>{result.resposta}</p></div>;
+    if (result.tipo === 'indefinido') return <div className="card result-result"><span className="badge">Não conclusivo</span><h2>Natureza não identificada com segurança</h2><p>{result.mensagem}</p></div>;
+    const a = result.principal;
     return <div className="card result-result">
-      <div className="toolbar"><span className="eyebrow">Sugestão de natureza</span><Tag priority={a.priority}/></div>
+      <div className="toolbar"><span className="eyebrow">Sugestão de natureza</span><Tag priority={a.priority} /></div>
       <h2>{a.officialNature}</h2>
       <div className="btn-row"><span className="badge">{a.code}</span><span className="score">Índice heurístico: {result.indiceHeuristico}/99 — não é probabilidade de acerto</span></div>
       <p>{a.explanation}</p>
-      <LegalReference legal={a.legal}/>
-      <p><b>Termos detectados:</b> {(result.termosDetectados||[]).join(', ')||'—'}</p>
+      <LegalReference legal={a.legal} />
+      <p><b>Termos detectados:</b> {(result.termosDetectados || []).join(', ') || '—'}</p>
       {triageView(result)}
-      {result.relatoRevisado&&<WritingReview original={result.termoOriginal} suggested={result.relatoRevisado} aiConfigured={Boolean(ai?.configured)}/>}
-      {!!result.secundarias?.length&&<><h3>Outras hipóteses</h3><p>{result.secundarias.map(x=>x.officialNature).join(' • ')}</p></>}
+      {result.relatoRevisado && <WritingReview original={result.termoOriginal} suggested={result.relatoRevisado} aiConfigured={Boolean(ai?.configured)} />}
+      {!!result.secundarias?.length && <><h3>Outras hipóteses</h3><p>{result.secundarias.map(x => x.officialNature).join(' • ')}</p></>}
       <div className="helpnote">A ferramenta não define tipificação, prioridade de despacho ou medidas policiais. Não inclua nomes, endereços completos ou dados sigilosos em relatos de teste.</div>
     </div>;
   }
 
-  if(loading)return <StartupScreen phase={loadingPhase}/>;
+  if (loading) return <StartupScreen phase={loadingPhase} />;
 
-  if(!user)return <div className="login-shell">
+  if (!user) return <div className="login-shell">
     <section className="login-art">
-      <span className="mark">190</span><span className="eyebrow" style={{color:'#aecbff'}}>CENTRAL DE INTELIGÊNCIA E CONHECIMENTO</span>
+      <span className="mark">190</span><span className="eyebrow" style={{ color: '#aecbff' }}>CENTRAL DE INTELIGÊNCIA E CONHECIMENTO</span>
       <h1>Conhecimento para decisões mais informadas.</h1>
       <p>Consulte naturezas, analise relatos e esclareça dúvidas com o Chat 190 em uma plataforma com permissões controladas.</p>
-      <div className="feature-pills"><span><Icon name="lock"/> Acesso autorizado</span><span><Icon name="brain"/> Triagem de relatos</span><span><Icon name="book"/> Base pesquisável</span><span><Icon name="shield"/> Gestão administrativa</span></div>
-      <small style={{color:'#aebfe0'}}>Ambiente de apoio. Classificações e orientações devem ser revisadas e homologadas pela instituição.</small>
+      <div className="feature-pills"><span><Icon name="lock" /> Acesso autorizado</span><span><Icon name="brain" /> Triagem de relatos</span><span><Icon name="book" /> Base pesquisável</span><span><Icon name="shield" /> Gestão administrativa</span></div>
+      <small style={{ color: '#aebfe0' }}>Ambiente de apoio. Classificações e orientações devem ser revisadas e homologadas pela instituição.</small>
     </section>
     <section className="login-form"><div className="login-card">
-      <div className="toolbar"><span className="badge">ACESSO À BASE 190</span><Btn className="ghost tiny" onClick={theme}><Icon name={dark?'sun':'moon'} size={17}/>{dark?'Tema claro':'Tema escuro'}</Btn></div>
-      <div><h2>{requestMode?'Solicitar acesso':'Bem-vindo de volta'}</h2><p className="muted">{requestMode?'Preencha o pedido. O administrador avaliará o acesso.':'Entre com sua conta previamente autorizada.'}</p></div>
-      {notice&&<div className="notice" role="alert">{notice}</div>}{success&&<div className="notice success" role="status">{success}</div>}
-      {requestMode?<form className="stack" onSubmit={submitRequest}>
-        <div><label htmlFor="reqName">Nome de identificação</label><input id="reqName" autoComplete="name" required value={request.name} onChange={e=>setRequest({...request,name:e.target.value})} placeholder="Seu nome"/></div>
-        <div><label htmlFor="reqUser">Usuário desejado</label><input id="reqUser" required minLength={4} pattern="[a-zA-Z0-9._-]+" value={request.username} onChange={e=>setRequest({...request,username:e.target.value})} placeholder="nome.sobrenome"/></div>
-        <div><label htmlFor="reqReason">Justificativa (opcional)</label><textarea id="reqReason" maxLength={500} value={request.reason} onChange={e=>setRequest({...request,reason:e.target.value})} placeholder="Motivo do acesso, sem informações sigilosas"/></div>
+      <div className="toolbar"><span className="badge">ACESSO À BASE 190</span><Btn className="ghost tiny" onClick={theme}><Icon name={dark ? 'sun' : 'moon'} size={17} />{dark ? 'Tema claro' : 'Tema escuro'}</Btn></div>
+      <div><h2>{requestMode ? 'Solicitar acesso' : 'Bem-vindo de volta'}</h2><p className="muted">{requestMode ? 'Preencha o pedido. O administrador avaliará o acesso.' : 'Entre com sua conta previamente autorizada.'}</p></div>
+      {notice && <div className="notice" role="alert">{notice}</div>}{success && <div className="notice success" role="status">{success}</div>}
+      {requestMode ? <form className="stack" onSubmit={submitRequest}>
+        <div><label htmlFor="reqName">Nome de identificação</label><input id="reqName" autoComplete="name" required value={request.name} onChange={e => setRequest({ ...request, name: e.target.value })} placeholder="Seu nome" /></div>
+        <div><label htmlFor="reqUser">Usuário desejado</label><input id="reqUser" required minLength={4} pattern="[a-zA-Z0-9._-]+" value={request.username} onChange={e => setRequest({ ...request, username: e.target.value })} placeholder="nome.sobrenome" /></div>
+        <div><label htmlFor="reqReason">Justificativa (opcional)</label><textarea id="reqReason" maxLength={500} value={request.reason} onChange={e => setRequest({ ...request, reason: e.target.value })} placeholder="Motivo do acesso, sem informações sigilosas" /></div>
         <Btn type="submit" disabled={busy} className="full">Enviar solicitação</Btn>
-      </form>:<form className="stack" onSubmit={submitLogin}>
-        <div><label htmlFor="username">Usuário</label><input id="username" required autoComplete="username" value={login.username} onChange={e=>setLogin({...login,username:e.target.value})} placeholder="Seu usuário"/></div>
-        <div><label htmlFor="password">Senha</label><input id="password" type="password" required autoComplete="current-password" value={login.password} onChange={e=>setLogin({...login,password:e.target.value})} placeholder="Digite sua senha"/></div>
-        <Btn type="submit" disabled={busy} className="full">{busy?'Verificando…':'Entrar na plataforma →'}</Btn>
+      </form> : <form className="stack" onSubmit={submitLogin}>
+        <div><label htmlFor="username">Usuário</label><input id="username" required autoComplete="username" value={login.username} onChange={e => setLogin({ ...login, username: e.target.value })} placeholder="Seu usuário" /></div>
+        <div><label htmlFor="password">Senha</label><input id="password" type="password" required autoComplete="current-password" value={login.password} onChange={e => setLogin({ ...login, password: e.target.value })} placeholder="Digite sua senha" /></div>
+        <Btn type="submit" disabled={busy} className="full">{busy ? 'Verificando…' : 'Entrar na plataforma →'}</Btn>
       </form>}
-      <Btn className="secondary full" onClick={()=>{setRequestMode(!requestMode);clear();}}>{requestMode?'Já possuo acesso — entrar':'Solicitar acesso'}</Btn>
-      <div className="divider"/><p className="hint">Acesso individual e autorizado. Entre em contato com o administrador para solicitar ajuda.</p>
+      <Btn className="secondary full" onClick={() => { setRequestMode(!requestMode); clear(); }}>{requestMode ? 'Já possuo acesso — entrar' : 'Solicitar acesso'}</Btn>
+      <div className="divider" /><p className="hint">Acesso individual e autorizado. Entre em contato com o administrador para solicitar ajuda.</p>
     </div></section>
   </div>;
 
-  if(user.mustChangePassword)return <section className="login-form" style={{minHeight:'100vh'}}>
+  if (user.mustChangePassword) return <section className="login-form" style={{ minHeight: '100vh' }}>
     <form className="login-card card" onSubmit={changePassword}>
       <span className="badge">SEGURANÇA DA CONTA</span><h2>Defina uma nova senha</h2>
       <p className="muted">A credencial inicial é provisória. Para continuar, escolha uma senha exclusiva para esta plataforma.</p>
-      {notice&&<div className="notice" role="alert">{notice}</div>}{success&&<div className="notice success" role="status">{success}</div>}
-      <div><label htmlFor="old-pass">Senha atual</label><input id="old-pass" type="password" autoComplete="current-password" required value={passwordForm.current} onChange={e=>setPasswordForm({...passwordForm,current:e.target.value})}/></div>
-      <div><label htmlFor="new-pass">Nova senha forte</label><input id="new-pass" type="password" autoComplete="new-password" required minLength={12} value={passwordForm.next} onChange={e=>setPasswordForm({...passwordForm,next:e.target.value})}/></div>
-      <div><label htmlFor="confirm-pass">Confirme a nova senha</label><input id="confirm-pass" type="password" autoComplete="new-password" required value={passwordForm.confirm} onChange={e=>setPasswordForm({...passwordForm,confirm:e.target.value})}/></div>
+      {notice && <div className="notice" role="alert">{notice}</div>}{success && <div className="notice success" role="status">{success}</div>}
+      <div><label htmlFor="old-pass">Senha atual</label><input id="old-pass" type="password" autoComplete="current-password" required value={passwordForm.current} onChange={e => setPasswordForm({ ...passwordForm, current: e.target.value })} /></div>
+      <div><label htmlFor="new-pass">Nova senha forte</label><input id="new-pass" type="password" autoComplete="new-password" required minLength={12} value={passwordForm.next} onChange={e => setPasswordForm({ ...passwordForm, next: e.target.value })} /></div>
+      <div><label htmlFor="confirm-pass">Confirme a nova senha</label><input id="confirm-pass" type="password" autoComplete="new-password" required value={passwordForm.confirm} onChange={e => setPasswordForm({ ...passwordForm, confirm: e.target.value })} /></div>
       <small>Use 12 ou mais caracteres, maiúsculas, minúsculas, números e símbolo.</small>
       <Btn type="submit" className="full" disabled={busy}>Alterar senha e encerrar sessão</Btn>
       <Btn className="secondary full" onClick={logout}>Sair sem alterar</Btn>
     </form>
   </section>;
 
-  const links=[['home','Visão geral','home'],['docs','Base de conhecimento','book'],['catalog','Catálogo','book'],['chat','Chat 190','brain'],['floor','Gestão de piso','shield'],['operations','Pausas e Folgas','calendar'],['quality','Qualidade','audit'],['access','Acessos e Cargos','users']];
-  const adminLinks=[['editor','Editar textos','edit'],['access','Autorizar acessos','users'],['rules','Regras do assistente','settings'],['audit','Auditoria','audit']];
-  const isImmersiveScreen = screen === 'quality' || screen === 'chat' || screen === 'operations';
-  const visibleLinks=links.filter(([id])=>activeProfileConfig.centralTabs.includes(id));
-  const visibleAdminLinks=adminLinks.filter(([id])=>activeProfileConfig.adminTabs.includes(id));
-  const headerIconName=({home:'home',docs:'book',catalog:'book',chat:'brain',floor:'shield',operations:'calendar',quality:'audit',access:'users',editor:'edit',rules:'settings',audit:'audit',detail:'book',brain:'brain'})[screen]||'shield';
-  return <div className={'shell'+(isImmersiveScreen?' immersive-mode':'')+(screen==='quality'?' quality-mode':'')+(sidebarExpanded?' sidebar-expanded':'')}>
-    {tabLoading && <div className="tab-top-progress-bar"><div className="tab-top-progress-bar-fill"/></div>}
+  const links = [['home', 'Visão geral', 'home'], ['docs', 'Base de conhecimento', 'book'], ['catalog', 'Catálogo', 'book'], ['chat','Chat 190','brain'], ['floor', 'Gestão de piso', 'shield'], ['operations','Pausas e Folgas','calendar'], ['quality', 'Qualidade', 'audit'], ['access','Acessos e Cargos', 'users']];
+  const adminLinks = [['editor', 'Editar textos', 'edit'], ['access', 'Autorizar acessos', 'users'], ['rules', 'Regras do assistente', 'settings'], ['audit', 'Auditoria', 'audit']];
+  const isImmersiveScreen = screen === 'quality' || screen === 'chat' || screen==='operations';
+  const visibleLinks = links.filter(([id]) => activeProfileConfig.centralTabs.includes(id));
+  const visibleAdminLinks = adminLinks.filter(([id]) => activeProfileConfig.adminTabs.includes(id));
+  const headerIconName=({ home: 'home', docs: 'book', catalog: 'book', chat: 'brain', floor: 'shield', operations: 'calendar', quality: 'audit', access: 'users', editor: 'edit', rules: 'settings', audit: 'audit', detail: 'book', brain: 'brain' })[screen] || 'shield';
+  return <div className={'shell' + (isImmersiveScreen ? ' immersive-mode' : '') + (screen === 'quality' ? ' quality-mode' : '') + (sidebarExpanded ? ' sidebar-expanded' : '')}>
+    {tabLoading && <div className="tab-top-progress-bar"><div className="tab-top-progress-bar-fill" /></div>}
     <aside id="base190-sidebar" className="sidebar compact" aria-label="Navegação principal" data-expanded={sidebarExpanded?'true':'false'}>
       <div className="logo"><div className="logoicon" title="Base 190">190</div><div className="logo-text"><strong>Base 190</strong><small>CONHECIMENTO OPERACIONAL</small></div></div>
       <button type="button" className="sidebar-toggle" onClick={toggleSidebar}
         aria-label={sidebarExpanded?'Recolher barra lateral':'Expandir barra lateral'}
-        title={sidebarExpanded?'Recolher barra lateral':'Expandir barra lateral'}
+        title={sidebarExpanded ? 'Recolher barra lateral' : 'Expandir barra lateral'}
         aria-expanded={sidebarExpanded} aria-controls="base190-sidebar">
-        <Icon name="arrow" size={19}/><span className="sidebar-toggle-label">{sidebarExpanded?'Recolher menu':'Expandir menu'}</span>
+        <Icon name="arrow" size={19} /><span className="sidebar-toggle-label">{sidebarExpanded ? 'Recolher menu' : 'Expandir menu'}</span>
       </button>
       <span className="nav-caption">CENTRAL</span>
-      {visibleLinks.map(([id,label,icon])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>go(id)} aria-label={label} aria-current={screen===id?'page':undefined} title={label}><Icon name={icon}/><span className="nav-label">{label}</span></button>)}
-      {visibleAdminLinks.length>0&&<><span className="nav-caption">ADMINISTRAÇÃO</span>{visibleAdminLinks.map(([id,label,icon])=><button key={id} className={'nav-btn '+(screen===id?'active':'')} onClick={()=>id==='editor'?editEntry(null):go(id)} aria-label={label} aria-current={screen===id?'page':undefined} title={label}><Icon name={icon}/><span className="nav-label">{label}</span></button>)}</>}
+      {visibleLinks.map(([id, label, icon]) => <button key={id} className={'nav-btn ' + (screen === id ? 'active' : '')} onClick={()=>go(id)} aria-label={label} aria-current={screen === id ? 'page' : undefined} title={label}><Icon name={icon} /><span className="nav-label">{label}</span></button>)}
+      {visibleAdminLinks.length > 0 && <><span className="nav-caption">ADMINISTRAÇÃO</span>{visibleAdminLinks.map(([id, label, icon]) => <button key={id} className={'nav-btn ' + (screen === id ? 'active' : '')} onClick={() => id === 'editor' ? editEntry(null) : go(id)} aria-label={label} aria-current={screen === id ? 'page' : undefined} title={label}><Icon name={icon} /><span className="nav-label">{label}</span></button>)}</>}
       <div className="sidebar-profile-box">
         <button
           type="button"
           className="nav-btn profile-switch-btn"
           onClick={()=>setProfileModalOpen(true)}
-          aria-label={canPreviewRoles?'Alternar perfil para testes':'Ver perfil ativo'}
-          title={canPreviewRoles?`Alternar visualização de teste (atual: ${activeProfileConfig.name})`:`Cargo atribuído: ${activeProfileConfig.name}`}
+          aria-label={canPreviewRoles ? 'Alternar perfil para testes' : 'Ver perfil ativo'}
+          title={canPreviewRoles ? `Alternar visualização de teste (atual: ${activeProfileConfig.name})` : `Cargo atribuído: ${activeProfileConfig.name}`}
           aria-haspopup="dialog"
         >
-          <span className="profile-indicator-dot" style={{backgroundColor:activeProfileConfig.color}}/>
+          <span className="profile-indicator-dot" style={{ backgroundColor: activeProfileConfig.color }} />
           <span className="nav-label profile-switch-info">
-            <small className="profile-switch-eyebrow">{isPreviewing?"Prévia de cargo":"Perfil ativo"}</small>
+            <small className="profile-switch-eyebrow">{isPreviewing ? "Prévia de cargo" : "Perfil ativo"}</small>
             <strong className="profile-switch-title">{activeProfileConfig.name}</strong>
           </span>
-          <span className="nav-label profile-switch-arrow" aria-hidden="true">{canPreviewRoles?"⇄":"ⓘ"}</span>
+          <span className="nav-label profile-switch-arrow" aria-hidden="true">{canPreviewRoles ? "⇄" : "ⓘ"}</span>
         </button>
       </div>
       <div className="sidebar-bottom">
-        <button className="nav-btn theme-toggle-btn" onClick={theme} aria-label={dark?'Ativar tema claro':'Ativar tema escuro'} title={dark?'Tema Claro':'Tema Escuro'}>
-          <Icon name={dark?'sun':'moon'} size={18}/>
-          <span className="nav-label">{dark?'Modo Claro':'Modo Escuro'}</span>
+        <button className="nav-btn theme-toggle-btn" onClick={theme} aria-label={dark ? 'Ativar tema claro' : 'Ativar tema escuro'} title={dark ? 'Tema Claro' : 'Tema Escuro'}>
+          <Icon name={dark ? 'sun' : 'moon'} size={18} />
+          <span className="nav-label">{dark ? 'Modo Claro' : 'Modo Escuro'}</span>
         </button>
-        <p className="who">{user.name}<br/><small>{user.username} • {activeProfileConfig.accessLabel}</small></p>
-        <button className="nav-btn" onClick={logout} disabled={busy} aria-label="Encerrar sessão" title="Encerrar sessão"><Icon name="logout"/><span className="nav-label">Sair</span></button>
+        <p className="who">{user.name}<br /><small>{user.username} • {activeProfileConfig.accessLabel}</small></p>
+        <button className="nav-btn" onClick={logout} disabled={busy} aria-label="Encerrar sessão" title="Encerrar sessão"><Icon name="logout" /><span className="nav-label">Sair</span></button>
       </div>
     </aside>
-    {sidebarExpanded&&<button type="button" className="sidebar-overlay" onClick={toggleSidebar} aria-label="Fechar menu lateral"/>}
+    {sidebarExpanded && <button type="button" className="sidebar-overlay" onClick={toggleSidebar} aria-label="Fechar menu lateral" />}
     <div className="main">
       <header className="topbar base190-unified-header">
         <div className="base190-header-location">
-          <span className="base190-header-symbol" aria-hidden="true"><Icon name={headerIconName} size={16}/></span>
+          <span className="base190-header-symbol" aria-hidden="true"><Icon name={headerIconName} size={16} /></span>
           <span className="base190-header-root">Base 190</span>
           <span className="base190-header-separator" aria-hidden="true">/</span>
-          <strong>{screen==='docs'?'Conhecimento':screen==='home'?'Visão geral':screen==='brain'?'Análise de relatos':screen==='chat'?'Chat 190':screen==='operations'?'Pausas e folgas':screen==='floor'?'Gestão de piso':screen==='access'?'Acessos e cargos':screen==='quality'?'Qualidade':screen==='catalog'?'Catálogo':screen==='detail'?'Ficha operacional':screen==='editor'?'Editor de conteúdo':screen==='rules'?'Regras':'Auditoria'}</strong>
+          <strong>{screen === 'docs' ? 'Conhecimento' : screen === 'home' ? 'Visão geral' : screen === 'brain' ? 'Análise de relatos' : screen === 'chat' ? 'Chat 190' : screen === 'operations' ? 'Pausas e folgas' : screen === 'floor' ? 'Gestão de piso' : screen === 'access' ? 'Acessos e cargos' : screen === 'quality' ? 'Qualidade' : screen === 'catalog' ? 'Catálogo' : screen === 'detail' ? 'Ficha operacional' : screen === 'editor' ? 'Editor de conteúdo' : screen === 'rules' ? 'Regras' : 'Auditoria'}</strong>
         </div>
+        {screen === 'quality' && qualityState && (
+          <nav className="quality-topbar-nav" aria-label="Navegação de Qualidade">
+            {qualityState.isSupervisor && (
+              <>
+                <button type="button" className={`quality-topbar-tab${qualityState.currentView === 'cadastro' ? ' active' : ''}`} onClick={() => qualityState.setCurrentView('cadastro')}>
+                  <svg fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" width="15" height="15"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" /><rect x="9" y="3" width="6" height="4" rx="1" strokeLinecap="round" strokeLinejoin="round" /><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6M9 16h4" /></svg>
+                  Cadastramento
+                </button>
+                <button type="button" className={`quality-topbar-tab${qualityState.currentView === 'feedback' ? ' active' : ''}`} onClick={() => qualityState.setCurrentView('feedback')}>
+                  <svg fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" width="15" height="15"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  Encaminhamento
+                  {qualityState.countPendente > 0 && <span className="quality-topbar-badge amber">{qualityState.countPendente}</span>}
+                </button>
+              </>
+            )}
+            <button type="button" className={`quality-topbar-tab${qualityState.currentView === 'monitorias' ? ' active' : ''}`} onClick={() => qualityState.setCurrentView('monitorias')}>
+              <svg fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" width="15" height="15"><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+              Monitorias & Ciência
+              {qualityState.publicTotal > 0 && <span className="quality-topbar-badge blue">{qualityState.publicTotal}</span>}
+            </button>
+            {qualityState.isSupervisor && (
+              <div className="quality-topbar-role-toggle">
+                <button type="button" className={`quality-topbar-role-btn${qualityState.currentRole === 'monitor' ? ' active monitor' : ''}`} onClick={() => { qualityState.setCurrentRole('monitor'); }} title="Acesso de Monitor / Supervisor">Monitor</button>
+                <button type="button" className={`quality-topbar-role-btn${qualityState.currentRole === 'atendente' ? ' active atendente' : ''}`} onClick={() => { qualityState.setCurrentRole('atendente'); qualityState.setCurrentView('monitorias'); }} title="Visualização do Atendente">Atendente</button>
+              </div>
+            )}
+          </nav>
+        )}
+        {screen === 'operations' && (
+          <nav className="quality-topbar-nav" aria-label="Navegação de Pausas e Folgas">
+            {[
+              ['overview', 'Visão Geral'],
+              ['breaks', 'Planilha de Pausas'],
+              ['schedule', 'Escala Mensal'],
+              ['groups', 'Grupos'],
+              ...(activeProfileConfig.adminTabs.length > 0 || ['manager', 'coordinator', 'dev'].includes(effectiveProfileId) ? [['history', 'Histórico']] : [])
+            ].map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                className={`quality-topbar-tab${operationsTab === id ? ' active' : ''}`}
+                onClick={() => {
+                  setOperationsTab(id);
+                  document.querySelector('.base190-operations-frame')?.contentWindow?.postMessage({ type: 'base190:ops-tab', tab: id }, '*');
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+        )}
+        {screen === 'floor' && floorState && (
+          <nav className="quality-topbar-nav" aria-label="Navegação de Gestão de Piso">
+            <button
+              type="button"
+              className={`quality-topbar-tab${floorState.tab === 'reports' ? ' active' : ''}`}
+              onClick={() => floorState.setTab('reports')}
+            >
+              Central de reportes
+            </button>
+            <button
+              type="button"
+              className={`quality-topbar-tab${floorState.tab === 'map' ? ' active' : ''}`}
+              onClick={() => floorState.setTab('map')}
+            >
+              Mapa de PAs
+            </button>
+            {floorState.isAdmin && (
+              <button
+                type="button"
+                className={`quality-topbar-tab${floorState.tab === 'events' ? ' active' : ''}`}
+                onClick={() => floorState.setTab('events')}
+              >
+                Gestão de eventos
+                {floorState.summary?.open > 0 && (
+                  <span className="quality-topbar-badge amber">{floorState.summary.open}</span>
+                )}
+              </button>
+            )}
+          </nav>
+        )}
+        {screen === 'access' && accessState && (
+          <nav className="quality-topbar-nav" aria-label="Navegação de Acessos e Cargos">
+            <button
+              type="button"
+              className={`quality-topbar-tab${accessState.tab === 'users' ? ' active' : ''}`}
+              onClick={() => accessState.setTab('users')}
+            >
+              Profissionais
+              {accessState.usersCount > 0 && (
+                <span className="quality-topbar-badge blue">{accessState.usersCount}</span>
+              )}
+            </button>
+            <button
+              type="button"
+              className={`quality-topbar-tab${accessState.tab === 'requests' ? ' active' : ''}`}
+              onClick={() => accessState.setTab('requests')}
+            >
+              Solicitações
+              {accessState.pendingCount > 0 && (
+                <span className="quality-topbar-badge amber">{accessState.pendingCount}</span>
+              )}
+            </button>
+          </nav>
+        )}
         <div className="base190-header-actions">
-          {screen==='operations'&&<a className="base190-header-icon" href="/copom-190-gestao-operacional.html" target="_blank" rel="noopener noreferrer" aria-label="Abrir pausas e folgas em tela cheia" title="Abrir em tela cheia"><Icon name="link" size={17}/></a>}
-          <button type="button" className="base190-header-icon" onClick={theme} aria-label={dark?'Ativar tema claro':'Ativar tema escuro'} title={dark?'Tema claro':'Tema escuro'}><Icon name={dark?'sun':'moon'} size={18}/></button>
-          <button type="button" className="base190-header-profile" onClick={()=>setProfileModalOpen(true)} aria-label={canPreviewRoles?'Alternar perfil para testes':'Ver meu cargo'} title={canPreviewRoles?'Alternar perfil para testes':'Ver meu cargo'}>
-            <span className="profile-indicator-dot" style={{backgroundColor:activeProfileConfig.color}}/>
-            <span className="base190-header-profile-name">{isPreviewing?'Prévia: ':''}{activeProfileConfig.name}</span>
-            {canPreviewRoles&&<span className="base190-header-chevron" aria-hidden="true">⌄</span>}
+          {screen === 'operations' && <a className="base190-header-icon" href="/copom-190-gestao-operacional.html" target="_blank" rel="noopener noreferrer" aria-label="Abrir pausas e folgas em tela cheia" title="Abrir em tela cheia"><Icon name="link" size={17} /></a>}
+          <button type="button" className="base190-header-icon" onClick={theme} aria-label={dark ? 'Ativar tema claro' : 'Ativar tema escuro'} title={dark ? 'Tema claro' : 'Tema escuro'}><Icon name={dark ? 'sun' : 'moon'} size={18} /></button>
+          <button type="button" className="base190-header-profile" onClick={() => setProfileModalOpen(true)} aria-label={canPreviewRoles ? 'Alternar perfil para testes' : 'Ver meu cargo'} title={canPreviewRoles ? 'Alternar perfil para testes' : 'Ver meu cargo'}>
+            <span className="profile-indicator-dot" style={{ backgroundColor: activeProfileConfig.color }} />
+            <span className="base190-header-profile-name">{isPreviewing ? 'Prévia: ' : ''}{activeProfileConfig.name}</span>
+            {canPreviewRoles && <span className="base190-header-chevron" aria-hidden="true">⌄</span>}
           </button>
         </div>
       </header>
-      <main className={'content'+(isImmersiveScreen?' quality-content-mode immersive-content-mode':' spaced')} data-current-tab={screen}>
-        {notice&&<div className="notice" role="alert">{notice}</div>}{success&&<div className="notice success" role="status">{success}</div>}
-        {catalogIssue&&<div className="notice" role="alert" style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
-          <span>{catalogIssue}{catalogDegraded?' Consulta em modo de contingência: não é confirmação de que as alterações do banco estejam sincronizadas.':''}</span>
-          <Btn className="secondary tiny" disabled={catalogRefreshing} onClick={()=>{refreshCatalog().catch(err);}}>{catalogRefreshing?'Verificando…':'Tentar novamente'}</Btn>
+      <main className={'content' + (isImmersiveScreen ? ' quality-content-mode immersive-content-mode' : ' spaced')} data-current-tab={screen}>
+        {notice && <div className="notice" role="alert">{notice}</div>}{success && <div className="notice success" role="status">{success}</div>}
+        {catalogIssue && <div className="notice" role="alert" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+          <span>{catalogIssue}{catalogDegraded ? ' Consulta em modo de contingência: não é confirmação de que as alterações do banco estejam sincronizadas.' : ''}</span>
+          <Btn className="secondary tiny" disabled={catalogRefreshing} onClick={() => { refreshCatalog().catch(err); }}>{catalogRefreshing ? 'Verificando…' : 'Tentar novamente'}</Btn>
         </div>}
 
-        {screen==='home'&&<div key="home" className="tab-view-container">
-          <section className="hero"><div className="hero-orbit" aria-hidden="true"><Icon name="shield" size={114}/></div><span className="eyebrow">CHAT 190 • ASSISTENTE UNIFICADO</span><h1>Clareza para cada atendimento.</h1>
+        {screen === 'home' && <div key="home" className="tab-view-container">
+          <section className="hero"><div className="hero-orbit" aria-hidden="true"><Icon name="shield" size={114} /></div><span className="eyebrow">CHAT 190 • ASSISTENTE UNIFICADO</span><h1>Clareza para cada atendimento.</h1>
             <p>Descreva uma ocorrência ou faça uma pergunta sobre uma natureza. O Chat 190 consulta o catálogo, explica quando usar cada ficha e sinaliza o que precisa ser confirmado.</p>
-            <form className="search-row" onSubmit={analyze}><input value={relato} onChange={e=>setRelato(e.target.value)} aria-label="Relato ou dúvida para análise" placeholder="Ex.: quando usar a natureza de roubo?"/><Btn type="submit" disabled={busy}>Consultar no Chat 190 →</Btn></form>
+            <form className="search-row" onSubmit={analyze}><input value={relato} onChange={e => setRelato(e.target.value)} aria-label="Relato ou dúvida para análise" placeholder="Ex.: quando usar a natureza de roubo?" /><Btn type="submit" disabled={busy}>Consultar no Chat 190 →</Btn></form>
           </section>
-          <div className="grid3"><div className="card stat"><small><Icon name="book"/> Fichas no catálogo</small><strong>{catalogIssue&&!entries.length?'—':entries.length}</strong><span className="badge">{catalogDegraded?'Contingência · somente leitura':'Conhecimento'}</span></div>
-            <div className="card stat"><small><Icon name="brain"/> Regras de classificação</small><strong>{catalogIssue&&!totalRules?'—':totalRules}</strong><span className="badge">{catalogDegraded?'Regras locais':'Chat 190'}</span></div>
-            <div className="card stat"><small><Icon name="shield"/> Nível de acesso</small><strong style={{fontSize:21}}>{activeProfileConfig.name}</strong><span className="badge">{activeProfileConfig.badge}</span></div></div>
-          <section className="domain-section"><div className="panel-head"><div><span className="eyebrow">CONSULTA POR ÁREA</span><h2>Encontre o contexto do atendimento</h2></div><span className="badge">{categories.length-1} áreas</span></div><div className="domain-grid">{categories.filter(c=>c!=='Todas').map(c=><button className="domain-card" key={c} onClick={()=>{setCat(c);setSearch('');setPriorityFilter('Todas');go('catalog');}}><Icon name={categoryIcon(c)} size={24}/><b>{c}</b><small>{entries.filter(e=>e.category===c).length} fichas</small><Icon name="arrow" size={16}/></button>)}</div></section>
-          <section><div className="panel-head"><div><h2>Naturezas em destaque</h2><p className="muted">Consulte fichas e orientações existentes</p></div><Btn className="secondary" onClick={()=>go('catalog')}>Ver catálogo →</Btn></div>{entryGrid(entries.slice(0,6))}</section>
+          <div className="grid3"><div className="card stat"><small><Icon name="book" /> Fichas no catálogo</small><strong>{catalogIssue&&!entries.length?'—':entries.length}</strong><span className="badge">{catalogDegraded ? 'Contingência · somente leitura' : 'Conhecimento'}</span></div>
+            <div className="card stat"><small><Icon name="brain" /> Regras de classificação</small><strong>{catalogIssue&&!totalRules?'—':totalRules}</strong><span className="badge">{catalogDegraded ? 'Regras locais' : 'Chat 190'}</span></div>
+            <div className="card stat"><small><Icon name="shield" /> Nível de acesso</small><strong style={{ fontSize: 21 }}>{activeProfileConfig.name}</strong><span className="badge">{activeProfileConfig.badge}</span></div></div>
+          <section className="domain-section"><div className="panel-head"><div><span className="eyebrow">CONSULTA POR ÁREA</span><h2>Encontre o contexto do atendimento</h2></div><span className="badge">{categories.length - 1} áreas</span></div><div className="domain-grid">{categories.filter(c => c !== 'Todas').map(c => <button className="domain-card" key={c} onClick={() => { setCat(c); setSearch(''); setPriorityFilter('Todas'); go('catalog'); }}><Icon name={categoryIcon(c)} size={24} /><b>{c}</b><small>{entries.filter(e => e.category === c).length} fichas</small><Icon name="arrow" size={16} /></button>)}</div></section>
+          <section><div className="panel-head"><div><h2>Naturezas em destaque</h2><p className="muted">Consulte fichas e orientações existentes</p></div><Btn className="secondary" onClick={() => go('catalog')}>Ver catálogo →</Btn></div>{entryGrid(entries.slice(0, 6))}</section>
           <div className="helpnote">Os exemplos da base não constituem códigos ou protocolos oficiais homologados. É proibido utilizar a ferramenta para inserir dados sigilosos sem autorização institucional.</div>
         </div>}
 
-        {docsOpened&&<div key="docs" hidden={screen!=='docs'} className="tab-view-container"><Documentation onExit={()=>go('home')} isAdmin={activeProfileConfig.canEditDocs} active={screen==='docs'}/></div>}
-        {screen==='floor'&&<div key="floor" className="tab-view-container"><FloorControl isAdmin={activeProfileConfig.canManageFloorEvents}/></div>}
+        {docsOpened&&<div key="docs" hidden={screen!=='docs'} className="tab-view-container"><Documentation onExit={()=>go('home')} isAdmin={activeProfileConfig.canEditDocs} active={screen === 'docs'} dark={dark} toggleTheme={theme} /></div>}
+        {screen === 'floor' && <div key="floor" className="tab-view-container"><FloorControl isAdmin={activeProfileConfig.canManageFloorEvents} onStateChange={setFloorState} /></div>}
         {screen==='operations'&&<section key="operations" className="tab-view-container base190-operations-embed" aria-label="Gestão Operacional de Pausas e Folgas">
-          <iframe className="base190-operations-frame" title="Gestão Operacional COPOM 190: pausas e folgas" src="/copom-190-gestao-operacional.html" loading="eager" allow="notifications"/>
+          <iframe className="base190-operations-frame" title="Gestão Operacional COPOM 190: pausas e folgas" src="/copom-190-gestao-operacional.html" loading="eager" allow="notifications" />
         </section>}
-        {screen==='quality'&&<div key="quality" className="tab-view-container" style={{height:'100%'}}><Quality user={{...user,role:activeProfileConfig.adminTabs.length>0?'admin':'user',operationalRole:activeProfileConfig.id,profileName:activeProfileConfig.name}} activeProfile={activeProfileConfig.id} dark={dark} toggleTheme={theme}/></div>}
-        {screen==='catalog'&&<div key="catalog" className="tab-view-container">
-          <div className="panel-head"><div><span className="eyebrow">BIBLIOTECA OPERACIONAL</span><h1>Catálogo de naturezas</h1><p className="muted">Busque por título, código, resumo, conteúdo ou palavra-chave.</p></div>{activeProfileConfig.canEditCatalog&&<Btn onClick={()=>editEntry(null)}><Icon name="plus" size={18}/> Nova ficha</Btn>}</div>
-          <div className="card catalog-filters"><div><label htmlFor="search">Pesquisa</label><input id="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Código, natureza, palavra-chave…"/></div><div><label htmlFor="category">Categoria</label><select id="category" value={cat} onChange={e=>setCat(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</select></div><div><label htmlFor="priority-filter">Prioridade sugerida</label><select id="priority-filter" value={priorityFilter} onChange={e=>setPriorityFilter(e.target.value)}>{['Todas','Crítica','Alta','Média','Consulta'].map(v=><option key={v}>{v}</option>)}</select></div></div>
-          <p className="catalog-note"><Icon name="shield" size={16}/> Relação COPOM corrigida: 769 naturezas importadas do CSV recebido. IDs NAT são códigos internos desta plataforma; as descrições foram acrescentadas para consulta e dependem de validação institucional.</p><div className="toolbar"><p className="muted">{filtered.length} resultado(s)</p><Btn className="ghost tiny" onClick={()=>{setSearch('');setCat('Todas');setPriorityFilter('Todas');}}>Limpar filtros</Btn></div>
-          {filtered.length?<>{entryGrid(filtered.slice(0,catalogLimit))}{filtered.length>catalogLimit&&<div className="toolbar" style={{justifyContent:'center',padding:'18px 0'}}><Btn className="secondary" onClick={()=>setCatalogLimit(v=>v+60)}>Ver mais naturezas ({Math.min(filtered.length-catalogLimit,60)} próximas)</Btn></div>}</>:<div className="card empty-state"><Icon name="search" size={36}/><h2>Nenhuma ficha encontrada</h2><p className="muted">Tente outro termo ou remova os filtros de categoria e prioridade.</p></div>}
+        {screen === 'quality' && <div key="quality" className="tab-view-container" style={{ height: '100%' }}><Quality user={{ ...user, role: activeProfileConfig.adminTabs.length > 0 ? 'admin' : 'user', operationalRole: activeProfileConfig.id, profileName: activeProfileConfig.name }} activeProfile={activeProfileConfig.id} dark={dark} toggleTheme={theme} onStateChange={setQualityState} /></div>}
+        {screen === 'catalog' && <div key="catalog" className="tab-view-container">
+          <div className="panel-head"><div><span className="eyebrow">BIBLIOTECA OPERACIONAL</span><h1>Catálogo de naturezas</h1><p className="muted">Busque por título, código, resumo, conteúdo ou palavra-chave.</p></div>{activeProfileConfig.canEditCatalog && <Btn onClick={() => editEntry(null)}><Icon name="plus" size={18} /> Nova ficha</Btn>}</div>
+          <div className="card catalog-filters"><div><label htmlFor="search">Pesquisa</label><input id="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Código, natureza, palavra-chave…" /></div><div><label htmlFor="category">Categoria</label><select id="category" value={cat} onChange={e => setCat(e.target.value)}>{categories.map(c => <option key={c}>{c}</option>)}</select></div><div><label htmlFor="priority-filter">Prioridade sugerida</label><select id="priority-filter" value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)}>{['Todas', 'Crítica', 'Alta', 'Média', 'Consulta'].map(v => <option key={v}>{v}</option>)}</select></div></div>
+          <p className="catalog-note"><Icon name="shield" size={16} /> Relação COPOM corrigida: 769 naturezas importadas do CSV recebido. IDs NAT são códigos internos desta plataforma; as descrições foram acrescentadas para consulta e dependem de validação institucional.</p><div className="toolbar"><p className="muted">{filtered.length} resultado(s)</p><Btn className="ghost tiny" onClick={() => { setSearch(''); setCat('Todas'); setPriorityFilter('Todas'); }}>Limpar filtros</Btn></div>
+          {filtered.length ? <>{entryGrid(filtered.slice(0, catalogLimit))}{filtered.length > catalogLimit && <div className="toolbar" style={{ justifyContent: 'center', padding: '18px 0' }}><Btn className="secondary" onClick={() => setCatalogLimit(v => v + 60)}>Ver mais naturezas ({Math.min(filtered.length - catalogLimit, 60)} próximas)</Btn></div>}</> : <div className="card empty-state"><Icon name="search" size={36} /><h2>Nenhuma ficha encontrada</h2><p className="muted">Tente outro termo ou remova os filtros de categoria e prioridade.</p></div>}
         </div>}
 
-        {screen==='detail'&&selected&&<div key="detail" className="tab-view-container"><section className="card spaced">
-          <div className="toolbar"><Btn className="secondary tiny" onClick={()=>go('catalog')}>← Voltar</Btn>{activeProfileConfig.canEditCatalog&&<Btn onClick={()=>editEntry(selected)}><Icon name="edit" size={17}/> Editar ficha</Btn>}</div>
-          <div><div className="btn-row"><span className="badge">{selected.code}</span><Tag priority={selected.priority}/><span className="muted">{selected.category}</span></div><h1 style={{marginTop:12}}>{selected.title}</h1></div>
-          <p className="muted">{selected.summary}</p><LegalReference legal={selected.legal}/>{!!selected.triageQuestions?.length&&<details className="triage-panel"><summary>Roteiro completo de triagem ({selected.triageQuestions.length} perguntas)</summary><ul>{selected.triageQuestions.map(q=><li key={q}>{q}</li>)}</ul><small>Na análise de um relato, as perguntas já respondidas são ocultadas automaticamente.</small></details>}<div className="divider"/><pre className="record-detail">{selected.body}</pre>
-          <div className="btn-row">{(selected.tags||[]).map(t=><span key={t} className="badge">#{t}</span>)}</div>
+        {screen === 'detail' && selected && <div key="detail" className="tab-view-container"><section className="card spaced">
+          <div className="toolbar"><Btn className="secondary tiny" onClick={() => go('catalog')}>← Voltar</Btn>{activeProfileConfig.canEditCatalog && <Btn onClick={() => editEntry(selected)}><Icon name="edit" size={17} /> Editar ficha</Btn>}</div>
+          <div><div className="btn-row"><span className="badge">{selected.code}</span><Tag priority={selected.priority} /><span className="muted">{selected.category}</span></div><h1 style={{ marginTop: 12 }}>{selected.title}</h1></div>
+          <p className="muted">{selected.summary}</p><LegalReference legal={selected.legal} />{!!selected.triageQuestions?.length && <details className="triage-panel"><summary>Roteiro completo de triagem ({selected.triageQuestions.length} perguntas)</summary><ul>{selected.triageQuestions.map(q => <li key={q}>{q}</li>)}</ul><small>Na análise de um relato, as perguntas já respondidas são ocultadas automaticamente.</small></details>}<div className="divider" /><pre className="record-detail">{selected.body}</pre>
+          <div className="btn-row">{(selected.tags || []).map(t => <span key={t} className="badge">#{t}</span>)}</div>
           <small>Revisão {selected.revision} • Atualizado em {formatDate(selected.updated_at)} • Validar legislação, código e procedimento antes do uso.</small>
         </section></div>}
 
-        {screen==='chat'&&<section className="sade-workspace sade-fullscreen" aria-label="Chat 190 — Inteligência Tática SADE">
+        {screen === 'chat' && <section className="sade-workspace sade-fullscreen" aria-label="Chat 190 — Inteligência Tática SADE">
           <div className="sade-integrated-notice">
-            <Icon name="shield" size={16}/>
+            <Icon name="shield" size={16} />
             <span>Motor SADE integrado • Triagem local, sem envio a serviços de IA. Utilize somente relatos fictícios ou anonimizados e confirme as sugestões pelo protocolo institucional.</span>
           </div>
-          {chatFrameLoading&&<TabLoader tabName="Chat 190 • Inteligência Tática SADE" subtitle="Inicializando motor de triagem local e catálogo de 769 naturezas…" icon="brain"/>}
+          {chatFrameLoading && <TabLoader tabName="Chat 190 • Inteligência Tática SADE" subtitle="Inicializando motor de triagem local e catálogo de 769 naturezas…" icon="brain" />}
           <iframe
-            className={`sade-embed-frame ${chatFrameLoading?'loading':'ready'}`}
+            className={`sade-embed-frame ${chatFrameLoading ? 'loading' : 'ready'}`}
             src="/copom-sade-190.html"
             title="Chat 190 — Assistente de Triagem Inteligente SADE"
             sandbox="allow-scripts allow-forms"
             allow="clipboard-write"
             referrerPolicy="no-referrer"
-            onLoad={(event)=>{
+            onLoad={(event) => {
               setChatFrameLoading(false);
-              event.currentTarget.contentWindow?.postMessage({type:'base190:theme',theme:dark?'dark':'light'},'*');
-              if(!pendingSadeReport)return;
-              event.currentTarget.contentWindow?.postMessage({type:'base190:sade-report',text:pendingSadeReport},'*');
+              event.currentTarget.contentWindow?.postMessage({ type: 'base190:theme', theme: dark ? 'dark' : 'light' }, '*');
+              if (!pendingSadeReport) return;
+              event.currentTarget.contentWindow?.postMessage({ type: 'base190:sade-report', text: pendingSadeReport }, '*');
               setPendingSadeReport('');
             }}
           />
         </section>}
-        {screen==='brain'&&<div key="brain" className="tab-view-container">{busy&&<div className="analysis-loading" role="status" aria-live="polite"><span className="analysis-spinner"/><div><strong>Analisando o relato…</strong><p>Reconhecendo fatos, papéis e naturezas diretamente pelo catálogo local. Nenhuma chamada ao Gemini.</p></div></div>}<div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Motor SADE offline com reconhecimento de papéis, negações, armas e sugestões do catálogo. Gemini é opcional e exclusivo para aprimorar o texto.</p></div><span className="badge">{totalRules} regras</span></div>
-          <form className="card spaced" onSubmit={analyze}><div><label htmlFor="brain-input">Relato de teste (sem dados pessoais)</label><textarea id="brain-input" rows={5} value={relato} onChange={e=>setRelato(e.target.value)} placeholder="Descreva o fato observado ou relatado, sem nomes e endereços…"/></div>
-            <div className="btn-row"><Btn type="submit" disabled={busy}><Icon name="brain" size={18}/>{busy?'Analisando…':'Analisar relato'}</Btn><Btn className="secondary" onClick={()=>{setRelato('');setAnalysis(null);}}>Limpar</Btn></div></form>
+        {screen === 'brain' && <div key="brain" className="tab-view-container">{busy && <div className="analysis-loading" role="status" aria-live="polite"><span className="analysis-spinner" /><div><strong>Analisando o relato…</strong><p>Reconhecendo fatos, papéis e naturezas diretamente pelo catálogo local. Nenhuma chamada ao Gemini.</p></div></div>}<div className="panel-head"><div><span className="eyebrow">ANÁLISE CONTEXTUAL DE RELATOS</span><h1>Cérebro 190</h1><p className="muted">Motor SADE offline com reconhecimento de papéis, negações, armas e sugestões do catálogo. Gemini é opcional e exclusivo para aprimorar o texto.</p></div><span className="badge">{totalRules} regras</span></div>
+          <form className="card spaced" onSubmit={analyze}><div><label htmlFor="brain-input">Relato de teste (sem dados pessoais)</label><textarea id="brain-input" rows={5} value={relato} onChange={e => setRelato(e.target.value)} placeholder="Descreva o fato observado ou relatado, sem nomes e endereços…" /></div>
+            <div className="btn-row"><Btn type="submit" disabled={busy}><Icon name="brain" size={18} />{busy ? 'Analisando…' : 'Analisar relato'}</Btn><Btn className="secondary" onClick={() => { setRelato(''); setAnalysis(null); }}>Limpar</Btn></div></form>
           {resultView()}
-          <div className="card"><h3>Exemplos fictícios para teste</h3><div className="btn-row" style={{marginTop:12}}>
-            {['Uma mulher está sendo agredida pelo ex-companheiro.','Duas pessoas anunciaram assalto com uma pistola e levaram o celular.','Um indivíduo enviou um falso comprovante de PIX para aplicar um golpe.','Há fumaça e chamas saindo de um apartamento.'].map((t,i)=><Btn className="secondary tiny" key={i} onClick={()=>{setRelato(t);setAnalysis(null);}}>{'Cenário '+(i+1)}</Btn>)}
+          <div className="card"><h3>Exemplos fictícios para teste</h3><div className="btn-row" style={{ marginTop: 12 }}>
+            {['Uma mulher está sendo agredida pelo ex-companheiro.', 'Duas pessoas anunciaram assalto com uma pistola e levaram o celular.', 'Um indivíduo enviou um falso comprovante de PIX para aplicar um golpe.', 'Há fumaça e chamas saindo de um apartamento.'].map((t, i) => <Btn className="secondary tiny" key={i} onClick={() => { setRelato(t); setAnalysis(null); }}>{'Cenário ' + (i + 1)}</Btn>)}
           </div></div>
         </div>}
 
-        {activeProfileConfig.adminTabs.includes('editor')&&screen==='editor'&&<div key="editor" className="tab-view-container">
-          <div className="panel-head"><div><span className="eyebrow">ÁREA RESTRITA</span><h1>{editor.id?'Editar ficha':'Publicar nova ficha'}</h1><p className="muted">Somente o administrador principal pode publicar ou alterar conteúdo.</p></div><Btn className="secondary" onClick={()=>go('catalog')}>Ir ao catálogo</Btn></div>
-          <div className="card"><label htmlFor="choose-entry">Editar uma ficha já cadastrada</label><select id="choose-entry" value={editor.id||''} onChange={e=>{const item=entries.find(x=>x.id===e.target.value);setEditor(item?{...item}:emptyEntry());setRevisionHistory([]);}}>
-            <option value="">— Criar ficha nova —</option>{entries.map(a=><option value={a.id} key={a.id}>{a.code} · {a.title}</option>)}</select></div>
+        {activeProfileConfig.adminTabs.includes('editor') && screen === 'editor' && <div key="editor" className="tab-view-container">
+          <div className="panel-head"><div><span className="eyebrow">ÁREA RESTRITA</span><h1>{editor.id ? 'Editar ficha' : 'Publicar nova ficha'}</h1><p className="muted">Somente o administrador principal pode publicar ou alterar conteúdo.</p></div><Btn className="secondary" onClick={() => go('catalog')}>Ir ao catálogo</Btn></div>
+          <div className="card"><label htmlFor="choose-entry">Editar uma ficha já cadastrada</label><select id="choose-entry" value={editor.id || ''} onChange={e => { const item = entries.find(x => x.id === e.target.value); setEditor(item ? { ...item } : emptyEntry()); setRevisionHistory([]); }}>
+            <option value="">— Criar ficha nova —</option>{entries.map(a => <option value={a.id} key={a.id}>{a.code} · {a.title}</option>)}</select></div>
           <form className="card spaced" onSubmit={saveEntry}>
-            <div className="grid2"><div><label htmlFor="entry-code">Código</label><input id="entry-code" required value={editor.code} onChange={e=>setEditor({...editor,code:e.target.value})}/></div><div><label htmlFor="entry-name">Título da natureza</label><input id="entry-name" required value={editor.title} onChange={e=>setEditor({...editor,title:e.target.value})}/></div></div>
-            <div className="grid2"><div><label htmlFor="entry-category">Categoria</label><input id="entry-category" required value={editor.category} onChange={e=>setEditor({...editor,category:e.target.value})}/></div><div><label htmlFor="entry-priority">Prioridade orientativa</label><select id="entry-priority" value={editor.priority} onChange={e=>setEditor({...editor,priority:e.target.value})}>{['Crítica','Alta','Média','Baixa'].map(x=><option key={x}>{x}</option>)}</select></div></div>
-            <div><label htmlFor="entry-summary">Resumo</label><textarea id="entry-summary" required rows={3} value={editor.summary} onChange={e=>setEditor({...editor,summary:e.target.value})}/></div>
-            <div><label htmlFor="entry-body">Conteúdo operacional em texto simples</label><textarea id="entry-body" required rows={12} value={editor.body} onChange={e=>setEditor({...editor,body:e.target.value})}/><small>Texto simples é exibido sem executar HTML ou scripts.</small></div>
-            <div><label htmlFor="entry-tags">Palavras-chave separadas por vírgula</label><input id="entry-tags" value={(editor.tags||[]).join(', ')} onChange={e=>setEditor({...editor,tags:toEntries(e.target.value)})}/></div>
-            <div className="btn-row"><Btn type="submit" disabled={busy}>{busy?'Salvando…':'Salvar publicação'}</Btn>{editor.id&&<Btn className="secondary" onClick={loadHistory}>Ver histórico de revisões</Btn>}</div>
+            <div className="grid2"><div><label htmlFor="entry-code">Código</label><input id="entry-code" required value={editor.code} onChange={e => setEditor({ ...editor, code: e.target.value })} /></div><div><label htmlFor="entry-name">Título da natureza</label><input id="entry-name" required value={editor.title} onChange={e => setEditor({ ...editor, title: e.target.value })} /></div></div>
+            <div className="grid2"><div><label htmlFor="entry-category">Categoria</label><input id="entry-category" required value={editor.category} onChange={e => setEditor({ ...editor, category: e.target.value })} /></div><div><label htmlFor="entry-priority">Prioridade orientativa</label><select id="entry-priority" value={editor.priority} onChange={e => setEditor({ ...editor, priority: e.target.value })}>{['Crítica', 'Alta', 'Média', 'Baixa'].map(x => <option key={x}>{x}</option>)}</select></div></div>
+            <div><label htmlFor="entry-summary">Resumo</label><textarea id="entry-summary" required rows={3} value={editor.summary} onChange={e => setEditor({ ...editor, summary: e.target.value })} /></div>
+            <div><label htmlFor="entry-body">Conteúdo operacional em texto simples</label><textarea id="entry-body" required rows={12} value={editor.body} onChange={e => setEditor({ ...editor, body: e.target.value })} /><small>Texto simples é exibido sem executar HTML ou scripts.</small></div>
+            <div><label htmlFor="entry-tags">Palavras-chave separadas por vírgula</label><input id="entry-tags" value={(editor.tags || []).join(', ')} onChange={e => setEditor({ ...editor, tags: toEntries(e.target.value) })} /></div>
+            <div className="btn-row"><Btn type="submit" disabled={busy}>{busy ? 'Salvando…' : 'Salvar publicação'}</Btn>{editor.id && <Btn className="secondary" onClick={loadHistory}>Ver histórico de revisões</Btn>}</div>
           </form>
-          {!!revisionHistory.length&&<div className="card"><h3>Versões anteriores (somente leitura)</h3><div className="stack" style={{marginTop:12}}>{revisionHistory.map((x,i)=><details key={i}><summary>Revisão {x.revision} • {formatDate(x.created_at)}</summary><pre className="record-detail">{x.snapshot.body}</pre></details>)}</div></div>}
+          {!!revisionHistory.length && <div className="card"><h3>Versões anteriores (somente leitura)</h3><div className="stack" style={{ marginTop: 12 }}>{revisionHistory.map((x, i) => <details key={i}><summary>Revisão {x.revision} • {formatDate(x.created_at)}</summary><pre className="record-detail">{x.snapshot.body}</pre></details>)}</div></div>}
         </div>}
 
-        {screen==='access'&&['dev','coordinator'].includes(activeProfileConfig.id)&&<div key="access" className="tab-view-container"><AccessControl currentUser={user}/></div>}
-        {activeProfileConfig.adminTabs.includes('rules')&&screen==='rules'&&<div key="rules" className="tab-view-container">
+        {screen === 'access' && ['dev', 'coordinator'].includes(activeProfileConfig.id) && <div key="access" className="tab-view-container"><AccessControl currentUser={user} onStateChange={setAccessState} /></div>}
+        {activeProfileConfig.adminTabs.includes('rules') && screen === 'rules' && <div key="rules" className="tab-view-container">
           {tabLoading ? (
-            <TabLoader tabName="Matriz de Regras" subtitle="Sincronizando 769 regras contextuais e cenários do assistente…" icon="settings"/>
+            <TabLoader tabName="Matriz de Regras" subtitle="Sincronizando 769 regras contextuais e cenários do assistente…" icon="settings" />
           ) : (
             <>
               <div><span className="eyebrow">MATRIZ SEMÂNTICA</span><h1>Naturezas e regras do assistente</h1><p className="muted">Catálogo de 769 naturezas importadas do CSV. As fichas servem de consulta; o Chat 190 usa correspondências suficientemente claras e respostas programadas. Regras personalizadas continuam sob controle administrativo.</p></div>
               <form className="card spaced" onSubmit={createRule}>
                 <h2>Adicionar natureza personalizada</h2>
-                <div className="grid2"><div><label>Código da regra</label><input required value={ruleDraft.code} onChange={e=>setRuleDraft({...ruleDraft,code:e.target.value})} placeholder="EX.: TRI-101"/></div>
-                  <div><label>Nome da natureza</label><input required value={ruleDraft.officialNature} onChange={e=>setRuleDraft({...ruleDraft,officialNature:e.target.value})}/></div></div>
-                <div className="grid2"><div><label>Categoria</label><input value={ruleDraft.category} onChange={e=>setRuleDraft({...ruleDraft,category:e.target.value})}/></div>
-                  <div><label>Prioridade</label><select value={ruleDraft.priority} onChange={e=>setRuleDraft({...ruleDraft,priority:e.target.value})}>{['Crítica','Alta','Média','Baixa'].map(x=><option key={x}>{x}</option>)}</select></div></div>
-                <div><label>Grupo de gatilhos obrigatórios (separar por vírgulas)</label><input required value={ruleDraft.group1} onChange={e=>setRuleDraft({...ruleDraft,group1:e.target.value})} placeholder="fraude, golpe, falso"/></div>
-                <div><label>Segundo grupo combinado (opcional)</label><input value={ruleDraft.group2} onChange={e=>setRuleDraft({...ruleDraft,group2:e.target.value})} placeholder="pix, banco, transferência"/></div>
-                <div><label>Explicação para o operador</label><textarea value={ruleDraft.explanation} onChange={e=>setRuleDraft({...ruleDraft,explanation:e.target.value})}/></div>
+                <div className="grid2"><div><label>Código da regra</label><input required value={ruleDraft.code} onChange={e => setRuleDraft({ ...ruleDraft, code: e.target.value })} placeholder="EX.: TRI-101" /></div>
+                  <div><label>Nome da natureza</label><input required value={ruleDraft.officialNature} onChange={e => setRuleDraft({ ...ruleDraft, officialNature: e.target.value })} /></div></div>
+                <div className="grid2"><div><label>Categoria</label><input value={ruleDraft.category} onChange={e => setRuleDraft({ ...ruleDraft, category: e.target.value })} /></div>
+                  <div><label>Prioridade</label><select value={ruleDraft.priority} onChange={e => setRuleDraft({ ...ruleDraft, priority: e.target.value })}>{['Crítica', 'Alta', 'Média', 'Baixa'].map(x => <option key={x}>{x}</option>)}</select></div></div>
+                <div><label>Grupo de gatilhos obrigatórios (separar por vírgulas)</label><input required value={ruleDraft.group1} onChange={e => setRuleDraft({ ...ruleDraft, group1: e.target.value })} placeholder="fraude, golpe, falso" /></div>
+                <div><label>Segundo grupo combinado (opcional)</label><input value={ruleDraft.group2} onChange={e => setRuleDraft({ ...ruleDraft, group2: e.target.value })} placeholder="pix, banco, transferência" /></div>
+                <div><label>Explicação para o operador</label><textarea value={ruleDraft.explanation} onChange={e => setRuleDraft({ ...ruleDraft, explanation: e.target.value })} /></div>
                 <Btn type="submit" disabled={busy}>＋ Salvar regra no banco</Btn>
               </form>
-              <div className="card spaced"><div className="panel-head"><h2>Catálogo e regras visíveis ({totalRules})</h2><span className="badge">{brainRules.custom?.length||0} personalizadas</span></div>
-                {brainRules.custom?.map(x=><div key={x.id} className="record-item"><div><b>{x.definition.officialNature}</b><p>{x.definition.code} • {x.definition.category} • Personalizada</p></div><Btn className="danger tiny" onClick={()=>deleteRule(x.id)}>Excluir</Btn></div>)}
-                {brainRules.extras?.concat(brainRules.base||[]).slice(0,120).map((x,i)=><div key={x.id||i} className="record-item"><div><b>{x.officialNature}</b><p>{x.code} • {x.category} • Natureza importada</p></div><Tag priority={x.priority}/></div>)}{(brainRules.base?.length||0)>120&&<p className="muted">Exibindo as primeiras 120 naturezas nesta visão. Para consultar todas as 769 com descrição, use o Catálogo.</p>}
+              <div className="card spaced"><div className="panel-head"><h2>Catálogo e regras visíveis ({totalRules})</h2><span className="badge">{brainRules.custom?.length || 0} personalizadas</span></div>
+                {brainRules.custom?.map(x => <div key={x.id} className="record-item"><div><b>{x.definition.officialNature}</b><p>{x.definition.code} • {x.definition.category} • Personalizada</p></div><Btn className="danger tiny" onClick={() => deleteRule(x.id)}>Excluir</Btn></div>)}
+                {brainRules.extras?.concat(brainRules.base || []).slice(0, 120).map((x, i) => <div key={x.id || i} className="record-item"><div><b>{x.officialNature}</b><p>{x.code} • {x.category} • Natureza importada</p></div><Tag priority={x.priority} /></div>)}{(brainRules.base?.length || 0) > 120 && <p className="muted">Exibindo as primeiras 120 naturezas nesta visão. Para consultar todas as 769 com descrição, use o Catálogo.</p>}
               </div>
             </>
           )}
         </div>}
 
-        {activeProfileConfig.adminTabs.includes('audit')&&screen==='audit'&&<div key="audit" className="tab-view-container">
+        {activeProfileConfig.adminTabs.includes('audit') && screen === 'audit' && <div key="audit" className="tab-view-container">
           {tabLoading ? (
-            <TabLoader tabName="Registro de Auditoria" subtitle="Carregando histórico de rastreabilidade e ações de gestão…" icon="audit"/>
+            <TabLoader tabName="Registro de Auditoria" subtitle="Carregando histórico de rastreabilidade e ações de gestão…" icon="audit" />
           ) : (
             <>
               <div><span className="eyebrow">RASTREABILIDADE</span><h1>Registro de auditoria</h1><p className="muted">Log básico das ações de gestão e autenticação.</p></div>
               <div className="card table-scroll">
-                <table><thead><tr><th>Data</th><th>Operador</th><th>Ação</th><th>Alvo</th></tr></thead><tbody>{events.map((a,i)=><tr key={i}><td>{formatDate(a.at)}</td><td>{a.username||'—'}</td><td>{a.action}</td><td>{a.target||'—'}</td></tr>)}</tbody></table>
-                {!events.length&&<p className="muted">Nenhum evento registrado.</p>}
+                <table><thead><tr><th>Data</th><th>Operador</th><th>Ação</th><th>Alvo</th></tr></thead><tbody>{events.map((a, i) => <tr key={i}><td>{formatDate(a.at)}</td><td>{a.username || '—'}</td><td>{a.action}</td><td>{a.target || '—'}</td></tr>)}</tbody></table>
+                {!events.length && <p className="muted">Nenhum evento registrado.</p>}
               </div>
             </>
           )}
@@ -674,49 +800,49 @@ export default function Home(){
         <footer className="footer-note">Base de Conhecimento 190 • Uso controlado • Classificação automática assistiva, sujeita à revisão e homologação</footer>
 
 
-        {profileModalOpen&&<div className="profile-modal-backdrop" onClick={()=>setProfileModalOpen(false)}>
-          <div className="profile-modal-card" onClick={e=>e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="pm-modal-title">
+        {profileModalOpen && <div className="profile-modal-backdrop" onClick={() => setProfileModalOpen(false)}>
+          <div className="profile-modal-card" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="pm-modal-title">
             <div className="profile-modal-header">
               <div>
-                <span className="badge">{canPreviewRoles?'MODO DE TESTE · PRÉVIA VISUAL':'CARGO AUTENTICADO'}</span>
-                <h2 id="pm-modal-title" style={{fontSize:22,margin:'7px 0'}}>
-                  {canPreviewRoles?'Alternar Perfil do Sistema':`Seu cargo: ${activeProfileConfig.name}`}
+                <span className="badge">{canPreviewRoles ? 'MODO DE TESTE · PRÉVIA VISUAL' : 'CARGO AUTENTICADO'}</span>
+                <h2 id="pm-modal-title" style={{ fontSize: 22, margin: '7px 0' }}>
+                  {canPreviewRoles ? 'Alternar Perfil do Sistema' : `Seu cargo: ${activeProfileConfig.name}`}
                 </h2>
-                <p className="muted" style={{fontSize:13}}>
-                  {canPreviewRoles?'Escolha um perfil para testar as telas e os limites visuais, como antes. O acesso real aos dados e ações continua protegido pelo servidor.':'Seu cargo é definido pela coordenação ou Dev, e não pode ser alterado nesta interface.'}
+                <p className="muted" style={{ fontSize: 13 }}>
+                  {canPreviewRoles ? 'Escolha um perfil para testar as telas e os limites visuais, como antes. O acesso real aos dados e ações continua protegido pelo servidor.' : 'Seu cargo é definido pela coordenação ou Dev, e não pode ser alterado nesta interface.'}
                 </p>
               </div>
-              <button type="button" className="profile-modal-close" onClick={()=>setProfileModalOpen(false)} aria-label="Fechar janela">×</button>
+              <button type="button" className="profile-modal-close" onClick={() => setProfileModalOpen(false)} aria-label="Fechar janela">×</button>
             </div>
-            {canPreviewRoles?<div className="profile-modal-grid">
-              {PROFILES.map(p=>{
-                const selected=p.id===activeProfileConfig.id;
-                return <div className={'profile-choice-card'+(selected?' active':'')} key={p.id}>
+            {canPreviewRoles ? <div className="profile-modal-grid">
+              {PROFILES.map(p => {
+                const selected = p.id === activeProfileConfig.id;
+                return <div className={'profile-choice-card' + (selected ? ' active' : '')} key={p.id}>
                   <div className="profile-choice-head">
-                    <span className="profile-choice-icon" style={{background:p.color+'22',color:p.color,borderColor:p.color+'55'}}><Icon name={p.icon} size={20}/></span>
-                    <div style={{minWidth:0,flex:1}}>
+                    <span className="profile-choice-icon" style={{ background: p.color + '22', color: p.color, borderColor: p.color + '55' }}><Icon name={p.icon} size={20} /></span>
+                    <div style={{ minWidth: 0, flex: 1 }}>
                       <strong>{p.name}</strong>
-                      <small className="muted" style={{display:'block',marginTop:4}}>{p.roleTitle}</small>
+                      <small className="muted" style={{ display: 'block', marginTop: 4 }}>{p.roleTitle}</small>
                     </div>
-                    {selected&&<span className="badge">Em uso</span>}
+                    {selected && <span className="badge">Em uso</span>}
                   </div>
-                  <p style={{fontSize:12,lineHeight:1.5,margin:'10px 0'}}>{p.desc}</p>
+                  <p style={{ fontSize: 12, lineHeight: 1.5, margin: '10px 0' }}>{p.desc}</p>
                   <div className="profile-choice-details">
                     <div className="profile-detail-row"><span className="profile-detail-tag">Abas:</span><span className="profile-detail-val">{p.centralTabs.length} disponíveis na prévia</span></div>
                     <div className="profile-detail-row"><span className="profile-detail-tag">Acesso real:</span><span className="profile-detail-val">Permanece Dev</span></div>
                   </div>
-                  <button type="button" className={'btn tiny '+(selected?'secondary':'')} style={{marginTop:14,alignSelf:'flex-end'}} onClick={()=>switchProfile(p.id)}>
-                    {selected?'Perfil selecionado':'Ativar este perfil →'}
+                  <button type="button" className={'btn tiny ' + (selected ? 'secondary' : '')} style={{ marginTop: 14, alignSelf: 'flex-end' }} onClick={() => switchProfile(p.id)}>
+                    {selected ? 'Perfil selecionado' : 'Ativar este perfil →'}
                   </button>
                 </div>;
               })}
-            </div>:<div className="card" style={{margin:20}}><strong>{activeProfileConfig.roleTitle}</strong><p className="muted" style={{marginTop:7}}>{activeProfileConfig.desc}</p></div>}
+            </div> : <div className="card" style={{ margin: 20 }}><strong>{activeProfileConfig.roleTitle}</strong><p className="muted" style={{ marginTop: 7 }}>{activeProfileConfig.desc}</p></div>}
             <div className="profile-modal-footer">
-              <small className="muted">{canPreviewRoles?'A simulação é individual deste navegador e não altera seu cargo no banco.': 'Solicite mudanças de cargo à coordenação ou à administração.'}</small>
+              <small className="muted">{canPreviewRoles ? 'A simulação é individual deste navegador e não altera seu cargo no banco.' : 'Solicite mudanças de cargo à coordenação ou à administração.'}</small>
               <div className="btn-row">
-                {canPreviewRoles&&<button type="button" className="btn secondary tiny" onClick={()=>switchProfile(user.operationalRole)}>Voltar ao Dev</button>}
-                {['dev','coordinator'].includes(user?.operationalRole)&&<button type="button" className="btn tiny" onClick={()=>{if(canPreviewRoles)switchProfile(user.operationalRole);setProfileModalOpen(false);setScreen('access');}}>Acessos e Cargos</button>}
-                <button type="button" className="btn secondary tiny" onClick={()=>setProfileModalOpen(false)}>Fechar</button>
+                {canPreviewRoles && <button type="button" className="btn secondary tiny" onClick={() => switchProfile(user.operationalRole)}>Voltar ao Dev</button>}
+                {['dev', 'coordinator'].includes(user?.operationalRole) && <button type="button" className="btn tiny" onClick={() => { if (canPreviewRoles) switchProfile(user.operationalRole); setProfileModalOpen(false); setScreen('access'); }}>Acessos e Cargos</button>}
+                <button type="button" className="btn secondary tiny" onClick={() => setProfileModalOpen(false)}>Fechar</button>
               </div>
             </div>
           </div>

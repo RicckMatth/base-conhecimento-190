@@ -39,7 +39,7 @@ function Status({value}){
   const status=value==='Resolvido'?'resolved':value==='Em atendimento'?'working':'pending';
   return <span className={'fc-status '+status}>{value}</span>;
 }
-export default function FloorControl({isAdmin=false}){
+export default function FloorControl({isAdmin=false,onStateChange=null}){
   const [tab,setTab]=useState('reports');
   const [cell,setCell]=useState({desk:'',category:CELL_OPTIONS[0][1],description:''});
   const [tech,setTech]=useState({desk:'',category:TECH_OPTIONS[0][0],urgency:'Moderado',description:'',asset:''});
@@ -63,6 +63,12 @@ export default function FloorControl({isAdmin=false}){
     refresh();const id=setInterval(refresh,20000);
     return()=>clearInterval(id);
   },[isAdmin,refresh]);
+
+  useEffect(()=>{
+    if(typeof onStateChange==='function'){
+      onStateChange({tab,setTab,isAdmin,summary});
+    }
+  },[tab,isAdmin,summary,onStateChange]);
 
   const filtered=useMemo(()=>events.filter(e=>(filter==='all'||e.kind===filter)),[events,filter]);
   const selectedEvents=useMemo(()=>events.filter(e=>Number(e.desk)===selectedDesk&&e.status!=='Resolvido'),[events,selectedDesk]);

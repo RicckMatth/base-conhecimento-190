@@ -642,11 +642,12 @@
   grid-template-columns: 1fr;
   gap: 24px;
   align-items: start;
+  width: 100%;
 }
 
-@media (min-width: 1080px) {
+@media (min-width: 1280px) {
   .qm-grid-cadastro {
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+    grid-template-columns: minmax(0, 1fr) minmax(290px, 340px);
   }
 }
 
@@ -1685,18 +1686,42 @@ input[type="range"].qm-score-slider::-moz-range-thumb {
 
 .qm-modal-check-tile {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
+  gap: 12px;
+  padding: 10px 14px;
   border-radius: 10px;
   background-color: var(--copom-card-tint);
   border: 1px solid var(--copom-border);
   color: var(--copom-dark);
   cursor: pointer;
   transition: all 0.15s ease;
+  user-select: none;
 }
 .qm-modal-check-tile:hover {
   border-color: var(--copom-blue);
+}
+
+.qm-modal-checkbox {
+  margin: 0;
+  padding: 0;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--copom-blue);
+  cursor: pointer;
+}
+
+.qm-modal-check-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.qm-modal-check-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--copom-dark);
 }
 
 .qm-modal-text-box {
@@ -1830,3 +1855,488 @@ input[type="range"].qm-score-slider::-moz-range-thumb {
   0% { opacity: 0; transform: translateY(6px); }
   100% { opacity: 1; transform: translateY(0); }
 }
+
+/* =====================================================================
+ * BLOCOS OFICIAIS DE MONITORIA (100 PTS) E CRITÉRIOS (SIM / NÃO / N.A.)
+ * ===================================================================== */
+.qm-block-card {
+  border-left: 4px solid var(--copom-blue);
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
+}
+
+.qm-block-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--copom-border-light);
+}
+
+@media (min-width: 640px) {
+  .qm-block-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.qm-block-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: var(--copom-soft);
+  color: var(--copom-blue);
+  border: 1px solid color-mix(in srgb, var(--copom-blue) 30%, transparent);
+}
+
+.qm-criterion-box {
+  background-color: var(--copom-card-tint);
+  border: 1px solid var(--copom-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.15s ease;
+}
+
+@media (min-width: 768px) {
+  .qm-criterion-box {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+}
+
+.qm-criterion-box:hover {
+  border-color: color-mix(in srgb, var(--copom-blue) 50%, var(--copom-border));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.qm-criterion-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.qm-crit-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.qm-crit-code {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background-color: var(--copom-navy);
+  color: #55d6df;
+  border: 1px solid #244050;
+  letter-spacing: 0.03em;
+}
+
+.qm-crit-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--copom-dark);
+}
+
+.qm-crit-weight {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--copom-muted);
+  background-color: var(--copom-card-muted);
+  border: 1px solid var(--copom-border);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.qm-crit-desc {
+  font-size: 12px;
+  color: var(--copom-text-desc);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.qm-crit-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.qm-opt-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid var(--copom-border);
+  background-color: var(--copom-card);
+  color: var(--copom-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 58px;
+  text-align: center;
+  user-select: none;
+}
+
+.qm-opt-btn:hover {
+  background-color: var(--copom-card-muted);
+  color: var(--copom-dark);
+  border-color: var(--copom-border);
+}
+
+.qm-opt-btn.sim.active {
+  background: linear-gradient(135deg, #0d9488, #0b766c);
+  border-color: #0b766c;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.35);
+}
+
+.qm-opt-btn.nao.active {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  border-color: #b91c1c;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+}
+
+.qm-opt-btn.na.active {
+  background: linear-gradient(135deg, #64748b, #475569);
+  border-color: #475569;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3);
+}
+
+/* =====================================================================
+ * PENALIDADES CRÍTICAS / TOLERÂNCIA ZERO (NOTA ZERADA)
+ * ===================================================================== */
+.qm-critical-card {
+  border-left: 4px solid var(--copom-red);
+  background-color: var(--copom-card);
+  border-color: color-mix(in srgb, var(--copom-red) 35%, var(--copom-border));
+  margin-bottom: 20px;
+}
+
+.qm-critical-active-banner {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.15), rgba(185, 28, 28, 0.1));
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  color: #ef4444;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  animation: qmPulseAlert 2s infinite ease-in-out;
+}
+
+@keyframes qmPulseAlert {
+  0%, 100% { border-color: rgba(220, 38, 38, 0.35); }
+  50% { border-color: rgba(220, 38, 38, 0.85); box-shadow: 0 0 12px rgba(220, 38, 38, 0.25); }
+}
+
+.qm-critical-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 640px) {
+  .qm-critical-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.qm-critical-item {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--copom-border);
+  background-color: var(--copom-card-tint);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.qm-critical-item:hover {
+  border-color: color-mix(in srgb, var(--copom-red) 50%, var(--copom-border));
+}
+
+.qm-critical-item.active {
+  background-color: var(--copom-badge-red-bg);
+  border-color: var(--copom-red);
+  box-shadow: 0 0 0 1px var(--copom-red);
+}
+
+.qm-critical-checkbox {
+  margin: 2px 0 0 0;
+  padding: 0;
+  accent-color: #dc2626;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.qm-critical-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.qm-critical-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--copom-dark);
+  margin-bottom: 2px;
+  line-height: 1.3;
+}
+
+.qm-critical-desc {
+  font-size: 11px;
+  color: var(--copom-text-desc);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* =====================================================================
+ * PROVIDÊNCIAS GERENCIAIS (ELOGIO / FEEDBACK / RECICLAGEM)
+ * ===================================================================== */
+.qm-mgmt-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+@media (min-width: 640px) {
+  .qm-mgmt-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.qm-mgmt-card {
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--copom-border);
+  background-color: var(--copom-card-tint);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  user-select: none;
+  min-height: 52px;
+}
+
+.qm-mgmt-card:hover {
+  border-color: var(--copom-blue);
+  background-color: var(--copom-card);
+}
+
+.qm-mgmt-card.active {
+  border-color: var(--copom-blue);
+  background-color: var(--copom-soft);
+  box-shadow: 0 0 0 1.5px var(--copom-blue);
+}
+
+.qm-mgmt-radio {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+  accent-color: var(--copom-blue);
+  cursor: pointer;
+}
+
+.qm-mgmt-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  flex: 1;
+}
+
+.qm-mgmt-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--copom-dark);
+  line-height: 1.35;
+  display: block;
+}
+
+.qm-mgmt-card.active .qm-mgmt-title {
+  color: var(--copom-blue);
+  font-weight: 700;
+}
+
+.qm-mgmt-desc {
+  font-size: 11px;
+  color: var(--copom-text-desc);
+  line-height: 1.35;
+  margin-top: 2px;
+}
+
+/* =====================================================================
+ * SISTEMA INTEGRADO DE ASSINATURA DIGITAL (CANVAS / CERTIFICAÇÃO)
+ * ===================================================================== */
+.qm-canvas-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  border: 2px dashed var(--copom-border);
+  border-radius: 12px;
+  background-color: #ffffff;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+:root[data-theme="dark"] .qm-canvas-wrap {
+  background-color: #07131c;
+  border-color: #244050;
+}
+
+.qm-signature-canvas {
+  width: 100%;
+  max-width: 400px;
+  height: 100px;
+  cursor: crosshair;
+  touch-action: none;
+  background: transparent;
+}
+
+.qm-canvas-guide {
+  font-size: 10px;
+  color: var(--copom-muted);
+  text-align: center;
+  margin-top: 4px;
+  border-top: 1px dashed var(--copom-border);
+  padding-top: 4px;
+  width: 90%;
+  letter-spacing: 0.02em;
+}
+
+.qm-agree-label {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 14px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--copom-dark);
+  padding: 10px 14px;
+  background-color: var(--copom-card-tint);
+  border: 1px solid var(--copom-border);
+  border-radius: 10px;
+  transition: all 0.15s ease;
+}
+
+.qm-agree-label:hover {
+  border-color: var(--copom-blue);
+}
+
+.qm-agree-checkbox {
+  margin: 2px 0 0 0;
+  padding: 0;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--copom-blue);
+  cursor: pointer;
+}
+
+.qm-agree-text {
+  font-weight: 600;
+  flex: 1;
+}
+
+.qm-signed-box {
+  background-color: var(--copom-badge-emerald-bg);
+  border: 1px solid var(--copom-badge-emerald-border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.qm-cert-stamp {
+  font-family: monospace;
+  font-size: 10px;
+  color: var(--copom-badge-emerald-text);
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+
+.qm-sig-preview {
+  max-height: 70px;
+  max-width: 220px;
+  object-fit: contain;
+  background-color: #ffffff;
+  border: 1px solid var(--copom-border);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+:root[data-theme="dark"] .qm-sig-preview {
+  background-color: #0c1a26;
+  border-color: #263a48;
+}
+
+/* =====================================================================
+ * BOTÃO DE DOWNLOAD DE FICHA EM PDF
+ * ===================================================================== */
+.qm-btn-pdf {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #096d85, #07586b);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid color-mix(in srgb, var(--copom-blue) 40%, transparent);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(9, 109, 133, 0.25);
+  white-space: nowrap;
+}
+
+.qm-btn-pdf:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(9, 109, 133, 0.35);
+}
+
+.qm-btn-pdf:active {
+  transform: translateY(0);
+}
+

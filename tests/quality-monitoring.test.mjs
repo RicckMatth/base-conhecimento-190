@@ -5,6 +5,7 @@ import {PGlite} from '@electric-sql/pglite';
 import {QUALITY_BLOCKS,QUALITY_CRITICAL,QUALITY_MAX,qualityScore,qualityClass,qualitySignature,qualitySummary} from '../lib/quality-core.js';
 import {prepareQualitySchema} from '../lib/quality-schema.js';
 import {qualityBoard,qualitySaveMonitor,qualitySaveFollowup,qualityAcknowledge,qualityHistory} from '../lib/quality-store.js';
+import {generateMonitoriaPdf,generateAcompanhamentoPdf} from '../lib/quality-pdf.js';
 
 const day='2026-11-12',month='2026-11',ratings=()=>Object.fromEntries(QUALITY_BLOCKS.flatMap(b=>b.items).map(x=>[x.id,'yes']));
 const actors=()=>({
@@ -137,4 +138,53 @@ test('histórico de qualidade: criação, mudança, publicação e ciência não
   await assert.rejects(pg.query('UPDATE quality_change_history SET action=$1 WHERE record_id=$2',['updated',draftId]),/permanente|proibida|exclusão/i);
   await assert.rejects(pg.query('DELETE FROM quality_monitors WHERE id=$1',[draftId]),/não podem ser excluídos/i);
  }finally{await pg.close();}
+});
+
+test('geração e manipulação de PDF: preenchimento automático de monitoria e acompanhamento com assinatura',async()=>{
+  const samplePng='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+  const monitorRow={
+    operator_name:'Sd. Lucas Ferreira',
+    operator_username:'sd.lucas',
+    audit_day:'2026-11-20',
+    auditor_name:'Mariana Costa',
+    protocol_cad:'CAD-190-2026-085104',
+    duration_seconds:245,
+    shift_period:'weekday',
+    audit_type:'audio',
+    ratings:{'1.1':'yes','1.2':'yes','2.1':'yes','2.2':'yes','2.3':'yes','2.4':'yes','2.5':'yes','3.1':'yes','3.2':'yes','3.3':'yes','4.1':'yes','4.2':'yes'},
+    critical:[],
+    score:100,
+    strengths:'Ótima comunicação e localização precisa.',
+    improvements:'Nenhum ponto crítico.',
+    corrective_action:'Manter padrão operacional.',
+    management_action:'praise',
+    acknowledged_at:'2026-11-20T14:30:00Z',
+    operator_signature_name:'Sd. Lucas Ferreira',
+    operator_signature_image:samplePng
+  };
+  const monitorPdf=await generateMonitoriaPdf(monitorRow);
+  assert.ok(monitorPdf instanceof Uint8Array);
+  assert.ok(monitorPdf.length>10000);
+
+  const followupRow={
+    operator_name:'Sd. Lucas Ferreira',
+    operator_username:'sd.lucas',
+    period:'2026-11',
+    auditor_name:'Mariana Costa',
+    shift_team:'Alfa Noturno',
+    snapshot:{
+      summary:{count:2,average:98,tmaSeconds:240,criticalCount:0},
+      history:[monitorRow]
+    },
+    strengths:'Aderência completa ao protocolo.',
+    recurring_gaps:'Nenhuma recorrência.',
+    corrective_action:'Plano de manutenção.',
+    management_action:'praise',
+    acknowledged_at:'2026-11-20T15:00:00Z',
+    operator_signature_name:'Sd. Lucas Ferreira',
+    operator_signature_image:samplePng
+  };
+  const followupPdf=await generateAcompanhamentoPdf(followupRow,[monitorRow]);
+  assert.ok(followupPdf instanceof Uint8Array);
+  assert.ok(followupPdf.length>10000);
 });

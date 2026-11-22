@@ -2055,9 +2055,11 @@
   }
 </style>
 <style id="base190-sade-embedded-theme">
-/* Quando embutido, a Base 190 controla a navegação e a identidade visual. */
-body.base190-embedded{--sade-bg:#f2f5f8;--sade-panel:#fff;--sade-ink:#142c40;--sade-muted:#5e7181;--sade-border:#dce5eb;--sade-accent:#086b83;--sade-soft:#eaf5f7}
-body.base190-embedded.base190-dark{--sade-bg:#09141e;--sade-panel:#101f2c;--sade-ink:#e3edf3;--sade-muted:#9db0bd;--sade-border:#263a48;--sade-accent:#69d0e0;--sade-soft:#173544}
+/* Base 190 / SADE - Modo Claro e Escuro Corporativo Completo */
+body.base190-embedded{--sade-bg:#f2f5f8;--sade-panel:#ffffff;--sade-ink:#142c40;--sade-muted:#5e7181;--sade-border:#dce5eb;--sade-accent:#086b83;--sade-soft:#eaf5f7}
+body.base190-embedded.base190-dark,
+html.dark body{--sade-bg:#09141e;--sade-panel:#101f2c;--sade-ink:#e3edf3;--sade-muted:#9db0bd;--sade-border:#263a48;--sade-accent:#69d0e0;--sade-soft:#173544}
+
 body.base190-embedded{
   background:var(--sade-bg)!important;
   background-image:none!important;
@@ -2066,28 +2068,717 @@ body.base190-embedded{
 }
 body.base190-embedded>header{display:none!important}
 body.base190-embedded #chatContainer{padding:16px clamp(12px,2vw,24px);background:var(--sade-bg)}
-body.base190-embedded .glass-panel{
-  background:var(--sade-panel)!important;
-  border-color:var(--sade-border)!important;
-  color:var(--sade-ink);
-  box-shadow:0 5px 20px #051f2d09;
+
+/* =========================================================================
+ * MODO CLARO COMPLETO DA BASE 190 (QUANDO NÃO-DARK OU BASE190-LIGHT)
+ * ========================================================================= */
+body.base190-light,
+body.base190-embedded:not(.base190-dark),
+html:not(.dark) body {
+  background: #f2f5f8 !important;
+  background-image: none !important;
+  color: #142c40 !important;
 }
-body.base190-embedded footer.glass-panel{border-top:1px solid var(--sade-border)!important;padding:12px 16px}
-body.base190-embedded .glass-panel h1,
-body.base190-embedded .glass-panel h2,
-body.base190-embedded .glass-panel h3,
-body.base190-embedded #chatContainer h2{color:var(--sade-ink)!important}
-body.base190-embedded .glass-panel p,
-body.base190-embedded .glass-panel .text-slate-400,
-body.base190-embedded .glass-panel .text-slate-500{color:var(--sade-muted)!important}
-body.base190-embedded :is(input,textarea,select){
-  background:var(--sade-panel);
-  border-color:var(--sade-border);
-  color:var(--sade-ink);
-  border-radius:10px;
+
+/* Painéis de Vidro / Cards Principais no Modo Claro */
+body.base190-light .glass-panel,
+body.base190-embedded:not(.base190-dark) .glass-panel,
+html:not(.dark) body .glass-panel {
+  background: #ffffff !important;
+  border-color: #dce5eb !important;
+  color: #142c40 !important;
+  box-shadow: 0 4px 20px rgba(18, 51, 68, 0.05) !important;
 }
-body.base190-embedded :is(input,textarea,select):focus-visible{outline:2px solid var(--sade-accent);outline-offset:1px}
-body.base190-embedded .text-blue-400{color:var(--sade-accent)!important}
+
+body.base190-light .glass-panel h1,
+body.base190-light .glass-panel h2,
+body.base190-light .glass-panel h3,
+body.base190-light #chatContainer h2,
+body.base190-light #chatContainer h3,
+body.base190-light #chatContainer h4,
+body.base190-embedded:not(.base190-dark) .glass-panel h1,
+body.base190-embedded:not(.base190-dark) .glass-panel h2,
+body.base190-embedded:not(.base190-dark) .glass-panel h3,
+body.base190-embedded:not(.base190-dark) #chatContainer h2,
+body.base190-embedded:not(.base190-dark) #chatContainer h3,
+body.base190-embedded:not(.base190-dark) #chatContainer h4,
+html:not(.dark) body .glass-panel h1,
+html:not(.dark) body .glass-panel h2,
+html:not(.dark) body .glass-panel h3,
+html:not(.dark) body #chatContainer h2,
+html:not(.dark) body #chatContainer h3,
+html:not(.dark) body #chatContainer h4 {
+  color: #0f172a !important;
+}
+
+body.base190-light .glass-panel p,
+body.base190-embedded:not(.base190-dark) .glass-panel p,
+html:not(.dark) body .glass-panel p {
+  color: #475569 !important;
+}
+
+/* Card Inicial de Boas-Vindas: 3 Blocos de Funcionalidade */
+body.base190-light .intro-feature-card,
+body.base190-embedded:not(.base190-dark) .intro-feature-card,
+html:not(.dark) body .intro-feature-card {
+  background-color: #f8fafc !important;
+  border: 1px solid #dce5eb !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+body.base190-light .intro-feature-card p,
+body.base190-embedded:not(.base190-dark) .intro-feature-card p,
+html:not(.dark) body .intro-feature-card p {
+  color: #475569 !important;
+}
+
+body.base190-light .intro-feature-card strong,
+body.base190-embedded:not(.base190-dark) .intro-feature-card strong,
+html:not(.dark) body .intro-feature-card strong {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+/* Banner de Aviso de Apoio Orientativo */
+body.base190-light .orientative-disclaimer-banner,
+body.base190-embedded:not(.base190-dark) .orientative-disclaimer-banner,
+html:not(.dark) body .orientative-disclaimer-banner {
+  color: #92400e !important;
+  background-color: #fffbeb !important;
+  border: 1px solid #fde68a !important;
+  border-radius: 10px !important;
+  padding: 8px 12px !important;
+  display: block !important;
+}
+
+/* Botões de Cenário Rápido (Testar Cenário:) */
+body.base190-light footer.glass-panel,
+body.base190-embedded:not(.base190-dark) footer.glass-panel,
+html:not(.dark) body footer.glass-panel {
+  background: #ffffff !important;
+  border-top: 1px solid #dce5eb !important;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.03) !important;
+}
+
+body.base190-light footer .text-slate-400,
+body.base190-embedded:not(.base190-dark) footer .text-slate-400,
+html:not(.dark) body footer .text-slate-400 {
+  color: #64748b !important;
+  font-weight: 700 !important;
+}
+
+body.base190-light footer .scenario-btn.bg-rose-500\/10,
+body.base190-embedded:not(.base190-dark) footer .scenario-btn.bg-rose-500\/10,
+html:not(.dark) body footer .scenario-btn.bg-rose-500\/10 {
+  background-color: #fef2f2 !important;
+  border-color: #fecaca !important;
+  color: #b91c1c !important;
+}
+
+body.base190-light footer .scenario-btn.bg-blue-500\/10,
+body.base190-embedded:not(.base190-dark) footer .scenario-btn.bg-blue-500\/10,
+html:not(.dark) body footer .scenario-btn.bg-blue-500\/10 {
+  background-color: #eff6ff !important;
+  border-color: #bfdbfe !important;
+  color: #1d4ed8 !important;
+}
+
+body.base190-light footer .scenario-btn.bg-slate-900\/90,
+body.base190-embedded:not(.base190-dark) footer .scenario-btn.bg-slate-900\/90,
+html:not(.dark) body footer .scenario-btn.bg-slate-900\/90 {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+body.base190-light footer .scenario-btn.bg-slate-900\/90:hover,
+body.base190-embedded:not(.base190-dark) footer .scenario-btn.bg-slate-900\/90:hover,
+html:not(.dark) body footer .scenario-btn.bg-slate-900\/90:hover {
+  background-color: #e2e8f0 !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+/* Caixa de Input e Formulário no Rodapé */
+body.base190-light footer form,
+body.base190-embedded:not(.base190-dark) footer form,
+html:not(.dark) body footer form {
+  background-color: #f8fafc !important;
+  border: 1.5px solid #dce5eb !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.base190-light footer form:focus-within,
+body.base190-embedded:not(.base190-dark) footer form:focus-within,
+html:not(.dark) body footer form:focus-within {
+  background-color: #ffffff !important;
+  border-color: #096d85 !important;
+  box-shadow: 0 0 0 3px rgba(9, 109, 133, 0.15) !important;
+}
+
+body.base190-light #reportInput,
+body.base190-embedded:not(.base190-dark) #reportInput,
+html:not(.dark) body #reportInput {
+  color: #142c40 !important;
+  background: transparent !important;
+}
+
+body.base190-light #reportInput::placeholder,
+body.base190-embedded:not(.base190-dark) #reportInput::placeholder,
+html:not(.dark) body #reportInput::placeholder {
+  color: #94a3b8 !important;
+}
+
+body.base190-light footer button[type="submit"],
+body.base190-embedded:not(.base190-dark) footer button[type="submit"],
+html:not(.dark) body footer button[type="submit"] {
+  background: linear-gradient(135deg, #096d85, #07586b) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(9, 109, 133, 0.25) !important;
+}
+
+/* Balão do Operador / Usuário no Chat */
+body.base190-light .user-bubble,
+body.base190-embedded:not(.base190-dark) .user-bubble,
+html:not(.dark) body .user-bubble {
+  background-color: #e0f2fe !important;
+  border: 1px solid #7dd3fc !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.08) !important;
+}
+body.base190-light .user-bubble-title,
+body.base190-embedded:not(.base190-dark) .user-bubble-title,
+html:not(.dark) body .user-bubble-title {
+  color: #0369a1 !important;
+  font-weight: 700 !important;
+}
+body.base190-light .user-bubble-time,
+body.base190-embedded:not(.base190-dark) .user-bubble-time,
+html:not(.dark) body .user-bubble-time {
+  color: #0284c7 !important;
+}
+body.base190-light .user-bubble-text,
+body.base190-embedded:not(.base190-dark) .user-bubble-text,
+html:not(.dark) body .user-bubble-text {
+  color: #0c4a6e !important;
+  font-weight: 500 !important;
+}
+
+/* =========================================================================
+ * CARDS DE RESULTADO DA TRIAGEM (RESPOSTAS / ENTIDADES / QUESITOS)
+ * ========================================================================= */
+body.base190-light .bg-slate-950\/70,
+body.base190-light .bg-slate-950\/80,
+body.base190-light .bg-slate-950\/60,
+body.base190-light .bg-slate-950,
+body.base190-embedded:not(.base190-dark) .bg-slate-950\/70,
+body.base190-embedded:not(.base190-dark) .bg-slate-950\/80,
+body.base190-embedded:not(.base190-dark) .bg-slate-950\/60,
+body.base190-embedded:not(.base190-dark) .bg-slate-950,
+html:not(.dark) body .bg-slate-950\/70,
+html:not(.dark) body .bg-slate-950\/80,
+html:not(.dark) body .bg-slate-950\/60,
+html:not(.dark) body .bg-slate-950 {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Seção 1: Papéis e Entidades (Solicitante, Vítima, Autor, Arma) */
+body.base190-light .bg-slate-900\/70,
+body.base190-embedded:not(.base190-dark) .bg-slate-900\/70,
+html:not(.dark) body .bg-slate-900\/70 {
+  background-color: #eff6ff !important;
+  border-color: #bfdbfe !important;
+}
+body.base190-light .bg-emerald-950\/15,
+body.base190-embedded:not(.base190-dark) .bg-emerald-950\/15,
+html:not(.dark) body .bg-emerald-950\/15 {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+}
+body.base190-light .bg-rose-950\/15,
+body.base190-embedded:not(.base190-dark) .bg-rose-950\/15,
+html:not(.dark) body .bg-rose-950\/15 {
+  background-color: #fef2f2 !important;
+  border-color: #fecaca !important;
+}
+
+body.base190-light .text-blue-300,
+body.base190-embedded:not(.base190-dark) .text-blue-300,
+html:not(.dark) body .text-blue-300 {
+  color: #1d4ed8 !important;
+}
+body.base190-light .text-emerald-200,
+body.base190-embedded:not(.base190-dark) .text-emerald-200,
+html:not(.dark) body .text-emerald-200 {
+  color: #047857 !important;
+}
+body.base190-light .text-rose-200,
+body.base190-embedded:not(.base190-dark) .text-rose-200,
+html:not(.dark) body .text-rose-200 {
+  color: #b91c1c !important;
+}
+
+/* Pill de Contexto (Doméstico vs Comum) */
+body.base190-light .context-pill,
+body.base190-embedded:not(.base190-dark) .context-pill,
+html:not(.dark) body .context-pill {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+body.base190-light .context-pill.bg-purple-500\/10,
+body.base190-embedded:not(.base190-dark) .context-pill.bg-purple-500\/10,
+html:not(.dark) body .context-pill.bg-purple-500\/10 {
+  background-color: #f3e8ff !important;
+  border-color: #d8b4fe !important;
+  color: #7e22ce !important;
+}
+
+/* Card de Instrumento / Arma */
+body.base190-light .arma-card.arma-nenhuma,
+body.base190-embedded:not(.base190-dark) .arma-card.arma-nenhuma,
+html:not(.dark) body .arma-card.arma-nenhuma {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+body.base190-light .arma-card.arma-nenhuma div,
+body.base190-light .arma-card.arma-nenhuma span,
+body.base190-embedded:not(.base190-dark) .arma-card.arma-nenhuma div,
+body.base190-embedded:not(.base190-dark) .arma-card.arma-nenhuma span,
+html:not(.dark) body .arma-card.arma-nenhuma div,
+html:not(.dark) body .arma-card.arma-nenhuma span {
+  color: #334155 !important;
+}
+body.base190-light .arma-card.arma-fogo,
+body.base190-embedded:not(.base190-dark) .arma-card.arma-fogo,
+html:not(.dark) body .arma-card.arma-fogo {
+  background-color: #fef2f2 !important;
+  border-color: #fca5a5 !important;
+  color: #991b1b !important;
+}
+body.base190-light .arma-card.arma-fogo div,
+body.base190-light .arma-card.arma-fogo span,
+body.base190-embedded:not(.base190-dark) .arma-card.arma-fogo div,
+body.base190-embedded:not(.base190-dark) .arma-card.arma-fogo span,
+html:not(.dark) body .arma-card.arma-fogo div,
+html:not(.dark) body .arma-card.arma-fogo span {
+  color: #991b1b !important;
+}
+body.base190-light .arma-card.arma-branca,
+body.base190-embedded:not(.base190-dark) .arma-card.arma-branca,
+html:not(.dark) body .arma-card.arma-branca {
+  background-color: #fffbeb !important;
+  border-color: #fcd34d !important;
+  color: #92400e !important;
+}
+body.base190-light .arma-card.arma-branca div,
+body.base190-light .arma-card.arma-branca span,
+body.base190-embedded:not(.base190-dark) .arma-card.arma-branca div,
+body.base190-embedded:not(.base190-dark) .arma-card.arma-branca span,
+html:not(.dark) body .arma-card.arma-branca div,
+html:not(.dark) body .arma-card.arma-branca span {
+  color: #92400e !important;
+}
+
+/* Seção 2: Relato Bruto e Relato Técnico Aprimorado */
+body.base190-light .bg-slate-900\/60,
+body.base190-embedded:not(.base190-dark) .bg-slate-900\/60,
+html:not(.dark) body .bg-slate-900\/60 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+body.base190-light .from-emerald-950\/20,
+body.base190-embedded:not(.base190-dark) .from-emerald-950\/20,
+html:not(.dark) body .from-emerald-950\/20 {
+  background: #ffffff !important;
+  border: 1.5px solid #a7f3d0 !important;
+  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.07) !important;
+}
+
+body.base190-light .live-count-badge,
+body.base190-embedded:not(.base190-dark) .live-count-badge,
+html:not(.dark) body .live-count-badge {
+  background-color: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
+}
+body.base190-light .live-bar-track,
+body.base190-embedded:not(.base190-dark) .live-bar-track,
+html:not(.dark) body .live-bar-track {
+  background-color: #e2e8f0 !important;
+}
+body.base190-light .btn-copy-evolved,
+body.base190-embedded:not(.base190-dark) .btn-copy-evolved,
+html:not(.dark) body .btn-copy-evolved {
+  background-color: #ecfdf5 !important;
+  border: 1px solid #a7f3d0 !important;
+  color: #047857 !important;
+}
+body.base190-light .btn-copy-evolved:hover,
+body.base190-embedded:not(.base190-dark) .btn-copy-evolved:hover,
+html:not(.dark) body .btn-copy-evolved:hover {
+  background-color: #d1fae5 !important;
+}
+
+body.base190-light .live-relato-text,
+body.base190-embedded:not(.base190-dark) .live-relato-text,
+html:not(.dark) body .live-relato-text {
+  color: #1e293b !important;
+}
+body.base190-light .live-relato-text .text-blue-300,
+body.base190-embedded:not(.base190-dark) .live-relato-text .text-blue-300,
+html:not(.dark) body .live-relato-text .text-blue-300 {
+  color: #0369a1 !important;
+}
+body.base190-light .live-relato-text .text-amber-200\/90,
+body.base190-embedded:not(.base190-dark) .live-relato-text .text-amber-200\/90,
+html:not(.dark) body .live-relato-text .text-amber-200\/90 {
+  color: #b45309 !important;
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  display: inline !important;
+}
+
+body.base190-light .clause-card,
+body.base190-embedded:not(.base190-dark) .clause-card,
+html:not(.dark) body .clause-card {
+  background-color: #f0fdf4 !important;
+  border: 1px solid #bbf7d0 !important;
+  color: #065f46 !important;
+}
+body.base190-light .clause-ordem,
+body.base190-embedded:not(.base190-dark) .clause-ordem,
+html:not(.dark) body .clause-ordem {
+  color: #059669 !important;
+}
+
+body.base190-light #chatContainer .text-slate-300,
+body.base190-embedded:not(.base190-dark) #chatContainer .text-slate-300,
+html:not(.dark) body #chatContainer .text-slate-300 {
+  color: #334155 !important;
+}
+body.base190-light #chatContainer .text-slate-200,
+body.base190-embedded:not(.base190-dark) #chatContainer .text-slate-200,
+html:not(.dark) body #chatContainer .text-slate-200 {
+  color: #1e293b !important;
+}
+body.base190-light #chatContainer .text-white,
+body.base190-embedded:not(.base190-dark) #chatContainer .text-white,
+html:not(.dark) body #chatContainer .text-white {
+  color: #0f172a !important;
+}
+body.base190-light #chatContainer .text-slate-400,
+body.base190-embedded:not(.base190-dark) #chatContainer .text-slate-400,
+html:not(.dark) body #chatContainer .text-slate-400 {
+  color: #64748b !important;
+}
+
+/* Ideias de Aprimoramento Pendentes */
+body.base190-light .ideas-header,
+body.base190-embedded:not(.base190-dark) .ideas-header,
+html:not(.dark) body .ideas-header {
+  color: #b45309 !important;
+}
+body.base190-light .idea-btn,
+body.base190-embedded:not(.base190-dark) .idea-btn,
+html:not(.dark) body .idea-btn {
+  background-color: #fffbeb !important;
+  border: 1px solid #fde68a !important;
+  box-shadow: 0 1px 3px rgba(180, 83, 9, 0.05) !important;
+}
+body.base190-light .idea-btn:hover,
+body.base190-embedded:not(.base190-dark) .idea-btn:hover,
+html:not(.dark) body .idea-btn:hover {
+  background-color: #fef3c7 !important;
+  border-color: #f59e0b !important;
+}
+body.base190-light .idea-btn .text-rose-400,
+body.base190-embedded:not(.base190-dark) .idea-btn .text-rose-400,
+html:not(.dark) body .idea-btn .text-rose-400 {
+  color: #b91c1c !important;
+}
+body.base190-light .idea-btn .text-amber-400,
+body.base190-embedded:not(.base190-dark) .idea-btn .text-amber-400,
+html:not(.dark) body .idea-btn .text-amber-400 {
+  color: #b45309 !important;
+}
+body.base190-light .idea-text,
+body.base190-embedded:not(.base190-dark) .idea-text,
+html:not(.dark) body .idea-text {
+  color: #475569 !important;
+}
+body.base190-light .idea-goto,
+body.base190-embedded:not(.base190-dark) .idea-goto,
+html:not(.dark) body .idea-goto {
+  color: #94a3b8 !important;
+}
+body.base190-light .idea-btn:hover .idea-goto,
+body.base190-embedded:not(.base190-dark) .idea-btn:hover .idea-goto,
+html:not(.dark) body .idea-btn:hover .idea-goto {
+  color: #b45309 !important;
+}
+
+/* Seção 3: Naturezas Candidatas */
+body.base190-light .bg-blue-950\/25,
+body.base190-embedded:not(.base190-dark) .bg-blue-950\/25,
+html:not(.dark) body .bg-blue-950\/25 {
+  background-color: #eff6ff !important;
+  border-color: #93c5fd !important;
+}
+
+body.base190-light .btn-copy-main,
+body.base190-embedded:not(.base190-dark) .btn-copy-main,
+html:not(.dark) body .btn-copy-main {
+  background-color: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+body.base190-light .btn-copy-main:hover,
+body.base190-embedded:not(.base190-dark) .btn-copy-main:hover,
+html:not(.dark) body .btn-copy-main:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+body.base190-light .candidate-card:not(.bg-blue-950\/25),
+body.base190-embedded:not(.base190-dark) .candidate-card:not(.bg-blue-950\/25),
+html:not(.dark) body .candidate-card:not(.bg-blue-950\/25) {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+body.base190-light .candidate-card .text-slate-200,
+body.base190-embedded:not(.base190-dark) .candidate-card .text-slate-200,
+html:not(.dark) body .candidate-card .text-slate-200 {
+  color: #1e293b !important;
+}
+body.base190-light .candidate-card .text-slate-400,
+body.base190-embedded:not(.base190-dark) .candidate-card .text-slate-400,
+html:not(.dark) body .candidate-card .text-slate-400 {
+  color: #64748b !important;
+}
+body.base190-light .candidate-card strong,
+body.base190-embedded:not(.base190-dark) .candidate-card strong,
+html:not(.dark) body .candidate-card strong {
+  color: #0f172a !important;
+}
+
+body.base190-light .candidate-id-badge:not(.bg-blue-600),
+body.base190-embedded:not(.base190-dark) .candidate-id-badge:not(.bg-blue-600),
+html:not(.dark) body .candidate-id-badge:not(.bg-blue-600) {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+body.base190-light .candidate-copy-btn,
+body.base190-embedded:not(.base190-dark) .candidate-copy-btn,
+html:not(.dark) body .candidate-copy-btn {
+  background-color: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #64748b !important;
+}
+body.base190-light .candidate-copy-btn:hover,
+body.base190-embedded:not(.base190-dark) .candidate-copy-btn:hover,
+html:not(.dark) body .candidate-copy-btn:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+body.base190-light .candidate-assume-btn,
+body.base190-embedded:not(.base190-dark) .candidate-assume-btn,
+html:not(.dark) body .candidate-assume-btn {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+body.base190-light .candidate-assume-btn:hover,
+body.base190-embedded:not(.base190-dark) .candidate-assume-btn:hover,
+html:not(.dark) body .candidate-assume-btn:hover {
+  background-color: #0284c7 !important;
+  border-color: #0284c7 !important;
+  color: #ffffff !important;
+}
+body.base190-light .candidate-bar-track,
+body.base190-embedded:not(.base190-dark) .candidate-bar-track,
+html:not(.dark) body .candidate-bar-track {
+  background-color: #e2e8f0 !important;
+}
+
+/* Seção 4: Perguntas Táticas */
+body.base190-light .qrow-card,
+body.base190-embedded:not(.base190-dark) .qrow-card,
+html:not(.dark) body .qrow-card {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+body.base190-light .qrow-card.bg-emerald-950\/10,
+body.base190-embedded:not(.base190-dark) .qrow-card.bg-emerald-950\/10,
+html:not(.dark) body .qrow-card.bg-emerald-950\/10 {
+  background-color: #f0fdf4 !important;
+  border-color: #86efac !important;
+}
+body.base190-light .qrow-prio-critica,
+body.base190-embedded:not(.base190-dark) .qrow-prio-critica,
+html:not(.dark) body .qrow-prio-critica {
+  background-color: #fef2f2 !important;
+  border: 1px solid #fecaca !important;
+  color: #b91c1c !important;
+}
+body.base190-light .qrow-prio-alta,
+body.base190-embedded:not(.base190-dark) .qrow-prio-alta,
+html:not(.dark) body .qrow-prio-alta {
+  background-color: #fffbeb !important;
+  border: 1px solid #fde68a !important;
+  color: #b45309 !important;
+}
+body.base190-light .qrow-prio-baixa,
+body.base190-embedded:not(.base190-dark) .qrow-prio-baixa,
+html:not(.dark) body .qrow-prio-baixa {
+  background-color: #eff6ff !important;
+  border: 1px solid #bfdbfe !important;
+  color: #1d4ed8 !important;
+}
+body.base190-light .qrow-eixo-badge,
+body.base190-embedded:not(.base190-dark) .qrow-eixo-badge,
+html:not(.dark) body .qrow-eixo-badge {
+  background-color: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+body.base190-light .qrow-gatilho-badge,
+body.base190-embedded:not(.base190-dark) .qrow-gatilho-badge,
+html:not(.dark) body .qrow-gatilho-badge {
+  background-color: #ecfdf5 !important;
+  border: 1px solid #a7f3d0 !important;
+  color: #047857 !important;
+}
+body.base190-light .qrow-question-text,
+body.base190-embedded:not(.base190-dark) .qrow-question-text,
+html:not(.dark) body .qrow-question-text {
+  color: #0f172a !important;
+}
+body.base190-light .qrow-hint-text,
+body.base190-embedded:not(.base190-dark) .qrow-hint-text,
+html:not(.dark) body .qrow-hint-text {
+  color: #64748b !important;
+}
+body.base190-light .qrow-hint-text strong,
+body.base190-embedded:not(.base190-dark) .qrow-hint-text strong,
+html:not(.dark) body .qrow-hint-text strong {
+  color: #1e293b !important;
+}
+body.base190-light .qrow-chip-btn,
+body.base190-embedded:not(.base190-dark) .qrow-chip-btn,
+html:not(.dark) body .qrow-chip-btn {
+  background-color: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+body.base190-light .qrow-chip-btn:hover,
+body.base190-embedded:not(.base190-dark) .qrow-chip-btn:hover,
+html:not(.dark) body .qrow-chip-btn:hover {
+  background-color: #ecfdf5 !important;
+  border-color: #6ee7b7 !important;
+  color: #065f46 !important;
+}
+body.base190-light .qrow-input,
+body.base190-embedded:not(.base190-dark) .qrow-input,
+html:not(.dark) body .qrow-input {
+  background-color: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+body.base190-light .qrow-input:focus,
+body.base190-embedded:not(.base190-dark) .qrow-input:focus,
+html:not(.dark) body .qrow-input:focus {
+  background-color: #ffffff !important;
+  border-color: #059669 !important;
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.15) !important;
+}
+
+/* Modais de Catálogo, CAD e Edição de Papel no Modo Claro */
+body.base190-light #catalogModal .bg-sade-panel,
+body.base190-light #cadModal .bg-sade-panel,
+body.base190-light #editRoleModal .bg-sade-panel,
+body.base190-embedded:not(.base190-dark) #catalogModal .bg-sade-panel,
+body.base190-embedded:not(.base190-dark) #cadModal .bg-sade-panel,
+body.base190-embedded:not(.base190-dark) #editRoleModal .bg-sade-panel,
+html:not(.dark) body #catalogModal .bg-sade-panel,
+html:not(.dark) body #cadModal .bg-sade-panel,
+html:not(.dark) body #editRoleModal .bg-sade-panel {
+  background-color: #ffffff !important;
+  border-color: #dce5eb !important;
+}
+
+body.base190-light #catalogModal .bg-slate-950,
+body.base190-light #catalogModal .bg-slate-900,
+body.base190-light #cadModal .bg-slate-950,
+body.base190-light #editRoleModal .bg-slate-950,
+body.base190-embedded:not(.base190-dark) #catalogModal .bg-slate-950,
+body.base190-embedded:not(.base190-dark) #catalogModal .bg-slate-900,
+body.base190-embedded:not(.base190-dark) #cadModal .bg-slate-950,
+body.base190-embedded:not(.base190-dark) #editRoleModal .bg-slate-950,
+html:not(.dark) body #catalogModal .bg-slate-950,
+html:not(.dark) body #catalogModal .bg-slate-900,
+html:not(.dark) body #cadModal .bg-slate-950,
+html:not(.dark) body #editRoleModal .bg-slate-950 {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+body.base190-light #cadOutputText,
+body.base190-light #editRoleInput,
+body.base190-embedded:not(.base190-dark) #cadOutputText,
+body.base190-embedded:not(.base190-dark) #editRoleInput,
+html:not(.dark) body #cadOutputText,
+html:not(.dark) body #editRoleInput {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+body.base190-light #catalogSearch,
+body.base190-embedded:not(.base190-dark) #catalogSearch,
+html:not(.dark) body #catalogSearch {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+body.base190-light #cadModal button.bg-slate-800,
+body.base190-light #editRoleModal button.bg-slate-800,
+body.base190-light #catalogModal button.bg-slate-800,
+body.base190-embedded:not(.base190-dark) #cadModal button.bg-slate-800,
+body.base190-embedded:not(.base190-dark) #editRoleModal button.bg-slate-800,
+body.base190-embedded:not(.base190-dark) #catalogModal button.bg-slate-800,
+html:not(.dark) body #cadModal button.bg-slate-800,
+html:not(.dark) body #editRoleModal button.bg-slate-800,
+html:not(.dark) body #catalogModal button.bg-slate-800 {
+  background-color: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+body.base190-light #cadModal button.bg-slate-800:hover,
+body.base190-light #editRoleModal button.bg-slate-800:hover,
+body.base190-light #catalogModal button.bg-slate-800:hover,
+body.base190-embedded:not(.base190-dark) #cadModal button.bg-slate-800:hover,
+body.base190-embedded:not(.base190-dark) #editRoleModal button.bg-slate-800:hover,
+body.base190-embedded:not(.base190-dark) #catalogModal button.bg-slate-800:hover,
+html:not(.dark) body #cadModal button.bg-slate-800:hover,
+html:not(.dark) body #editRoleModal button.bg-slate-800:hover,
+html:not(.dark) body #catalogModal button.bg-slate-800:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+body.base190-light #editRoleLabel,
+body.base190-embedded:not(.base190-dark) #editRoleLabel,
+html:not(.dark) body #editRoleLabel {
+  color: #334155 !important;
+}
+
 body.base190-embedded button{border-radius:10px}
 body.base190-embedded #chatContainer,
 body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
@@ -2157,24 +2848,24 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
         </div>
       </div>
 
-      <p class="text-[11px] text-amber-200/90 mt-3 leading-relaxed">Apoio orientativo: naturezas, riscos e percentuais são estimativas heurísticas, não confirmação de crime, probabilidade estatística ou autorização para despacho. Confira os fatos e o protocolo institucional; utilize dados fictícios ou anonimizados.</p>
+      <p class="orientative-disclaimer-banner text-[11px] text-amber-200/90 mt-3 leading-relaxed">Apoio orientativo: naturezas, riscos e percentuais são estimativas heurísticas, não confirmação de crime, probabilidade estatística ou autorização para despacho. Confira os fatos e o protocolo institucional; utilize dados fictícios ou anonimizados.</p>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-        <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3.5">
+        <div class="intro-feature-card bg-slate-950/60 border border-slate-800/80 rounded-xl p-3.5">
           <div class="flex items-center gap-2 text-[11px] font-semibold text-blue-400 uppercase tracking-wider mb-1">
             <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
             1. Inteligência Sintática
           </div>
           <p class="text-xs text-slate-400 leading-relaxed">Separa automaticamente <strong class="text-slate-200">Solicitante</strong>, <strong class="text-slate-200">Vítima</strong>, <strong class="text-slate-200">Indivíduo Foco</strong> e <strong class="text-slate-200">Armamento</strong> sem confundir sujeitos.</p>
         </div>
-        <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3.5">
+        <div class="intro-feature-card bg-slate-950/60 border border-slate-800/80 rounded-xl p-3.5">
           <div class="flex items-center gap-2 text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
             2. Relato Evoluído ao Vivo
           </div>
           <p class="text-xs text-slate-400 leading-relaxed">Cada pergunta respondida abaixo injeta novas cláusulas técnicas diretamente na narrativa aprimorada da ocorrência.</p>
         </div>
-        <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3.5">
+        <div class="intro-feature-card bg-slate-950/60 border border-slate-800/80 rounded-xl p-3.5">
           <div class="flex items-center gap-2 text-[11px] font-semibold text-amber-400 uppercase tracking-wider mb-1">
             <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
             3. Sugestões de Aprimoramento
@@ -2191,12 +2882,12 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
       <!-- Exemplos Rápidos -->
       <div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
         <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400 shrink-0 mr-1">Testar Cenário:</span>
-        <button type="button" onclick="runExample(0)" class="shrink-0 px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-[11px] font-medium text-rose-200 transition">Mulher agredida no mato</button>
-        <button type="button" onclick="runExample(1)" class="shrink-0 px-2.5 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-[11px] font-medium text-blue-200 transition">Pai ameaçado pelo amigo c/ facão</button>
-        <button type="button" onclick="runExample(2)" class="shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-[11px] font-medium text-slate-300 transition">Ex-marido quebrando MPU</button>
-        <button type="button" onclick="runExample(3)" class="shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-[11px] font-medium text-slate-300 transition">Amigo drogadito agredindo moradora</button>
-        <button type="button" onclick="runExample(4)" class="shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-[11px] font-medium text-slate-300 transition">Roubo à mão armada em moto</button>
-        <button type="button" onclick="runExample(5)" class="shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-[11px] font-medium text-slate-300 transition">Perturbação do sossego</button>
+        <button type="button" onclick="runExample(0)" class="scenario-btn shrink-0 px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-[11px] font-medium text-rose-200 transition">Mulher agredida no mato</button>
+        <button type="button" onclick="runExample(1)" class="scenario-btn shrink-0 px-2.5 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-[11px] font-medium text-blue-200 transition">Pai ameaçado pelo amigo c/ facão</button>
+        <button type="button" onclick="runExample(2)" class="scenario-btn shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-[11px] font-medium text-slate-300 transition">Ex-marido quebrando MPU</button>
+        <button type="button" onclick="runExample(3)" class="scenario-btn shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-[11px] font-medium text-slate-300 transition">Amigo drogadito agredindo moradora</button>
+        <button type="button" onclick="runExample(4)" class="scenario-btn shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-[11px] font-medium text-slate-300 transition">Roubo à mão armada em moto</button>
+        <button type="button" onclick="runExample(5)" class="scenario-btn shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-[11px] font-medium text-slate-300 transition">Perturbação do sossego</button>
       </div>
 
       <!-- Formulário de Entrada -->
@@ -3772,8 +4463,8 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
           ? `<div class="mt-3 pt-3 border-t border-emerald-500/20 space-y-1.5">
               <div class="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400">Complementos Injetados pelas Respostas da Triagem:</div>
               ${estruturado.clausulasRespondidas.map(c => `
-                <div class="flex items-start gap-2 text-xs text-emerald-100 bg-emerald-500/10 border border-emerald-500/25 rounded-lg px-2.5 py-1.5">
-                  <span class="font-mono font-bold text-emerald-400 shrink-0">[#${c.ordem}]</span>
+                <div class="clause-card flex items-start gap-2 text-xs text-emerald-100 bg-emerald-500/10 border border-emerald-500/25 rounded-lg px-2.5 py-1.5">
+                  <span class="clause-ordem font-mono font-bold text-emerald-400 shrink-0">[#${c.ordem}]</span>
                   <span>${escapeHtml(c.texto)}</span>
                 </div>
               `).join('')}
@@ -3783,7 +4474,7 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
             </div>`;
 
         bodyEl.innerHTML = `
-          <p class="text-xs text-slate-200 leading-relaxed">
+          <p class="live-relato-text text-xs text-slate-200 leading-relaxed">
             <span class="text-blue-300 font-semibold">${escapeHtml(estruturado.abertura)}</span>
             ${escapeHtml(estruturado.dinamicaAtores)}
             <span class="text-amber-200/90">${escapeHtml(estruturado.meioELocal)}</span>
@@ -3803,7 +4494,7 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
         } else {
           const topSugestoes = estruturado.sugestoesPendentes.slice(0, 3);
           ideasEl.innerHTML = `
-            <div class="text-[10px] font-mono font-semibold uppercase tracking-wider text-amber-300/90 mb-2 flex items-center gap-1.5">
+            <div class="ideas-header text-[10px] font-mono font-semibold uppercase tracking-wider text-amber-300/90 mb-2 flex items-center gap-1.5">
               <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               Ideias de Aprimoramento Pendentes (Responda abaixo para completar o relato):
             </div>
@@ -3812,13 +4503,13 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
                 <button
                   type="button"
                   onclick="document.getElementById('${cardId}-ans-${s.idx}').focus(); document.getElementById('${cardId}-ans-${s.idx}').scrollIntoView({behavior:'smooth', block:'center'});"
-                  class="text-left p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-amber-500/40 transition group"
+                  class="idea-btn text-left p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-amber-500/40 transition group"
                 >
                   <div class="flex items-center justify-between gap-1 mb-1">
-                    <span class="text-[10px] font-mono font-bold ${s.prioridade === 'CRITICA' ? 'text-rose-400' : 'text-amber-400'}">Passo ${s.ordem} • ${escapeHtml(s.eixo)}</span>
-                    <span class="text-[10px] text-slate-500 group-hover:text-amber-300">ir ↓</span>
+                    <span class="idea-step-title text-[10px] font-mono font-bold ${s.prioridade === 'CRITICA' ? 'text-rose-400' : 'text-amber-400'}">Passo ${s.ordem} • ${escapeHtml(s.eixo)}</span>
+                    <span class="idea-goto text-[10px] text-slate-500 group-hover:text-amber-300">ir ↓</span>
                   </div>
-                  <p class="text-[11px] text-slate-300 line-clamp-2 leading-snug">${escapeHtml(s.sugestao)}</p>
+                  <p class="idea-text text-[11px] text-slate-300 line-clamp-2 leading-snug">${escapeHtml(s.sugestao)}</p>
                 </button>
               `).join('')}
             </div>
@@ -3931,12 +4622,12 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
       const userDiv = document.createElement('div');
       userDiv.className = 'max-w-4xl mx-auto flex justify-end';
       userDiv.innerHTML = `
-        <div class="max-w-2xl bg-blue-600/15 border border-blue-500/40 rounded-2xl rounded-tr-sm px-4 py-3.5 shadow-lg">
+        <div class="user-bubble max-w-2xl bg-blue-600/15 border border-blue-500/40 rounded-2xl rounded-tr-sm px-4 py-3.5 shadow-lg">
           <div class="flex items-center justify-between gap-4 mb-1">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-blue-400">Relato do Solicitante • Triagem #${triageSeq}</span>
-            <span class="text-[11px] font-mono text-slate-400">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+            <span class="user-bubble-title text-[11px] font-bold uppercase tracking-wider text-blue-400">Relato do Solicitante • Triagem #${triageSeq}</span>
+            <span class="user-bubble-time text-[11px] font-mono text-slate-400">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
           </div>
-          <p class="text-xs sm:text-sm text-slate-100 leading-relaxed whitespace-pre-line">${escapeHtml(reportText)}</p>
+          <p class="user-bubble-text text-xs sm:text-sm text-slate-100 leading-relaxed whitespace-pre-line">${escapeHtml(reportText)}</p>
         </div>
       `;
       container.appendChild(userDiv);
@@ -4038,8 +4729,8 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
       const estruturado = construirRelatoEstruturado(st);
 
       const armaBadgeClass = f.armaFogo
-        ? 'bg-rose-500/10 border-rose-500/40 text-rose-200'
-        : (f.armaBranca ? 'bg-amber-500/10 border-amber-500/40 text-amber-200' : 'bg-slate-900/90 border-slate-800 text-slate-300');
+        ? 'bg-rose-500/10 border-rose-500/40 text-rose-200 arma-fogo'
+        : (f.armaBranca ? 'bg-amber-500/10 border-amber-500/40 text-amber-200 arma-branca' : 'bg-slate-900/90 border-slate-800 text-slate-300 arma-nenhuma');
 
       const ambiguidadeHtml = classificacao.ambiguidade ? `
         <div class="mt-4 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3">
@@ -4055,26 +4746,26 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
         const isAtiva = c.id === ativa.id;
         const barColor = isAtiva ? 'bg-blue-500' : (c.proximidade >= 70 ? 'bg-amber-500' : 'bg-slate-600');
         return `
-          <div class="p-3.5 rounded-xl border transition ${isAtiva ? 'bg-blue-950/25 border-blue-500/50 shadow-sm' : 'bg-slate-950/60 border-slate-800/80 hover:border-slate-700'}">
+          <div class="candidate-card p-3.5 rounded-xl border transition ${isAtiva ? 'bg-blue-950/25 border-blue-500/50 shadow-sm' : 'bg-slate-950/60 border-slate-800/80 hover:border-slate-700'}">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="px-2 py-0.5 rounded-md font-mono text-xs font-bold border ${isAtiva ? 'bg-blue-600 text-white border-blue-400' : 'bg-slate-900 text-slate-300 border-slate-700'}">#${c.id}</span>
+                <span class="candidate-id-badge px-2 py-0.5 rounded-md font-mono text-xs font-bold border ${isAtiva ? 'bg-blue-600 text-white border-blue-400' : 'bg-slate-900 text-slate-300 border-slate-700'}">#${c.id}</span>
                 <span class="text-xs sm:text-sm font-semibold ${isAtiva ? 'text-white' : 'text-slate-200'}">${escapeHtml(c.nome)}</span>
                 ${isAtiva ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">ATIVA</span>' : ''}
               </div>
               <div class="flex items-center gap-2 shrink-0">
                 <span class="text-xs font-mono font-bold ${isAtiva ? 'text-blue-400' : (c.proximidade >= 70 ? 'text-amber-400' : 'text-slate-400')}">${c.proximidade}%</span>
                 ${!isAtiva ? `
-                  <button type="button" onclick="assumirNatureza('${cardId}', ${c.id})" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-blue-600 text-slate-200 hover:text-white border border-slate-700 hover:border-blue-500 text-[11px] font-medium transition">
+                  <button type="button" onclick="assumirNatureza('${cardId}', ${c.id})" class="candidate-assume-btn px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-blue-600 text-slate-200 hover:text-white border border-slate-700 hover:border-blue-500 text-[11px] font-medium transition">
                     Assumir Natureza
                   </button>
                 ` : ''}
-                <button type="button" onclick="copyToClipboard('${c.id} - ${c.nome.replace(/'/g, "\\'")}', 'Natureza #${c.id} copiada!')" class="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition" title="Copiar código e nome">
+                <button type="button" onclick="copyToClipboard('${c.id} - ${c.nome.replace(/'/g, "\\'")}', 'Natureza #${c.id} copiada!')" class="candidate-copy-btn p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition" title="Copiar código e nome">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                 </button>
               </div>
             </div>
-            <div class="w-full h-1 bg-slate-800/90 rounded-full overflow-hidden mt-2.5">
+            <div class="candidate-bar-track w-full h-1 bg-slate-800/90 rounded-full overflow-hidden mt-2.5">
               <div class="h-full ${barColor} rounded-full transition-all duration-300" style="width: ${c.proximidade}%"></div>
             </div>
             <p class="text-xs text-slate-400 mt-2 leading-relaxed">
@@ -4089,10 +4780,10 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
         const resp = st.respostas[idx] || '';
 
         const prioBadge = p.prioridade === 'CRITICA'
-          ? `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30">PASSO ${p.ordem || idx + 1} • CRÍTICO</span>`
+          ? `<span class="qrow-prio-badge qrow-prio-critica px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30">PASSO ${p.ordem || idx + 1} • CRÍTICO</span>`
           : (p.prioridade === 'ALTA'
-            ? `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">PASSO ${p.ordem || idx + 1} • TÁTICO</span>`
-            : `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-blue-500/10 text-blue-300 border border-blue-500/25">PASSO ${p.ordem || idx + 1} • COMPLEMENTAR</span>`);
+            ? `<span class="qrow-prio-badge qrow-prio-alta px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">PASSO ${p.ordem || idx + 1} • TÁTICO</span>`
+            : `<span class="qrow-prio-badge qrow-prio-baixa px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-blue-500/10 text-blue-300 border border-blue-500/25">PASSO ${p.ordem || idx + 1} • COMPLEMENTAR</span>`);
 
         const chipsHtml = (p.chips && p.chips.length > 0) ? `
           <div class="flex items-center gap-1.5 flex-wrap mt-2.5 pl-7">
@@ -4101,7 +4792,7 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
               <button
                 type="button"
                 onclick="aplicarChipResposta('${cardId}', ${idx}, '${ch.replace(/'/g, "\\'")}')"
-                class="px-2.5 py-1 rounded-lg bg-slate-900/90 hover:bg-emerald-500/20 border border-slate-800 hover:border-emerald-500/40 text-[11px] text-slate-300 hover:text-emerald-200 transition"
+                class="qrow-chip-btn px-2.5 py-1 rounded-lg bg-slate-900/90 hover:bg-emerald-500/20 border border-slate-800 hover:border-emerald-500/40 text-[11px] text-slate-300 hover:text-emerald-200 transition"
               >
                 + ${escapeHtml(ch)}
               </button>
@@ -4110,7 +4801,7 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
         ` : '';
 
         return `
-          <div id="${cardId}-qrow-${idx}" class="p-4 rounded-xl bg-slate-950/70 border ${checked ? 'border-emerald-500/40 bg-emerald-950/10' : (p.prioridade === 'CRITICA' ? 'border-rose-500/25 hover:border-rose-500/45' : 'border-slate-800/90 hover:border-slate-700')} transition">
+          <div id="${cardId}-qrow-${idx}" class="qrow-card p-4 rounded-xl bg-slate-950/70 border ${checked ? 'border-emerald-500/40 bg-emerald-950/10' : (p.prioridade === 'CRITICA' ? 'border-rose-500/25 hover:border-rose-500/45' : 'border-slate-800/90 hover:border-slate-700')} transition">
             <label for="${cardId}-chk-${idx}" class="flex items-start gap-3 cursor-pointer select-none">
               <input
                 type="checkbox"
@@ -4123,12 +4814,12 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
                 <div class="flex items-center justify-between gap-2 flex-wrap mb-1.5">
                   <div class="flex items-center gap-1.5 flex-wrap">
                     ${prioBadge}
-                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-slate-900 text-slate-300 border border-slate-800">${escapeHtml(p.eixo || p.tag)}</span>
+                    <span class="qrow-eixo-badge px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-slate-900 text-slate-300 border border-slate-800">${escapeHtml(p.eixo || p.tag)}</span>
                   </div>
-                  ${p.gatilho ? `<span class="text-[10px] font-mono text-emerald-300/90 bg-emerald-950/40 border border-emerald-500/25 px-2 py-0.5 rounded">⚡ ${escapeHtml(p.gatilho)}</span>` : ''}
+                  ${p.gatilho ? `<span class="qrow-gatilho-badge text-[10px] font-mono text-emerald-300/90 bg-emerald-950/40 border border-emerald-500/25 px-2 py-0.5 rounded">⚡ ${escapeHtml(p.gatilho)}</span>` : ''}
                 </div>
-                <p class="text-xs sm:text-sm font-semibold text-white leading-relaxed">${escapeHtml(p.pergunta)}</p>
-                <p class="text-[11px] text-slate-400 mt-1 leading-relaxed"><strong class="text-slate-300 font-medium">Objetivo na estruturação:</strong> ${escapeHtml(p.dica)}</p>
+                <p class="qrow-question-text text-xs sm:text-sm font-semibold text-white leading-relaxed">${escapeHtml(p.pergunta)}</p>
+                <p class="qrow-hint-text text-[11px] text-slate-400 mt-1 leading-relaxed"><strong class="text-slate-300 font-medium">Objetivo na estruturação:</strong> ${escapeHtml(p.dica)}</p>
               </div>
             </label>
             ${chipsHtml}
@@ -4139,7 +4830,7 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
                 value="${escapeHtml(resp)}"
                 oninput="setResposta('${cardId}', ${idx}, this.value)"
                 placeholder="Clique em uma opção acima ou digite a resposta para aprimorar o relato lá em cima em tempo real..."
-                class="w-full bg-slate-900/90 border border-slate-800 focus:border-emerald-500/50 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none transition"
+                class="qrow-input w-full bg-slate-900/90 border border-slate-800 focus:border-emerald-500/50 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none transition"
               />
             </div>
           </div>
@@ -4156,7 +4847,7 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
                 <span class="w-2 h-2 rounded-full bg-blue-400"></span>
                 <h4 class="text-xs font-bold uppercase tracking-wider text-slate-200">1. Entidades & Papéis Extraídos do Relato</h4>
               </div>
-              <span class="text-[10px] font-mono px-2.5 py-0.5 rounded-full border ${f.vinculoDomesticoReal ? 'bg-purple-500/10 border-purple-500/30 text-purple-300' : 'bg-slate-900 border-slate-700 text-slate-300'}">
+              <span class="context-pill text-[10px] font-mono px-2.5 py-0.5 rounded-full border ${f.vinculoDomesticoReal ? 'bg-purple-500/10 border-purple-500/30 text-purple-300' : 'bg-slate-900 border-slate-700 text-slate-300'}">
                 Contexto: ${f.vinculoDomesticoReal ? 'Doméstico / Familiar' : 'Comum / Não Doméstico'}
               </span>
             </div>
@@ -4183,7 +4874,7 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
                 <div class="text-xs font-bold text-rose-200 mt-1">${escapeHtml(ctx.autorActor.labelAsAutor)}</div>
               </div>
 
-              <div onclick="editarPapelManual('${cardId}', 'arma')" class="p-3 rounded-xl border cursor-pointer transition group ${armaBadgeClass}" title="Clique para ajustar o Armamento">
+              <div onclick="editarPapelManual('${cardId}', 'arma')" class="arma-card p-3 rounded-xl border cursor-pointer transition group ${armaBadgeClass}" title="Clique para ajustar o Armamento">
                 <div class="flex items-center justify-between">
                   <span class="text-[10px] font-mono uppercase opacity-80">Instrumento / Arma</span>
                   <span class="text-[10px] opacity-60 group-hover:opacity-100">✎ editar</span>
@@ -4199,16 +4890,16 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 radar-dot"></span>
                 <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-300">2. Estruturação e Aprimoramento Dinâmico do Relato</h4>
-                <span id="${cardId}-live-count" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">
+                <span id="${cardId}-live-count" class="live-count-badge text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">
                   0/${perguntas.length} quesitos integrados
                 </span>
               </div>
               <div class="flex items-center gap-2.5">
-                <div class="w-28 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                <div class="live-bar-track w-28 h-1.5 bg-slate-800 rounded-full overflow-hidden">
                   <div id="${cardId}-live-bar" class="h-full bg-amber-500 rounded-full transition-all duration-300" style="width: ${estruturado.completudePct}%"></div>
                 </div>
                 <span id="${cardId}-live-pct" class="text-[11px] font-mono font-bold text-emerald-400">${estruturado.completudePct}% Estruturado</span>
-                <button type="button" onclick="copiarRelatoAprimorado('${cardId}')" class="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/35 text-[11px] font-semibold text-emerald-200 transition">
+                <button type="button" onclick="copiarRelatoAprimorado('${cardId}')" class="btn-copy-evolved px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/35 text-[11px] font-semibold text-emerald-200 transition">
                   Copiar Relato Evoluído
                 </button>
               </div>
@@ -4257,7 +4948,7 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
                 <span class="px-3 py-1 rounded-xl border text-xs font-mono font-bold ${ativa.proximidade >= 85 ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30' : 'text-amber-300 bg-amber-500/10 border-amber-500/30'}">
                   ${ativa.proximidade}% Proximidade
                 </span>
-                <button type="button" onclick="copyToClipboard('${ativa.id} - ${ativa.nome.replace(/'/g, "\\'")}', 'Natureza principal copiada!')" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 transition">
+                <button type="button" onclick="copyToClipboard('${ativa.id} - ${ativa.nome.replace(/'/g, "\\'")}', 'Natureza principal copiada!')" class="btn-copy-main px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 transition">
                   Copiar Código
                 </button>
               </div>
@@ -4449,15 +5140,27 @@ body.base190-embedded footer{scrollbar-color:var(--sade-muted) var(--sade-bg)}
       document.body.classList.add('base190-embedded');
     }
     function applyBaseTheme(value) {
-      if (!sadeEmbedded || !['dark','light'].includes(value)) return;
+      if (!['dark','light'].includes(value)) return;
       document.body.classList.toggle('base190-dark', value === 'dark');
       document.body.classList.toggle('base190-light', value === 'light');
       document.documentElement.classList.toggle('dark', value === 'dark');
-      document.documentElement.style.colorScheme=value;
+      document.documentElement.style.colorScheme = value;
+      try {
+        localStorage.setItem('base190_theme', value);
+      } catch (e) {}
     }
+    // Inicialização imediata do tema a partir do localStorage
+    try {
+      const storedTheme = localStorage.getItem('base190_theme');
+      if (storedTheme === 'light' || storedTheme === 'dark') {
+        applyBaseTheme(storedTheme);
+      }
+    } catch (e) {}
+
     window.addEventListener('message', (event) => {
-      if (event.source !== window.parent || !sadeEmbedded || event.data?.type !== 'base190:theme') return;
-      applyBaseTheme(event.data.theme);
+      if (event.data?.type === 'base190:theme') {
+        applyBaseTheme(event.data.theme);
+      }
     });
     // O painel React pode encaminhar um relato manual já digitado na página inicial.
     // A origem da mensagem é restringida à janela que efetivamente hospeda o iframe.

@@ -21,7 +21,7 @@ async function api(path='',method='GET',body){
 function Status({active}){return <span className={'ac-status '+(active?'enabled':'disabled')}><i/>{active?'Ativo':'Bloqueado'}</span>;}
 function Role({role}){return <span className={'ac-role '+(role||'attendant')}>{LABELS[role]||'Atendente'}</span>;}
 
-export default function AccessControl({currentUser}){
+export default function AccessControl({currentUser,onStateChange=null}){
   const [dataset,setDataset]=useState({users:[],requests:[],permission:''});
   const [tab,setTab]=useState('users');
   const [loading,setLoading]=useState(true);
@@ -60,6 +60,12 @@ export default function AccessControl({currentUser}){
     const matchesText=[person.username,person.display_name,LABELS[person.operational_role]].join(' ').toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR').trim());
     return matchesText&&(filter==='all'||filter==='active'&&person.active||filter==='blocked'&&!person.active||filter===person.operational_role);
   }),[users,search,filter]);
+
+  useEffect(()=>{
+    if(typeof onStateChange==='function'){
+      onStateChange({tab,setTab,usersCount:users.length,pendingCount:pending.length,busy});
+    }
+  },[tab,users.length,pending.length,busy,onStateChange]);
 
   async function mutate(key,path,method,payload,confirmation){
     if(confirmation&&!window.confirm(confirmation))return;

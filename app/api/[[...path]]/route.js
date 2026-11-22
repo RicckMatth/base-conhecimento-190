@@ -3,6 +3,7 @@ import {normalizeImage,readLimited,storeAsset,readableAsset,deleteAsset,requireE
 import {saveDocument,saveDraft,uuid} from '../../../lib/documentation-store.js';
 import {getSchedule,editOperationalRole,editShift,editScheduleDay,generateMonth,editSchedulePreferences,editSundayChoice,editDailyBreaks,getLiveBreaks} from '../../../lib/floor-scheduling.js';
 import {qualityBoard,qualitySaveMonitor,qualitySaveFollowup,qualityAcknowledge,qualityHistory} from '../../../lib/quality-store.js';
+import {generateMonitoriaPdf,generateAcompanhamentoPdf} from '../../../lib/quality-pdf.js';
 import {listAccess,decideRequest,createAccount,updateAccount} from '../../../lib/access-management.js';
 import {listDocumentationSpaces,createDocumentationSpace,updateDocumentationSpace} from '../../../lib/documentation-spaces.js';
 import {cleanDocument} from '../../../lib/documentation.js';
@@ -160,6 +161,85 @@ async function gate(request,method,ctx){
     const v=await input(request,140000);
     return reply(await qualityAcknowledge(db(),u,v));
    }catch(error){return failure(error.message,error.status||400);}
+  }
+  if(route==='/quality/pdf'&&(method==='GET'||method==='POST')){
+   try{
+    let kind='monitor';
+    let id=null;
+    let dataPayload=null;
+    let monitorsList=[];
+    if(method==='GET'){
+      const params=new URL(request.url).searchParams;
+      kind=params.get('kind')||'monitor';
+      id=params.get('id');
+    }else{
+      const b=await input(request,100000);
+      kind=b.kind||'monitor';
+      id=b.id||b.data?.id||null;
+      dataPayload=b.data||null;
+      monitorsList=b.monitors||[];
+    }
+    if(id&&uuid(id)){
+      if(kind==='monitor'){
+        const r=await db().query("SELECT m.*,m.audit_day::text AS audit_day,op.display_name AS operator_name,op.username AS operator_username,aud.display_name AS auditor_name FROM quality_monitors m JOIN users op ON op.id=m.operator_id JOIN users aud ON aud.id=m.auditor_id WHERE m.id=$1",[id]);
+        const row=r.rows[0];
+        if(!row)return failure('Monitoria não encontrada.',404);
+        if(row.operator_id!==u.id&&row.auditor_id!==u.id&&u.role!=='admin'&&!['manager','coordinator','dev'].includes(u.operational_role))
+          return failure('Acesso não autorizado a este documento.',403);
+        const pdfBytes=await generateMonitoriaPdf(row);
+        return new Response(pdfBytes,{
+          status:200,
+          headers:{
+            'Content-Type':'application/pdf',
+            'Content-Disposition':`inline; filename="Ficha_Monitoria_${row.protocol_cad||id}.pdf"`,
+            'Cache-Control':'no-store'
+          }
+        });
+      }else if(kind==='followup'){
+        const r=await db().query("SELECT f.*,f.period::text AS period,op.display_name AS operator_name,op.username AS operator_username,aud.display_name AS auditor_name FROM quality_followups f JOIN users op ON op.id=f.operator_id JOIN users aud ON aud.id=f.auditor_id WHERE f.id=$1",[id]);
+        const row=r.rows[0];
+        if(!row)return failure('Acompanhamento não encontrado.',404);
+        if(row.operator_id!==u.id&&row.auditor_id!==u.id&&u.role!=='admin'&&!['manager','coordinator','dev'].includes(u.operational_role))
+          return failure('Acesso não autorizado a este documento.',403);
+        const pdfBytes=await generateAcompanhamentoPdf(row,row.snapshot?.history||[]);
+        return new Response(pdfBytes,{
+          status:200,
+          headers:{
+            'Content-Type':'application/pdf',
+            'Content-Disposition':`inline; filename="Ficha_Acompanhamento_${id}.pdf"`,
+            'Cache-Control':'no-store'
+          }
+        });
+      }
+    }else if(dataPayload){
+      if(kind==='monitor'){
+        const supObj={name:dataPayload.monitor||u.display_name||'Supervisor'};
+        const attObj={name:dataPayload.atendente||'Operador',username:dataPayload.matricula||'COPOM'};
+        const pdfBytes=await generateMonitoriaPdf(dataPayload,supObj,attObj);
+        return new Response(pdfBytes,{
+          status:200,
+          headers:{
+            'Content-Type':'application/pdf',
+            'Content-Disposition':`inline; filename="Ficha_Monitoria_${dataPayload.chamado||dataPayload.protocol_cad||'preview'}.pdf"`,
+            'Cache-Control':'no-store'
+          }
+        });
+      }else if(kind==='followup'){
+        const supObj={name:dataPayload.auditor_name||u.display_name||'Supervisor'};
+        const attObj={name:dataPayload.operator_name||'Operador',username:dataPayload.operator_username||'COPOM'};
+        const pdfBytes=await generateAcompanhamentoPdf(dataPayload,monitorsList,supObj,attObj);
+        return new Response(pdfBytes,{
+          status:200,
+          headers:{
+            'Content-Type':'application/pdf',
+            'Content-Disposition':`inline; filename="Ficha_Acompanhamento_${dataPayload.period||'preview'}.pdf"`,
+            'Cache-Control':'no-store'
+          }
+        });
+      }
+    }
+    return failure('Tipo ou identificador de documento inválido.');
+   }catch(error){return failure(error.message,error.status||500);}
   }
 
   if(route==='/entries'&&method==='GET'){

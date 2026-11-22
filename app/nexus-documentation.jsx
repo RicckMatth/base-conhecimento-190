@@ -139,11 +139,12 @@ function Block({block,index,total,editable,onChange,onMove,onDuplicate,onDelete,
  }
  return <div className="nx-block" data-block-type={block.type}><div className="nx-block-content">{view}</div>{controls}</div>;
 }
-export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
+export default function NexusDocumentation({isAdmin=false,active=true,onExit,dark:darkProp,toggleTheme}){
  const [pages,setPages]=useState([]),[page,setPage]=useState(null),[query,setQuery]=useState(''),[mode,setMode]=useState('view');
  const [busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[saveState,setSaveState]=useState(''),[showPalette,setShowPalette]=useState(false),[command,setCommand]=useState(false);
  const [blockPalette,setBlockPalette]=useState(null),[emojiPicker,setEmojiPicker]=useState(false),[exportMenu,setExportMenu]=useState(false),[sideOpen,setSideOpen]=useState(true),[spaceDialog,setSpaceDialog]=useState(null),[savingSpace,setSavingSpace]=useState(false),[history,setHistory]=useState([]);
- const [dark,setDark]=useState(true);
+ const [internalDark,setInternalDark]=useState(true);
+ const dark=typeof darkProp==='boolean'?darkProp:internalDark;
  const [folderList,setFolderList]=useState([]),[coverEditor,setCoverEditor]=useState(null),[coverUploading,setCoverUploading]=useState(false);
  const pageRef=useRef(null),imageInput=useRef(null),coverInput=useRef(null),timer=useRef(null),draftRevision=useRef(0),baseline=useRef(''),savedRef=useRef('');
  pageRef.current=page;
@@ -155,7 +156,15 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
  const patchMeta=useCallback(change=>setPage(p=>p?{...p,nexus_meta:{...p.nexus_meta,...change}}:p),[]);
  const updateBlocks=useCallback(blocks=>patchMeta({blocks}),[patchMeta]);
  async function reload(){try{const d=await api();setPages(d.pages||[]);setFolderList(d.spaces||[]);return d.pages||[];}catch(e){setNotice(e.message);return []}}
- useEffect(()=>{reload();const theme=localStorage.getItem('nx_docs_theme');setDark(theme!=='light');if(window.innerWidth<=760)setSideOpen(false);},[]);
+ useEffect(()=>{
+  reload();
+  const isDark=document.documentElement.dataset.theme!=='light';
+  setInternalDark(isDark);
+  const obs=new MutationObserver(()=>{setInternalDark(document.documentElement.dataset.theme!=='light');});
+  obs.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  if(window.innerWidth<=760)setSideOpen(false);
+  return ()=>obs.disconnect();
+ },[]);
  useEffect(()=>{const nav=e=>{if(active&&dirty&&notRecovered){e.preventDefault();setNotice('Existem alterações ainda não recuperadas. Salve seu rascunho antes de sair.');}};window.addEventListener('base190:before-navigation',nav);return()=>window.removeEventListener('base190:before-navigation',nav);},[active,dirty,notRecovered]);
  useEffect(()=>{const keydown=e=>{if(!active)return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();setCommand(v=>!v);}if(e.key==='Escape'){setCommand(false);setShowPalette(false);setEmojiPicker(false);setExportMenu(false);setCoverEditor(null);setSpaceDialog(null);}};window.addEventListener('keydown',keydown);return()=>window.removeEventListener('keydown',keydown);},[active]);
  useEffect(()=>{if(!dirty||!notRecovered)return;const warn=e=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty,notRecovered]);
@@ -320,7 +329,7 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit}){
       <header className="nx-top-navbar">
        <div className="nx-breadcrumb">{!sideOpen&&<button type="button" className="nx-icon-button nx-expand" onClick={()=>setSideOpen(true)} aria-label="Mostrar barra lateral da biblioteca" aria-controls="nx-documentation-sidebar" aria-expanded={false} title="Mostrar barra lateral">☰</button>}<button className="nx-home-button" onClick={onExit} title="Voltar para a página inicial do Centro 190"><span className="nx-home-symbol">⌂</span><span className="nx-home-label">Início do sistema</span></button><span>{folderByName[page?.space]?.icon||'📁'} {page?.space||'Biblioteca 190'}</span><b className="nx-slash">›</b><strong>{currentMeta.icon||'📘'} {page?.title||'Selecione uma página'}</strong></div>
        <div className="nx-navbar-actions"><span className="nx-save-state">{dirty&&notRecovered?'Alterações pendentes':saveState||'Sincronizado'}</span>{page&&<><button className={'nx-icon-button '+(currentMeta.favorite?'nx-starred':'')} title="Favoritar página" disabled={!isAdmin} onClick={toggleFav}>☆</button><div className="nx-dropdown-anchor"><button className="nx-pill-button" onClick={()=>setExportMenu(v=>!v)}>⇩ <span>Exportar</span></button>{exportMenu&&<div className="nx-export-menu"><button onClick={()=>exportDocument('md')}>Documento Markdown (.md)</button><button onClick={()=>exportDocument('json')}>Backup de blocos (.json)</button><button onClick={()=>{window.print();setExportMenu(false);}}>Imprimir / PDF</button></div>}</div></>}
-       <button className="nx-icon-button" title="Alternar tema" onClick={()=>{const next=!dark;setDark(next);localStorage.setItem('nx_docs_theme',next?'dark':'light');}}>{dark?'☼':'☾'}</button></div>
+       <button className="nx-icon-button" title={dark?'Tema claro':'Tema escuro'} aria-label={dark?'Ativar tema claro':'Ativar tema escuro'} onClick={()=>{if(toggleTheme)toggleTheme();else{const next=!dark;setInternalDark(next);document.documentElement.dataset.theme=next?'dark':'light';localStorage.setItem('base190_theme',next?'dark':'light');localStorage.setItem('nx_docs_theme',next?'dark':'light');}}}>{dark?'☼':'☾'}</button></div>
       </header>
       <div className="nx-insert-bar">
         <span className="nx-insert-label">✧ &nbsp; Inserir:</span>{TYPES.map(([type,label,symbol])=><button key={type} disabled={!isEditing||!page} onClick={()=>addBlock(type)} title={label} className={['tabs','table'].includes(type)?'nx-featured '+type:''}>{symbol} <span>{label}</span></button>)}{isAdmin&&<><button disabled={!isEditing||busy} title="Inserir imagem" onClick={()=>imageInput.current?.click()}>▧ <span>Imagem</span></button><input ref={imageInput} type="file" hidden accept="image/png,image/jpeg,image/webp" onChange={e=>{const f=e.target.files?.[0];e.target.value='';void uploadImage(f);}}/></>}
