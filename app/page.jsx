@@ -245,6 +245,7 @@ export default function Home() {
       invalid: 'Não foi possível validar a identidade Microsoft. Tente novamente.',
       link: 'Entre com seu usuário e senha do Centro 190 antes de vincular a Microsoft.',
       linked: 'Conta Microsoft vinculada com sucesso.',
+      conflict: 'Essa conta Microsoft já está vinculada a outro usuário do Centro 190. Procure o administrador.'
       config: 'O login Microsoft ainda não está configurado corretamente no servidor.',
       provider: 'Não foi possível concluir a autenticação Microsoft. Tente novamente.',
       failed: 'O login Microsoft não pôde ser concluído. Tente novamente.'
