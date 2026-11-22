@@ -50,6 +50,23 @@ O servidor cria as tabelas automaticamente na primeira requisição autenticada 
 
 `DATABASE_URL` não configurada: API responde **503** (falha segura). Banco inacessível: autenticação e escrita não são liberadas.
 
+
+## Acesso PM Civil, primeiro acesso e recuperação de senha
+
+O login local aceita apenas identidades **PM Civil** previamente autorizadas. A interface não revela a regra de formação do identificador; o backend aplica a validação. O login corporativo Microsoft permanece separado e restrito ao diretório e domínio institucionais autorizados.
+
+- Em **Acessos e Cargos**, Dev/Coordenador cadastraram previamente o acesso PM Civil, o nome do profissional e o cargo. O servidor cria uma senha interna inacessível e entrega ao responsável um **código aleatório de ativação**, exibido apenas uma vez. O gestor deve enviá-lo privadamente ao profissional.
+- O profissional escolhe **Primeiro acesso / criar senha**, informa seu PM Civil, o código entregue e cria a própria senha forte. Códigos de ativação são armazenados apenas como hash, são individuais, têm validade de 24 horas e são consumidos após uso.
+- Em **Esqueci minha senha**, o profissional solicita recuperação. O servidor responde genericamente para não revelar se a conta existe. A solicitação aparece em **Recuperação de senhas**, visível para Gestor, Coordenador e Dev dentro de suas permissões. O responsável aprova ou recusa; a aprovação gera código de uso único e encerra as sessões anteriores.
+- Depois da aprovação, a senha antiga deixa de autenticar. O operador usa o código de recuperação para criar a nova senha. As ações ficam na trilha de auditoria. Contas sem ativação podem ter o código reemitido pelo administrador, invalidando o anterior.
+- O usuário autenticado também pode acessar **Alterar minha senha** informando a senha atual; a alteração revoga sessões. Não é necessário solicitar reset quando conhece a senha atual.
+
+**Segurança:** nunca envie códigos de ativação, senhas, tokens ou credenciais em grupos de conversa. Não envie códigos por e-mail sem um canal corporativo homologado. A aprovação interna não substitui a autorização de TI necessária para contas Microsoft gerenciadas pela Indra.
+
+### Carregamento da biblioteca
+
+A navegação inicial valida a sessão primeiro, depois inicia as leituras de fichas e regras em paralelo e exibe os resultados conforme chegam. Contadores e listas apresentam placeholders durante o carregamento, em vez de números zero enganosos. Consultas read-only e logins rotineiros evitam executar as migrações completas a cada inicialização da função. O fluxo completo de migração permanece disponível quando a estrutura do banco precisa ser criada ou atualizada.
+
 ## API
 
 - `POST /api/access-requests`: solicitação pública de acesso (com proteção de origem e limitação de tentativas).
