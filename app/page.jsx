@@ -186,6 +186,7 @@ export default function Home() {
   const [navigationTarget,setNavigationTarget]=useState('');
   const [navigationDirection,setNavigationDirection]=useState('forward');
   const navSequenceRef=useRef(0);
+  const contentScrollRef=useRef(null);
   const navTimersRef=useRef({exit:null,enter:null});
   const reducedMotionRef=useRef(false);
   useEffect(()=>{
@@ -469,6 +470,7 @@ export default function Home() {
       if(target==='docs')setDocsOpened(true);
       if(target==='chat')setChatFrameLoading(true);
       if(target==='home'&&!options.preserveAnnouncement)showCurrentAnnouncement();
+      if(contentScrollRef.current)contentScrollRef.current.scrollTop=0;
       setScreen(target);
       setNavigationPhase('enter');
       const task=async()=>{
@@ -845,7 +847,7 @@ export default function Home() {
           </button>
         </div>
       </header>
-      <main className={'content' + (isImmersiveScreen ? ' quality-content-mode immersive-content-mode' : ' spaced')}
+      <main ref={contentScrollRef} className={'content' + (isImmersiveScreen ? ' quality-content-mode immersive-content-mode' : ' spaced')}
         data-current-tab={screen} data-nav-phase={navigationPhase} data-nav-direction={navigationDirection}
         aria-busy={navigationPhase==='exit'||tabLoading}>
         {(navigationPhase!=='idle'||tabLoading)&&
