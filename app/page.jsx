@@ -47,7 +47,11 @@ async function call(path, options = {}) {
   });
   let data = {};
   try { data = await response.json(); } catch { }
-  if (!response.ok) throw new Error(data.error || 'Falha na comunicação com o servidor.');
+  if (!response.ok) {
+    const error=new Error(data.error || 'Falha na comunicação com o servidor.');
+    error.code=data.code||'';
+    throw error;
+  }
   return data;
 }
 const body = (value) => JSON.stringify(value);
@@ -98,7 +102,7 @@ export const PROFILES = [
     color: '#34d399',
     icon: 'users',
     desc: 'Gestão de piso e eventos de PAs, resolução de chamados técnicos de TI, acompanhamento de monitorias e auditoria.',
-    centralTabs:['home', 'docs', 'catalog', 'chat', 'floor', 'operations', 'quality'],
+    centralTabs:['home', 'docs', 'catalog', 'chat', 'floor', 'operations', 'quality', 'access'],
     adminTabs: ['audit'],
     canEditDocs: false,
     canEditCatalog: false,
@@ -165,6 +169,7 @@ export default function Home() {
   const isPreviewing = canPreviewRoles && effectiveProfileId !== user?.operationalRole;
   const [notice, setNotice] = useState(''), [success, setSuccess] = useState('');
   const [catalogIssue, setCatalogIssue] = useState(''), [catalogDegraded, setCatalogDegraded] = useState(false), [catalogRefreshing, setCatalogRefreshing] = useState(false);
+  const [entriesReady,setEntriesReady]=useState(false),[rulesReady,setRulesReady]=useState(false);
   const [docsOpened, setDocsOpened] = useState(false);
   const [screen, setScreen] = useState('home'), [requestMode, setRequestMode] = useState(false);
   const [tabLoading, setTabLoading] = useState(false);
@@ -197,7 +202,12 @@ export default function Home() {
     };
   }, []);
   const [login, setLogin] = useState({ username: '', password: '' });
+  const [loginMode,setLoginMode]=useState('login');
+  const [setupForm,setSetupForm]=useState({username:'',code:'',password:'',confirm:''});
+  const [resetPm,setResetPm]=useState('');
   const [passwordForm, setPasswordForm] = useState({ current: '', next: '', confirm: '' });
+  const [passwordModalOpen,setPasswordModalOpen]=useState(false);
+  const [resetPendingCount,setResetPendingCount]=useState(0);
   const [request, setRequest] = useState({ username: '', name: '', reason: '' });
   const [entries, setEntries] = useState([]), [brainRules, setBrainRules] = useState({ base: [], extras: [], custom: [] });
   const [search, setSearch] = useState(''), [cat, setCat] = useState('Todas'), [selectedId, setSelectedId] = useState(null);
@@ -221,17 +231,24 @@ export default function Home() {
   }
   async function refreshCatalog() {
     setCatalogRefreshing(true);
+    setCatalogIssue('');
+    // Progressive rendering: entries and rules no longer wait on each other.
+    const catalogTask=call('/entries').then(catalog=>{
+      if(Array.isArray(catalog.entries))setEntries(catalog.entries);
+      return catalog;
+    }).finally(()=>setEntriesReady(true));
+    const rulesTask=call('/rules').then(rules=>{
+      if(Array.isArray(rules.base))setBrainRules(rules);
+      return rules;
+    }).finally(()=>setRulesReady(true));
     try {
-      // Consultas independentes: uma falha em regras não deve apagar 769 fichas.
-      const [catalog, rules] = await Promise.allSettled([call('/entries'), call('/rules')]);
-      if (catalog.status === 'fulfilled' && Array.isArray(catalog.value.entries)) setEntries(catalog.value.entries);
-      if (rules.status === 'fulfilled' && Array.isArray(rules.value.base)) setBrainRules(rules.value);
-      const errors = [catalog, rules].filter(x => x.status === 'rejected').map(x => x.reason?.message || 'Falha de consulta');
-      const degraded = [catalog, rules].filter(x => x.status === 'fulfilled' && x.value.degraded).map(x => x.value.warning).filter(Boolean);
-      setCatalogDegraded(degraded.length > 0);
-      setCatalogIssue(errors.length ? 'Falha ao consultar ' + (catalog.status === 'rejected' ? 'o catálogo' : 'as regras') + '. ' + errors.join(' ') + ' Tente recarregar.' : degraded[0] || '');
-      return !errors.length && !degraded.length;
-    } finally { setCatalogRefreshing(false); }
+      const [catalog,rules]=await Promise.allSettled([catalogTask,rulesTask]);
+      const errors=[catalog,rules].filter(item=>item.status==='rejected').map(item=>item.reason?.message||'Falha de consulta');
+      const degraded=[catalog,rules].filter(item=>item.status==='fulfilled'&&item.value.degraded).map(item=>item.value.warning).filter(Boolean);
+      setCatalogDegraded(degraded.length>0);
+      setCatalogIssue(errors.length?'Falha ao consultar a biblioteca. '+errors.join(' ')+' Tente novamente.':degraded[0]||'');
+      return !errors.length&&!degraded.length;
+    }finally{setCatalogRefreshing(false);}
   }
   useEffect(() => {
     const microsoftStatus = new URLSearchParams(window.location.search).get('microsoft');
@@ -263,21 +280,24 @@ export default function Home() {
       try {
         const a = await call('/session');
         if (!live) return;
-        setUser(a.user); setLoadingPhase('catalog');
-        const [catalog, rules] = await Promise.allSettled([call('/entries'),call('/rules')]);
-        if (live) {
-          if (catalog.status==='fulfilled' && Array.isArray(catalog.value.entries)) setEntries(catalog.value.entries);
-          if (rules.status==='fulfilled' && Array.isArray(rules.value.base)) setBrainRules(rules.value);
-          const errors = [catalog, rules].filter(x => x.status === 'rejected').map(x => x.reason?.message || 'Falha de consulta');
-          const degraded = [catalog, rules].filter(x => x.status === 'fulfilled' && x.value.degraded).map(x => x.value.warning).filter(Boolean);
-          setCatalogDegraded(degraded.length>0);
-          setCatalogIssue(errors.length ? 'Não foi possível carregar ' + (catalog.status === 'rejected' ? 'o catálogo' : 'as regras') + '. ' + errors.join(' ') : degraded[0] || '');
-        }
-      } catch (e) { if (live && !/Sessão ausente|Sessão expirada|não autorizado/i.test(e.message)) setNotice(e.message); }
-      finally { if (live) setLoading(false); }
+        setUser(a.user);
+        setLoading(false);
+        setLoadingPhase('catalog');
+        refreshCatalog().catch(error=>{if(live)setCatalogIssue(error.message);});
+      } catch (e) {
+        if (live&&!/Sessão ausente|Sessão expirada|não autorizado/i.test(e.message)) setNotice(e.message);
+      } finally { if (live) setLoading(false); }
     })();
     return () => { live = false; };
   }, []);
+  useEffect(()=>{
+    if(!user?.id||user.mustChangePassword||!['manager','coordinator','dev'].includes(user.operationalRole))return;
+    let live=true;
+    const check=()=>call('/management/access/reset-pending').then(data=>{if(live)setResetPendingCount(data.pending||0);}).catch(()=>{});
+    check();
+    window.addEventListener('focus',check);
+    return ()=>{live=false;window.removeEventListener('focus',check);};
+  },[user?.id,user?.mustChangePassword,user?.operationalRole]);
   useEffect(() => {
     if (!user || user.mustChangePassword) return;
     call('/ai/status').then(setAI).catch(() => setAI(null));
@@ -290,8 +310,31 @@ export default function Home() {
   }
   async function submitLogin(event) {
     event.preventDefault(); clear(); setBusy(true);
-    try { const data = await call('/auth/login', { method: 'POST', body: body(login) }); setUser(data.user); setScreen('home'); setLogin({ username: '', password: '' }); await refreshCatalog(); }
-    catch (e) { err(e); } finally { setBusy(false); }
+    try {
+      const data = await call('/auth/login', { method: 'POST', body: body(login) });
+      setUser(data.user);setScreen('home');setLogin({username:'',password:''});setLoginMode('login');
+      refreshCatalog().catch(err);
+    } catch(e) {
+      if(e.code==='ACTIVATION_REQUIRED'||e.code==='RESET_REQUIRED'){
+        setSetupForm(form=>({...form,username:login.username}));setLoginMode('activate');err(e);
+      }else err(e);
+    }finally{setBusy(false);}
+  }
+  async function submitSetup(event){
+    event.preventDefault();clear();setBusy(true);
+    try {
+      const result=await call('/auth/password/setup',{method:'POST',body:body(setupForm)});
+      setLogin({username:setupForm.username,password:''});
+      setSetupForm({username:'',code:'',password:'',confirm:''});setLoginMode('login');ok(result.message);
+    }catch(e){err(e);}finally{setBusy(false);}
+  }
+  async function submitResetRequest(event){
+    event.preventDefault();clear();setBusy(true);
+    try {
+      const result=await call('/auth/password/reset/request',{method:'POST',body:body({username:resetPm})});
+      ok(result.message);setSetupForm(form=>({...form,username:resetPm}));
+      setLoginMode('activate');setResetPm('');
+    }catch(e){err(e);}finally{setBusy(false);}
   }
   async function submitRequest(event) {
     event.preventDefault(); clear(); setBusy(true);
@@ -304,7 +347,7 @@ export default function Home() {
     setBusy(true);
     try {
       const x = await call('/auth/change-password', { method: 'POST', body: body({ current: passwordForm.current, next: passwordForm.next }) });
-      setUser(null); setPasswordForm({ current: '', next: '', confirm: '' }); ok(x.message);
+      setUser(null); setPasswordModalOpen(false); setPasswordForm({ current: '', next: '', confirm: '' }); ok(x.message);
     } catch (e) { err(e); } finally { setBusy(false); }
   }
   async function logout() {
@@ -492,19 +535,35 @@ export default function Home() {
     </section>
     <section className="login-form"><div className="login-card">
       <div className="toolbar"><span className="badge">ACESSO À BASE 190</span><Btn className="ghost tiny" onClick={theme}><Icon name={dark ? 'sun' : 'moon'} size={17} />{dark ? 'Tema claro' : 'Tema escuro'}</Btn></div>
-      <div><h2>{requestMode ? 'Solicitar acesso' : 'Bem-vindo de volta'}</h2><p className="muted">{requestMode ? 'Preencha o pedido. O administrador avaliará o acesso.' : 'Entre com sua conta previamente autorizada.'}</p></div>
+      <div><h2>{requestMode?'Solicitar acesso':loginMode==='activate'?'Criar sua senha':loginMode==='reset'?'Recuperar acesso':'Bem-vindo de volta'}</h2>
+        <p className="muted">{requestMode?'Informe seu acesso PM Civil. O responsável avaliará a solicitação.':loginMode==='activate'?'Informe o código de uso único entregue pelo gestor para criar sua própria senha.':loginMode==='reset'?'Seu pedido será encaminhado para análise e aprovação.':'Entre com seu acesso PM Civil previamente autorizado.'}</p></div>
       {notice && <div className="notice" role="alert">{notice}</div>}{success && <div className="notice success" role="status">{success}</div>}
       {requestMode ? <form className="stack" onSubmit={submitRequest}>
         <div><label htmlFor="reqName">Nome de identificação</label><input id="reqName" autoComplete="name" required value={request.name} onChange={e => setRequest({ ...request, name: e.target.value })} placeholder="Seu nome" /></div>
-        <div><label htmlFor="reqUser">Usuário desejado</label><input id="reqUser" required minLength={4} pattern="[a-zA-Z0-9._-]+" value={request.username} onChange={e => setRequest({ ...request, username: e.target.value })} placeholder="nome.sobrenome" /></div>
+        <div><label htmlFor="reqUser">Acesso PM Civil</label><input id="reqUser" required maxLength={40} autoCapitalize="off" spellCheck="false" value={request.username} onChange={e => setRequest({ ...request, username: e.target.value })} placeholder="Seu acesso PM Civil" /></div>
         <div><label htmlFor="reqReason">Justificativa (opcional)</label><textarea id="reqReason" maxLength={500} value={request.reason} onChange={e => setRequest({ ...request, reason: e.target.value })} placeholder="Motivo do acesso, sem informações sigilosas" /></div>
         <Btn type="submit" disabled={busy} className="full">Enviar solicitação</Btn>
+      </form> : loginMode==='activate' ? <form className="stack" onSubmit={submitSetup}>
+        <div><label htmlFor="setupPm">Acesso PM Civil</label><input id="setupPm" required maxLength={40} autoCapitalize="off" spellCheck="false" value={setupForm.username} onChange={e=>setSetupForm({...setupForm,username:e.target.value})} placeholder="Seu acesso PM Civil" /></div>
+        <div><label htmlFor="setupCode">Código de ativação / recuperação</label><input id="setupCode" type="text" required autoComplete="off" maxLength={64} value={setupForm.code} onChange={e=>setSetupForm({...setupForm,code:e.target.value.trim()})} placeholder="Código enviado pelo responsável"/></div>
+        <div><label htmlFor="setupPassword">Nova senha</label><input id="setupPassword" type="password" required minLength={12} maxLength={128} autoComplete="new-password" value={setupForm.password} onChange={e=>setSetupForm({...setupForm,password:e.target.value})} placeholder="Crie uma senha forte"/></div>
+        <div><label htmlFor="setupConfirm">Confirmar nova senha</label><input id="setupConfirm" type="password" required minLength={12} maxLength={128} autoComplete="new-password" value={setupForm.confirm} onChange={e=>setSetupForm({...setupForm,confirm:e.target.value})} placeholder="Digite a senha novamente"/></div>
+        <p className="hint">Use 12 ou mais caracteres, incluindo letras maiúsculas, minúsculas, número e símbolo. O código expira em 24 horas.</p>
+        <Btn type="submit" disabled={busy} className="full">{busy?'Validando código…':'Criar minha senha'}</Btn>
+      </form> : loginMode==='reset' ? <form className="stack" onSubmit={submitResetRequest}>
+        <div><label htmlFor="resetPm">Acesso PM Civil</label><input id="resetPm" required autoCapitalize="off" spellCheck="false" maxLength={40} value={resetPm} onChange={e=>setResetPm(e.target.value)} placeholder="Seu acesso PM Civil"/></div>
+        <Btn type="submit" disabled={busy} className="full">{busy?'Enviando…':'Solicitar redefinição ao gestor'}</Btn>
+        <p className="hint">Após a aprovação, o gestor entregará seu código de recuperação por canal seguro.</p>
       </form> : <form className="stack" onSubmit={submitLogin}>
-        <div><label htmlFor="username">Usuário</label><input id="username" required autoComplete="username" value={login.username} onChange={e => setLogin({ ...login, username: e.target.value })} placeholder="Seu usuário" /></div>
+        <div><label htmlFor="username">Acesso PM Civil</label><input id="username" required autoComplete="username" maxLength={40} autoCapitalize="off" spellCheck="false" value={login.username} onChange={e => setLogin({ ...login, username: e.target.value })} placeholder="Seu acesso PM Civil" /></div>
         <div><label htmlFor="password">Senha</label><input id="password" type="password" required autoComplete="current-password" value={login.password} onChange={e => setLogin({ ...login, password: e.target.value })} placeholder="Digite sua senha" /></div>
         <Btn type="submit" disabled={busy} className="full">{busy ? 'Verificando…' : 'Entrar na plataforma →'}</Btn>
       </form>}
-      {!requestMode && <>
+      {!requestMode && loginMode==='login' && <>
+        <div className="login-utility-links">
+          <button type="button" onClick={()=>{setSetupForm(f=>({...f,username:login.username}));setLoginMode('activate');clear();}}>Primeiro acesso / criar senha</button>
+          <button type="button" onClick={()=>{setResetPm(login.username);setLoginMode('reset');clear();}}>Esqueci minha senha</button>
+        </div>
         <div className="microsoft-divider"><span>ou entre com sua conta corporativa</span></div>
         <Btn className="secondary full microsoft-login" disabled={busy} onClick={() => window.location.assign('/api/auth/microsoft/start')}>
           <span className="microsoft-mark" aria-hidden="true"><i /><i /><i /><i /></span>
@@ -512,22 +571,27 @@ export default function Home() {
         </Btn>
         <p className="hint">Exclusivo para contas @minsait.com. Novos usuários precisam de aprovação interna.</p>
       </>}
-      <Btn className="secondary full" onClick={() => { setRequestMode(!requestMode); clear(); }}>{requestMode ? 'Já possuo acesso — entrar' : 'Solicitar acesso'}</Btn>
+      <Btn className="secondary full" onClick={() => {
+        if(requestMode){setRequestMode(false);setLoginMode('login');}
+        else if(loginMode!=='login'){setLoginMode('login');}
+        else setRequestMode(true);
+        clear();
+      }}>{requestMode||loginMode!=='login'?'Voltar ao login':'Solicitar acesso PM Civil'}</Btn>
       <div className="divider" /><p className="hint">Acesso individual e autorizado. Entre em contato com o administrador para solicitar ajuda.</p>
     </div></section>
   </div>;
 
-  if (user.mustChangePassword) return <section className="login-form" style={{ minHeight: '100vh' }}>
+  if (user.mustChangePassword || passwordModalOpen) return <section className="login-form" style={{ minHeight: '100vh' }}>
     <form className="login-card card" onSubmit={changePassword}>
-      <span className="badge">SEGURANÇA DA CONTA</span><h2>Defina uma nova senha</h2>
-      <p className="muted">A credencial inicial é provisória. Para continuar, escolha uma senha exclusiva para esta plataforma.</p>
+      <span className="badge">SEGURANÇA DA CONTA</span><h2>{user.mustChangePassword?'Defina uma nova senha':'Alterar minha senha'}</h2>
+      <p className="muted">{user.mustChangePassword?'A credencial inicial é provisória. Defina uma senha exclusiva para continuar.':'Informe sua senha atual e escolha uma nova. A alteração encerrará suas sessões ativas.'}</p>
       {notice && <div className="notice" role="alert">{notice}</div>}{success && <div className="notice success" role="status">{success}</div>}
       <div><label htmlFor="old-pass">Senha atual</label><input id="old-pass" type="password" autoComplete="current-password" required value={passwordForm.current} onChange={e => setPasswordForm({ ...passwordForm, current: e.target.value })} /></div>
       <div><label htmlFor="new-pass">Nova senha forte</label><input id="new-pass" type="password" autoComplete="new-password" required minLength={12} value={passwordForm.next} onChange={e => setPasswordForm({ ...passwordForm, next: e.target.value })} /></div>
       <div><label htmlFor="confirm-pass">Confirme a nova senha</label><input id="confirm-pass" type="password" autoComplete="new-password" required value={passwordForm.confirm} onChange={e => setPasswordForm({ ...passwordForm, confirm: e.target.value })} /></div>
       <small>Use 12 ou mais caracteres, maiúsculas, minúsculas, números e símbolo.</small>
       <Btn type="submit" className="full" disabled={busy}>Alterar senha e encerrar sessão</Btn>
-      <Btn className="secondary full" onClick={logout}>Sair sem alterar</Btn>
+      <Btn className="secondary full" onClick={user.mustChangePassword?logout:()=>{setPasswordModalOpen(false);clear();}}> {user.mustChangePassword?'Sair sem alterar':'Voltar ao sistema'} </Btn>
     </form>
   </section>;
 
@@ -548,7 +612,7 @@ export default function Home() {
         <Icon name="arrow" size={19} /><span className="sidebar-toggle-label">{sidebarExpanded ? 'Recolher menu' : 'Expandir menu'}</span>
       </button>
       <span className="nav-caption">CENTRAL</span>
-      {visibleLinks.map(([id, label, icon]) => <button key={id} className={'nav-btn ' + (screen === id ? 'active' : '')} onClick={()=>go(id)} aria-label={label} aria-current={screen === id ? 'page' : undefined} title={label}><Icon name={icon} /><span className="nav-label">{label}</span></button>)}
+      {visibleLinks.map(([id, label, icon]) => <button key={id} className={'nav-btn ' + (screen === id ? 'active' : '')} onClick={()=>go(id)} aria-label={label} aria-current={screen === id ? 'page' : undefined} title={label}><Icon name={icon} /><span className="nav-label">{label}</span>{id==='access'&&resetPendingCount>0&&<span className="nav-pending-badge" title="Recuperações de senha pendentes">{resetPendingCount}</span>}</button>)}
       {visibleAdminLinks.length > 0 && <><span className="nav-caption">ADMINISTRAÇÃO</span>{visibleAdminLinks.map(([id, label, icon]) => <button key={id} className={'nav-btn ' + (screen === id ? 'active' : '')} onClick={() => id === 'editor' ? editEntry(null) : go(id)} aria-label={label} aria-current={screen === id ? 'page' : undefined} title={label}><Icon name={icon} /><span className="nav-label">{label}</span></button>)}</>}
       <div className="sidebar-profile-box">
         <button
@@ -573,6 +637,7 @@ export default function Home() {
           <span className="nav-label">{dark ? 'Modo Claro' : 'Modo Escuro'}</span>
         </button>
         <p className="who">{user.name}<br /><small>{user.username} • {activeProfileConfig.accessLabel}</small></p>
+        <button className="nav-btn" onClick={()=>{setPasswordForm({current:'',next:'',confirm:''});setPasswordModalOpen(true);clear();}} title="Alterar minha senha" aria-label="Alterar minha senha"><Icon name="lock"/><span className="nav-label">Alterar minha senha</span></button>
         <button className="nav-btn" onClick={() => window.location.assign('/api/auth/microsoft/start?link=1')} aria-label="Vincular conta Microsoft" title="Vincular conta Microsoft"><Icon name="lock" /><span className="nav-label">Vincular Microsoft</span></button>
         <button className="nav-btn" onClick={logout} disabled={busy} aria-label="Encerrar sessão" title="Encerrar sessão"><Icon name="logout" /><span className="nav-label">Sair</span></button>
       </div>
@@ -669,7 +734,7 @@ export default function Home() {
         )}
         {screen === 'access' && accessState && (
           <nav className="quality-topbar-nav" aria-label="Navegação de Acessos e Cargos">
-            <button
+            {accessState.canCreateUsers&&<button
               type="button"
               className={`quality-topbar-tab${accessState.tab === 'users' ? ' active' : ''}`}
               onClick={() => accessState.setTab('users')}
@@ -678,8 +743,8 @@ export default function Home() {
               {accessState.usersCount > 0 && (
                 <span className="quality-topbar-badge blue">{accessState.usersCount}</span>
               )}
-            </button>
-            <button
+            </button>}
+            {accessState.canCreateUsers&&<button
               type="button"
               className={`quality-topbar-tab${accessState.tab === 'requests' ? ' active' : ''}`}
               onClick={() => accessState.setTab('requests')}
@@ -688,6 +753,10 @@ export default function Home() {
               {accessState.pendingCount > 0 && (
                 <span className="quality-topbar-badge amber">{accessState.pendingCount}</span>
               )}
+            </button>}
+            <button type="button" className={`quality-topbar-tab${accessState.tab==='resets'?' active':''}`} onClick={()=>accessState.setTab('resets')}>
+              Recuperação de senhas
+              {accessState.resetPendingCount>0&&<span className="quality-topbar-badge amber">{accessState.resetPendingCount}</span>}
             </button>
           </nav>
         )}
@@ -713,11 +782,13 @@ export default function Home() {
             <p>Descreva uma ocorrência ou faça uma pergunta sobre uma natureza. O Chat 190 consulta o catálogo, explica quando usar cada ficha e sinaliza o que precisa ser confirmado.</p>
             <form className="search-row" onSubmit={analyze}><input value={relato} onChange={e => setRelato(e.target.value)} aria-label="Relato ou dúvida para análise" placeholder="Ex.: quando usar a natureza de roubo?" /><Btn type="submit" disabled={busy}>Consultar no Chat 190 →</Btn></form>
           </section>
-          <div className="grid3"><div className="card stat"><small><Icon name="book" /> Fichas no catálogo</small><strong>{catalogIssue&&!entries.length?'—':entries.length}</strong><span className="badge">{catalogDegraded ? 'Contingência · somente leitura' : 'Conhecimento'}</span></div>
-            <div className="card stat"><small><Icon name="brain" /> Regras de classificação</small><strong>{catalogIssue&&!totalRules?'—':totalRules}</strong><span className="badge">{catalogDegraded ? 'Regras locais' : 'Chat 190'}</span></div>
+          {catalogRefreshing&&<div className="catalog-sync-banner" role="status" aria-live="polite"><span className="startup-spinner" aria-hidden="true"/> Carregando e sincronizando o catálogo operacional. Você pode navegar enquanto isso…</div>}
+          <div className="grid3"><div className="card stat"><small><Icon name="book" /> Fichas no catálogo</small><strong aria-busy={!entriesReady}>{!entriesReady?'…':entries.length}</strong><span className="badge">{catalogDegraded ? 'Contingência · somente leitura' : 'Conhecimento'}</span></div>
+            <div className="card stat"><small><Icon name="brain" /> Regras de classificação</small><strong aria-busy={!rulesReady}>{!rulesReady?'…':totalRules}</strong><span className="badge">{catalogDegraded ? 'Regras locais' : 'Chat 190'}</span></div>
             <div className="card stat"><small><Icon name="shield" /> Nível de acesso</small><strong style={{ fontSize: 21 }}>{activeProfileConfig.name}</strong><span className="badge">{activeProfileConfig.badge}</span></div></div>
-          <section className="domain-section"><div className="panel-head"><div><span className="eyebrow">CONSULTA POR ÁREA</span><h2>Encontre o contexto do atendimento</h2></div><span className="badge">{categories.length - 1} áreas</span></div><div className="domain-grid">{categories.filter(c => c !== 'Todas').map(c => <button className="domain-card" key={c} onClick={() => { setCat(c); setSearch(''); setPriorityFilter('Todas'); go('catalog'); }}><Icon name={categoryIcon(c)} size={24} /><b>{c}</b><small>{entries.filter(e => e.category === c).length} fichas</small><Icon name="arrow" size={16} /></button>)}</div></section>
-          <section><div className="panel-head"><div><h2>Naturezas em destaque</h2><p className="muted">Consulte fichas e orientações existentes</p></div><Btn className="secondary" onClick={() => go('catalog')}>Ver catálogo →</Btn></div>{entryGrid(entries.slice(0, 6))}</section>
+          <section className="domain-section"><div className="panel-head"><div><span className="eyebrow">CONSULTA POR ÁREA</span><h2>Encontre o contexto do atendimento</h2></div><span className="badge">{categories.length - 1} áreas</span></div><div className="domain-grid">{!entriesReady?Array.from({length:8},(_,index)=><div className="domain-card domain-placeholder" key={index} aria-hidden="true"><span className="catalog-shimmer"/></div>):categories.filter(c => c !== 'Todas').map(c => <button className="domain-card" key={c} onClick={() => { setCat(c); setSearch(''); setPriorityFilter('Todas'); go('catalog'); }}><Icon name={categoryIcon(c)} size={24} /><b>{c}</b><small>{entries.filter(e => e.category === c).length} fichas</small><Icon name="arrow" size={16} /></button>)}</div></section>
+          <section><div className="panel-head"><div><h2>Naturezas em destaque</h2><p className="muted">Consulte fichas e orientações existentes</p></div><Btn className="secondary" onClick={() => go('catalog')}>Ver catálogo →</Btn></div>
+            {!entriesReady?<div className="catalog-skeleton-row" role="status" aria-label="Carregando fichas do catálogo">{Array.from({length:3},(_,index)=><div className="card catalog-skeleton" key={index}/>)}</div>:entryGrid(entries.slice(0, 6))}</section>
           <div className="helpnote">Os exemplos da base não constituem códigos ou protocolos oficiais homologados. É proibido utilizar a ferramenta para inserir dados sigilosos sem autorização institucional.</div>
         </div>}
 
@@ -730,8 +801,10 @@ export default function Home() {
         {screen === 'catalog' && <div key="catalog" className="tab-view-container">
           <div className="panel-head"><div><span className="eyebrow">BIBLIOTECA OPERACIONAL</span><h1>Catálogo de naturezas</h1><p className="muted">Busque por título, código, resumo, conteúdo ou palavra-chave.</p></div>{activeProfileConfig.canEditCatalog && <Btn onClick={() => editEntry(null)}><Icon name="plus" size={18} /> Nova ficha</Btn>}</div>
           <div className="card catalog-filters"><div><label htmlFor="search">Pesquisa</label><input id="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Código, natureza, palavra-chave…" /></div><div><label htmlFor="category">Categoria</label><select id="category" value={cat} onChange={e => setCat(e.target.value)}>{categories.map(c => <option key={c}>{c}</option>)}</select></div><div><label htmlFor="priority-filter">Prioridade sugerida</label><select id="priority-filter" value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)}>{['Todas', 'Crítica', 'Alta', 'Média', 'Consulta'].map(v => <option key={v}>{v}</option>)}</select></div></div>
-          <p className="catalog-note"><Icon name="shield" size={16} /> Relação COPOM corrigida: 769 naturezas importadas do CSV recebido. IDs NAT são códigos internos desta plataforma; as descrições foram acrescentadas para consulta e dependem de validação institucional.</p><div className="toolbar"><p className="muted">{filtered.length} resultado(s)</p><Btn className="ghost tiny" onClick={() => { setSearch(''); setCat('Todas'); setPriorityFilter('Todas'); }}>Limpar filtros</Btn></div>
-          {filtered.length ? <>{entryGrid(filtered.slice(0, catalogLimit))}{filtered.length > catalogLimit && <div className="toolbar" style={{ justifyContent: 'center', padding: '18px 0' }}><Btn className="secondary" onClick={() => setCatalogLimit(v => v + 60)}>Ver mais naturezas ({Math.min(filtered.length - catalogLimit, 60)} próximas)</Btn></div>}</> : <div className="card empty-state"><Icon name="search" size={36} /><h2>Nenhuma ficha encontrada</h2><p className="muted">Tente outro termo ou remova os filtros de categoria e prioridade.</p></div>}
+          <p className="catalog-note"><Icon name="shield" size={16} /> Relação COPOM corrigida: 769 naturezas importadas do CSV recebido. IDs NAT são códigos internos desta plataforma; as descrições foram acrescentadas para consulta e dependem de validação institucional.</p>
+          {!entriesReady&&<div className="catalog-sync-banner" role="status"><span className="startup-spinner"/>Carregando fichas e filtros do catálogo…</div>}
+          <div className="toolbar"><p className="muted">{filtered.length} resultado(s)</p><Btn className="ghost tiny" onClick={() => { setSearch(''); setCat('Todas'); setPriorityFilter('Todas'); }}>Limpar filtros</Btn></div>
+          {!entriesReady?<div className="catalog-skeleton-row">{Array.from({length:3},(_,index)=><div className="card catalog-skeleton" key={index}/>)}</div>:filtered.length ? <>{entryGrid(filtered.slice(0, catalogLimit))}{filtered.length > catalogLimit && <div className="toolbar" style={{ justifyContent: 'center', padding: '18px 0' }}><Btn className="secondary" onClick={() => setCatalogLimit(v => v + 60)}>Ver mais naturezas ({Math.min(filtered.length - catalogLimit, 60)} próximas)</Btn></div>}</> : <div className="card empty-state"><Icon name="search" size={36} /><h2>Nenhuma ficha encontrada</h2><p className="muted">Tente outro termo ou remova os filtros de categoria e prioridade.</p></div>}
         </div>}
 
         {screen === 'detail' && selected && <div key="detail" className="tab-view-container"><section className="card spaced">

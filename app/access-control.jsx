@@ -22,8 +22,8 @@ function Status({active}){return <span className={'ac-status '+(active?'enabled'
 function Role({role}){return <span className={'ac-role '+(role||'attendant')}>{LABELS[role]||'Atendente'}</span>;}
 
 export default function AccessControl({currentUser,onStateChange=null}){
-  const [dataset,setDataset]=useState({users:[],requests:[],permission:''});
-  const [tab,setTab]=useState('users');
+  const [dataset,setDataset]=useState({users:[],requests:[],resetRequests:[],permission:'',canCreateUsers:false});
+  const [tab,setTab]=useState(currentUser?.operationalRole==='manager'?'resets':'users');
   const [loading,setLoading]=useState(true);
   const [busy,setBusy]=useState('');
   const [error,setError]=useState('');
@@ -52,9 +52,12 @@ export default function AccessControl({currentUser,onStateChange=null}){
   const options=ROLES.filter(role=>permission==='dev'||role.value!=='coordinator');
   const users=dataset.users||[];
   const requests=dataset.requests||[];
+  const resetRequests=dataset.resetRequests||[];
+  const pendingResets=resetRequests.filter(item=>item.status==='pending');
+  const canCreateUsers=Boolean(dataset.canCreateUsers);
   const pending=requests.filter(item=>item.status==='pending');
   const activeCount=users.filter(item=>item.active).length;
-  const allowedToManage=person=>person.role!=='admin'&&person.operational_role!=='dev'&&
+  const allowedToManage=person=>canCreateUsers&&person.role!=='admin'&&person.operational_role!=='dev'&&
     person.id!==currentUser?.id&&(permission==='dev'||person.operational_role!=='coordinator');
   const matchingUsers=useMemo(()=>users.filter(person=>{
     const matchesText=[person.username,person.display_name,LABELS[person.operational_role]].join(' ').toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR').trim());
@@ -63,16 +66,16 @@ export default function AccessControl({currentUser,onStateChange=null}){
 
   useEffect(()=>{
     if(typeof onStateChange==='function'){
-      onStateChange({tab,setTab,usersCount:users.length,pendingCount:pending.length,busy});
+      onStateChange({tab,setTab,usersCount:users.length,pendingCount:pending.length,resetPendingCount:pendingResets.length,canCreateUsers,busy});
     }
-  },[tab,users.length,pending.length,busy,onStateChange]);
+  },[tab,users.length,pending.length,pendingResets.length,canCreateUsers,busy,onStateChange]);
 
   async function mutate(key,path,method,payload,confirmation){
     if(confirmation&&!window.confirm(confirmation))return;
     setBusy(key);setError('');setSuccess('');
     try{
       const result=await api(path,method,payload);
-      if(result.temporaryPassword)setCredential({username:result.username||'',password:result.temporaryPassword});
+      if(result.setupCode||result.temporaryPassword)setCredential({username:result.username||'',code:result.setupCode||result.temporaryPassword});
       if(key==='create'){setShowCreate(false);setForm({name:'',username:'',role:'attendant'});}
       await refresh();
       setSuccess(result.message||'Alteração salva.');
@@ -96,8 +99,12 @@ export default function AccessControl({currentUser,onStateChange=null}){
       person.active?'Bloquear o acesso de '+person.display_name+' e encerrar as sessões?':'Reativar o acesso de '+person.display_name+'?');
   }
   function resetPassword(person){
-    mutate('user-'+person.id,'/users','PATCH',{id:person.id,action:'reset'},
-      'Redefinir a senha de '+person.display_name+'? Uma credencial provisória será gerada.');
+    mutate('user-'+person.id,'/users','PATCH',{id:person.id,action:person.password_initialized?'reset':'activation'},
+      person.password_initialized?'Registrar pedido de reset de '+person.display_name+' para aprovação?':'Gerar novo código de ativação para '+person.display_name+'?');
+  }
+  function reviewReset(item,action){
+    mutate('reset-'+item.id,'/resets','POST',{id:item.id,action},
+      action==='approve'?'Aprovar redefinição de '+item.display_name+'? As sessões anteriores serão encerradas.':'Recusar solicitação de redefinição?');
   }
   function submitNewUser(event){
     event.preventDefault();
@@ -111,7 +118,7 @@ export default function AccessControl({currentUser,onStateChange=null}){
         <p>Gerencie quem entra na plataforma e qual função cada profissional exerce. Todas as alterações são registradas e validadas pelo servidor.</p>
         <div className="ac-permission">Seu cargo: <strong>{LABELS[permission]||permission}</strong><span>·</span> Controle restrito a Coordenador e Dev</div>
       </div>
-      <button type="button" className="ac-btn ac-btn-hero" onClick={()=>{setShowCreate(true);setTab('users');}} disabled={loading}>+ Novo usuário</button>
+      {canCreateUsers&&<button type="button" className="ac-btn ac-btn-hero" onClick={()=>{setShowCreate(true);setTab('users');}} disabled={loading}>+ Autorizar acesso PM Civil</button>}
     </div>
 
     {loading?<div className="ac-card ac-loading" role="status">Consultando acessos e solicitações…</div>:<>
@@ -119,26 +126,27 @@ export default function AccessControl({currentUser,onStateChange=null}){
         <div className="ac-stat"><small>Contas cadastradas</small><strong>{users.length}</strong><span>Total de profissionais</span></div>
         <div className="ac-stat"><small>Acessos ativos</small><strong>{activeCount}</strong><span>Contas habilitadas</span></div>
         <div className="ac-stat"><small>Solicitações pendentes</small><strong>{pending.length}</strong><span>Aguardando uma decisão</span></div>
-        <div className="ac-stat"><small>Coordenadores</small><strong>{users.filter(x=>x.operational_role==='coordinator').length}</strong><span>Equipe de coordenação</span></div>
+        <div className="ac-stat"><small>Resets aguardando aprovação</small><strong>{pendingResets.length}</strong><span>Solicitações para análise</span></div>
       </div>
       {error&&<div className="ac-alert ac-error" role="alert">{error}<button type="button" onClick={()=>setError('')}>Fechar</button></div>}
       {success&&<div className="ac-alert ac-success" role="status">{success}<button type="button" onClick={()=>setSuccess('')}>Fechar</button></div>}
       {credential&&<div className="ac-card ac-credential">
-        <div><span className="ac-section-kicker">CREDENCIAL DE PRIMEIRO ACESSO</span><h2>Senha provisória gerada</h2><p>Exibida apenas agora. Envie por canal seguro e oriente a troca obrigatória da senha no primeiro login.</p></div>
-        <div className="ac-secret"><span>Usuário: <b>{credential.username}</b></span><code>{credential.password}</code></div>
+        <div><span className="ac-section-kicker">ATIVAÇÃO / RECUPERAÇÃO DE ACESSO</span><h2>Código de uso único</h2><p>Válido por 24 horas, exibido apenas agora. Encaminhe por canal seguro diretamente ao profissional. Nunca publique em grupos.</p></div>
+        <div className="ac-secret"><span>Acesso PM Civil: <b>{credential.username}</b></span><code>{credential.code}</code></div>
         <div className="ac-actions">
-          <button className="ac-btn ac-btn-primary" type="button" onClick={()=>navigator.clipboard?.writeText(credential.username+'\n'+credential.password)}>Copiar credenciais</button>
-          <button className="ac-btn ac-btn-muted" type="button" onClick={()=>setCredential(null)}>Ocultar senha</button>
+          <button className="ac-btn ac-btn-primary" type="button" onClick={()=>navigator.clipboard?.writeText(credential.username+'\n'+credential.code)}>Copiar código</button>
+          <button className="ac-btn ac-btn-muted" type="button" onClick={()=>setCredential(null)}>Ocultar código</button>
         </div>
       </div>}
       <div className="ac-tabbar" role="tablist" aria-label="Seções de administração de acessos">
         <button role="tab" aria-selected={tab==='users'} className={tab==='users'?'active':''} onClick={()=>setTab('users')}>Profissionais <span>{users.length}</span></button>
-        <button role="tab" aria-selected={tab==='requests'} className={tab==='requests'?'active':''} onClick={()=>setTab('requests')}>Solicitações <span>{pending.length}</span></button>
+        {canCreateUsers&&<button role="tab" aria-selected={tab==='requests'} className={tab==='requests'?'active':''} onClick={()=>setTab('requests')}>Solicitações <span>{pending.length}</span></button>}
+        <button role="tab" aria-selected={tab==='resets'} className={tab==='resets'?'active':''} onClick={()=>setTab('resets')}>Recuperação de senhas <span>{pendingResets.length}</span></button>
         <button className="ac-refresh" type="button" disabled={Boolean(busy)} onClick={()=>{setError('');refresh().catch(e=>setError(e.message));}}>↻ Atualizar</button>
       </div>
 
       {tab==='users'&&<section className="ac-card" aria-label="Profissionais e cargos">
-        <div className="ac-head"><div><span className="ac-section-kicker">EQUIPE CADASTRADA</span><h2>Profissionais e permissões</h2><p>Altere cargos, bloqueie acessos ou gere novas senhas provisórias.</p></div></div>
+        <div className="ac-head"><div><span className="ac-section-kicker">EQUIPE CADASTRADA</span><h2>Profissionais e permissões</h2><p>Cadastre acessos PM Civil e acompanhe o estado da ativação de cada profissional.</p></div></div>
         <div className="ac-filters">
           <label className="ac-search"><span>Buscar profissional</span><input type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Nome ou usuário…"/></label>
           <label><span>Filtrar por</span><select value={filter} onChange={e=>setFilter(e.target.value)}>
@@ -152,10 +160,10 @@ export default function AccessControl({currentUser,onStateChange=null}){
               const available=allowedToManage(person);
               const chosen=roleDraft[person.id]||person.operational_role;
               return <tr key={person.id}><td><div className="ac-person"><span className="ac-avatar">{(person.display_name||person.username).trim().split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()}</span><span><b>{person.display_name}</b><small>@{person.username}</small></span></div></td>
-                <td><Role role={person.operational_role}/></td><td><Status active={person.active}/></td>
+                <td><Role role={person.operational_role}/></td><td><Status active={person.active}/>{person.password_initialized===false&&<small className="ac-activation-tag"> · Ativação pendente</small>}</td>
                 <td>{available?<div className="ac-role-edit"><select aria-label={'Novo cargo para '+person.display_name} value={chosen} disabled={Boolean(busy)} onChange={e=>setRoleDraft(d=>({...d,[person.id]:e.target.value}))}>{options.map(role=><option key={role.value} value={role.value}>{role.label}</option>)}</select>
                   <button className="ac-btn ac-btn-small ac-btn-primary" type="button" disabled={Boolean(busy)||chosen===person.operational_role} onClick={()=>updateRole(person)}>Salvar</button></div>:<span className="ac-protected">Cargo protegido</span>}</td>
-                <td>{available?<div className="ac-actions ac-actions-inline"><button type="button" className="ac-btn ac-btn-small ac-btn-muted" disabled={Boolean(busy)} onClick={()=>updateStatus(person)}>{person.active?'Bloquear':'Reativar'}</button><button type="button" className="ac-btn ac-btn-small ac-btn-muted" disabled={Boolean(busy)} onClick={()=>resetPassword(person)}>Nova senha</button></div>:<small>Somente consulta</small>}</td>
+                <td>{available?<div className="ac-actions ac-actions-inline"><button type="button" className="ac-btn ac-btn-small ac-btn-muted" disabled={Boolean(busy)} onClick={()=>updateStatus(person)}>{person.active?'Bloquear':'Reativar'}</button><button type="button" className="ac-btn ac-btn-small ac-btn-muted" disabled={Boolean(busy)} onClick={()=>resetPassword(person)}>{person.password_initialized?'Solicitar reset':'Reemitir ativação'}</button></div>:<small>Somente consulta</small>}</td>
               </tr>;
             })}</tbody>
           </table>
@@ -164,8 +172,24 @@ export default function AccessControl({currentUser,onStateChange=null}){
         <div className="ac-footnote">Dev é reservado à conta principal. Coordenadores podem administrar cargos inferiores; a atribuição de Coordenador é exclusiva de Dev. Alterações de cargo encerram a sessão anterior do usuário.</div>
       </section>}
 
-      {tab==='requests'&&<section className="ac-card" aria-label="Solicitações de acesso">
-        <div className="ac-head"><div><span className="ac-section-kicker">ENTRADAS NA PLATAFORMA</span><h2>Solicitações de acesso</h2><p>Aprovações criam uma conta com senha provisória e cargo definido.</p></div><span className="ac-count">{pending.length} pendente(s)</span></div>
+      {tab==='resets'&&<section className="ac-card" aria-label="Aprovação de recuperação de senhas">
+        <div className="ac-head"><div><span className="ac-section-kicker">SEGURANÇA DE ACESSO</span><h2>Recuperação de senhas</h2>
+          <p>Pedidos enviados pelos operadores. A liberação gera um código temporário e invalida sessões anteriores.</p></div><span className="ac-count">{pendingResets.length} pendente(s)</span></div>
+        {!resetRequests.length&&<div className="ac-empty">Não há solicitações de recuperação.</div>}
+        <div className="ac-requests">
+          {resetRequests.map(item=><div key={item.id} className={'ac-request '+(item.status==='pending'?'pending':'settled')}>
+            <div className="ac-request-main"><div className="ac-person"><span className="ac-avatar">{(item.display_name||item.username)[0]?.toUpperCase()}</span>
+              <span><b>{item.display_name}</b><small>{item.username} · {dateLabel(item.created_at)}</small></span></div>
+              <p>{item.status==='pending'?'Aguardando autorização para redefinir senha.':'Situação: '+({approved:'Aprovado',rejected:'Recusado',completed:'Concluído'}[item.status]||item.status)}</p></div>
+            {item.status==='pending'?<div className="ac-request-ops">
+              <button type="button" className="ac-btn ac-btn-primary" disabled={Boolean(busy)} onClick={()=>reviewReset(item,'approve')}>Autorizar reset</button>
+              <button type="button" className="ac-btn ac-btn-muted" disabled={Boolean(busy)} onClick={()=>reviewReset(item,'reject')}>Recusar</button>
+            </div>:<span className={'ac-status '+(item.status==='rejected'?'disabled':'enabled')}>{item.status==='completed'?'Concluído':item.status==='approved'?'Aprovado':'Recusado'}</span>}
+          </div>)}
+        </div>
+      </section>}
+      {canCreateUsers&&tab==='requests'&&<section className="ac-card" aria-label="Solicitações de acesso">
+        <div className="ac-head"><div><span className="ac-section-kicker">ENTRADAS NA PLATAFORMA</span><h2>Solicitações de acesso</h2><p>Aprovações de PM Civil geram um código de ativação. Contas Microsoft seguem o fluxo corporativo.</p></div><span className="ac-count">{pending.length} pendente(s)</span></div>
         {!requests.length&&<div className="ac-empty">Nenhuma solicitação recebida até agora.</div>}
         <div className="ac-requests">
           {requests.map(item=><div key={item.id} className={'ac-request '+(item.status==='pending'?'pending':'settled')}>
@@ -178,12 +202,12 @@ export default function AccessControl({currentUser,onStateChange=null}){
         </div>
       </section>}
 
-      {showCreate&&<div className="ac-modal-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setShowCreate(false);}}>
+      {canCreateUsers&&showCreate&&<div className="ac-modal-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setShowCreate(false);}}>
         <div className="ac-modal" role="dialog" aria-modal="true" aria-labelledby="ac-new-title">
-          <div className="ac-head"><div><span className="ac-section-kicker">CADASTRO ADMINISTRATIVO</span><h2 id="ac-new-title">Adicionar profissional</h2><p>Crie um acesso individual e defina o cargo inicial.</p></div><button aria-label="Fechar cadastro" type="button" className="ac-modal-close" onClick={()=>setShowCreate(false)}>×</button></div>
+          <div className="ac-head"><div><span className="ac-section-kicker">CADASTRO ADMINISTRATIVO</span><h2 id="ac-new-title">Pré-autorizar acesso PM Civil</h2><p>Cadastre o profissional e gere um código seguro para que ele crie a própria senha.</p></div><button aria-label="Fechar cadastro" type="button" className="ac-modal-close" onClick={()=>setShowCreate(false)}>×</button></div>
           <form onSubmit={submitNewUser} className="ac-create-form">
             <label>Nome do profissional<input required minLength={3} maxLength={100} value={form.name} onChange={e=>setForm(v=>({...v,name:e.target.value}))} placeholder="Nome completo"/></label>
-            <label>Usuário de login<input required minLength={4} maxLength={40} pattern="[A-Za-z0-9._-]+" value={form.username} onChange={e=>setForm(v=>({...v,username:e.target.value}))} placeholder="nome.sobrenome"/></label>
+            <label>Acesso PM Civil<input required minLength={10} maxLength={40} value={form.username} onChange={e=>setForm(v=>({...v,username:e.target.value}))} placeholder="Acesso PM Civil do profissional"/></label>
             <label>Cargo inicial<select value={form.role} onChange={e=>setForm(v=>({...v,role:e.target.value}))}>{options.map(role=><option key={role.value} value={role.value}>{role.label}</option>)}</select></label>
             <div className="ac-modal-actions"><button type="button" className="ac-btn ac-btn-muted" onClick={()=>setShowCreate(false)}>Cancelar</button><button type="submit" className="ac-btn ac-btn-primary" disabled={Boolean(busy)}>{busy==='create'?'Salvando…':'Criar acesso'}</button></div>
           </form>
