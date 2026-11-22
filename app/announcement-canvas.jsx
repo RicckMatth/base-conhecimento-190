@@ -10,7 +10,7 @@ function ElementContent({element,editable}){
       style={{height:'100%',width:'100%',objectFit:element.fit||'cover',borderRadius:element.radius}}/>:
       <span>Selecione uma imagem</span>;
   if(element.type==='shape')return null;
-  const content=<span className="ann-layer-text">{element.text||'Seu texto aqui'}</span>;
+  const content=<span className="ann-inner-text">{element.text||'Seu texto aqui'}</span>;
   if(element.type==='button'&&!editable&&element.href)
     return <a className="ann-layer-action" href={element.href}
       target={element.href.startsWith('http')?'_blank':undefined}
