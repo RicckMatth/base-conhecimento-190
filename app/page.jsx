@@ -723,7 +723,7 @@ export default function Home() {
         )}
         {screen === 'access' && accessState && (
           <nav className="quality-topbar-nav" aria-label="Navegação de Acessos e Cargos">
-            <button
+            {accessState.canCreateUsers&&<button
               type="button"
               className={`quality-topbar-tab${accessState.tab === 'users' ? ' active' : ''}`}
               onClick={() => accessState.setTab('users')}
@@ -732,8 +732,8 @@ export default function Home() {
               {accessState.usersCount > 0 && (
                 <span className="quality-topbar-badge blue">{accessState.usersCount}</span>
               )}
-            </button>
-            <button
+            </button>}
+            {accessState.canCreateUsers&&<button
               type="button"
               className={`quality-topbar-tab${accessState.tab === 'requests' ? ' active' : ''}`}
               onClick={() => accessState.setTab('requests')}
@@ -742,6 +742,10 @@ export default function Home() {
               {accessState.pendingCount > 0 && (
                 <span className="quality-topbar-badge amber">{accessState.pendingCount}</span>
               )}
+            </button>}
+            <button type="button" className={`quality-topbar-tab${accessState.tab==='resets'?' active':''}`} onClick={()=>accessState.setTab('resets')}>
+              Recuperação de senhas
+              {accessState.resetPendingCount>0&&<span className="quality-topbar-badge amber">{accessState.resetPendingCount}</span>}
             </button>
           </nav>
         )}
@@ -767,11 +771,13 @@ export default function Home() {
             <p>Descreva uma ocorrência ou faça uma pergunta sobre uma natureza. O Chat 190 consulta o catálogo, explica quando usar cada ficha e sinaliza o que precisa ser confirmado.</p>
             <form className="search-row" onSubmit={analyze}><input value={relato} onChange={e => setRelato(e.target.value)} aria-label="Relato ou dúvida para análise" placeholder="Ex.: quando usar a natureza de roubo?" /><Btn type="submit" disabled={busy}>Consultar no Chat 190 →</Btn></form>
           </section>
-          <div className="grid3"><div className="card stat"><small><Icon name="book" /> Fichas no catálogo</small><strong>{catalogIssue&&!entries.length?'—':entries.length}</strong><span className="badge">{catalogDegraded ? 'Contingência · somente leitura' : 'Conhecimento'}</span></div>
-            <div className="card stat"><small><Icon name="brain" /> Regras de classificação</small><strong>{catalogIssue&&!totalRules?'—':totalRules}</strong><span className="badge">{catalogDegraded ? 'Regras locais' : 'Chat 190'}</span></div>
+          {catalogRefreshing&&<div className="catalog-sync-banner" role="status" aria-live="polite"><span className="startup-spinner" aria-hidden="true"/> Carregando e sincronizando o catálogo operacional. Você pode navegar enquanto isso…</div>}
+          <div className="grid3"><div className="card stat"><small><Icon name="book" /> Fichas no catálogo</small><strong aria-busy={!entriesReady}>{!entriesReady?'…':entries.length}</strong><span className="badge">{catalogDegraded ? 'Contingência · somente leitura' : 'Conhecimento'}</span></div>
+            <div className="card stat"><small><Icon name="brain" /> Regras de classificação</small><strong aria-busy={!rulesReady}>{!rulesReady?'…':totalRules}</strong><span className="badge">{catalogDegraded ? 'Regras locais' : 'Chat 190'}</span></div>
             <div className="card stat"><small><Icon name="shield" /> Nível de acesso</small><strong style={{ fontSize: 21 }}>{activeProfileConfig.name}</strong><span className="badge">{activeProfileConfig.badge}</span></div></div>
-          <section className="domain-section"><div className="panel-head"><div><span className="eyebrow">CONSULTA POR ÁREA</span><h2>Encontre o contexto do atendimento</h2></div><span className="badge">{categories.length - 1} áreas</span></div><div className="domain-grid">{categories.filter(c => c !== 'Todas').map(c => <button className="domain-card" key={c} onClick={() => { setCat(c); setSearch(''); setPriorityFilter('Todas'); go('catalog'); }}><Icon name={categoryIcon(c)} size={24} /><b>{c}</b><small>{entries.filter(e => e.category === c).length} fichas</small><Icon name="arrow" size={16} /></button>)}</div></section>
-          <section><div className="panel-head"><div><h2>Naturezas em destaque</h2><p className="muted">Consulte fichas e orientações existentes</p></div><Btn className="secondary" onClick={() => go('catalog')}>Ver catálogo →</Btn></div>{entryGrid(entries.slice(0, 6))}</section>
+          <section className="domain-section"><div className="panel-head"><div><span className="eyebrow">CONSULTA POR ÁREA</span><h2>Encontre o contexto do atendimento</h2></div><span className="badge">{categories.length - 1} áreas</span></div><div className="domain-grid">{!entriesReady?Array.from({length:8},(_,index)=><div className="domain-card domain-placeholder" key={index} aria-hidden="true"><span className="catalog-shimmer"/></div>):categories.filter(c => c !== 'Todas').map(c => <button className="domain-card" key={c} onClick={() => { setCat(c); setSearch(''); setPriorityFilter('Todas'); go('catalog'); }}><Icon name={categoryIcon(c)} size={24} /><b>{c}</b><small>{entries.filter(e => e.category === c).length} fichas</small><Icon name="arrow" size={16} /></button>)}</div></section>
+          <section><div className="panel-head"><div><h2>Naturezas em destaque</h2><p className="muted">Consulte fichas e orientações existentes</p></div><Btn className="secondary" onClick={() => go('catalog')}>Ver catálogo →</Btn></div>
+            {!entriesReady?<div className="catalog-skeleton-row" role="status" aria-label="Carregando fichas do catálogo">{Array.from({length:3},(_,index)=><div className="card catalog-skeleton" key={index}/>)}</div>:entryGrid(entries.slice(0, 6))}</section>
           <div className="helpnote">Os exemplos da base não constituem códigos ou protocolos oficiais homologados. É proibido utilizar a ferramenta para inserir dados sigilosos sem autorização institucional.</div>
         </div>}
 
@@ -784,8 +790,10 @@ export default function Home() {
         {screen === 'catalog' && <div key="catalog" className="tab-view-container">
           <div className="panel-head"><div><span className="eyebrow">BIBLIOTECA OPERACIONAL</span><h1>Catálogo de naturezas</h1><p className="muted">Busque por título, código, resumo, conteúdo ou palavra-chave.</p></div>{activeProfileConfig.canEditCatalog && <Btn onClick={() => editEntry(null)}><Icon name="plus" size={18} /> Nova ficha</Btn>}</div>
           <div className="card catalog-filters"><div><label htmlFor="search">Pesquisa</label><input id="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Código, natureza, palavra-chave…" /></div><div><label htmlFor="category">Categoria</label><select id="category" value={cat} onChange={e => setCat(e.target.value)}>{categories.map(c => <option key={c}>{c}</option>)}</select></div><div><label htmlFor="priority-filter">Prioridade sugerida</label><select id="priority-filter" value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)}>{['Todas', 'Crítica', 'Alta', 'Média', 'Consulta'].map(v => <option key={v}>{v}</option>)}</select></div></div>
-          <p className="catalog-note"><Icon name="shield" size={16} /> Relação COPOM corrigida: 769 naturezas importadas do CSV recebido. IDs NAT são códigos internos desta plataforma; as descrições foram acrescentadas para consulta e dependem de validação institucional.</p><div className="toolbar"><p className="muted">{filtered.length} resultado(s)</p><Btn className="ghost tiny" onClick={() => { setSearch(''); setCat('Todas'); setPriorityFilter('Todas'); }}>Limpar filtros</Btn></div>
-          {filtered.length ? <>{entryGrid(filtered.slice(0, catalogLimit))}{filtered.length > catalogLimit && <div className="toolbar" style={{ justifyContent: 'center', padding: '18px 0' }}><Btn className="secondary" onClick={() => setCatalogLimit(v => v + 60)}>Ver mais naturezas ({Math.min(filtered.length - catalogLimit, 60)} próximas)</Btn></div>}</> : <div className="card empty-state"><Icon name="search" size={36} /><h2>Nenhuma ficha encontrada</h2><p className="muted">Tente outro termo ou remova os filtros de categoria e prioridade.</p></div>}
+          <p className="catalog-note"><Icon name="shield" size={16} /> Relação COPOM corrigida: 769 naturezas importadas do CSV recebido. IDs NAT são códigos internos desta plataforma; as descrições foram acrescentadas para consulta e dependem de validação institucional.</p>
+          {!entriesReady&&<div className="catalog-sync-banner" role="status"><span className="startup-spinner"/>Carregando fichas e filtros do catálogo…</div>}
+          <div className="toolbar"><p className="muted">{filtered.length} resultado(s)</p><Btn className="ghost tiny" onClick={() => { setSearch(''); setCat('Todas'); setPriorityFilter('Todas'); }}>Limpar filtros</Btn></div>
+          {!entriesReady?<div className="catalog-skeleton-row">{Array.from({length:3},(_,index)=><div className="card catalog-skeleton" key={index}/>)}</div>:filtered.length ? <>{entryGrid(filtered.slice(0, catalogLimit))}{filtered.length > catalogLimit && <div className="toolbar" style={{ justifyContent: 'center', padding: '18px 0' }}><Btn className="secondary" onClick={() => setCatalogLimit(v => v + 60)}>Ver mais naturezas ({Math.min(filtered.length - catalogLimit, 60)} próximas)</Btn></div>}</> : <div className="card empty-state"><Icon name="search" size={36} /><h2>Nenhuma ficha encontrada</h2><p className="muted">Tente outro termo ou remova os filtros de categoria e prioridade.</p></div>}
         </div>}
 
         {screen === 'detail' && selected && <div key="detail" className="tab-view-container"><section className="card spaced">
