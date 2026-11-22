@@ -525,19 +525,35 @@ export default function Home() {
     </section>
     <section className="login-form"><div className="login-card">
       <div className="toolbar"><span className="badge">ACESSO À BASE 190</span><Btn className="ghost tiny" onClick={theme}><Icon name={dark ? 'sun' : 'moon'} size={17} />{dark ? 'Tema claro' : 'Tema escuro'}</Btn></div>
-      <div><h2>{requestMode ? 'Solicitar acesso' : 'Bem-vindo de volta'}</h2><p className="muted">{requestMode ? 'Preencha o pedido. O administrador avaliará o acesso.' : 'Entre com sua conta previamente autorizada.'}</p></div>
+      <div><h2>{requestMode?'Solicitar acesso':loginMode==='activate'?'Criar sua senha':loginMode==='reset'?'Recuperar acesso':'Bem-vindo de volta'}</h2>
+        <p className="muted">{requestMode?'Informe seu acesso PM Civil. O responsável avaliará a solicitação.':loginMode==='activate'?'Informe o código de uso único entregue pelo gestor para criar sua própria senha.':loginMode==='reset'?'Seu pedido será encaminhado para análise e aprovação.':'Entre com seu acesso PM Civil previamente autorizado.'}</p></div>
       {notice && <div className="notice" role="alert">{notice}</div>}{success && <div className="notice success" role="status">{success}</div>}
       {requestMode ? <form className="stack" onSubmit={submitRequest}>
         <div><label htmlFor="reqName">Nome de identificação</label><input id="reqName" autoComplete="name" required value={request.name} onChange={e => setRequest({ ...request, name: e.target.value })} placeholder="Seu nome" /></div>
-        <div><label htmlFor="reqUser">Usuário desejado</label><input id="reqUser" required minLength={4} pattern="[a-zA-Z0-9._-]+" value={request.username} onChange={e => setRequest({ ...request, username: e.target.value })} placeholder="nome.sobrenome" /></div>
+        <div><label htmlFor="reqUser">Acesso PM Civil</label><input id="reqUser" required maxLength={40} autoCapitalize="off" spellCheck="false" value={request.username} onChange={e => setRequest({ ...request, username: e.target.value })} placeholder="Seu acesso PM Civil" /></div>
         <div><label htmlFor="reqReason">Justificativa (opcional)</label><textarea id="reqReason" maxLength={500} value={request.reason} onChange={e => setRequest({ ...request, reason: e.target.value })} placeholder="Motivo do acesso, sem informações sigilosas" /></div>
         <Btn type="submit" disabled={busy} className="full">Enviar solicitação</Btn>
+      </form> : loginMode==='activate' ? <form className="stack" onSubmit={submitSetup}>
+        <div><label htmlFor="setupPm">Acesso PM Civil</label><input id="setupPm" required maxLength={40} autoCapitalize="off" spellCheck="false" value={setupForm.username} onChange={e=>setSetupForm({...setupForm,username:e.target.value})} placeholder="Seu acesso PM Civil" /></div>
+        <div><label htmlFor="setupCode">Código de ativação / recuperação</label><input id="setupCode" type="text" required autoComplete="off" maxLength={64} value={setupForm.code} onChange={e=>setSetupForm({...setupForm,code:e.target.value.trim()})} placeholder="Código enviado pelo responsável"/></div>
+        <div><label htmlFor="setupPassword">Nova senha</label><input id="setupPassword" type="password" required minLength={12} maxLength={128} autoComplete="new-password" value={setupForm.password} onChange={e=>setSetupForm({...setupForm,password:e.target.value})} placeholder="Crie uma senha forte"/></div>
+        <div><label htmlFor="setupConfirm">Confirmar nova senha</label><input id="setupConfirm" type="password" required minLength={12} maxLength={128} autoComplete="new-password" value={setupForm.confirm} onChange={e=>setSetupForm({...setupForm,confirm:e.target.value})} placeholder="Digite a senha novamente"/></div>
+        <p className="hint">Use 12 ou mais caracteres, incluindo letras maiúsculas, minúsculas, número e símbolo. O código expira em 24 horas.</p>
+        <Btn type="submit" disabled={busy} className="full">{busy?'Validando código…':'Criar minha senha'}</Btn>
+      </form> : loginMode==='reset' ? <form className="stack" onSubmit={submitResetRequest}>
+        <div><label htmlFor="resetPm">Acesso PM Civil</label><input id="resetPm" required autoCapitalize="off" spellCheck="false" maxLength={40} value={resetPm} onChange={e=>setResetPm(e.target.value)} placeholder="Seu acesso PM Civil"/></div>
+        <Btn type="submit" disabled={busy} className="full">{busy?'Enviando…':'Solicitar redefinição ao gestor'}</Btn>
+        <p className="hint">Após a aprovação, o gestor entregará seu código de recuperação por canal seguro.</p>
       </form> : <form className="stack" onSubmit={submitLogin}>
-        <div><label htmlFor="username">Usuário</label><input id="username" required autoComplete="username" value={login.username} onChange={e => setLogin({ ...login, username: e.target.value })} placeholder="Seu usuário" /></div>
+        <div><label htmlFor="username">Acesso PM Civil</label><input id="username" required autoComplete="username" maxLength={40} autoCapitalize="off" spellCheck="false" value={login.username} onChange={e => setLogin({ ...login, username: e.target.value })} placeholder="Seu acesso PM Civil" /></div>
         <div><label htmlFor="password">Senha</label><input id="password" type="password" required autoComplete="current-password" value={login.password} onChange={e => setLogin({ ...login, password: e.target.value })} placeholder="Digite sua senha" /></div>
         <Btn type="submit" disabled={busy} className="full">{busy ? 'Verificando…' : 'Entrar na plataforma →'}</Btn>
       </form>}
-      {!requestMode && <>
+      {!requestMode && loginMode==='login' && <>
+        <div className="login-utility-links">
+          <button type="button" onClick={()=>{setSetupForm(f=>({...f,username:login.username}));setLoginMode('activate');clear();}}>Primeiro acesso / criar senha</button>
+          <button type="button" onClick={()=>{setResetPm(login.username);setLoginMode('reset');clear();}}>Esqueci minha senha</button>
+        </div>
         <div className="microsoft-divider"><span>ou entre com sua conta corporativa</span></div>
         <Btn className="secondary full microsoft-login" disabled={busy} onClick={() => window.location.assign('/api/auth/microsoft/start')}>
           <span className="microsoft-mark" aria-hidden="true"><i /><i /><i /><i /></span>
@@ -545,7 +561,12 @@ export default function Home() {
         </Btn>
         <p className="hint">Exclusivo para contas @minsait.com. Novos usuários precisam de aprovação interna.</p>
       </>}
-      <Btn className="secondary full" onClick={() => { setRequestMode(!requestMode); clear(); }}>{requestMode ? 'Já possuo acesso — entrar' : 'Solicitar acesso'}</Btn>
+      <Btn className="secondary full" onClick={() => {
+        if(requestMode){setRequestMode(false);setLoginMode('login');}
+        else if(loginMode!=='login'){setLoginMode('login');}
+        else setRequestMode(true);
+        clear();
+      }}>{requestMode||loginMode!=='login'?'Voltar ao login':'Solicitar acesso PM Civil'}</Btn>
       <div className="divider" /><p className="hint">Acesso individual e autorizado. Entre em contato com o administrador para solicitar ajuda.</p>
     </div></section>
   </div>;
