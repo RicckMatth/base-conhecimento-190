@@ -73,8 +73,9 @@ test('tampered, expired or mismatched OIDC tokens are rejected', async () => {
   await assert.rejects(verifyMicrosoftIdToken(makeToken(), cfg, 'wrong-nonce', fakeFetch), error => error.code === 'invalid');
   await assert.rejects(verifyMicrosoftIdToken(makeToken({ exp: 1 }), cfg, 'nonce-for-test', fakeFetch), error => error.code === 'invalid');
   await assert.rejects(verifyMicrosoftIdToken(makeToken({ aud: '00000000-0000-4000-8000-000000000000' }), cfg, 'nonce-for-test', fakeFetch), error => error.code === 'invalid');
-  const token = makeToken();
-  await assert.rejects(verifyMicrosoftIdToken(token.slice(0, -1) + (token.at(-1) === 'A' ? 'B' : 'A'), cfg, 'nonce-for-test', fakeFetch), error => error.code === 'invalid');
+  const [header, payload] = makeToken().split('.');
+  const forged = header + '.' + payload + '.' + Buffer.alloc(256).toString('base64url');
+  await assert.rejects(verifyMicrosoftIdToken(forged, cfg, 'nonce-for-test', fakeFetch), error => error.code === 'invalid');
 });
 test('invalid configuration fails closed', () => {
   assert.throws(() => microsoftConfig({ MICROSOFT_CLIENT_ID: client }), error => error.code === 'config');
