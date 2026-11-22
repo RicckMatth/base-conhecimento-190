@@ -210,11 +210,11 @@ export default function AnnouncementStudio({onPublished=()=>{},onRestore=()=>{}}
           <div className="ann-view-toggle">
             <button className={!preview?'active':''} onClick={()=>setPreview(false)}>Editar</button>
             <button className={preview?'active':''} onClick={()=>setPreview(true)}>Visualizar</button>
-            <button className={mobile?'active':''} onClick={()=>setMobile(v=>!v)}>{mobile?'Celular':'Desktop'}</button>
+            <button className={mobile?'active':''} onClick={()=>setMobile(v=>!v)} title={mobile?'Voltar ao editor de desktop':'Ver prévia para celular'}>{mobile?'Celular':'Desktop'}</button>
           </div>
         </div>
         <div className={'ann-preview-wrap'+(mobile?' mobile-preview':'')}>
-          <AnnouncementCanvas layout={draft.layout} editable={!preview}
+          <AnnouncementCanvas layout={draft.layout} editable={!preview&&!mobile}
             selectedId={selectedId} onSelect={setSelectedId} mobile={mobile}
             onChange={patchLayer} title={draft.title}/>
         </div>
