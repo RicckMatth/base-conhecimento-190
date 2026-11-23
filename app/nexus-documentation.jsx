@@ -146,6 +146,11 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit,dar
  const [internalDark,setInternalDark]=useState(true);
  const dark=typeof darkProp==='boolean'?darkProp:internalDark;
  const [folderList,setFolderList]=useState([]),[coverEditor,setCoverEditor]=useState(null),[coverUploading,setCoverUploading]=useState(false);
+ const [indexLoading,setIndexLoading]=useState(true),[pageLoading,setPageLoading]=useState(false);
+ const [indexError,setIndexError]=useState(''),[pageLoadError,setPageLoadError]=useState('');
+ const [searchBusy,setSearchBusy]=useState(false),[searchResults,setSearchResults]=useState({query:'',ids:[]});
+ const [expandedSpaces,setExpandedSpaces]=useState(new Set());
+ const detailRequest=useRef(0),pageCache=useRef(new Map());
  const pageRef=useRef(null),imageInput=useRef(null),coverInput=useRef(null),timer=useRef(null),draftRevision=useRef(0),baseline=useRef(''),savedRef=useRef('');
  pageRef.current=page;
  const isEditing=mode==='edit'&&isAdmin;
@@ -155,9 +160,18 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit,dar
  const patch=useCallback(change=>setPage(p=>p?{...p,...change}:p),[]);
  const patchMeta=useCallback(change=>setPage(p=>p?{...p,nexus_meta:{...p.nexus_meta,...change}}:p),[]);
  const updateBlocks=useCallback(blocks=>patchMeta({blocks}),[patchMeta]);
- async function reload(){try{const d=await api();setPages(d.pages||[]);setFolderList(d.spaces||[]);return d.pages||[];}catch(e){setNotice(e.message);return []}}
+ async function reload({showLoading=false}={}){
+  if(showLoading)setIndexLoading(true);
+  try{
+   const d=await api();
+   setPages(d.pages||[]);setFolderList(d.spaces||[]);setIndexError('');
+   setExpandedSpaces(old=>old.size?old:new Set((d.spaces||[]).slice(0,2).map(f=>f.name)));
+   return d.pages||[];
+  }catch(e){setIndexError(e.message);setNotice(e.message);return [];}
+  finally{setIndexLoading(false);}
+ }
  useEffect(()=>{
-  reload();
+  void reload({showLoading:true});
   const isDark=document.documentElement.dataset.theme!=='light';
   setInternalDark(isDark);
   const obs=new MutationObserver(()=>{setInternalDark(document.documentElement.dataset.theme!=='light');});
@@ -168,22 +182,63 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit,dar
  useEffect(()=>{const nav=e=>{if(active&&dirty&&notRecovered){e.preventDefault();setNotice('Existem alterações ainda não recuperadas. Salve seu rascunho antes de sair.');}};window.addEventListener('base190:before-navigation',nav);return()=>window.removeEventListener('base190:before-navigation',nav);},[active,dirty,notRecovered]);
  useEffect(()=>{const keydown=e=>{if(!active)return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();setCommand(v=>!v);}if(e.key==='Escape'){setCommand(false);setShowPalette(false);setEmojiPicker(false);setExportMenu(false);setCoverEditor(null);setSpaceDialog(null);}};window.addEventListener('keydown',keydown);return()=>window.removeEventListener('keydown',keydown);},[active]);
  useEffect(()=>{if(!dirty||!notRecovered)return;const warn=e=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty,notRecovered]);
- const filtered=useMemo(()=>pages.filter(p=>((p.title||'')+' '+(p.space||'')+' '+(p.nexus_meta?.subtitle||'')+' '+(p.content||'').replace(/<[^>]+>/g,' ')).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(query.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase())),[pages,query]);
+ useEffect(()=>{
+  const term=query.trim();
+  if(term.length<2){setSearchResults({query:'',ids:[]});setSearchBusy(false);return;}
+  const controller=new AbortController();
+  setSearchBusy(true);
+  const timer=setTimeout(()=>{
+   api('/search?q='+encodeURIComponent(term),{signal:controller.signal})
+    .then(r=>setSearchResults({query:term,ids:r.ids||[]}))
+    .catch(error=>{if(error?.name!=='AbortError')setNotice('Busca no conteúdo indisponível: '+error.message);})
+    .finally(()=>{if(!controller.signal.aborted)setSearchBusy(false);});
+  },280);
+  return()=>{clearTimeout(timer);controller.abort();};
+ },[query]);
+ const filtered=useMemo(()=>{
+  const term=query.trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  if(!term)return pages;
+  const ids=searchResults.query===query.trim()?new Set(searchResults.ids):new Set();
+  return pages.filter(p=>ids.has(p.id)||((p.title||'')+' '+(p.space||'')+' '+(p.nexus_meta?.subtitle||''))
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(term));
+ },[pages,query,searchResults]);
  const spaces=useMemo(()=>[...new Set([...folderList.map(f=>f.name),...pages.map(p=>p.space)])],[pages,folderList]);
  const folderByName=useMemo(()=>Object.fromEntries(folderList.map(f=>[f.name,f])),[folderList]);
  async function open(p,edit=false){
    if(busy)return;
    if(dirty&&notRecovered){setNotice('Salve a recuperação desta página antes de navegar.');return;}
-   draftRevision.current=0;setNotice('');setHistory([]);setMode(edit?'edit':'view');
-   const next={...p,nexus_meta:metaFor(p)};
+   const requestId=++detailRequest.current;
+   setPageLoading(true);setPageLoadError('');setNotice('');setHistory([]);draftRevision.current=0;
    try{
-     if(isAdmin&&p.id){const res=await api('/draft?key='+p.id);const draft=res.draft;
-       if(draft?.payload?.baseRevision===p.revision&&draft?.payload?.nexus_meta){
-         draftRevision.current=draft.revision;Object.assign(next,draft.payload,{revision:p.revision});setMode('edit');setSaveState('Recuperação restaurada');
-       }else setSaveState('');
+     let full=p,draft=null,draftError='';
+     if(p.id){
+       const cached=pageCache.current.get(p.id);
+       const valid=cached&&cached.revision===p.revision&&Date.now()-cached.time<90000;
+       const [detail,draftResponse]=await Promise.all([
+         valid?Promise.resolve(cached.page):api('/page?id='+encodeURIComponent(p.id)).then(r=>r.page),
+         isAdmin?api('/draft?key='+encodeURIComponent(p.id)).catch(e=>({draft:null,error:e.message})):Promise.resolve({draft:null})
+       ]);
+       if(requestId!==detailRequest.current)return;
+       full=detail;
+       if(!valid){
+         pageCache.current.set(p.id,{page:full,revision:full.revision,time:Date.now()});
+         if(pageCache.current.size>24)pageCache.current.delete(pageCache.current.keys().next().value);
+       }
+       draft=draftResponse.draft;
+       draftError=draftResponse.error||'';
+     }
+     if(requestId!==detailRequest.current)return;
+     const next={...full,nexus_meta:metaFor(full)};
+     setMode(edit?'edit':'view');
+     if(isAdmin&&draft?.payload?.baseRevision===full.revision&&draft?.payload?.nexus_meta){
+       draftRevision.current=draft.revision;Object.assign(next,draft.payload,{revision:full.revision});
+       setMode('edit');setSaveState('Recuperação restaurada');
      }else setSaveState('');
-   }catch(e){setNotice(e.message);}
-   setPage(next);baseline.current=JSON.stringify(next);savedRef.current=JSON.stringify(next);
+     if(draftError)setNotice('A recuperação automática não pôde ser consultada: '+draftError);
+     setPage(next);baseline.current=JSON.stringify(next);savedRef.current=JSON.stringify(next);
+   }catch(e){
+     if(requestId===detailRequest.current){setPageLoadError(e.message);setNotice('Não foi possível carregar o documento: '+e.message);}
+   }finally{if(requestId===detailRequest.current)setPageLoading(false);}
  }
  async function persistDraft(target=pageRef.current){
    if(!isAdmin||!target)return false;
@@ -202,7 +257,7 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit,dar
     await api('/draft?key='+(page.id||'new'),{method:'DELETE'}).catch(()=>{});
     draftRevision.current=0;const next={...res.page,nexus_meta:metaFor(res.page)};
     setPage(next);baseline.current=JSON.stringify(next);savedRef.current=JSON.stringify(next);
-    await reload();setSaveState('Alterações salvas no servidor');setMode('view');
+    pageCache.current.delete(next.id);await reload();setSaveState('Alterações salvas no servidor');setMode('view');
     setNotice(status==='published'?'Página publicada com histórico de revisão.':'Rascunho salvo no servidor.');
   }catch(e){setNotice(e.message);setSaveState('Falha ao salvar');}
   finally{setBusy(false);}
@@ -221,10 +276,15 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit,dar
    try{
      const old=spaceDialog.oldName;
      const data=await api('/spaces',{method:spaceDialog.kind==='edit'?'PATCH':'POST',body:JSON.stringify(spaceDialog)});
+     pageCache.current.clear();
      const fresh=await reload();
      if(pageRef.current?.id){
-       const current=fresh.find(p=>p.id===pageRef.current.id);
-       if(current){const next={...current,nexus_meta:metaFor(current)};setPage(next);baseline.current=JSON.stringify(next);savedRef.current=JSON.stringify(next);}
+       const listed=fresh.find(p=>p.id===pageRef.current.id);
+       if(listed){
+         const detail=await api('/page?id='+encodeURIComponent(listed.id));
+         const next={...detail.page,nexus_meta:metaFor(detail.page)};
+         setPage(next);baseline.current=JSON.stringify(next);savedRef.current=JSON.stringify(next);
+       }
      }
      setSpaceDialog(null);
      setNotice(spaceDialog.kind==='edit'?'Pasta atualizada. '+(data.moved||0)+' documento(s) preservado(s).':'Pasta criada e salva no servidor.');
@@ -284,7 +344,7 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit,dar
      setSaveState('Imagem anexada, aguardando publicação');
    }catch(e){setNotice(e.message);}finally{setBusy(false);}
  }
- async function toggleFav(){if(!isAdmin||!page||busy)return;if(isEditing){patchMeta({favorite:!currentMeta.favorite});return;}setBusy(true);try{const res=await api('',{method:'POST',body:JSON.stringify({...page,nexus_meta:{...currentMeta,favorite:!currentMeta.favorite}})});const next={...res.page,nexus_meta:metaFor(res.page)};setPage(next);baseline.current=JSON.stringify(next);savedRef.current=JSON.stringify(next);await reload();setSaveState('Favorito salvo no servidor');}catch(e){setNotice(e.message);}finally{setBusy(false);}}
+ async function toggleFav(){if(!isAdmin||!page||busy)return;if(isEditing){patchMeta({favorite:!currentMeta.favorite});return;}setBusy(true);try{const res=await api('',{method:'POST',body:JSON.stringify({...page,nexus_meta:{...currentMeta,favorite:!currentMeta.favorite}})});const next={...res.page,nexus_meta:metaFor(res.page)};setPage(next);baseline.current=JSON.stringify(next);savedRef.current=JSON.stringify(next);pageCache.current.delete(next.id);await reload();setSaveState('Favorito salvo no servidor');}catch(e){setNotice(e.message);}finally{setBusy(false);}}
  async function viewHistory(){if(!page?.id)return;try{const d=await api('/history?id='+page.id);setHistory(d.versions||[]);}catch(e){setNotice(e.message);}}
  function download(content,name,mime){const url=URL.createObjectURL(new Blob([content],{type:mime}));const a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);}
  function exportDocument(kind){
@@ -315,28 +375,55 @@ export default function NexusDocumentation({isAdmin=false,active=true,onExit,dar
         <button className="nx-search-trigger" onClick={()=>setCommand(true)}><span>⌕ &nbsp; Buscar ou comando...</span><kbd>Ctrl K</kbd></button>
         {isAdmin&&<button className="nx-create-btn" onClick={()=>createPage()}>⊕ &nbsp; Nova Página / Documento</button>}
       </div>
-      <nav className="nx-tree">
-       {!!favoritePages.length&&<section><div className="nx-tree-heading">☆ &nbsp; Favoritos</div>{favoritePages.map(p=><button key={p.id} className={'nx-page-item '+(page?.id===p.id?'active':'')} onClick={()=>open(p)}><span>{p.nexus_meta?.icon||'📘'}</span><span>{p.title}</span></button>)}</section>}
-       <section><div className="nx-tree-heading"><span>Espaços &amp; Páginas</span>{isAdmin&&<button aria-label="Criar pasta" title="Criar pasta" onClick={()=>openSpaceDialog()}>⊞</button>}</div>
-       {spaces.map(space=><details key={space} className="nx-space" open><summary><span className="nx-folder-icon">{folderByName[space]?.icon||'📁'}</span><b>{space}</b><div className="nx-space-actions">{isAdmin&&<><button title={'Editar pasta '+space} aria-label={'Editar nome e ícone de '+space} onClick={e=>{e.preventDefault();e.stopPropagation();openSpaceDialog(folderByName[space]||{name:space,icon:'📁'});}}>✎</button><button title={'Nova página em '+space} aria-label={'Nova página em '+space} onClick={e=>{e.preventDefault();e.stopPropagation();createPage(space);}}>＋</button></>}</div></summary><div className="nx-space-pages">
+      <nav className="nx-tree" aria-busy={indexLoading}>
+       {indexLoading&&<div className="nx-tree-loading" role="status" aria-live="polite">
+         <span className="nx-tree-loading-label"><i className="nx-loader-spinner"/> Sincronizando biblioteca…</span>
+         {Array.from({length:6},(_,i)=><div key={i} className="nx-tree-skeleton-item"><span className="nx-skeleton-icon"/><span className="nx-skeleton-bar" style={{width:i%2?'67%':'84%'}}/></div>)}
+       </div>}
+       {indexError&&!indexLoading&&<div className="nx-tree-load-error" role="alert">
+         <strong>Falha ao carregar páginas</strong><p>{indexError}</p>
+         <button type="button" onClick={()=>void reload({showLoading:true})}>Tentar novamente</button>
+       </div>}
+       {!indexLoading&&!!favoritePages.length&&<section><div className="nx-tree-heading">☆ &nbsp; Favoritos</div>{favoritePages.map(p=><button key={p.id} className={'nx-page-item '+(page?.id===p.id?'active':'')} onClick={()=>open(p)}><span>{p.nexus_meta?.icon||'📘'}</span><span>{p.title}</span></button>)}</section>}
+       {!indexLoading&&<section><div className="nx-tree-heading"><span>Espaços &amp; Páginas</span>{isAdmin&&<button aria-label="Criar pasta" title="Criar pasta" onClick={()=>openSpaceDialog()}>⊞</button>}</div>
+       {spaces.map(space=><details key={space} className="nx-space" open={Boolean(query.trim())||expandedSpaces.has(space)}>
+         <summary onClick={e=>{e.preventDefault();if(!query.trim())setExpandedSpaces(prev=>{const next=new Set(prev);if(next.has(space))next.delete(space);else next.add(space);return next;});}}><span className="nx-folder-icon">{folderByName[space]?.icon||'📁'}</span><b>{space}</b><div className="nx-space-actions">{isAdmin&&<><button title={'Editar pasta '+space} aria-label={'Editar nome e ícone de '+space} onClick={e=>{e.preventDefault();e.stopPropagation();openSpaceDialog(folderByName[space]||{name:space,icon:'📁'});}}>✎</button><button title={'Nova página em '+space} aria-label={'Nova página em '+space} onClick={e=>{e.preventDefault();e.stopPropagation();createPage(space);}}>＋</button></>}</div></summary>{(Boolean(query.trim())||expandedSpaces.has(space))&&<div className="nx-space-pages">
          {filtered.filter(p=>p.space===space).map(p=><button key={p.id} className={'nx-page-item '+(page?.id===p.id?'active':'')} onClick={()=>open(p)} style={{paddingLeft:10+(p.parent_id?13:0)}}><span>{p.nexus_meta?.icon||'📘'}</span><span>{p.title}</span></button>)}
-       </div></details>)}
-       {pages.length===0&&<div className="nx-sidebar-empty">A biblioteca ainda não possui páginas.</div>}
-       </section></nav>
+       </div>}</details>)}
+       {searchBusy&&<span className="nx-search-progress"><i className="nx-loader-spinner"/> Pesquisando no conteúdo…</span>}
+       {!indexError&&pages.length===0&&<div className="nx-sidebar-empty">A biblioteca ainda não possui páginas.</div>}
+       </section>}</nav>
       <div className="nx-sidebar-footer"><button onClick={onExit}>⌂ Voltar à página inicial</button><span><i/> PostgreSQL</span></div>
     </aside>
     <div className="nx-main">
       <header className="nx-top-navbar">
        <div className="nx-breadcrumb">{!sideOpen&&<button type="button" className="nx-icon-button nx-expand" onClick={()=>setSideOpen(true)} aria-label="Mostrar barra lateral da biblioteca" aria-controls="nx-documentation-sidebar" aria-expanded={false} title="Mostrar barra lateral">☰</button>}<button className="nx-home-button" onClick={onExit} title="Voltar para a página inicial do Centro 190"><span className="nx-home-symbol">⌂</span><span className="nx-home-label">Início do sistema</span></button><span>{folderByName[page?.space]?.icon||'📁'} {page?.space||'Biblioteca 190'}</span><b className="nx-slash">›</b><strong>{currentMeta.icon||'📘'} {page?.title||'Selecione uma página'}</strong></div>
-       <div className="nx-navbar-actions"><span className="nx-save-state">{dirty&&notRecovered?'Alterações pendentes':saveState||'Sincronizado'}</span>{page&&<><button className={'nx-icon-button '+(currentMeta.favorite?'nx-starred':'')} title="Favoritar página" disabled={!isAdmin} onClick={toggleFav}>☆</button><div className="nx-dropdown-anchor"><button className="nx-pill-button" onClick={()=>setExportMenu(v=>!v)}>⇩ <span>Exportar</span></button>{exportMenu&&<div className="nx-export-menu"><button onClick={()=>exportDocument('md')}>Documento Markdown (.md)</button><button onClick={()=>exportDocument('json')}>Backup de blocos (.json)</button><button onClick={()=>{window.print();setExportMenu(false);}}>Imprimir / PDF</button></div>}</div></>}
+       <div className="nx-navbar-actions"><span className="nx-save-state">{indexLoading?'Carregando biblioteca…':pageLoading?'Abrindo documento…':dirty&&notRecovered?'Alterações pendentes':saveState||'Sincronizado'}</span>{page&&<><button className={'nx-icon-button '+(currentMeta.favorite?'nx-starred':'')} title="Favoritar página" disabled={!isAdmin} onClick={toggleFav}>☆</button><div className="nx-dropdown-anchor"><button className="nx-pill-button" onClick={()=>setExportMenu(v=>!v)}>⇩ <span>Exportar</span></button>{exportMenu&&<div className="nx-export-menu"><button onClick={()=>exportDocument('md')}>Documento Markdown (.md)</button><button onClick={()=>exportDocument('json')}>Backup de blocos (.json)</button><button onClick={()=>{window.print();setExportMenu(false);}}>Imprimir / PDF</button></div>}</div></>}
        <button className="nx-icon-button" title={dark?'Tema claro':'Tema escuro'} aria-label={dark?'Ativar tema claro':'Ativar tema escuro'} onClick={()=>{if(toggleTheme)toggleTheme();else{const next=!dark;setInternalDark(next);document.documentElement.dataset.theme=next?'dark':'light';localStorage.setItem('base190_theme',next?'dark':'light');localStorage.setItem('nx_docs_theme',next?'dark':'light');}}}>{dark?'☼':'☾'}</button></div>
       </header>
       <div className="nx-insert-bar">
         <span className="nx-insert-label">✧ &nbsp; Inserir:</span>{TYPES.map(([type,label,symbol])=><button key={type} disabled={!isEditing||!page} onClick={()=>addBlock(type)} title={label} className={['tabs','table'].includes(type)?'nx-featured '+type:''}>{symbol} <span>{label}</span></button>)}{isAdmin&&<><button disabled={!isEditing||busy} title="Inserir imagem" onClick={()=>imageInput.current?.click()}>▧ <span>Imagem</span></button><input ref={imageInput} type="file" hidden accept="image/png,image/jpeg,image/webp" onChange={e=>{const f=e.target.files?.[0];e.target.value='';void uploadImage(f);}}/></>}
       </div>
-      <main className="nx-scroll" aria-label="Editor e biblioteca de conhecimento">
+      <main className="nx-scroll" aria-label="Editor e biblioteca de conhecimento" aria-busy={indexLoading||pageLoading}>
        {notice&&<div className="nx-toast" role="status"><span>{notice}</span><button onClick={()=>setNotice('')}>×</button></div>}
-       {!page?<div className="nx-landing"><span className="nx-breadcrumb-label">DOCUMENTAÇÃO &amp; CONHECIMENTO</span><h1>Seu conhecimento, organizado.</h1><p>Biblioteca do Centro de Inteligência Jurídica 190. Pesquise guias, protocolos orientativos e páginas publicadas.</p>
+       {(indexLoading||pageLoading)?<div className="nx-document-loading" role="status" aria-live="polite">
+         <div className="nx-document-loading-heading">
+           <span className="nx-document-loading-emblem">190</span>
+           <div><small>{indexLoading?'PREPARANDO A BIBLIOTECA':'CARREGANDO DOCUMENTO'}</small>
+             <h2>{indexLoading?'Organizando seus conteúdos…':'Abrindo página selecionada…'}</h2>
+             <p>{indexLoading?'Recuperando pastas e páginas do Centro 190.':'Buscando o conteúdo completo sem interromper sua navegação.'}</p></div>
+           <i className="nx-loader-spinner"/>
+         </div>
+         <div className="nx-document-skeleton-cover"/>
+         <div className="nx-document-skeleton-content">
+           <span className="nx-skeleton-bar wide"/><span className="nx-skeleton-bar"/>
+           <span className="nx-skeleton-bar medium"/><span className="nx-skeleton-bar wide"/>
+           <span className="nx-skeleton-bar short"/>
+         </div>
+       </div>:indexError&&!pages.length?<div className="nx-index-retry" role="alert">
+         <h2>A biblioteca não pôde ser carregada.</h2><p>{indexError}</p>
+         <button type="button" onClick={()=>void reload({showLoading:true})}>Tentar carregar novamente</button>
+       </div>:!page?<div className="nx-landing"><span className="nx-breadcrumb-label">DOCUMENTAÇÃO &amp; CONHECIMENTO</span><h1>Seu conhecimento, organizado.</h1><p>Biblioteca do Centro de Inteligência Jurídica 190. Pesquise guias, protocolos orientativos e páginas publicadas.</p>
          <button className="nx-landing-search" onClick={()=>setCommand(true)}>⌕ &nbsp; Buscar na documentação <kbd>Ctrl K</kbd></button>
          <h2>Explorar espaços</h2><div className="nx-space-cards">{spaces.map((s,i)=><button key={s} onClick={()=>{const first=pages.find(p=>p.space===s);if(first)open(first);else createPage(s)}}><span>{folderByName[s]?.icon||'📁'}</span><strong>{s}</strong><small>{pages.filter(p=>p.space===s).length} páginas</small></button>)}</div>
          {isAdmin&&<button className="nx-create-btn nx-landing-create" onClick={()=>createPage()}>⊕ Nova página</button>}</div>:<>

@@ -399,3 +399,229 @@
 .nexus-docs .nx-top-navbar .nx-expand{visibility:visible;opacity:1;pointer-events:auto}
 .nexus-docs .nx-top-navbar .nx-expand:focus-visible{outline:2px solid var(--nx-brand-hover);outline-offset:3px}
 @media(max-width:500px){.nexus-docs .nx-top-navbar .nx-expand{flex-basis:34px;min-width:34px}}
+
+
+/* Biblioteca 190: a árvore tem APENAS scroll vertical; nomes longos são truncados. */
+.nexus-docs .nx-tree{
+  overflow-x:hidden!important;
+  overflow-y:auto;
+  grid-template-columns:minmax(0,1fr);
+  min-width:0;
+  max-width:100%;
+  overscroll-behavior-x:contain;
+}
+.nexus-docs .nx-tree>section,
+.nexus-docs .nx-tree .nx-space,
+.nexus-docs .nx-tree .nx-space-pages{
+  min-width:0;
+  max-width:100%;
+  width:100%;
+}
+.nexus-docs .nx-tree .nx-space-pages{
+  grid-template-columns:minmax(0,1fr);
+  overflow-x:clip;
+}
+.nexus-docs .nx-tree .nx-space summary,
+.nexus-docs .nx-tree .nx-page-item{
+  min-width:0;
+  max-width:100%;
+  width:100%;
+}
+.nexus-docs .nx-tree .nx-space summary b,
+.nexus-docs .nx-tree .nx-page-item>span:last-child{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.nexus-docs .nx-tree::-webkit-scrollbar:horizontal{height:0}
+
+/* Carregamento real: estados iniciais, busca e abertura individual de documentos. */
+.nexus-docs .nx-loader-spinner{
+  display:inline-block;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  flex:none;
+  border:2px solid color-mix(in srgb,var(--nx-brand-hover) 22%,transparent);
+  border-top-color:var(--nx-brand-hover);
+  animation:nx-spinner-turn .72s linear infinite;
+}
+@keyframes nx-spinner-turn{to{transform:rotate(360deg)}}
+.nexus-docs .nx-tree-loading{
+  display:grid;
+  gap:15px;
+  padding:8px 5px 18px;
+  min-width:0;
+}
+.nexus-docs .nx-tree-loading-label,
+.nexus-docs .nx-search-progress{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:var(--nx-muted);
+  font-size:11px;
+  font-weight:650;
+  padding:7px 8px 10px;
+}
+.nexus-docs .nx-tree-loading-label .nx-loader-spinner,
+.nexus-docs .nx-search-progress .nx-loader-spinner{
+  width:13px;
+  height:13px;
+}
+.nexus-docs .nx-tree-skeleton-item{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  width:100%;
+  padding:3px 9px;
+}
+.nexus-docs .nx-skeleton-icon{
+  width:18px;
+  height:18px;
+  border-radius:5px;
+  flex:none;
+  background:var(--nx-soft);
+}
+.nexus-docs .nx-skeleton-bar,
+.nexus-docs .nx-document-skeleton-cover{
+  background:linear-gradient(110deg,var(--nx-soft) 25%,color-mix(in srgb,var(--nx-brand-hover) 12%,var(--nx-soft)) 45%,var(--nx-soft) 70%);
+  background-size:220% 100%;
+  animation:nx-skeleton-shimmer 1.55s ease-in-out infinite;
+}
+.nexus-docs .nx-skeleton-bar{
+  display:block;
+  height:10px;
+  width:83%;
+  min-width:0;
+  max-width:100%;
+  border-radius:6px;
+}
+@keyframes nx-skeleton-shimmer{
+  0%{background-position:100% 0}
+  100%{background-position:-100% 0}
+}
+.nexus-docs .nx-document-loading{
+  width:min(100%,1000px);
+  padding:24px clamp(18px,4vw,45px) 50px;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:23px;
+  animation:nx-document-loader-enter .3s cubic-bezier(.18,1,.3,1) both;
+}
+@keyframes nx-document-loader-enter{
+  from{opacity:0;transform:translateY(7px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.nexus-docs .nx-document-loading-heading{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:16px 20px;
+  background:var(--nx-panel);
+  border:1px solid var(--nx-border);
+  border-radius:15px;
+  box-shadow:0 9px 30px #00000010;
+}
+.nexus-docs .nx-document-loading-emblem{
+  display:grid;
+  place-items:center;
+  width:48px;
+  height:48px;
+  flex:none;
+  color:#f6ffff;
+  font-size:15px;
+  font-weight:900;
+  background:linear-gradient(145deg,#086b83,#11adc0);
+  border-radius:14px;
+  box-shadow:0 7px 24px #0ba3b120;
+}
+.nexus-docs .nx-document-loading-heading>div{flex:1;min-width:0}
+.nexus-docs .nx-document-loading-heading small{
+  color:var(--nx-brand-hover);
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:1.2px;
+}
+.nexus-docs .nx-document-loading-heading h2{
+  margin:5px 0 3px;
+  font-size:clamp(16px,1.6vw,20px);
+  line-height:1.35;
+  font-weight:820;
+  color:var(--nx-text);
+}
+.nexus-docs .nx-document-loading-heading p{
+  color:var(--nx-muted);
+  font-size:11px;
+  line-height:1.5;
+}
+.nexus-docs .nx-document-skeleton-cover{
+  width:100%;
+  height:clamp(130px,17vw,196px);
+  border-radius:15px;
+  border:1px solid var(--nx-border);
+}
+.nexus-docs .nx-document-skeleton-content{
+  display:grid;
+  gap:16px;
+  width:min(100%,680px);
+  margin:5px auto;
+}
+.nexus-docs .nx-document-skeleton-content>.nx-skeleton-bar{
+  height:14px;
+  width:74%;
+}
+.nexus-docs .nx-document-skeleton-content>.nx-skeleton-bar.wide{width:100%;height:23px}
+.nexus-docs .nx-document-skeleton-content>.nx-skeleton-bar.medium{width:82%}
+.nexus-docs .nx-document-skeleton-content>.nx-skeleton-bar.short{width:47%}
+.nexus-docs .nx-tree-load-error,
+.nexus-docs .nx-index-retry{
+  color:var(--nx-muted);
+  padding:18px 16px;
+  border:1px solid var(--nx-border);
+  border-radius:12px;
+  background:var(--nx-panel);
+  display:flex;
+  flex-direction:column;
+  gap:11px;
+  font-size:12px;
+  line-height:1.6;
+  min-width:0;
+}
+.nexus-docs .nx-index-retry{max-width:600px;margin:40px auto;padding:25px}
+.nexus-docs .nx-tree-load-error strong,
+.nexus-docs .nx-index-retry h2{
+  color:var(--nx-text);
+  font-size:14px;
+  font-weight:800;
+}
+.nexus-docs .nx-tree-load-error button,
+.nexus-docs .nx-index-retry button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:9px 12px;
+  background:var(--nx-brand);
+  border-radius:8px;
+  color:white!important;
+  font-size:11px;
+  font-weight:780;
+  width:fit-content;
+}
+@media(max-width:760px){
+  .nexus-docs .nx-document-loading{padding:16px 13px 35px;gap:14px}
+  .nexus-docs .nx-document-loading-heading{padding:13px;gap:9px}
+  .nexus-docs .nx-document-loading-heading p{font-size:10px}
+  .nexus-docs .nx-document-loading-emblem{width:38px;height:38px;flex-basis:38px}
+  .nexus-docs .nx-document-loading-heading .nx-loader-spinner{width:13px;height:13px}
+}
+@media(prefers-reduced-motion:reduce){
+  .nexus-docs .nx-loader-spinner,
+  .nexus-docs .nx-skeleton-bar,
+  .nexus-docs .nx-document-skeleton-cover,
+  .nexus-docs .nx-document-loading{
+    animation:none!important;
+    transform:none!important;
+  }
+}
