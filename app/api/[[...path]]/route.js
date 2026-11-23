@@ -62,7 +62,7 @@ async function gate(request,method,ctx){
   // Se a preparação complementar falhar, consultas autenticadas de leitura
   // ainda podem exibir o catálogo estático, sem escrever no banco.
   let bootstrapIssue=null;
-  const fastRead = method==='GET' && ['/session','/entries','/rules','/ai/status','/management/access/reset-pending','/documentation','/documentation/page','/documentation/search'].includes(route);
+  const fastRead = method==='GET' && (['/session','/entries','/rules','/ai/status','/management/access/reset-pending','/documentation','/documentation/page','/documentation/search','/documentation/draft'].includes(route)||route.startsWith('/documentation/assets/'));
   const announcementRoute=route==='/announcements'||route.startsWith('/announcements/');
   const loginProbe = route==='/auth/login' && method==='POST';
   try{
