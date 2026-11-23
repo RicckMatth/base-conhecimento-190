@@ -380,8 +380,7 @@ async function gate(request,method,ctx){
     if(method==='DELETE'){if(key!=='new'&&!uuid(key))return failure('Rascunho inválido.');await db().query('DELETE FROM documentation_drafts WHERE user_id=$1 AND page_key=$2',[u.id,key]);return reply({ok:true});}
   }
   if(route==='/documentation'&&method==='GET'){
-    // Load the navigation index only. Content and rich editor blocks are fetched
-    // on-demand, avoiding large JSONB transfers of every document on first visit.
+    // Lightweight navigation index: avoid fetching all blocks/content at entry.
     const [rows,spaces]=await Promise.all([
       db().query(
         "SELECT p.id,p.title,p.space,p.parent_id,p.status,p.revision,"+
@@ -409,22 +408,14 @@ async function gate(request,method,ctx){
     const raw=(new URL(request.url).searchParams.get('q')||'').trim();
     if(raw.length<2)return reply({ids:[]});
     if(raw.length>80)return failure('Busca muito extensa.',400);
-    // Body search is lazy; navigation can search all document text without
-    // shipping every document's full content to the client on initial load.
-    const escaped=raw.replace(/[\\%_]/g,'\\  if(route==='/documentation'&&method==='GET'){
-    const [rows,spaces]=await Promise.all([
-      db().query("SELECT p.*,u.display_name AS author FROM documentation_pages p LEFT JOIN users u ON u.id=p.author_id WHERE ($1 OR p.status='published') ORDER BY p.space,p.title",[u.role==='admin']),
-      listDocumentationSpaces(db(),u.role==='admin')
-    ]);
-    return reply({pages:rows.rows,spaces});
-  }');
-    const pattern='%'+escaped+'%';
+    // The full-content search runs only for active queries, not at page load.
     const hits=await db().query(
       "SELECT p.id FROM documentation_pages p "+
       "WHERE ($1 OR p.status='published') AND "+
-      "(p.content ILIKE $2 ESCAPE '\\' OR p.nexus_meta::text ILIKE $2 ESCAPE '\\') "+
+      "(strpos(lower(p.content),lower($2))>0 OR "+
+      "strpos(lower(p.nexus_meta::text),lower($2))>0) "+
       "ORDER BY p.updated_at DESC LIMIT 500",
-      [u.role==='admin',pattern]);
+      [u.role==='admin',raw]);
     return reply({ids:hits.rows.map(row=>row.id)});
   }
   if(route==='/documentation/spaces'&&method==='POST'){
