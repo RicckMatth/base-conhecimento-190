@@ -62,7 +62,7 @@ async function gate(request,method,ctx){
   // Se a preparação complementar falhar, consultas autenticadas de leitura
   // ainda podem exibir o catálogo estático, sem escrever no banco.
   let bootstrapIssue=null;
-  const fastRead = method==='GET' && ['/session','/entries','/rules','/ai/status','/management/access/reset-pending'].includes(route);
+  const fastRead = method==='GET' && ['/session','/entries','/rules','/ai/status','/management/access/reset-pending','/documentation','/documentation/page','/documentation/search'].includes(route);
   const announcementRoute=route==='/announcements'||route.startsWith('/announcements/');
   const loginProbe = route==='/auth/login' && method==='POST';
   try{
@@ -380,11 +380,52 @@ async function gate(request,method,ctx){
     if(method==='DELETE'){if(key!=='new'&&!uuid(key))return failure('Rascunho inválido.');await db().query('DELETE FROM documentation_drafts WHERE user_id=$1 AND page_key=$2',[u.id,key]);return reply({ok:true});}
   }
   if(route==='/documentation'&&method==='GET'){
+    // Load the navigation index only. Content and rich editor blocks are fetched
+    // on-demand, avoiding large JSONB transfers of every document on first visit.
+    const [rows,spaces]=await Promise.all([
+      db().query(
+        "SELECT p.id,p.title,p.space,p.parent_id,p.status,p.revision,"+
+        "p.author_id,p.created_at,p.updated_at,u.display_name AS author,"+
+        "(COALESCE(p.nexus_meta,'{}'::jsonb) - 'blocks') AS nexus_meta "+
+        "FROM documentation_pages p LEFT JOIN users u ON u.id=p.author_id "+
+        "WHERE ($1 OR p.status='published') ORDER BY p.space,p.title",
+        [u.role==='admin']),
+      listDocumentationSpaces(db(),u.role==='admin')
+    ]);
+    return reply({pages:rows.rows,spaces});
+  }
+  if(route==='/documentation/page'&&method==='GET'){
+    const id=new URL(request.url).searchParams.get('id');
+    if(!uuid(id))return failure('Página inválida.',400);
+    const item=await db().query(
+      "SELECT p.*,u.display_name AS author FROM documentation_pages p "+
+      "LEFT JOIN users u ON u.id=p.author_id "+
+      "WHERE p.id=$1 AND ($2 OR p.status='published') LIMIT 1",
+      [id,u.role==='admin']);
+    if(!item.rows.length)return failure('Documento não encontrado.',404);
+    return reply({page:item.rows[0]});
+  }
+  if(route==='/documentation/search'&&method==='GET'){
+    const raw=(new URL(request.url).searchParams.get('q')||'').trim();
+    if(raw.length<2)return reply({ids:[]});
+    if(raw.length>80)return failure('Busca muito extensa.',400);
+    // Body search is lazy; navigation can search all document text without
+    // shipping every document's full content to the client on initial load.
+    const escaped=raw.replace(/[\\%_]/g,'\\  if(route==='/documentation'&&method==='GET'){
     const [rows,spaces]=await Promise.all([
       db().query("SELECT p.*,u.display_name AS author FROM documentation_pages p LEFT JOIN users u ON u.id=p.author_id WHERE ($1 OR p.status='published') ORDER BY p.space,p.title",[u.role==='admin']),
       listDocumentationSpaces(db(),u.role==='admin')
     ]);
     return reply({pages:rows.rows,spaces});
+  }');
+    const pattern='%'+escaped+'%';
+    const hits=await db().query(
+      "SELECT p.id FROM documentation_pages p "+
+      "WHERE ($1 OR p.status='published') AND "+
+      "(p.content ILIKE $2 ESCAPE '\\' OR p.nexus_meta::text ILIKE $2 ESCAPE '\\') "+
+      "ORDER BY p.updated_at DESC LIMIT 500",
+      [u.role==='admin',pattern]);
+    return reply({ids:hits.rows.map(row=>row.id)});
   }
   if(route==='/documentation/spaces'&&method==='POST'){
     try{return reply(await createDocumentationSpace(db(),u,await input(request,2500)),201);}catch(e){return failure(e.message,e.status||400);}
